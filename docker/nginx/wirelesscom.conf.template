@@ -1,0 +1,92 @@
+# ---------------------------------------------------------------------------
+# WirelessCom.Ca Inc. — nginx reverse proxy
+#
+# Installed by deploy.sh to /etc/nginx/sites-available/wirelesscom.
+# Placeholders __DOMAINS__, __APP_HOST__ and __APP_PORT__ are substituted at
+# install time. `default_server` plus `server_name _` means the site also
+# answers on the machine's bare IP address.
+# ---------------------------------------------------------------------------
+
+upstream wirelesscom_app {
+    server __APP_HOST__:__APP_PORT__;
+    keepalive 32;
+}
+
+# Cache-busted Next.js assets can be cached hard; everything else is decided by
+# the application's own Cache-Control headers.
+map $uri $wc_immutable {
+    default          "";
+    ~^/_next/static/ "public, max-age=31536000, immutable";
+}
+
+# Prefixed name so this cannot collide with a map another vhost already defines.
+map $http_upgrade $wc_connection_upgrade {
+    default upgrade;
+    ''      close;
+}
+
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name __DOMAINS__ _;
+
+    # Let deploy.sh --tls (certbot) complete the HTTP-01 challenge.
+    location /.well-known/acme-challenge/ {
+        root /var/www/html;
+        allow all;
+    }
+
+    # 25 MB media uploads from the admin, plus headroom for the speed test.
+    client_max_body_size 64m;
+    client_body_timeout 300s;
+
+    # Compress text; images, video and HLS segments are already compressed.
+    gzip on;
+    gzip_vary on;
+    gzip_proxied any;
+    gzip_comp_level 5;
+    gzip_min_length 1024;
+    gzip_types
+        text/plain
+        text/css
+        text/javascript
+        application/javascript
+        application/json
+        application/manifest+json
+        application/rss+xml
+        image/svg+xml
+        font/woff2;
+
+    add_header X-Frame-Options SAMEORIGIN always;
+    add_header X-Content-Type-Options nosniff always;
+
+    location /_next/static/ {
+        proxy_pass http://wirelesscom_app;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        add_header Cache-Control $wc_immutable always;
+    }
+
+    location / {
+        proxy_pass http://wirelesscom_app;
+        proxy_http_version 1.1;
+
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host  $host;
+        proxy_set_header Upgrade           $http_upgrade;
+        proxy_set_header Connection        $wc_connection_upgrade;
+
+        # Live video and the speed test both stream, so responses must not be
+        # buffered and connections need to stay open.
+        proxy_buffering off;
+        proxy_request_buffering off;
+        proxy_read_timeout 300s;
+        proxy_send_timeout 300s;
+        proxy_connect_timeout 30s;
+
+        proxy_redirect off;
+    }
+}

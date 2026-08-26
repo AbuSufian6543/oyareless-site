@@ -1,0 +1,331 @@
+@import "tailwindcss";
+
+/* ---------------------------------------------------------------------------
+   Design tokens — derived from the WirelessCom.Ca logo (navy + green swoosh).
+   --------------------------------------------------------------------------- */
+@theme {
+  --color-navy-50: #eef4fb;
+  --color-navy-100: #d7e5f4;
+  --color-navy-200: #b0c9e6;
+  --color-navy-300: #7fa5d3;
+  --color-navy-400: #4c7cb8;
+  --color-navy-500: #2b5c99;
+  --color-navy-600: #17457c;
+  --color-navy-700: #0f3a68;
+  --color-navy-800: #0a2a4e;
+  --color-navy-900: #071e39;
+  --color-navy-950: #041325;
+
+  --color-brand-50: #eaf4ff;
+  --color-brand-100: #d3e8ff;
+  --color-brand-200: #a8d0ff;
+  --color-brand-300: #71b0fb;
+  --color-brand-400: #3d8ff0;
+  --color-brand-500: #1478d4;
+  --color-brand-600: #0a5fae;
+  --color-brand-700: #084b8c;
+  --color-brand-800: #0a3e70;
+  --color-brand-900: #0c355e;
+
+  --color-accent-50: #f1fbe9;
+  --color-accent-100: #e0f6cd;
+  --color-accent-200: #c3ec9f;
+  --color-accent-300: #9fdd6c;
+  --color-accent-400: #7fcc47;
+  --color-accent-500: #6fc04a;
+  --color-accent-600: #4d9a2c;
+  --color-accent-700: #3b7724;
+  --color-accent-800: #315e21;
+  --color-accent-900: #2a4f1f;
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", "Cascadia Code", Menlo, monospace;
+
+  --shadow-card: 0 1px 2px rgb(4 19 37 / 0.06), 0 8px 24px -12px rgb(4 19 37 / 0.18);
+  --shadow-lift: 0 2px 4px rgb(4 19 37 / 0.06), 0 18px 40px -16px rgb(4 19 37 / 0.28);
+  --shadow-glow: 0 0 0 1px rgb(111 192 74 / 0.35), 0 0 32px -8px rgb(111 192 74 / 0.45);
+}
+
+/* ---------------------------------------------------------------------------
+   Base
+   --------------------------------------------------------------------------- */
+@layer base {
+  * {
+    border-color: var(--color-slate-200);
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background-color: #ffffff;
+    color: var(--color-navy-900);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  h1, h2, h3, h4 {
+    letter-spacing: -0.02em;
+    font-weight: 700;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Visible focus ring for keyboard users (AODA / WCAG 2.1 AA). */
+  :focus-visible {
+    outline: 2px solid var(--color-brand-500);
+    outline-offset: 2px;
+    border-radius: 3px;
+  }
+
+  ::selection {
+    background: var(--color-accent-200);
+    color: var(--color-navy-900);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Utilities
+   --------------------------------------------------------------------------- */
+@utility container-page {
+  width: 100%;
+  margin-inline: auto;
+  padding-inline: 1.25rem;
+  max-width: 80rem;
+
+  @media (min-width: 1024px) {
+    padding-inline: 2rem;
+  }
+}
+
+/* Faint circuit-board grid used behind dark sections. */
+@utility bg-tech-grid {
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.045) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.045) 1px, transparent 1px);
+  background-size: 46px 46px;
+}
+
+@utility bg-tech-grid-light {
+  background-image:
+    linear-gradient(to right, rgb(7 30 57 / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(7 30 57 / 0.05) 1px, transparent 1px);
+  background-size: 46px 46px;
+}
+
+@utility text-balance-tight {
+  text-wrap: balance;
+}
+
+/* ---------------------------------------------------------------------------
+   Rich text rendered from CMS blocks
+   --------------------------------------------------------------------------- */
+@layer components {
+  .prose-wc {
+    color: var(--color-slate-700);
+    font-size: 1.0625rem;
+    line-height: 1.75;
+  }
+
+  .prose-wc > * + * {
+    margin-top: 1.05em;
+  }
+
+  .prose-wc h2 {
+    font-size: 1.6rem;
+    color: var(--color-navy-800);
+    margin-top: 2em;
+    margin-bottom: 0.6em;
+  }
+
+  .prose-wc h3 {
+    font-size: 1.25rem;
+    color: var(--color-navy-800);
+    margin-top: 1.7em;
+    margin-bottom: 0.5em;
+  }
+
+  .prose-wc h4 {
+    font-size: 1.075rem;
+    font-weight: 600;
+    color: var(--color-navy-800);
+    margin-top: 1.5em;
+  }
+
+  .prose-wc a {
+    color: var(--color-brand-600);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    font-weight: 500;
+  }
+
+  .prose-wc a:hover {
+    color: var(--color-brand-700);
+  }
+
+  .prose-wc strong {
+    color: var(--color-navy-800);
+    font-weight: 650;
+  }
+
+  .prose-wc ul,
+  .prose-wc ol {
+    padding-left: 1.3em;
+  }
+
+  .prose-wc ul {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  .prose-wc ul > li {
+    position: relative;
+    padding-left: 1.6em;
+    margin-top: 0.55em;
+  }
+
+  /* Green check-style bullet reinforcing the brand accent. */
+  .prose-wc ul > li::before {
+    content: "";
+    position: absolute;
+    left: 0.15em;
+    top: 0.62em;
+    width: 0.46em;
+    height: 0.46em;
+    border-radius: 1px;
+    background: var(--color-accent-500);
+    transform: rotate(45deg);
+  }
+
+  .prose-wc ol {
+    list-style: decimal;
+  }
+
+  .prose-wc ol > li {
+    margin-top: 0.55em;
+    padding-left: 0.3em;
+  }
+
+  .prose-wc ol > li::marker {
+    color: var(--color-brand-600);
+    font-weight: 600;
+  }
+
+  .prose-wc blockquote {
+    border-left: 3px solid var(--color-accent-500);
+    padding: 0.2em 0 0.2em 1.1em;
+    color: var(--color-slate-600);
+    font-style: italic;
+  }
+
+  .prose-wc code {
+    background: var(--color-slate-100);
+    padding: 0.15em 0.4em;
+    border-radius: 4px;
+    font-size: 0.9em;
+    font-family: var(--font-mono);
+    color: var(--color-navy-800);
+  }
+
+  .prose-wc table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.95rem;
+  }
+
+  .prose-wc th,
+  .prose-wc td {
+    border: 1px solid var(--color-slate-200);
+    padding: 0.6em 0.8em;
+    text-align: left;
+  }
+
+  .prose-wc th {
+    background: var(--color-slate-50);
+    font-weight: 600;
+    color: var(--color-navy-800);
+  }
+
+  .prose-wc img {
+    border-radius: 0.5rem;
+    max-width: 100%;
+    height: auto;
+  }
+
+  .prose-wc hr {
+    border-color: var(--color-slate-200);
+    margin: 2em 0;
+  }
+
+  /* Inverted variant for rich text on dark sections. */
+  .prose-wc-invert {
+    color: rgb(255 255 255 / 0.82);
+  }
+
+  .prose-wc-invert h2,
+  .prose-wc-invert h3,
+  .prose-wc-invert h4,
+  .prose-wc-invert strong {
+    color: #ffffff;
+  }
+
+  .prose-wc-invert a {
+    color: var(--color-accent-300);
+  }
+
+  .prose-wc-invert code {
+    background: rgb(255 255 255 / 0.1);
+    color: #ffffff;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Animation
+   --------------------------------------------------------------------------- */
+@keyframes wc-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes wc-pulse-dot {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(0.82);
+  }
+}
+
+@utility animate-fade-up {
+  animation: wc-fade-up 0.5s ease-out both;
+}
+
+@utility animate-live-dot {
+  animation: wc-pulse-dot 1.6s ease-in-out infinite;
+}

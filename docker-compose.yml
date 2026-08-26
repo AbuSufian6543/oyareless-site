@@ -1,0 +1,72 @@
+# ---------------------------------------------------------------------------
+# WirelessCom.Ca Inc. — production stack
+#
+#   db       PostgreSQL 17, data on a named volume
+#   migrate  one-shot: applies migrations and seeds, then exits
+#   app      the Next.js server, published on 127.0.0.1:${APP_PORT}
+#
+# The app is bound to loopback because the host's nginx terminates TLS and
+# proxies to it. Set APP_BIND=0.0.0.0 in .env to expose it directly instead.
+# ---------------------------------------------------------------------------
+
+name: wirelesscom
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-wirelesscom}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_DB: ${POSTGRES_DB:-wirelesscom}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U ${POSTGRES_USER:-wirelesscom} -d ${POSTGRES_DB:-wirelesscom}
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+  migrate:
+    build:
+      context: .
+      target: builder
+    restart: "no"
+    command: ["/usr/local/bin/migrate.sh"]
+    env_file: .env
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  app:
+    build:
+      context: .
+      target: runner
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      PORT: "3000"
+      HOSTNAME: 0.0.0.0
+    ports:
+      - "${APP_BIND:-127.0.0.1}:${APP_PORT:-3000}:3000"
+    volumes:
+      - uploads:/app/public/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "5"
+
+volumes:
+  db-data:
+  uploads:

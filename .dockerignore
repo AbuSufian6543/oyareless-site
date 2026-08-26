@@ -1,0 +1,15 @@
+node_modules
+.next
+.git
+.gitignore
+backups
+npm-debug.log
+Dockerfile
+docker-compose.yml
+.env
+.env.local
+README.md
+*.md
+public/uploads/*
+src/generated
+tsconfig.tsbuildinfo

@@ -1,0 +1,32 @@
+node_modules/
+.next/
+out/
+build/
+dist/
+
+# Prisma client is generated at build time
+/src/generated/
+
+# Environment / secrets
+.env
+.env.local
+.env.*.local
+*.pem
+
+# Uploaded media lives in a Docker volume
+/public/uploads/*
+!/public/uploads/.gitkeep
+
+# Logs & OS noise
+npm-debug.log*
+yarn-error.log*
+*.log
+.DS_Store
+Thumbs.db
+
+# Backups produced by backup.sh
+/backups/
+
+next-env.d.ts
+tsconfig.tsbuildinfo
+sitemap_check.xml

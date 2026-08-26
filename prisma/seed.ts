@@ -1,0 +1,285 @@
+/**
+ * Idempotent seed. Safe to run on every deploy: it creates missing records and
+ * leaves anything an admin has already edited alone.
+ *
+ * Run with `npm run seed`.
+ */
+
+import "dotenv/config";
+
+import { env } from "../src/lib/env";
+import { hashPassword, validatePasswordStrength } from "../src/lib/passwords";
+import { prisma } from "../src/lib/prisma";
+import { DEFAULT_SETTINGS } from "../src/lib/settings-defaults";
+import { buildBlocks, SEED_NAV, SEED_PAGES, SEED_REDIRECTS } from "./seed-content";
+
+function log(message: string): void {
+  process.stdout.write(`  ${message}\n`);
+}
+
+async function seedSuperAdmin(): Promise<void> {
+  const email = env.superadmin.email;
+  const password = env.superadmin.password;
+
+  const existing = await prisma.user.findUnique({ where: { email } });
+
+  if (existing) {
+    // Never clobber a password an admin has since changed; just make sure the
+    // account is still usable and holds the top role.
+    if (existing.role !== "SUPERADMIN" || !existing.isActive) {
+      await prisma.user.update({
+        where: { email },
+        data: { role: "SUPERADMIN", isActive: true },
+      });
+      log(`Restored super admin role for ${email}`);
+    } else {
+      log(`Super admin ${email} already exists`);
+    }
+    return;
+  }
+
+  if (!password) {
+    log(
+      `! SUPERADMIN_PASSWORD is not set — skipping creation of ${email}. Set it in .env and re-run the seed.`,
+    );
+    return;
+  }
+
+  const weak = validatePasswordStrength(password);
+  if (weak) {
+    log(`! SUPERADMIN_PASSWORD is too weak: ${weak}`);
+    log("  The account was not created. Choose a stronger password and re-run.");
+    return;
+  }
+
+  await prisma.user.create({
+    data: {
+      email,
+      name: env.superadmin.name,
+      role: "SUPERADMIN",
+      passwordHash: await hashPassword(password),
+    },
+  });
+
+  log(`Created super admin ${email}`);
+}
+
+async function seedSettings(): Promise<void> {
+  const existing = await prisma.siteSetting.findMany({ select: { key: true } });
+  const present = new Set(existing.map((row) => row.key));
+
+  const missing = Object.entries(DEFAULT_SETTINGS).filter(
+    ([key]) => !present.has(key),
+  );
+
+  if (missing.length === 0) {
+    log("Site settings already seeded");
+    return;
+  }
+
+  for (const [key, value] of missing) {
+    await prisma.siteSetting.create({
+      data: { key, value: value as never, group: "general" },
+    });
+  }
+
+  log(`Seeded ${missing.length} site settings`);
+}
+
+async function seedPages(): Promise<void> {
+  let created = 0;
+  let skipped = 0;
+
+  for (const page of SEED_PAGES) {
+    const existing = await prisma.page.findUnique({
+      where: { slug: page.slug },
+      select: { id: true },
+    });
+
+    if (existing) {
+      skipped += 1;
+      continue;
+    }
+
+    await prisma.page.create({
+      data: {
+        slug: page.slug,
+        title: page.title,
+        navLabel: page.navLabel ?? null,
+        status: "PUBLISHED",
+        blocks: buildBlocks(page.blocks, page.slug) as never,
+        metaTitle: page.metaTitle ?? null,
+        metaDescription: page.metaDescription,
+        showInHeaderNav: page.showInHeaderNav ?? false,
+        showInFooterNav: page.showInFooterNav ?? false,
+        navOrder: page.navOrder ?? 0,
+        isSystem: page.isSystem ?? false,
+        publishedAt: new Date(),
+      },
+    });
+
+    created += 1;
+  }
+
+  log(`Pages: ${created} created, ${skipped} already present`);
+}
+
+async function seedNavigation(): Promise<void> {
+  const existing = await prisma.navItem.count();
+  if (existing > 0) {
+    log("Navigation already configured");
+    return;
+  }
+
+  for (const item of SEED_NAV) {
+    const parent = await prisma.navItem.create({
+      data: {
+        label: item.label,
+        href: item.href,
+        location: item.location,
+        order: item.order,
+      },
+    });
+
+    if (!item.children) continue;
+
+    for (const [index, child] of item.children.entries()) {
+      await prisma.navItem.create({
+        data: {
+          label: child.label,
+          href: child.href,
+          location: item.location,
+          order: index,
+          parentId: parent.id,
+        },
+      });
+    }
+  }
+
+  log(`Seeded ${SEED_NAV.length} top-level menu items`);
+}
+
+async function seedRedirects(): Promise<void> {
+  let created = 0;
+
+  for (const entry of SEED_REDIRECTS) {
+    const existing = await prisma.redirect.findUnique({
+      where: { source: entry.source },
+    });
+    if (existing) continue;
+
+    await prisma.redirect.create({
+      data: { source: entry.source, destination: entry.destination },
+    });
+    created += 1;
+  }
+
+  log(`Redirects: ${created} created, ${SEED_REDIRECTS.length - created} already present`);
+}
+
+async function seedLaunchPost(): Promise<void> {
+  const slug = "new-wirelesscom-ca-website";
+  const existing = await prisma.post.findUnique({ where: { slug } });
+  if (existing) {
+    log("Launch article already present");
+    return;
+  }
+
+  const author = await prisma.user.findUnique({
+    where: { email: env.superadmin.email },
+    select: { id: true },
+  });
+
+  await prisma.post.create({
+    data: {
+      slug,
+      title: "Our new website is live",
+      excerpt:
+        "A faster, mobile-friendly wirelesscom.ca with clearer service information, online support requests and live video.",
+      status: "PUBLISHED",
+      publishedAt: new Date(),
+      readingMinutes: 2,
+      tags: ["Company News"],
+      authorId: author?.id ?? null,
+      metaDescription:
+        "WirelessCom.Ca Inc. has launched a rebuilt website with clearer service information, online support requests and live video streaming.",
+      blocks: buildBlocks(
+        [
+          {
+            type: "richText",
+            data: {
+              html: [
+                "<p>We have rebuilt wirelesscom.ca from the ground up. The new site is faster, works properly on phones and tablets, and makes it much easier to find what each of our service lines actually covers.</p>",
+                "<h2>What is new</h2>",
+                "<ul>",
+                "<li><strong>Clearer service pages</strong> for IT, cybersecurity, networking, telephone, internet, security systems, access control, cabling, two-way radios, EV charging and fleet tracking.</li>",
+                "<li><strong>Online support requests</strong> so you can reach our technicians without waiting on hold.</li>",
+                "<li><strong>A built-in speed test</strong> to help us diagnose internet problems before a technician is dispatched.</li>",
+                "<li><strong>Live video</strong> for public cameras and password-protected client feeds.</li>",
+                "</ul>",
+                "<p>If anything looks wrong or you cannot find a page you used to bookmark, let us know and we will point you in the right direction. Call <strong>1-800-705-3189</strong> or send a message from our contact page.</p>",
+              ].join(""),
+              columns: "1",
+            },
+          },
+        ],
+        slug,
+      ) as never,
+    },
+  });
+
+  log("Created launch article");
+}
+
+async function seedExampleStream(): Promise<void> {
+  const slug = "waterfront-weather-camera";
+  const existing = await prisma.stream.findUnique({ where: { slug } });
+  if (existing) {
+    log("Example stream already present");
+    return;
+  }
+
+  // Left as a draft with a placeholder source so nothing broken is published:
+  // paste the real HLS URL in the admin and switch it to Published.
+  await prisma.stream.create({
+    data: {
+      slug,
+      title: "Sault Ste. Marie Waterfront Weather Camera",
+      description:
+        "Live weather camera stream from the Sault Ste. Marie waterfront.",
+      type: "HLS",
+      source: "https://example.invalid/replace-with-your-hls-url/index.m3u8",
+      location: "Sault Ste. Marie, ON",
+      status: "DRAFT",
+      isLive: true,
+      featured: true,
+      isPublic: true,
+      order: 0,
+    },
+  });
+
+  log("Created example stream (draft — add the real source URL in the admin)");
+}
+
+async function main(): Promise<void> {
+  process.stdout.write("\nSeeding WirelessCom.Ca Inc.\n\n");
+
+  await seedSuperAdmin();
+  await seedSettings();
+  await seedPages();
+  await seedNavigation();
+  await seedRedirects();
+  await seedLaunchPost();
+  await seedExampleStream();
+
+  process.stdout.write("\nSeed complete.\n\n");
+}
+
+main()
+  .catch((error) => {
+    process.stderr.write(`\nSeed failed: ${(error as Error).message}\n\n`);
+    process.exitCode = 1;
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
