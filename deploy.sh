@@ -31,7 +31,9 @@ UPDATE_ONLY=0
 RUN_SEED="true"
 ASSUME_YES=0
 SUPERADMIN_EMAIL="abu@wirelesscom.ca"
-SUPERADMIN_PASSWORD=""
+# Default so a bare `sudo ./deploy.sh` needs no arguments. Override with
+# --superadmin-password to keep it out of the repository.
+SUPERADMIN_PASSWORD="HospitalRoad111#"
 SUPERADMIN_NAME="Abu"
 
 NGINX_SITE="wirelesscom"
@@ -454,7 +456,7 @@ if [[ -n "${GENERATED_PASSWORD:-}" ]]; then
     Admin → My account and turn on two-factor authentication.${C_RESET}
 EOF
 else
-  info "Password      (as configured in .env)"
+  info "Password      ${SUPERADMIN_PASSWORD:-(as configured in .env)}"
 fi
 
 cat <<'EOF'
