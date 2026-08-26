@@ -20,10 +20,12 @@ WORKDIR /app
 
 # --- Dependencies ----------------------------------------------------------
 FROM base AS deps
+# postinstall runs `prisma generate`, which reads prisma.config.ts. Generate
+# never connects, but the config still needs a non-empty DATABASE_URL.
+ENV DATABASE_URL=postgresql://build:build@127.0.0.1:5432/build
 COPY package.json package-lock.json ./
 COPY prisma ./prisma
 COPY prisma.config.ts ./
-# `npm ci` runs postinstall, which generates the Prisma client.
 RUN npm ci --include=dev
 
 
