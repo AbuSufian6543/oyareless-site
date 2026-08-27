@@ -88,6 +88,10 @@ const photos = {
     "digital-signage",
     "Large digital signage display in a dark modern lobby showing an abstract navy and cyan graphic",
   ),
+  web: photo(
+    "web-development",
+    "Ultrawide monitor on a dark desk showing a navy and cyan business website layout",
+  ),
   support: photo(
     "remote-support",
     "Support technician wearing a headset at a desk with two monitors showing dashboards, seen from behind",
@@ -400,6 +404,16 @@ const home: SeedPage = {
             href: "/digital-marketing",
             imageUrl: photos.signage.url,
             imageAlt: photos.signage.alt,
+            badge: "",
+          },
+          {
+            icon: "globe",
+            title: "Web Development",
+            description:
+              "Business websites we design, build, and stand behind — clear, fast, and easy to update, with local support until you are satisfied.",
+            href: "/web-development",
+            imageUrl: photos.web.url,
+            imageAlt: photos.web.alt,
             badge: "",
           },
         ],
@@ -1788,6 +1802,103 @@ const digitalMarketing: SeedPage = {
   ],
 };
 
+const webDevelopment: SeedPage = {
+  slug: "web-development",
+  title: "Web Development",
+  navLabel: "Web Development",
+  metaTitle: "Web Development for Business",
+  metaDescription:
+    "WirelessCom.Ca Inc. designs and builds business websites in Sault Ste. Marie and Northern Ontario — clear, fast, and easy to update, with local support until you are satisfied.",
+  showInHeaderNav: true,
+  navOrder: 125,
+  blocks: [
+    serviceHero(
+      "Web Development",
+      "Websites we build and stand behind",
+      "A business site should look like you, load quickly, and be easy to change when something needs updating. We design and develop websites for customers across Northern Ontario, and we stay with the work until you are satisfied.",
+      ["Custom design", "Local support", "Customer satisfaction"],
+      photos.web,
+    ),
+    {
+      type: "imageText",
+      settings: { background: "white", paddingY: "xl" },
+      data: {
+        eyebrow: "How we work",
+        heading: "Built for the customer, not for a template library",
+        html: "<p>We start by listening: who you serve, what visitors should do on the site, and what has not been working on the current one. Then we design and build a site that matches the business — pages, forms, photos, and the calls to action you actually need.</p><p>Customer satisfaction is part of the job, not a slogan. If a page is unclear, a form is awkward, or something does not work on a phone, we fix it. You talk to the same local team that handles your network, not an overseas ticket queue.</p>",
+        image: {
+          url: photos.web.url,
+          alt: photos.web.alt,
+          caption: "",
+        },
+        imagePosition: "right",
+        bullets: [
+          "Clear goals before a pixel is drawn",
+          "Mobile-friendly pages that load quickly",
+          "Forms and quote requests that reach a real person",
+          "Changes and support from the same Sault Ste. Marie team",
+        ],
+        buttons: [
+          { label: "Request a website quote", href: "/request-quote", style: "secondary", openInNewTab: false },
+        ],
+      },
+    },
+    {
+      type: "featureGrid",
+      settings: { background: "light", paddingY: "xl" },
+      data: {
+        heading: "What you get",
+        description:
+          "Practical websites for shops, offices, plants, and public-facing teams — designed to convert visitors into calls and quotes.",
+        columns: "3",
+        style: "card",
+        items: [
+          {
+            icon: "globe",
+            title: "Custom business websites",
+            description:
+              "A site that looks like your company, not a generic theme with your logo dropped in.",
+          },
+          {
+            icon: "check",
+            title: "Customer satisfaction",
+            description:
+              "We do not walk away at launch day. We revise until the site does what you asked for.",
+          },
+          {
+            icon: "monitor",
+            title: "Fast and mobile-friendly",
+            description:
+              "Pages that work on a phone in the yard as well as on a desktop in the office.",
+          },
+          {
+            icon: "mail",
+            title: "Forms that get answered",
+            description:
+              "Contact, quote, and support requests delivered to the people who actually handle them.",
+          },
+          {
+            icon: "layers",
+            title: "Easy to update",
+            description:
+              "Content you can change without waiting on a developer for every headline.",
+          },
+          {
+            icon: "headset",
+            title: "Local ongoing support",
+            description:
+              "The same WirelessCom team that already knows your business is the one you call when the site needs a change.",
+          },
+        ],
+      },
+    },
+    closingCta(
+      "Ready for a website you are proud to send people to?",
+      "Tell us what the site needs to do and we will quote the design, the build, and the support to keep it that way.",
+    ),
+  ],
+};
+
 const support: SeedPage = {
   slug: "support",
   title: "Support",
@@ -2401,6 +2512,7 @@ export const SEED_PAGES: SeedPage[] = [
   twoWayRadios,
   fleetTracking,
   digitalMarketing,
+  webDevelopment,
   support,
   contact,
   privacyPolicy,
@@ -2445,6 +2557,8 @@ export const SEED_REDIRECTS: Array<{ source: string; destination: string }> = [
   { source: "/contact-us", destination: "/contact" },
   { source: "/ev-charging", destination: "/ev-charging-solutions" },
   { source: "/gps", destination: "/fleet-vehicle-tracking" },
+  { source: "/web", destination: "/web-development" },
+  { source: "/website", destination: "/web-development" },
 ];
 
 /**
@@ -2482,6 +2596,7 @@ export const SEED_NAV: Array<{
       { label: "EV Charging", href: "/ev-charging-solutions" },
       { label: "Fleet Tracking", href: "/fleet-vehicle-tracking" },
       { label: "Digital Marketing", href: "/digital-marketing" },
+      { label: "Web Development", href: "/web-development" },
     ],
   },
   {
@@ -2554,6 +2669,7 @@ export const SEED_NAV: Array<{
       { label: "Fleet Tracking", href: "/fleet-vehicle-tracking" },
       { label: "EV Charging", href: "/ev-charging-solutions" },
       { label: "Digital Marketing", href: "/digital-marketing" },
+      { label: "Web Development", href: "/web-development" },
     ],
   },
   {

@@ -16,6 +16,7 @@ const AREAS = [
   "Cabling / fiber",
   "Two-way radio",
   "EV charging",
+  "Web development",
   "Other",
 ];
 

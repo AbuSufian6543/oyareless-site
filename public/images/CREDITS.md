@@ -90,6 +90,11 @@ prompt is recorded so a replacement can be produced in the same style.
 - **Alt text:** Large digital signage display in a dark modern lobby showing an abstract navy and cyan graphic
 - **Prompt:** Premium B2B photography of a large digital signage display in a dark modern office lobby, the screen showing an abstract navy and cyan geometric graphic with no readable words or logos, cool ambient lighting, contemporary architecture, no people, cinematic.
 
+### `web-development`
+
+- **Alt text:** Ultrawide monitor on a dark desk showing a navy and cyan business website layout
+- **Prompt:** Premium B2B photography of a dark modern office desk: a large ultrawide monitor showing a clean abstract navy-and-cyan business website layout with no readable words or logos, a laptop beside it, cool cyan rim lighting, shallow depth of field, cinematic, no people, no brand names.
+
 ## CC0 photography
 
 Sourced via the Openverse API filtered to CC0. CC0 places the work in the

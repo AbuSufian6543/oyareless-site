@@ -29,6 +29,7 @@ const SERVICES = [
   "Fleet Vehicle Tracking",
   "Live Video Broadcasting",
   "Digital Marketing & Signage",
+  "Web Development",
   "Other",
 ];
 

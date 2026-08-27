@@ -1,10 +1,12 @@
 #!/bin/sh
 # ---------------------------------------------------------------------------
 # One-shot job: wait for Postgres, apply the schema, seed content, then
-# content-sync (new pages, unedited pages, additive nav). The `app` service
+# content-sync (new pages, unedited pages, empty photos on edited pages,
+# additive nav). The `app` service
 # waits for this to finish successfully before starting. Safe to re-run:
-# the seed never overwrites edited records; content-sync skips admin-edited
-# pages unless forced.
+# the seed never overwrites edited records; content-sync fills empty photos
+# on edited pages and only replaces a page wholesale when it is unedited
+# or forced.
 # ---------------------------------------------------------------------------
 set -eu
 
@@ -44,7 +46,7 @@ fi
 if [ "${RUN_SEED:-true}" = "true" ]; then
   log "Seeding..."
   npx tsx prisma/seed.ts
-  log "Syncing additive content (new pages, unedited pages, new nav entries)..."
+  log "Syncing additive content (new pages, photos on edited pages, new nav)..."
   npx tsx scripts/content-sync.ts --apply
 else
   log "RUN_SEED is not 'true'; skipping the seed."

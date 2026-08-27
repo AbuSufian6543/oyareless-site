@@ -8,8 +8,9 @@
  *
  *   - a PageRevision snapshot is written before a page is touched, so any
  *     change is reversible from the admin UI;
- *   - pages an admin has edited since seeding are skipped unless named
- *     explicitly with --force;
+ *   - pages an admin has edited since seeding keep their copy unless named
+ *     with --force; empty photos are still filled and missing service cards
+ *     are still appended;
  *   - nothing is ever deleted, and redirects/navigation are only ever added to.
  *
  * Usage:
@@ -32,6 +33,13 @@ type Row = {
   slug: string;
   verdict: Verdict;
   detail: string;
+};
+
+type JsonBlock = {
+  id?: string;
+  type: string;
+  settings?: Record<string, unknown>;
+  data?: Record<string, unknown>;
 };
 
 function parseArgs(argv: string[]) {
@@ -59,6 +67,127 @@ function parseArgs(argv: string[]) {
  */
 function wasEditedByAdmin(createdAt: Date, updatedAt: Date): boolean {
   return updatedAt.getTime() - createdAt.getTime() > 2000;
+}
+
+function normalizeTitle(value: unknown): string {
+  return String(value ?? "")
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function canonicalServiceName(value: unknown): string {
+  return normalizeTitle(value)
+    .replace(/\b(live|vehicle|optic)\b/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function sameServiceCard(
+  left: Record<string, unknown>,
+  right: Record<string, unknown>,
+): boolean {
+  const hrefLeft = String(left.href ?? "").replace(/\/$/, "");
+  const hrefRight = String(right.href ?? "").replace(/\/$/, "");
+  if (hrefLeft && hrefRight && hrefLeft === hrefRight) return true;
+  const titleLeft = canonicalServiceName(left.title);
+  const titleRight = canonicalServiceName(right.title);
+  return Boolean(titleLeft && titleRight && titleLeft === titleRight);
+}
+
+/**
+ * On pages an admin has already edited, still fill empty photos and append
+ * missing service cards. Copy, headlines, and photos the admin set are left
+ * alone.
+ */
+function fillMissingMedia(
+  current: unknown,
+  seed: ReturnType<typeof buildBlocks>,
+): { blocks: JsonBlock[]; notes: string[] } | null {
+  if (!Array.isArray(current)) return null;
+
+  const next = structuredClone(current) as JsonBlock[];
+  const notes: string[] = [];
+
+  const seedGrids = seed.filter((block) => block.type === "serviceGrid");
+  const currentGrids = next.filter((block) => block.type === "serviceGrid");
+  for (let index = 0; index < Math.min(seedGrids.length, currentGrids.length); index += 1) {
+    const seedItems = seedGrids[index].data.items as Array<Record<string, unknown>>;
+    const currentItems = currentGrids[index].data?.items;
+    if (!Array.isArray(currentItems)) continue;
+
+    for (const seedItem of seedItems) {
+      const match = currentItems.find((item) =>
+        sameServiceCard(item as Record<string, unknown>, seedItem),
+      ) as Record<string, unknown> | undefined;
+
+      if (match) {
+        if (!String(match.imageUrl ?? "") && seedItem.imageUrl) {
+          match.imageUrl = seedItem.imageUrl;
+          if (seedItem.imageAlt) match.imageAlt = seedItem.imageAlt;
+          notes.push(`photo on ${String(match.title || seedItem.title)}`);
+        }
+        continue;
+      }
+
+      currentItems.push({ ...seedItem });
+      notes.push(`added ${String(seedItem.title)}`);
+    }
+  }
+
+  const seedHeroes = seed.filter((block) => block.type === "hero");
+  const currentHeroes = next.filter((block) => block.type === "hero");
+  for (let index = 0; index < Math.min(seedHeroes.length, currentHeroes.length); index += 1) {
+    const seedData = seedHeroes[index].data as unknown as Record<string, unknown>;
+    const currentData = (currentHeroes[index].data ??= {});
+    if (!String(currentData.backgroundImageUrl ?? "") && seedData.backgroundImageUrl) {
+      currentData.backgroundImageUrl = seedData.backgroundImageUrl;
+      if (seedData.backgroundImageAlt) {
+        currentData.backgroundImageAlt = seedData.backgroundImageAlt;
+      }
+      if (currentData.variant === "dark" || !currentData.variant) {
+        currentData.variant = "split";
+      }
+      notes.push("hero photo");
+    }
+  }
+
+  const seedImageText = seed.filter((block) => block.type === "imageText");
+  const currentImageText = next.filter((block) => block.type === "imageText");
+  for (let index = 0; index < Math.min(seedImageText.length, currentImageText.length); index += 1) {
+    const seedImage = (
+      seedImageText[index].data as unknown as { image?: { url?: string; alt?: string } }
+    ).image;
+    const currentData = (currentImageText[index].data ??= {});
+    const currentImage = (currentData.image ?? {}) as { url?: string; alt?: string };
+    if (!String(currentImage.url ?? "") && seedImage?.url) {
+      currentData.image = {
+        ...currentImage,
+        url: seedImage.url,
+        alt: seedImage.alt ?? currentImage.alt ?? "",
+      };
+      notes.push("section photo");
+    }
+  }
+
+  return notes.length > 0 ? { blocks: next, notes } : null;
+}
+
+async function snapshotPage(
+  pageId: string,
+  title: string,
+  blocks: unknown,
+  note: string,
+): Promise<void> {
+  await prisma.pageRevision.create({
+    data: {
+      pageId,
+      title,
+      blocks: blocks as never,
+      note,
+    },
+  });
 }
 
 async function main(): Promise<void> {
@@ -120,11 +249,34 @@ async function main(): Promise<void> {
     const isForced = forceAll || forced.has(page.slug);
 
     if (edited && !isForced) {
+      const filled = fillMissingMedia(existing.blocks, blocks);
+      if (!filled) {
+        rows.push({
+          slug: page.slug,
+          verdict: "skip-edited",
+          detail: `edited ${existing.updatedAt.toISOString().slice(0, 10)} — re-run with --force ${page.slug}`,
+        });
+        continue;
+      }
+
       rows.push({
         slug: page.slug,
-        verdict: "skip-edited",
-        detail: `edited ${existing.updatedAt.toISOString().slice(0, 10)} — re-run with --force ${page.slug}`,
+        verdict: "update",
+        detail: `filled missing photos without replacing copy (${filled.notes.join("; ")})`,
       });
+
+      if (apply) {
+        await snapshotPage(
+          existing.id,
+          existing.title,
+          existing.blocks,
+          "Automatic snapshot before filling missing photos",
+        );
+        await prisma.page.update({
+          where: { id: existing.id },
+          data: { blocks: filled.blocks as never },
+        });
+      }
       continue;
     }
 
@@ -135,15 +287,12 @@ async function main(): Promise<void> {
     });
 
     if (apply) {
-      // Snapshot first so the previous version stays recoverable in the admin.
-      await prisma.pageRevision.create({
-        data: {
-          pageId: existing.id,
-          title: existing.title,
-          blocks: existing.blocks as never,
-          note: "Automatic snapshot before content:sync",
-        },
-      });
+      await snapshotPage(
+        existing.id,
+        existing.title,
+        existing.blocks,
+        "Automatic snapshot before content:sync",
+      );
 
       await prisma.page.update({
         where: { id: existing.id },
