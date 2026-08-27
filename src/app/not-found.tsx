@@ -49,6 +49,8 @@ export default function NotFound() {
               </p>
               <div className="flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm">
                 {[
+                  { href: "/search", label: "Search" },
+                  { href: "/speed-test", label: "Speed test" },
                   { href: "/it-services", label: "IT Services" },
                   { href: "/cybersecurity", label: "Cybersecurity" },
                   { href: "/security-services", label: "Security Services" },

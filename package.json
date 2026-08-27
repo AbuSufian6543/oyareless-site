@@ -10,6 +10,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "check:blocks": "tsx scripts/check-blocks.ts",
+    "check:portal": "tsx scripts/check-portal-scope.ts",
     "check:smoke": "node scripts/smoke-admin.mjs",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",

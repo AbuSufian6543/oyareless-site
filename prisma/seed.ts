@@ -262,6 +262,94 @@ async function seedExampleStream(): Promise<void> {
   log("Created example stream (draft — add the real source URL in the admin)");
 }
 
+async function seedCatalogue(): Promise<void> {
+  const brands = [
+    {
+      slug: "hytera",
+      name: "Hytera",
+      category: "Two-way radio",
+      relationship: "Authorized Dealer",
+      description: "DMR handhelds, mobiles, repeaters and accessories.",
+      websiteUrl: "https://hyteraradios.ca",
+      featured: true,
+      order: 0,
+    },
+    {
+      slug: "rogers",
+      name: "Rogers",
+      category: "Connectivity",
+      description: "Business internet and cellular services we provision and support.",
+      order: 1,
+    },
+    {
+      slug: "ubiquiti",
+      name: "Ubiquiti Networks",
+      category: "Networking & Wi-Fi",
+      description: "Switching, routing and UniFi wireless we design and support.",
+      order: 2,
+    },
+    {
+      slug: "surecall",
+      name: "SureCall",
+      category: "Cellular boosters",
+      description: "In-building cellular amplification.",
+      order: 3,
+    },
+    {
+      slug: "genetec",
+      name: "Genetec",
+      category: "Access control",
+      description: "Access control platforms we install and maintain.",
+      order: 4,
+    },
+  ];
+
+  for (const brand of brands) {
+    const existing = await prisma.brand.findUnique({ where: { slug: brand.slug } });
+    if (existing) continue;
+    await prisma.brand.create({ data: { ...brand, status: "PUBLISHED" } });
+  }
+  log(`Brands: ensured ${brands.length} catalogue entries`);
+
+  const faqs = [
+    {
+      question: "Do you serve residential customers?",
+      answer:
+        "We focus on businesses and organisations. Home EV chargers and the occasional structured-cabling job are exceptions — call and we will tell you honestly if we are the right fit.",
+      category: "General",
+      order: 0,
+    },
+    {
+      question: "Are you an authorised Hytera dealer?",
+      answer:
+        "Yes. Two-way radio sales, rentals and service are through our Hytera authorisation. See hyteraradios.ca for the current catalogue.",
+      category: "Two-way radio",
+      order: 1,
+    },
+    {
+      question: "Can you take over an existing network?",
+      answer:
+        "Usually. We start with an inventory and a risk review rather than ripping and replacing. If we cannot support a piece of kit we will say so before you sign anything.",
+      category: "IT & networking",
+      order: 2,
+    },
+    {
+      question: "How do I get remote support?",
+      answer:
+        "Open /remote-support, download the client we host, and read us the ID and one-time password. Nothing happens until you share those, and you can end the session by closing the window.",
+      category: "Support",
+      order: 3,
+    },
+  ];
+
+  for (const item of faqs) {
+    const existing = await prisma.faqItem.findFirst({ where: { question: item.question } });
+    if (existing) continue;
+    await prisma.faqItem.create({ data: { ...item, status: "PUBLISHED" } });
+  }
+  log("FAQ: ensured starter questions");
+}
+
 async function main(): Promise<void> {
   process.stdout.write("\nSeeding WirelessCom.Ca Inc.\n\n");
 
@@ -272,6 +360,7 @@ async function main(): Promise<void> {
   await seedRedirects();
   await seedLaunchPost();
   await seedExampleStream();
+  await seedCatalogue();
 
   process.stdout.write("\nSeed complete.\n\n");
 }

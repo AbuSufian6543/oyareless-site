@@ -28,7 +28,7 @@ const PHONE = "1-800-705-3189";
 
 function quoteButtons(label = "Request a quote") {
   return [
-    { label, href: "/contact", style: "primary", openInNewTab: false },
+    { label, href: "/request-quote", style: "primary", openInNewTab: false },
     { label: `Call ${PHONE}`, href: `tel:${PHONE}`, style: "outline", openInNewTab: false },
   ];
 }
@@ -44,7 +44,7 @@ function closingCta(heading: string, description: string): BlockInput {
       phone: PHONE,
       variant: "banner",
       buttons: [
-        { label: "Request a quote", href: "/contact", style: "primary", openInNewTab: false },
+        { label: "Request a quote", href: "/request-quote", style: "primary", openInNewTab: false },
       ],
     },
   };
@@ -750,9 +750,56 @@ const cybersecurity: SeedPage = {
         icon: true,
       },
     },
+    {
+      type: "defenseInDepth",
+      settings: { background: "navy", paddingY: "xl" },
+      data: {
+        eyebrow: "How we think about risk",
+        heading: "Defence in depth",
+        description:
+          "No single control is enough. We layer prevention, detection and recovery so a failure in one place does not become an outage or a breach. The wording is deliberate: we help protect systems and reduce risk — we do not claim to eliminate it.",
+        centreLabel: "Your data",
+        layers: [
+          {
+            icon: "shield",
+            title: "Perimeter",
+            description: "Firewalls, filtering and remote-access controls.",
+            controls: ["NGFW", "VPN", "geo-blocking"],
+          },
+          {
+            icon: "network",
+            title: "Network",
+            description: "Segmentation so a compromised endpoint cannot roam.",
+            controls: ["VLANs", "ACLs", "Wi-Fi isolation"],
+          },
+          {
+            icon: "monitor",
+            title: "Endpoint",
+            description: "The devices people actually use.",
+            controls: ["EDR", "patching", "encryption"],
+          },
+          {
+            icon: "database",
+            title: "Data & recovery",
+            description: "Backups that still work after ransomware.",
+            controls: ["immutable backups", "restore tests", "DR runbooks"],
+          },
+        ],
+        threats: [
+          "Phishing and credential theft",
+          "Ransomware",
+          "Business email compromise",
+          "Unpatched internet-facing services",
+          "Weak or reused passwords",
+          "Unsecured remote access",
+          "Lost or stolen laptops",
+          "Supply-chain and vendor access",
+        ],
+      },
+    },
     closingCta(
-      "Schedule a cybersecurity consultation",
-      "Whether you need a full security assessment, managed protection, secure remote access or help recovering from an incident, we are ready.",
+      "Request a security assessment",
+      "We will review the path an attacker would actually take and tell you what would help protect it — without inventing a residual-risk score.",
     ),
   ],
 };
@@ -1435,7 +1482,8 @@ const twoWayRadios: SeedPage = {
           "Customer-focused service and support",
         ],
         buttons: [
-          { label: "Ask about rentals", href: "/contact", style: "primary", openInNewTab: false },
+          { label: "Browse Hytera radios", href: "https://hyteraradios.ca", style: "primary", openInNewTab: true },
+          { label: "Ask about rentals", href: "/request-quote", style: "outline", openInNewTab: false },
         ],
       },
     },
@@ -1914,6 +1962,7 @@ export const SEED_NAV: Array<{
       { label: "Knowledge Base", href: "/knowledge-base" },
       { label: "FAQ", href: "/faq" },
       { label: "Customer Portal", href: "/portal" },
+      { label: "Search", href: "/search" },
     ],
   },
   {

@@ -169,6 +169,7 @@ export function submissionNotificationEmail(input: {
   sourcePage?: string | null;
   extra?: Record<string, unknown>;
   submissionId: string;
+  adminPath?: string;
 }): { subject: string; html: string } {
   const label = TYPE_LABEL[input.type] ?? "Website enquiry";
 
@@ -199,7 +200,7 @@ export function submissionNotificationEmail(input: {
       ])}
     </table>
     <p style="margin:20px 0 0;">
-      <a href="${env.siteUrl}/admin/submissions/${input.submissionId}"
+      <a href="${env.siteUrl}${input.adminPath ?? `/admin/submissions/${input.submissionId}`}"
          style="display:inline-block;background:#0a5fae;color:#ffffff;padding:11px 20px;border-radius:6px;text-decoration:none;font-size:14px;font-weight:600;">
         Open in admin
       </a>

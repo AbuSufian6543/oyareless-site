@@ -135,6 +135,9 @@ export function AdminShell({
           badge: newSubmissions,
         },
         { href: "/admin/subscribers", label: "Subscribers", Icon: Users },
+        { href: "/admin/tickets", label: "Tickets", Icon: Headset },
+        { href: "/admin/quotes", label: "Quotes", Icon: FileText },
+        { href: "/admin/portal-users", label: "Portal users", Icon: Building2, minRank: 3 },
       ],
     },
     {

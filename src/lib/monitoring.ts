@@ -32,6 +32,8 @@ export type StatusSummary = {
 };
 
 export const getStatusSummary = cache(async (): Promise<StatusSummary | null> => {
+  const { refreshStaleProbes } = await import("@/lib/probes");
+  await refreshStaleProbes().catch(() => undefined);
   const { loadStatusSummary } = await import("@/lib/monitoring-store");
   return loadStatusSummary();
 });

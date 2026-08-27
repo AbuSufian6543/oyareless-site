@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { ChevronDown, Mail, Menu, Phone, Shield, X } from "lucide-react";
+import { ChevronDown, Mail, Menu, Phone, Search, Shield, X } from "lucide-react";
 
 import type { NavNode } from "@/lib/navigation";
 import { cn, telHref } from "@/lib/utils";
@@ -108,6 +108,13 @@ export function SiteHeader({
               <Mail className="size-3.5" aria-hidden="true" />
               {email}
             </a>
+            <Link
+              href="/search"
+              className="flex items-center gap-1.5 transition-colors hover:text-white"
+            >
+              <Search className="size-3.5" aria-hidden="true" />
+              Search
+            </Link>
           </div>
         </div>
       </div>
@@ -204,6 +211,29 @@ export function SiteHeader({
           </nav>
 
           <div className="flex items-center gap-2">
+            <form action="/search" className="relative hidden lg:block">
+              <label htmlFor="header-search" className="sr-only">
+                Search the site
+              </label>
+              <Search
+                className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-navy-400"
+                aria-hidden="true"
+              />
+              <input
+                id="header-search"
+                type="search"
+                name="q"
+                placeholder="Search"
+                className="w-40 rounded-lg border border-slate-200 bg-slate-50 py-2 pl-8 pr-3 text-sm text-navy-800 placeholder:text-navy-400 focus:border-brand-400 focus:bg-white focus:outline-none xl:w-52"
+              />
+            </form>
+            <Link
+              href="/search"
+              className="rounded-md p-2 text-navy-800 transition-colors hover:bg-navy-50 lg:hidden"
+              aria-label="Search the site"
+            >
+              <Search className="size-5" aria-hidden="true" />
+            </Link>
             <a
               href={telHref(phone)}
               className="hidden items-center gap-2 rounded-lg border-2 border-navy-200 px-3.5 py-2 text-sm font-semibold text-navy-800 transition-colors hover:border-brand-600 hover:text-brand-700 sm:flex xl:hidden 2xl:flex"
@@ -313,6 +343,24 @@ export function SiteHeader({
             </nav>
 
             <div className="shrink-0 space-y-2 border-t border-slate-200 p-4">
+              <form action="/search" className="flex gap-2">
+                <label htmlFor="mobile-search" className="sr-only">
+                  Search the site
+                </label>
+                <input
+                  id="mobile-search"
+                  type="search"
+                  name="q"
+                  placeholder="Search"
+                  className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2.5 text-sm"
+                />
+                <button
+                  type="submit"
+                  className="rounded-lg bg-navy-800 px-3 py-2.5 text-sm font-semibold text-white"
+                >
+                  Search
+                </button>
+              </form>
               <a
                 href={telHref(phone)}
                 className="flex items-center justify-center gap-2 rounded-lg bg-navy-800 px-4 py-3 text-sm font-semibold text-white"
