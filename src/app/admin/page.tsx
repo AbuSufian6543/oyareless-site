@@ -155,7 +155,7 @@ export default async function AdminDashboard() {
                         <span className="mt-0.5 block text-xs text-slate-400">
                           {formatDateTime(submission.createdAt)}
                           {submission.emailSentAt ? (
-                            <span className="ml-2 inline-flex items-center gap-1 text-accent-600">
+                            <span className="ml-2 inline-flex items-center gap-1 text-emerald-700">
                               <CircleCheck className="size-3" aria-hidden="true" />
                               emailed
                             </span>

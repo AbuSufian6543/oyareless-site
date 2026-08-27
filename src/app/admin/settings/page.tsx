@@ -76,6 +76,13 @@ export default async function SettingsPage({
       </div>
 
       <form action={saveSettingsAction} className="space-y-5">
+        <input type="hidden" name="returnTo" value="/admin/settings" />
+        {/* Tells the action which checkboxes this form owns, so unchecking is
+            distinguishable from "not rendered on this screen". */}
+        <input type="hidden" name="present:announcementEnabled" value="1" />
+        <input type="hidden" name="present:cookieBannerEnabled" value="1" />
+        <input type="hidden" name="present:showLiveChatCta" value="1" />
+
         <Card>
           <CardTitle>Company</CardTitle>
           <div className="space-y-4">

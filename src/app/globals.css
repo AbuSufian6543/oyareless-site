@@ -1,7 +1,8 @@
 @import "tailwindcss";
 
 /* ---------------------------------------------------------------------------
-   Design tokens — derived from the WirelessCom.Ca logo (navy + green swoosh).
+   Design tokens — navy base from the WirelessCom.Ca wordmark, with a blue and
+   cyan accent pair for the networking / cybersecurity direction.
    --------------------------------------------------------------------------- */
 @theme {
   --color-navy-50: #eef4fb;
@@ -27,16 +28,19 @@
   --color-brand-800: #0a3e70;
   --color-brand-900: #0c355e;
 
-  --color-accent-50: #f1fbe9;
-  --color-accent-100: #e0f6cd;
-  --color-accent-200: #c3ec9f;
-  --color-accent-300: #9fdd6c;
-  --color-accent-400: #7fcc47;
-  --color-accent-500: #6fc04a;
-  --color-accent-600: #4d9a2c;
-  --color-accent-700: #3b7724;
-  --color-accent-800: #315e21;
-  --color-accent-900: #2a4f1f;
+  /* Cyan accent. Overridable at runtime from admin settings — see
+     src/lib/theme.ts, which redefines these same variables on :root. */
+  --color-accent-50: #edfcff;
+  --color-accent-100: #d3f6fd;
+  --color-accent-200: #a9ecfa;
+  --color-accent-300: #6fdcf3;
+  --color-accent-400: #34c5e4;
+  --color-accent-500: #22b8d8;
+  --color-accent-600: #0f93b5;
+  --color-accent-700: #117592;
+  --color-accent-800: #165f77;
+  --color-accent-900: #164f63;
+  --color-accent-950: #082f3d;
 
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
@@ -44,7 +48,7 @@
 
   --shadow-card: 0 1px 2px rgb(4 19 37 / 0.06), 0 8px 24px -12px rgb(4 19 37 / 0.18);
   --shadow-lift: 0 2px 4px rgb(4 19 37 / 0.06), 0 18px 40px -16px rgb(4 19 37 / 0.28);
-  --shadow-glow: 0 0 0 1px rgb(111 192 74 / 0.35), 0 0 32px -8px rgb(111 192 74 / 0.45);
+  --shadow-glow: 0 0 0 1px rgb(34 184 216 / 0.35), 0 0 32px -8px rgb(34 184 216 / 0.45);
 }
 
 /* ---------------------------------------------------------------------------
@@ -202,7 +206,7 @@
     margin-top: 0.55em;
   }
 
-  /* Green check-style bullet reinforcing the brand accent. */
+  /* Diamond bullet reinforcing the brand accent. */
   .prose-wc ul > li::before {
     content: "";
     position: absolute;
@@ -322,10 +326,28 @@
   }
 }
 
+@keyframes wc-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    /* The track renders its children twice, so -50% is one seamless cycle. */
+    transform: translateX(-50%);
+  }
+}
+
 @utility animate-fade-up {
   animation: wc-fade-up 0.5s ease-out both;
 }
 
 @utility animate-live-dot {
   animation: wc-pulse-dot 1.6s ease-in-out infinite;
+}
+
+/* Scoped to no-preference rather than relying on the global reduced-motion
+   override, which would collapse the marquee to its end position. */
+@utility animate-marquee {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: wc-marquee 42s linear infinite;
+  }
 }

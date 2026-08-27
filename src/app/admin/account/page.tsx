@@ -248,7 +248,7 @@ export default async function AccountPage({
                 </div>
                 <button
                   type="submit"
-                  className="rounded-lg bg-accent-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent-700"
+                  className="rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
                 >
                   Turn on two-factor
                 </button>
@@ -275,7 +275,7 @@ export default async function AccountPage({
             <form action={beginTwoFactorSetupAction}>
               <button
                 type="submit"
-                className="inline-flex items-center gap-2 rounded-lg bg-accent-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-accent-700"
+                className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
               >
                 <ShieldCheck className="size-4" aria-hidden="true" />
                 Set up two-factor authentication

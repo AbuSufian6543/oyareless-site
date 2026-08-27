@@ -49,16 +49,19 @@ export default async function CareersPage() {
   const [jobs, settings] = await Promise.all([
     prisma.jobPosting
       .findMany({
-        where: { status: "PUBLISHED" },
+        // Expired postings are excluded in the query rather than in render so
+        // the page never has to reason about the current time itself.
+        where: {
+          status: "PUBLISHED",
+          OR: [{ closesAt: null }, { closesAt: { gt: new Date() } }],
+        },
         orderBy: { postedAt: "desc" },
       })
       .catch(() => []),
     getSettings(),
   ]);
 
-  const open = jobs.filter(
-    (job) => !job.closesAt || job.closesAt.getTime() > Date.now(),
-  );
+  const open = jobs;
 
   return (
     <>

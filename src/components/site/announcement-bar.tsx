@@ -1,7 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 import { Megaphone, X } from "lucide-react";
+
+const DISMISS_EVENT = "wc:announcement-dismissed";
+
+/** Fallback for private browsing, where localStorage writes throw. */
+const dismissedThisSession = new Set<string>();
 
 /**
  * Dismissal is remembered per message so editing the text re-shows the bar to
@@ -15,25 +20,39 @@ export function AnnouncementBar({
   href?: string;
 }) {
   const storageKey = `wc_announce_${hashText(text)}`;
-  const [visible, setVisible] = useState(false);
 
-  useEffect(() => {
+  const subscribe = useCallback((onChange: () => void) => {
+    window.addEventListener(DISMISS_EVENT, onChange);
+    window.addEventListener("storage", onChange);
+    return () => {
+      window.removeEventListener(DISMISS_EVENT, onChange);
+      window.removeEventListener("storage", onChange);
+    };
+  }, []);
+
+  const getSnapshot = useCallback(() => {
+    if (dismissedThisSession.has(storageKey)) return true;
     try {
-      setVisible(window.localStorage.getItem(storageKey) !== "dismissed");
+      return window.localStorage.getItem(storageKey) === "dismissed";
     } catch {
-      setVisible(true);
+      return false;
     }
   }, [storageKey]);
 
-  if (!visible || !text) return null;
+  // The server has no way to know whether this visitor already dismissed the
+  // notice, so it renders visible and hydration hides it if they have.
+  const dismissed = useSyncExternalStore(subscribe, getSnapshot, () => false);
+
+  if (dismissed || !text) return null;
 
   const dismiss = () => {
-    setVisible(false);
+    dismissedThisSession.add(storageKey);
     try {
       window.localStorage.setItem(storageKey, "dismissed");
     } catch {
-      // Private browsing — dismissal simply won't persist.
+      // Dismissal simply won't outlast the tab.
     }
+    window.dispatchEvent(new Event(DISMISS_EVENT));
   };
 
   return (

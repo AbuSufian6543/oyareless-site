@@ -150,6 +150,7 @@ async function seedNavigation(): Promise<void> {
           href: child.href,
           location: item.location,
           order: index,
+          openInNewTab: child.openInNewTab ?? false,
           parentId: parent.id,
         },
       });

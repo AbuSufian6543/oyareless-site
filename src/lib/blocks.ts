@@ -62,6 +62,29 @@ const itemIcon = z
     "megaphone",
     "hard-drive",
     "alert",
+    "cctv",
+    "antenna",
+    "award",
+    "building",
+    "layers",
+    "router",
+    "shield-check",
+    "fingerprint",
+    "user-check",
+    "mail",
+    "bug",
+    "siren",
+    "segment",
+    "backup",
+    "assessment",
+    "door",
+    "gauge",
+    "calculator",
+    "terminal",
+    "search",
+    "wrench",
+    "support",
+    "endpoint",
   ])
   .default("check");
 
@@ -333,6 +356,164 @@ const spacerData = z.object({
 });
 
 // ---------------------------------------------------------------------------
+// Networking / cybersecurity platform blocks
+// ---------------------------------------------------------------------------
+
+const techHeroData = z.object({
+  eyebrow: z.string().default(""),
+  headline: z.string().default("Headline"),
+  subheadline: z.string().default(""),
+  /** Optional photo behind the animated mesh. The mesh alone is the default. */
+  backgroundImageUrl: z.string().default(""),
+  overlayOpacity: z.number().min(0).max(100).default(78),
+  /** Node-mesh intensity; 0 disables the animation entirely. */
+  networkDensity: z.number().min(0).max(200).default(100),
+  height: z.enum(["sm", "md", "lg"]).default("lg"),
+  buttons: z.array(linkSchema).default([]),
+  /** Short proof points rendered as a row beneath the buttons. */
+  highlights: z.array(z.string()).default([]),
+});
+
+const pillarItem = z.object({
+  icon: itemIcon,
+  title: z.string().default("Pillar"),
+  description: z.string().default(""),
+  href: z.string().default(""),
+  /** Comma-free short labels listed under the description. */
+  points: z.array(z.string()).default([]),
+});
+
+const pillarsData = z.object({
+  eyebrow: z.string().default(""),
+  heading: z.string().default(""),
+  description: z.string().default(""),
+  items: z.array(pillarItem).default([]),
+});
+
+const capabilityItem = z.object({
+  icon: itemIcon,
+  title: z.string().default("Capability"),
+  description: z.string().default(""),
+  href: z.string().default(""),
+  imageUrl: z.string().default(""),
+  imageAlt: z.string().default(""),
+});
+
+const capabilityGridData = z.object({
+  eyebrow: z.string().default(""),
+  heading: z.string().default(""),
+  description: z.string().default(""),
+  columns: z.enum(["2", "3"]).default("3"),
+  showImages: z.boolean().default(true),
+  items: z.array(capabilityItem).default([]),
+});
+
+const brandItem = z.object({
+  name: z.string().default("Brand"),
+  /** Optional logo; a typographic tile is used when empty. */
+  logoUrl: z.string().default(""),
+  category: z.string().default(""),
+  href: z.string().default(""),
+});
+
+const brandGridData = z.object({
+  eyebrow: z.string().default(""),
+  heading: z.string().default(""),
+  description: z.string().default(""),
+  /**
+   * Deliberate wording control: claims about vendor relationships must stay
+   * accurate, so the qualifier sits in content rather than in code.
+   */
+  disclaimer: z
+    .string()
+    .default("Technologies we deploy and support for our customers."),
+  layout: z.enum(["grid", "marquee"]).default("grid"),
+  items: z.array(brandItem).default([]),
+});
+
+const statusStripData = z.object({
+  heading: z.string().default("Network status"),
+  description: z.string().default(""),
+  /** Link to the full status page. */
+  href: z.string().default("/network-status"),
+  linkLabel: z.string().default("View full status"),
+  /**
+   * When true the block reads live probe results. When false it shows only the
+   * heading and link, which is what a page should do rather than invent data.
+   */
+  showLiveData: z.boolean().default(true),
+});
+
+const defenseLayer = z.object({
+  icon: itemIcon,
+  title: z.string().default("Layer"),
+  description: z.string().default(""),
+  /** Short examples of controls in this layer. */
+  controls: z.array(z.string()).default([]),
+});
+
+const defenseInDepthData = z.object({
+  eyebrow: z.string().default(""),
+  heading: z.string().default("Defence in depth"),
+  description: z.string().default(""),
+  centreLabel: z.string().default("Your data"),
+  layers: z.array(defenseLayer).default([]),
+  /** Threats the layers are intended to reduce exposure to. */
+  threats: z.array(z.string()).default([]),
+});
+
+const toolItem = z.object({
+  icon: itemIcon,
+  title: z.string().default("Tool"),
+  description: z.string().default(""),
+  href: z.string().default(""),
+  badge: z.string().default(""),
+});
+
+const toolGridData = z.object({
+  eyebrow: z.string().default(""),
+  heading: z.string().default(""),
+  description: z.string().default(""),
+  columns: z.enum(["2", "3", "4"]).default("3"),
+  items: z.array(toolItem).default([]),
+});
+
+const caseStudyItem = z.object({
+  title: z.string().default("Case study"),
+  sector: z.string().default(""),
+  problem: z.string().default(""),
+  solution: z.string().default(""),
+  result: z.string().default(""),
+  href: z.string().default(""),
+  imageUrl: z.string().default(""),
+  imageAlt: z.string().default(""),
+});
+
+const caseStudyGridData = z.object({
+  eyebrow: z.string().default(""),
+  heading: z.string().default(""),
+  description: z.string().default(""),
+  items: z.array(caseStudyItem).default([]),
+});
+
+const kbHighlightItem = z.object({
+  icon: itemIcon,
+  category: z.string().default(""),
+  title: z.string().default("Article"),
+  description: z.string().default(""),
+  href: z.string().default(""),
+});
+
+const kbHighlightsData = z.object({
+  eyebrow: z.string().default(""),
+  heading: z.string().default("Knowledge base"),
+  description: z.string().default(""),
+  columns: z.enum(["2", "3"]).default("3"),
+  items: z.array(kbHighlightItem).default([]),
+  buttons: z.array(linkSchema).default([]),
+});
+
+// ---------------------------------------------------------------------------
 // Discriminated union
 // ---------------------------------------------------------------------------
 
@@ -373,6 +554,15 @@ export const blockSchema = z.discriminatedUnion("type", [
   block("posts", postsData),
   block("jobs", jobsData),
   block("spacer", spacerData),
+  block("techHero", techHeroData),
+  block("pillars", pillarsData),
+  block("capabilityGrid", capabilityGridData),
+  block("brandGrid", brandGridData),
+  block("statusStrip", statusStripData),
+  block("defenseInDepth", defenseInDepthData),
+  block("toolGrid", toolGridData),
+  block("caseStudyGrid", caseStudyGridData),
+  block("kbHighlights", kbHighlightsData),
 ]);
 
 export const blocksSchema = z.array(blockSchema);

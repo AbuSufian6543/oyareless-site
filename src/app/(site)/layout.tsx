@@ -6,7 +6,7 @@ import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
 import { env } from "@/lib/env";
 import { getFooterNav, getHeaderNav } from "@/lib/navigation";
-import { formattedAddress, getSettings } from "@/lib/settings";
+import { getSettings } from "@/lib/settings";
 
 export default async function SiteLayout({
   children,
@@ -29,8 +29,8 @@ export default async function SiteLayout({
     url: env.siteUrl,
     telephone: settings.phone,
     email: settings.email,
-    image: `${env.siteUrl}/brand/logo.jpg`,
-    logo: `${env.siteUrl}/brand/logo.jpg`,
+    image: `${env.siteUrl}${settings.ogImageUrl}`,
+    logo: `${env.siteUrl}${settings.logoUrl}`,
     address: {
       "@type": "PostalAddress",
       streetAddress: settings.addressLine1,
@@ -94,6 +94,7 @@ export default async function SiteLayout({
         email={settings.email}
         companyName={settings.companyName}
         tagline={settings.tagline}
+        logoUrl={settings.logoUrl}
       />
 
       <main id="main" className="flex-1">
@@ -109,6 +110,24 @@ export default async function SiteLayout({
           id="site-analytics"
           strategy="afterInteractive"
           dangerouslySetInnerHTML={{ __html: settings.analyticsSnippet }}
+        />
+      )}
+
+      {/* Admin-managed third-party snippets. Only ever loaded on the public
+          site, never inside /admin. */}
+      {settings.headEmbedCode && (
+        <Script
+          id="site-head-embed"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{ __html: settings.headEmbedCode }}
+        />
+      )}
+
+      {settings.bodyEndEmbedCode && (
+        <Script
+          id="site-body-embed"
+          strategy="lazyOnload"
+          dangerouslySetInnerHTML={{ __html: settings.bodyEndEmbedCode }}
         />
       )}
     </>

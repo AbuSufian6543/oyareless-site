@@ -28,13 +28,13 @@ export default async function LoginPage() {
 
       <div className="w-full max-w-md">
         <div className="mb-6 text-center">
-          <Link href="/" className="inline-flex rounded-lg bg-white p-3">
+          <Link href="/" className="inline-flex">
             <Image
-              src="/brand/logo.jpg"
+              src="/brand/logo-inverse.png"
               alt="WirelessCom.Ca Inc."
               width={240}
               height={46}
-              className="h-9 w-auto"
+              className="h-10 w-auto"
               priority
             />
           </Link>

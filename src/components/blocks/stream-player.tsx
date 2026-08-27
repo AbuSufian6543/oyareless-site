@@ -62,7 +62,9 @@ export function StreamPlayer({
           className,
         )}
       >
-        {/* MJPEG feeds are a continuous multipart image response. */}
+        {/* MJPEG feeds are a continuous multipart image response, so the image
+            optimiser cannot handle them. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={stream.source}
           alt={stream.title}

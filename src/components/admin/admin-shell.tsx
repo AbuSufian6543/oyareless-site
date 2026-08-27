@@ -5,29 +5,66 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
+  Activity,
+  BookOpen,
+  Boxes,
   Briefcase,
+  Building2,
+  CalendarClock,
+  CircleHelp,
+  Code,
   ExternalLink,
   FileText,
+  FolderTree,
   Gauge,
+  Headset,
   Image as ImageIcon,
   Inbox,
   LayoutDashboard,
   Link2,
   LogOut,
   Menu,
+  MessageSquare,
   Newspaper,
+  Palette,
   Quote,
   Radio,
   Settings,
   ShieldAlert,
+  TriangleAlert,
   Users,
   UserCircle,
+  Wrench,
   X,
 } from "lucide-react";
 
 import { logoutAction } from "@/app/login/actions";
+import {
+  collectionsInGroup,
+  type CollectionGroup,
+} from "@/lib/admin-collections";
 import type { SessionUser } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+
+/**
+ * Icons referenced by the collection registry. Named explicitly rather than
+ * resolved from a namespace import so the admin bundle only carries the icons
+ * it actually renders.
+ */
+const COLLECTION_ICONS: Record<string, typeof LayoutDashboard> = {
+  Activity,
+  BookOpen,
+  Boxes,
+  Building2,
+  CalendarClock,
+  CircleHelp,
+  Code,
+  FileText,
+  FolderTree,
+  MessageSquare,
+  TriangleAlert,
+  Wrench,
+};
 
 type NavEntry = {
   href: string;
@@ -44,6 +81,15 @@ const ROLE_RANK: Record<string, number> = {
   ADMIN: 3,
   SUPERADMIN: 4,
 };
+
+function collectionEntries(group: CollectionGroup): NavEntry[] {
+  return collectionsInGroup(group).map((collection) => ({
+    href: `/admin/collections/${collection.key}`,
+    label: collection.plural,
+    Icon: COLLECTION_ICONS[collection.icon] ?? FileText,
+    minRank: ROLE_RANK[collection.writeRole],
+  }));
+}
 
 export function AdminShell({
   user,
@@ -72,6 +118,14 @@ export function AdminShell({
       ],
     },
     {
+      title: "Catalogue",
+      items: collectionEntries("Catalogue"),
+    },
+    {
+      title: "Knowledge",
+      items: collectionEntries("Knowledge"),
+    },
+    {
       title: "Enquiries",
       items: [
         {
@@ -84,9 +138,20 @@ export function AdminShell({
       ],
     },
     {
+      title: "Operations",
+      items: collectionEntries("Operations"),
+    },
+    {
       title: "Configuration",
       items: [
         { href: "/admin/navigation", label: "Navigation", Icon: Link2, minRank: 3 },
+        { href: "/admin/branding", label: "Branding & Theme", Icon: Palette, minRank: 3 },
+        {
+          href: "/admin/remote-support",
+          label: "Remote Support",
+          Icon: Headset,
+          minRank: 3,
+        },
         { href: "/admin/redirects", label: "Redirects", Icon: ExternalLink, minRank: 3 },
         { href: "/admin/settings", label: "Site Settings", Icon: Settings, minRank: 3 },
         { href: "/admin/users", label: "Users & Access", Icon: Users, minRank: 4 },
@@ -95,19 +160,22 @@ export function AdminShell({
     },
   ];
 
+  // /admin/collections/services must not also light up /admin/collections/service-categories.
   const isActive = (href: string) =>
-    href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
+    href === "/admin"
+      ? pathname === "/admin"
+      : pathname === href || pathname.startsWith(`${href}/`);
 
   const sidebar = (
     <div className="flex h-full flex-col bg-navy-900">
       <div className="flex h-16 shrink-0 items-center justify-between border-b border-navy-800 px-4">
-        <Link href="/admin" className="flex items-center rounded bg-white p-1.5">
+        <Link href="/admin" className="flex items-center">
           <Image
-            src="/brand/logo.jpg"
+            src="/brand/logo-inverse.png"
             alt="WirelessCom.Ca Inc."
             width={190}
             height={36}
-            className="h-6 w-auto"
+            className="h-7 w-auto"
           />
         </Link>
         <button

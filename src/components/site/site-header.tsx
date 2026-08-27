@@ -15,19 +15,31 @@ type Props = {
   email: string;
   companyName: string;
   tagline: string;
+  logoUrl: string;
 };
 
-export function SiteHeader({ nav, phone, email, companyName, tagline }: Props) {
+export function SiteHeader({
+  nav,
+  phone,
+  email,
+  companyName,
+  tagline,
+  logoUrl,
+}: Props) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [scrolled, setScrolled] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
+  // Menus close on navigation. Adjusting during render rather than in an effect
+  // avoids painting the drawer over the new page for a frame first.
+  const [renderedPath, setRenderedPath] = useState(pathname);
+  if (pathname !== renderedPath) {
+    setRenderedPath(pathname);
     setMobileOpen(false);
     setOpenDropdown(null);
-  }, [pathname]);
+  }
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -114,7 +126,7 @@ export function SiteHeader({ nav, phone, email, companyName, tagline }: Props) {
             aria-label={`${companyName} home`}
           >
             <Image
-              src="/brand/logo.jpg"
+              src={logoUrl}
               alt={companyName}
               width={230}
               height={44}
@@ -201,7 +213,7 @@ export function SiteHeader({ nav, phone, email, companyName, tagline }: Props) {
               <span className="2xl:hidden">Call</span>
             </a>
             <Link
-              href="/contact"
+              href="/request-quote"
               className="hidden rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-700 hover:shadow-md sm:block"
             >
               Request a quote
@@ -232,7 +244,7 @@ export function SiteHeader({ nav, phone, email, companyName, tagline }: Props) {
           <div className="absolute inset-y-0 right-0 flex w-full max-w-sm flex-col bg-white shadow-2xl">
             <div className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 px-5">
               <Image
-                src="/brand/logo.jpg"
+                src={logoUrl}
                 alt={companyName}
                 width={190}
                 height={36}
@@ -309,7 +321,7 @@ export function SiteHeader({ nav, phone, email, companyName, tagline }: Props) {
                 {phone}
               </a>
               <Link
-                href="/contact"
+                href="/request-quote"
                 className="flex items-center justify-center gap-2 rounded-lg bg-brand-600 px-4 py-3 text-sm font-semibold text-white"
               >
                 Request a quote

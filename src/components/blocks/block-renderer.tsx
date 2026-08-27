@@ -20,6 +20,16 @@ import {
   GalleryBlock,
   VideoEmbedBlock,
 } from "@/components/blocks/media-blocks";
+import {
+  BrandGridBlock,
+  CapabilityGridBlock,
+  CaseStudyGridBlock,
+  DefenseInDepthBlock,
+  KbHighlightsBlock,
+  PillarsBlock,
+  TechHeroBlock,
+  ToolGridBlock,
+} from "@/components/blocks/platform-blocks";
 import { Section, SectionHeading, isDarkBackground } from "@/components/blocks/section";
 import {
   FeatureGridBlock,
@@ -31,6 +41,7 @@ import {
   StepsBlock,
 } from "@/components/blocks/service-blocks";
 import { SpeedTest } from "@/components/blocks/speed-test";
+import { StatusStripBlock } from "@/components/blocks/status-strip-block";
 import {
   LiveStreamBlock,
   StreamGridBlock,
@@ -99,6 +110,24 @@ export function BlockRenderer({
       return <PostsBlock block={block} />;
     case "jobs":
       return <JobsBlock block={block} />;
+    case "techHero":
+      return <TechHeroBlock block={block} />;
+    case "pillars":
+      return <PillarsBlock block={block} />;
+    case "capabilityGrid":
+      return <CapabilityGridBlock block={block} />;
+    case "brandGrid":
+      return <BrandGridBlock block={block} />;
+    case "statusStrip":
+      return <StatusStripBlock block={block} />;
+    case "defenseInDepth":
+      return <DefenseInDepthBlock block={block} />;
+    case "toolGrid":
+      return <ToolGridBlock block={block} />;
+    case "caseStudyGrid":
+      return <CaseStudyGridBlock block={block} />;
+    case "kbHighlights":
+      return <KbHighlightsBlock block={block} />;
     case "speedTest":
       return (
         <Section settings={block.settings}>

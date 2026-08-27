@@ -82,7 +82,7 @@ export function CardTitle({
 
 const BADGE_TONES = {
   neutral: "bg-slate-100 text-slate-700",
-  success: "bg-accent-100 text-accent-800",
+  success: "bg-emerald-100 text-emerald-800",
   warning: "bg-amber-100 text-amber-800",
   danger: "bg-red-100 text-red-800",
   info: "bg-brand-50 text-brand-700",
@@ -335,7 +335,9 @@ export function Alert({
 }) {
   const tones = {
     info: "border-brand-200 bg-brand-50 text-brand-900",
-    success: "border-accent-200 bg-accent-50 text-accent-900",
+    // Emerald rather than the brand accent: the accent is now cyan, and
+    // "saved successfully" should stay unambiguously green.
+    success: "border-emerald-200 bg-emerald-50 text-emerald-900",
     warning: "border-amber-200 bg-amber-50 text-amber-900",
     danger: "border-red-200 bg-red-50 text-red-900",
   };

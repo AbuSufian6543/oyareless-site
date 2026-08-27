@@ -28,12 +28,16 @@ export type AuditAction =
   | "job.updated"
   | "job.deleted"
   | "media.uploaded"
+  | "media.replaced"
   | "media.deleted"
   | "settings.updated"
   | "nav.updated"
   | "redirect.updated"
   | "submission.updated"
-  | "testimonial.updated";
+  | "testimonial.updated"
+  | "collection.created"
+  | "collection.updated"
+  | "collection.deleted";
 
 /**
  * Append-only trail of privileged actions. Useful for a security company both

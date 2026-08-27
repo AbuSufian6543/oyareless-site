@@ -88,19 +88,19 @@ const home: SeedPage = {
   isSystem: true,
   blocks: [
     {
-      type: "hero",
+      type: "techHero",
       settings: {},
       data: {
         eyebrow: "Technology Service Provider · Sault Ste. Marie, Ontario",
         headline: "IT, networks and security that keep your business running",
         subheadline:
           "WirelessCom.Ca Inc. designs, installs and manages the technology Northern Ontario businesses depend on — from firewalls and servers to cameras, access control and VoIP telephone systems.",
-        backgroundImageUrl: "/brand/home-hero.png",
-        overlayOpacity: 82,
-        variant: "dark",
+        backgroundImageUrl: "",
+        overlayOpacity: 78,
+        networkDensity: 100,
         height: "lg",
         buttons: [
-          { label: "Request a quote", href: "/contact", style: "primary", openInNewTab: false },
+          { label: "Request a quote", href: "/request-quote", style: "primary", openInNewTab: false },
           { label: "Talk to support", href: "/support", style: "outline", openInNewTab: false },
         ],
         highlights: [
@@ -112,15 +112,70 @@ const home: SeedPage = {
       },
     },
     {
-      type: "stats",
+      type: "pillars",
+      settings: { background: "white", paddingY: "xl" },
+      data: {
+        eyebrow: "What we do",
+        heading: "Four pillars, one provider",
+        description:
+          "Most sites need all four. Buying them from one team means they are designed, installed and supported to work together.",
+        items: [
+          {
+            icon: "network",
+            title: "Data",
+            description: "Wired and wireless networks that hold up under load.",
+            points: [
+              "Switching, routing and VLAN segmentation",
+              "Wi-Fi design and site surveys",
+              "Structured cabling and fibre",
+            ],
+            href: "/it-services",
+          },
+          {
+            icon: "phone",
+            title: "Voice",
+            description: "Business telephony and licensed two-way radio.",
+            points: [
+              "Cloud-hosted VoIP and desk phones",
+              "Auto-attendants and voicemail-to-email",
+              "Hytera DMR radios and repeaters",
+            ],
+            href: "/telephone-services",
+          },
+          {
+            icon: "cctv",
+            title: "Video",
+            description: "Surveillance you can actually review after an incident.",
+            points: [
+              "IP cameras and network video recorders",
+              "Retention planning and remote viewing",
+              "Live event and job site broadcasting",
+            ],
+            href: "/security-services",
+          },
+          {
+            icon: "shield-check",
+            title: "Security",
+            description: "Layered protection for the network and the building.",
+            points: [
+              "Firewalls, endpoint protection and patching",
+              "Monitored intrusion detection",
+              "Access control and smart locks",
+            ],
+            href: "/cybersecurity",
+          },
+        ],
+      },
+    },
+    {
+      type: "statusStrip",
       settings: { background: "grid", paddingY: "md" },
       data: {
-        heading: "",
-        items: [
-          { value: "2005", label: "Providing internet and wireless services since", suffix: "" },
-          { value: "24/7", label: "Monitoring and emergency support", suffix: "" },
-          { value: "1", label: "Single provider for IT, networks and security", suffix: "" },
-        ],
+        heading: "Network status",
+        description: "",
+        href: "/network-status",
+        linkLabel: "View full status",
+        showLiveData: true,
       },
     },
     {
@@ -251,8 +306,8 @@ const home: SeedPage = {
         heading: "Local expertise, standards-based work",
         html: "<p>We have been providing internet and wireless services since 2005, and today we cover the whole technology stack for business: the network, the servers, the phones, the cameras and the doors. Because one team designs and maintains all of it, security controls work together instead of fighting each other.</p><p>Everything is installed to industry standards, documented, and supported by people you can reach in Sault Ste. Marie.</p>",
         image: {
-          url: "/brand/cdn.jpg",
-          alt: "WirelessCom network operations",
+          url: "/images/cabling-install-1400.webp",
+          alt: "Technician's hands terminating blue and white network cables into a rack-mounted patch panel",
           caption: "",
         },
         imagePosition: "right",
@@ -290,19 +345,72 @@ const home: SeedPage = {
       },
     },
     {
-      type: "logoStrip",
-      settings: { background: "light", paddingY: "md" },
+      type: "toolGrid",
+      settings: { background: "dark", paddingY: "xl" },
       data: {
-        heading: "Manufacturers and partners we work with",
-        grayscale: true,
-        images: [
-          { url: "/brand/partner-logos.jpg", alt: "Partner brands", caption: "" },
+        eyebrow: "Free tools",
+        heading: "Diagnose it yourself",
+        description:
+          "Run the same checks our technicians start with. Nothing is stored against your name, and the password tools never send what you type.",
+        columns: "3",
+        items: [
+          {
+            icon: "gauge",
+            title: "Internet speed test",
+            description: "Download, upload, ping and jitter measured from your browser.",
+            href: "/speed-test",
+            badge: "",
+          },
+          {
+            icon: "search",
+            title: "Network tools",
+            description: "DNS lookups, port checks, WHOIS, subnet and cable calculators.",
+            href: "/network-tools",
+            badge: "",
+          },
+          {
+            icon: "shield-check",
+            title: "Security tools",
+            description: "TLS certificates, security headers, SPF/DKIM/DMARC and password checks.",
+            href: "/cybersecurity-tools",
+            badge: "",
+          },
         ],
       },
     },
     {
+      type: "brandGrid",
+      settings: { background: "light", paddingY: "lg" },
+      data: {
+        eyebrow: "",
+        heading: "Technologies we deploy and support",
+        description:
+          "We design around equipment we are trained on and can support long term.",
+        layout: "grid",
+        disclaimer:
+          "Vendor names describe the equipment we install and support. WirelessCom.Ca Inc. is an authorized Hytera dealer; other names are listed as supported technologies and do not imply a formal partnership.",
+        items: [
+          { name: "Hytera", category: "Two-way radio · authorized dealer", logoUrl: "", href: "" },
+          { name: "Rogers", category: "Connectivity", logoUrl: "", href: "" },
+          { name: "Tait Communications", category: "Critical communications", logoUrl: "", href: "" },
+          { name: "Ubiquiti Networks", category: "Networking & Wi-Fi", logoUrl: "", href: "" },
+          { name: "SureCall", category: "Cellular boosters", logoUrl: "", href: "" },
+          { name: "Genetec", category: "Access control", logoUrl: "", href: "" },
+        ],
+      },
+    },
+    {
+      type: "testimonials",
+      settings: { background: "white", paddingY: "xl" },
+      data: {
+        heading: "What our clients say",
+        source: "database",
+        limit: 3,
+      },
+    },
+    {
       type: "posts",
-      settings: { background: "white", paddingY: "lg" },
+      settings: { background: "light", paddingY: "lg" },
       data: {
         heading: "Latest news and advisories",
         description: "",
@@ -310,10 +418,22 @@ const home: SeedPage = {
         columns: "3",
       },
     },
-    closingCta(
-      "Let's talk about your network",
-      "Tell us what you need and we will put together a plan and a fixed quote.",
-    ),
+    {
+      type: "cta",
+      settings: { background: "gradient", paddingY: "lg" },
+      data: {
+        heading: "Let's talk about your network",
+        description:
+          "Tell us what you need and we will put together a plan and a fixed quote. Already a client and need help now? Start a remote support session or open a ticket.",
+        phone: PHONE,
+        variant: "banner",
+        buttons: [
+          { label: "Request a quote", href: "/request-quote", style: "primary", openInNewTab: false },
+          { label: "Remote support", href: "/remote-support", style: "outline", openInNewTab: false },
+          { label: "Contact us", href: "/contact", style: "ghost", openInNewTab: false },
+        ],
+      },
+    },
   ],
 };
 
@@ -604,7 +724,11 @@ const cybersecurity: SeedPage = {
         eyebrow: "Why choose WirelessCom",
         heading: "Networking experience plus practical security expertise",
         html: "<p>Businesses throughout Ontario trust WirelessCom because we combine decades of networking experience with practical cybersecurity expertise. Our team understands both information technology and communications infrastructure, so we build security solutions that work together instead of creating unnecessary complexity.</p>",
-        image: { url: "/brand/marketing-1.png", alt: "", caption: "" },
+        image: {
+          url: "/images/cybersecurity-1400.webp",
+          alt: "Abstract shield formed from connected cyan nodes and lines over a dark navy grid",
+          caption: "",
+        },
         imagePosition: "left",
         bullets: [
           "Reliable protection",
@@ -897,23 +1021,6 @@ const internetServices: SeedPage = {
       data: {
         html: "<p>Wireless internet comes in a variety of speeds; however, not all speeds are available at every tower. We upgrade sites as quickly as possible, but available speed can be limited by older equipment on a tower, distance from the tower, and blockage from trees and terrain. Call us for information on the services available in your area.</p><p>The team at WirelessCom has been providing internet and wireless services since 2005. We can also offer design and construction, plus implementation and operations services, for internet service providers (ISPs).</p>",
         columns: "1",
-      },
-    },
-    {
-      type: "gallery",
-      settings: { background: "light", paddingY: "lg" },
-      data: {
-        heading: "Tower and installation work",
-        description: "",
-        columns: "3",
-        layout: "grid",
-        images: [
-          { url: "/brand/internet-1.jpg", alt: "Tower installation", caption: "" },
-          { url: "/brand/internet-2.jpg", alt: "Antenna alignment", caption: "" },
-          { url: "/brand/internet-3.jpg", alt: "Site build", caption: "" },
-          { url: "/brand/internet-4.jpg", alt: "Equipment cabinet", caption: "" },
-          { url: "/brand/internet-5.jpg", alt: "Rooftop installation", caption: "" },
-        ],
       },
     },
     {
@@ -1417,20 +1524,6 @@ const digitalMarketing: SeedPage = {
         columns: "2",
       },
     },
-    {
-      type: "gallery",
-      settings: { background: "light", paddingY: "lg" },
-      data: {
-        heading: "Recent work",
-        description: "",
-        columns: "2",
-        layout: "grid",
-        images: [
-          { url: "/brand/marketing-1.png", alt: "Digital signage design", caption: "" },
-          { url: "/brand/marketing-2.png", alt: "Brand and advertising design", caption: "" },
-        ],
-      },
-    },
     closingCta(
       "Make your message impossible to miss",
       "Talk to us about screens, content and design that fit your space and your brand.",
@@ -1763,12 +1856,19 @@ export const SEED_REDIRECTS: Array<{ source: string; destination: string }> = [
   { source: "/gps", destination: "/fleet-vehicle-tracking" },
 ];
 
+/**
+ * Header and footer navigation.
+ *
+ * Footer entries are grouped: every top-level FOOTER item becomes a column in
+ * the footer using its own label as the heading, and its children become the
+ * links. Admins can rename, reorder or regroup all of it under Navigation.
+ */
 export const SEED_NAV: Array<{
   label: string;
   href: string;
   location: "HEADER" | "FOOTER" | "UTILITY";
   order: number;
-  children?: Array<{ label: string; href: string }>;
+  children?: Array<{ label: string; href: string; openInNewTab?: boolean }>;
 }> = [
   { label: "Home", href: "/", location: "HEADER", order: 0 },
   {
@@ -1791,15 +1891,105 @@ export const SEED_NAV: Array<{
       { label: "Digital Marketing", href: "/digital-marketing" },
     ],
   },
-  { label: "Live", href: "/live", location: "HEADER", order: 2 },
-  { label: "News", href: "/news", location: "HEADER", order: 3 },
-  { label: "Support", href: "/support", location: "HEADER", order: 4 },
-  { label: "Contact", href: "/contact", location: "HEADER", order: 5 },
+  {
+    label: "Tools",
+    href: "/speed-test",
+    location: "HEADER",
+    order: 2,
+    children: [
+      { label: "Internet Speed Test", href: "/speed-test" },
+      { label: "Network Tools", href: "/network-tools" },
+      { label: "Cybersecurity Tools", href: "/cybersecurity-tools" },
+      { label: "Network Status", href: "/network-status" },
+    ],
+  },
+  {
+    label: "Support",
+    href: "/support",
+    location: "HEADER",
+    order: 3,
+    children: [
+      { label: "Request Service", href: "/support" },
+      { label: "Remote Support", href: "/remote-support" },
+      { label: "Knowledge Base", href: "/knowledge-base" },
+      { label: "FAQ", href: "/faq" },
+      { label: "Customer Portal", href: "/portal" },
+    ],
+  },
+  {
+    label: "Company",
+    href: "/contact",
+    location: "HEADER",
+    order: 4,
+    children: [
+      { label: "Brands We Support", href: "/brands" },
+      { label: "Case Studies", href: "/case-studies" },
+      { label: "Live Streams", href: "/live" },
+      { label: "News", href: "/news" },
+      { label: "Careers", href: "/careers" },
+      { label: "Contact", href: "/contact" },
+    ],
+  },
 
-  { label: "Privacy Policy", href: "/privacy-policy", location: "FOOTER", order: 0 },
-  { label: "E-911 Notice", href: "/e-911", location: "FOOTER", order: 1 },
-  { label: "Support", href: "/support", location: "FOOTER", order: 2 },
-  { label: "Careers", href: "/careers", location: "FOOTER", order: 3 },
+  {
+    label: "Services",
+    href: "/it-services",
+    location: "FOOTER",
+    order: 0,
+    children: [
+      { label: "IT Services", href: "/it-services" },
+      { label: "Cybersecurity", href: "/cybersecurity" },
+      { label: "Security Systems", href: "/security-services" },
+      { label: "Access Control", href: "/access-control" },
+      { label: "Telephone (VoIP)", href: "/telephone-services" },
+      { label: "Internet Services", href: "/internet-services" },
+      { label: "Data Cabling & Fiber", href: "/data-cabling-fiber-optic" },
+    ],
+  },
+  {
+    label: "Networking & Radio",
+    href: "/it-services",
+    location: "FOOTER",
+    order: 1,
+    children: [
+      { label: "Two-Way Radios", href: "/two-way-radios" },
+      { label: "Hytera Radios", href: "https://hyteraradios.ca", openInNewTab: true },
+      { label: "Video & Broadcasting", href: "/video-services" },
+      { label: "Fleet Tracking", href: "/fleet-vehicle-tracking" },
+      { label: "EV Charging", href: "/ev-charging-solutions" },
+      { label: "Digital Marketing", href: "/digital-marketing" },
+    ],
+  },
+  {
+    label: "Tools & Status",
+    href: "/speed-test",
+    location: "FOOTER",
+    order: 2,
+    children: [
+      { label: "Internet Speed Test", href: "/speed-test" },
+      { label: "Network Tools", href: "/network-tools" },
+      { label: "Cybersecurity Tools", href: "/cybersecurity-tools" },
+      { label: "Network Status", href: "/network-status" },
+      { label: "System Status", href: "/system-status" },
+    ],
+  },
+  {
+    label: "Help & Company",
+    href: "/support",
+    location: "FOOTER",
+    order: 3,
+    children: [
+      { label: "Request a Quote", href: "/request-quote" },
+      { label: "Request Service", href: "/support" },
+      { label: "Remote Support", href: "/remote-support" },
+      { label: "Knowledge Base", href: "/knowledge-base" },
+      { label: "FAQ", href: "/faq" },
+      { label: "Brands", href: "/brands" },
+      { label: "Case Studies", href: "/case-studies" },
+      { label: "Careers", href: "/careers" },
+      { label: "Contact", href: "/contact" },
+    ],
+  },
 ];
 
 /**

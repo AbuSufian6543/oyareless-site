@@ -6,6 +6,7 @@ import { ArrowLeft, Briefcase, Clock, Download, MapPin } from "lucide-react";
 import { ContactFormBlock } from "@/components/blocks/contact-form";
 import { env } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
+import { getSettings } from "@/lib/settings";
 import { formatDate } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -35,6 +36,8 @@ export default async function JobPage({ params }: Props) {
   const job = await loadJob(slug);
   if (!job) notFound();
 
+  const settings = await getSettings();
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "JobPosting",
@@ -45,9 +48,9 @@ export default async function JobPage({ params }: Props) {
     employmentType: job.employmentType.toUpperCase().replace(/[^A-Z]/g, "_"),
     hiringOrganization: {
       "@type": "Organization",
-      name: "WirelessCom.Ca Inc.",
+      name: settings.companyName,
       sameAs: env.siteUrl,
-      logo: `${env.siteUrl}/brand/logo.jpg`,
+      logo: `${env.siteUrl}${settings.logoUrl}`,
     },
     jobLocation: {
       "@type": "Place",
