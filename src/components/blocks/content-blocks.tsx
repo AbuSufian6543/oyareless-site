@@ -1,4 +1,3 @@
-import Image from "next/image";
 import {
   Check,
   CircleAlert,
@@ -11,6 +10,7 @@ import {
 
 import { Section, SectionHeading, isDarkBackground } from "@/components/blocks/section";
 import { ButtonLink, type ButtonVariant } from "@/components/ui/button";
+import { SectionImage } from "@/components/visuals/section-image";
 import type { BlockOf } from "@/lib/blocks";
 import { sanitizeRichText } from "@/lib/sanitize";
 import { cn } from "@/lib/utils";
@@ -145,11 +145,10 @@ export function ImageTextBlock({ block }: { block: BlockOf<"imageText"> }) {
 
         {data.image.url && (
           <figure className={cn("relative", imageFirst && "lg:order-1")}>
-            <Image
+            <SectionImage
               src={data.image.url}
               alt={data.image.alt}
-              width={1200}
-              height={900}
+              sizes="(min-width: 1024px) 42vw, 100vw"
               className="w-full rounded-xl object-cover shadow-card"
             />
             {data.image.caption && (

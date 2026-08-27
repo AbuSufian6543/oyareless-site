@@ -5,6 +5,7 @@ import { ArrowUpRight, Check } from "lucide-react";
 import { Section, SectionHeading, isDarkBackground } from "@/components/blocks/section";
 import { ButtonLink } from "@/components/ui/button";
 import { BlockIcon } from "@/components/ui/icon";
+import { SectionImage } from "@/components/visuals/section-image";
 import type { BlockOf } from "@/lib/blocks";
 import { cn } from "@/lib/utils";
 
@@ -113,12 +114,12 @@ export function ServiceGridBlock({ block }: { block: BlockOf<"serviceGrid"> }) {
             <>
               {item.imageUrl && (
                 <div className="relative mb-5 aspect-[16/10] overflow-hidden rounded-lg">
-                  <Image
+                  <SectionImage
                     src={item.imageUrl}
-                    alt=""
+                    alt={item.imageAlt || item.title}
                     fill
-                    sizes="(max-width: 640px) 100vw, 33vw"
-                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    className="transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>
               )}

@@ -65,6 +65,31 @@ prompt is recorded so a replacement can be produced in the same style.
 - **Alt text:** Black executive VoIP desk phone whose display shows an abstract cyan assistant waveform
 - **Prompt:** Modern black executive VoIP desk phone on a dark desk, colour display showing an abstract cyan assistant waveform, cool blue rim lighting, no logos or readable brand names.
 
+### `access-control`
+
+- **Alt text:** Slim black card reader with a cyan LED beside a glass commercial entrance at dusk
+- **Prompt:** Premium B2B architectural photography of a commercial glass entrance at dusk: a slim black card reader and keypad on a dark charcoal wall beside a glass door, cool cyan LED on the reader, no logos, no brand names, no readable text, no people, navy colour grading, cinematic.
+
+### `video-broadcast`
+
+- **Alt text:** Professional video cameras on tripods in a dark studio with cyan rim lighting
+- **Prompt:** Premium B2B broadcast photography: professional black video cameras on tripods in a dark studio or event hall, cyan and cool-blue rim lighting, a blurred stage or lectern in the background, no logos, no readable screens, no people faces, cinematic navy colour grading.
+
+### `ev-charging`
+
+- **Alt text:** Wall-mounted Level 2 EV charging station with a cyan status light on a dark commercial wall
+- **Prompt:** Premium B2B product photography of a wall-mounted Level 2 EV charging station on a dark charcoal commercial wall, charging cable neatly docked, cool cyan status light, blurred parking stall at dusk, no logos, no brand names, no readable text, no people, navy colour grading.
+
+### `fleet-tracking`
+
+- **Alt text:** GPS tracker unit in the foreground with a commercial pickup truck in a dusk lot behind
+- **Prompt:** Premium B2B photography of a dark commercial pickup truck in a dusk lot, a small discrete GPS tracker unit in the sharp foreground on a workbench, cyan LED, blurred fleet vehicles behind, no logos, no brand names, no readable text, no people, navy colour grading.
+
+### `digital-signage`
+
+- **Alt text:** Large digital signage display in a dark modern lobby showing an abstract navy and cyan graphic
+- **Prompt:** Premium B2B photography of a large digital signage display in a dark modern office lobby, the screen showing an abstract navy and cyan geometric graphic with no readable words or logos, cool ambient lighting, contemporary architecture, no people, cinematic.
+
 ## CC0 photography
 
 Sourced via the Openverse API filtered to CC0. CC0 places the work in the

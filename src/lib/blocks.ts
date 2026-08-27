@@ -99,6 +99,7 @@ const heroData = z.object({
   headline: z.string().default("Headline"),
   subheadline: z.string().default(""),
   backgroundImageUrl: z.string().default(""),
+  backgroundImageAlt: z.string().default(""),
   backgroundVideoUrl: z.string().default(""),
   overlayOpacity: z.number().min(0).max(100).default(70),
   variant: z.enum(["dark", "light", "split", "minimal"]).default("dark"),
@@ -140,6 +141,7 @@ const serviceCardItem = z.object({
   description: z.string().default(""),
   href: z.string().default(""),
   imageUrl: z.string().default(""),
+  imageAlt: z.string().default(""),
   badge: z.string().default(""),
 });
 

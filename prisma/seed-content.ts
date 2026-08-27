@@ -26,6 +26,78 @@ export type SeedPage = {
 
 const PHONE = "1-800-705-3189";
 
+function photo(name: string, alt: string) {
+  return { url: `/images/${name}-1400.webp`, alt };
+}
+
+/** Section photography used on the home Services grid and each service page. */
+const photos = {
+  it: photo(
+    "server-rack",
+    "Row of rack-mounted enterprise servers in a dark data centre aisle lit by blue status indicators",
+  ),
+  cybersecurity: photo(
+    "cybersecurity",
+    "Abstract shield formed from connected cyan nodes and lines over a dark navy grid",
+  ),
+  firewall: photo(
+    "firewall",
+    "Rack-mounted next-generation firewall appliances in a dark cabinet with cyan status lights and dressed ethernet",
+  ),
+  security: photo(
+    "surveillance",
+    "Dome and bullet security cameras mounted under the soffit of a modern commercial building at dusk",
+  ),
+  ai: photo(
+    "ai-camera",
+    "IP dome camera in the foreground with a security monitor showing cyan AI detection overlays on a night-time scene",
+  ),
+  telephone: photo(
+    "voip",
+    "Black executive VoIP desk phone with a colour display on a dark office desk",
+  ),
+  internet: photo(
+    "wifi",
+    "White enterprise Wi-Fi access point mounted on a dark office ceiling with a blue status ring",
+  ),
+  access: photo(
+    "access-control",
+    "Slim black card reader with a cyan LED beside a glass commercial entrance at dusk",
+  ),
+  cabling: photo(
+    "cabling-install",
+    "Technician's hands terminating blue and white network cables into a rack-mounted patch panel",
+  ),
+  video: photo(
+    "video-broadcast",
+    "Professional video cameras on tripods in a dark studio with cyan rim lighting",
+  ),
+  ev: photo(
+    "ev-charging",
+    "Wall-mounted Level 2 EV charging station with a cyan status light on a dark commercial wall",
+  ),
+  radio: photo(
+    "two-way-radio",
+    "Three rugged professional handheld two-way radios on a dark surface with blue rim lighting",
+  ),
+  fleet: photo(
+    "fleet-tracking",
+    "GPS tracker unit in the foreground with a commercial pickup truck in a dusk lot behind",
+  ),
+  signage: photo(
+    "digital-signage",
+    "Large digital signage display in a dark modern lobby showing an abstract navy and cyan graphic",
+  ),
+  support: photo(
+    "remote-support",
+    "Support technician wearing a headset at a desk with two monitors showing dashboards, seen from behind",
+  ),
+  contact: photo(
+    "networking",
+    "Dense bundles of blue and grey network patch cables terminated into a switch",
+  ),
+};
+
 function quoteButtons(label = "Request a quote") {
   return [
     { label, href: "/request-quote", style: "primary", openInNewTab: false },
@@ -55,6 +127,7 @@ function serviceHero(
   headline: string,
   subheadline: string,
   highlights: string[] = [],
+  image?: { url: string; alt: string },
 ): BlockInput {
   return {
     type: "hero",
@@ -63,9 +136,11 @@ function serviceHero(
       eyebrow,
       headline,
       subheadline,
-      variant: "dark",
+      variant: image ? "split" : "dark",
       height: "md",
       overlayOpacity: 78,
+      backgroundImageUrl: image?.url ?? "",
+      backgroundImageAlt: image?.alt ?? "",
       buttons: quoteButtons(),
       highlights,
     },
@@ -193,7 +268,8 @@ const home: SeedPage = {
             description:
               "Network infrastructure, Windows and macOS support, server administration and proactive maintenance.",
             href: "/it-services",
-            imageUrl: "",
+            imageUrl: photos.it.url,
+            imageAlt: photos.it.alt,
             badge: "",
           },
           {
@@ -202,7 +278,8 @@ const home: SeedPage = {
             description:
               "Firewalls, endpoint protection, vulnerability assessments, ransomware defence and backup with disaster recovery.",
             href: "/cybersecurity",
-            imageUrl: "/images/cybersecurity-1400.webp",
+            imageUrl: photos.cybersecurity.url,
+            imageAlt: photos.cybersecurity.alt,
             badge: "",
           },
           {
@@ -211,7 +288,8 @@ const home: SeedPage = {
             description:
               "Next-generation firewalls we design, install and support — Barracuda, Fortinet, Juniper and other platforms we are trained on.",
             href: "/firewalls",
-            imageUrl: "/images/firewall-1400.webp",
+            imageUrl: photos.firewall.url,
+            imageAlt: photos.firewall.alt,
             badge: "",
           },
           {
@@ -220,7 +298,8 @@ const home: SeedPage = {
             description:
               "IP CCTV, network video recorders, intrusion detection and 24/7 monitored alarm systems.",
             href: "/security-services",
-            imageUrl: "/images/surveillance-1400.webp",
+            imageUrl: photos.security.url,
+            imageAlt: photos.security.alt,
             badge: "",
           },
           {
@@ -229,7 +308,8 @@ const home: SeedPage = {
             description:
               "Analytics on your cameras and intelligent features on your telephone system — installed and supported by the same local team.",
             href: "/ai-services",
-            imageUrl: "/images/ai-camera-1400.webp",
+            imageUrl: photos.ai.url,
+            imageAlt: photos.ai.alt,
             badge: "",
           },
           {
@@ -238,7 +318,8 @@ const home: SeedPage = {
             description:
               "Cloud-hosted IP VoIP with auto-attendants, voicemail-to-email, mobile apps and a full range of desk phones.",
             href: "/telephone-services",
-            imageUrl: "/images/voip-1400.webp",
+            imageUrl: photos.telephone.url,
+            imageAlt: photos.telephone.alt,
             badge: "",
           },
           {
@@ -247,7 +328,8 @@ const home: SeedPage = {
             description:
               "Fixed wireless, cable, fiber, satellite, LTE and DSL access, plus design and operations for ISPs.",
             href: "/internet-services",
-            imageUrl: "",
+            imageUrl: photos.internet.url,
+            imageAlt: photos.internet.alt,
             badge: "",
           },
           {
@@ -256,7 +338,8 @@ const home: SeedPage = {
             description:
               "Card readers, biometrics, Schlage smart locks and parking control gates — installed and serviced.",
             href: "/access-control",
-            imageUrl: "",
+            imageUrl: photos.access.url,
+            imageAlt: photos.access.alt,
             badge: "",
           },
           {
@@ -265,7 +348,8 @@ const home: SeedPage = {
             description:
               "Cat5e and Cat6 structured cabling, network racks, cable TV pre-wire and single or multimode fiber fusion splicing.",
             href: "/data-cabling-fiber-optic",
-            imageUrl: "",
+            imageUrl: photos.cabling.url,
+            imageAlt: photos.cabling.alt,
             badge: "",
           },
           {
@@ -274,7 +358,8 @@ const home: SeedPage = {
             description:
               "Live events, press conferences, job site cameras and fixed weather cameras streamed to any device.",
             href: "/video-services",
-            imageUrl: "",
+            imageUrl: photos.video.url,
+            imageAlt: photos.video.alt,
             badge: "",
           },
           {
@@ -283,7 +368,8 @@ const home: SeedPage = {
             description:
               "Level 2 charging stations for home, fleet and multi-unit sites with ESA-certified installation.",
             href: "/ev-charging-solutions",
-            imageUrl: "",
+            imageUrl: photos.ev.url,
+            imageAlt: photos.ev.alt,
             badge: "",
           },
           {
@@ -292,7 +378,8 @@ const home: SeedPage = {
             description:
               "Authorised Hytera dealer for DMR handhelds, mobiles and repeaters, with sales, rentals and service.",
             href: "/two-way-radios",
-            imageUrl: "",
+            imageUrl: photos.radio.url,
+            imageAlt: photos.radio.alt,
             badge: "Hytera dealer",
           },
           {
@@ -301,7 +388,8 @@ const home: SeedPage = {
             description:
               "Real-time GPS tracking for vehicles, trailers and equipment.",
             href: "/fleet-vehicle-tracking",
-            imageUrl: "",
+            imageUrl: photos.fleet.url,
+            imageAlt: photos.fleet.alt,
             badge: "",
           },
           {
@@ -310,7 +398,8 @@ const home: SeedPage = {
             description:
               "Digital signage displays and graphic design that keeps your brand consistent everywhere.",
             href: "/digital-marketing",
-            imageUrl: "",
+            imageUrl: photos.signage.url,
+            imageAlt: photos.signage.alt,
             badge: "",
           },
         ],
@@ -471,6 +560,7 @@ const itServices: SeedPage = {
       "IT infrastructure built for uptime",
       "WirelessCom provides professional IT infrastructure, network management, server administration and cybersecurity services for business environments running Windows and macOS. We design, implement and maintain secure, high-availability systems aligned with industry best practices.",
       ["Network design", "Endpoint support", "Server administration", "Security"],
+      photos.it,
     ),
     {
       type: "featureGrid",
@@ -597,6 +687,7 @@ const cybersecurity: SeedPage = {
       "Protect your business with enterprise-grade cybersecurity",
       "Cyber threats continue to evolve, placing businesses of every size at risk of data breaches, ransomware, phishing attacks and network compromise. WirelessCom.Ca Inc. delivers practical, business-focused security that protects your systems, data, employees and reputation.",
       ["Layered defence", "Managed monitoring", "Incident response"],
+      photos.cybersecurity,
     ),
     {
       type: "richText",
@@ -864,6 +955,7 @@ const securityServices: SeedPage = {
       "Comprehensive security for your business, assets and people",
       "WirelessCom.Ca Inc. is committed to providing security services that safeguard your business, assets and personnel. Based in Sault Ste. Marie, Ontario, we specialise in tailored solutions designed around the real risks at your site.",
       ["IP CCTV & NVRs", "Access control", "24/7 monitoring"],
+      photos.security,
     ),
     {
       type: "steps",
@@ -1005,6 +1097,7 @@ const telephoneServices: SeedPage = {
       "Cloud-hosted IP VoIP telephone service",
       "WirelessCom.Ca Inc. offers advanced cloud-hosted IP VoIP telephone service designed to modernise your communications with flexibility, reliability and cost-effectiveness — with local support from Sault Ste. Marie.",
       ["Scalable", "Mobile-friendly", "Locally supported"],
+      photos.telephone,
     ),
     {
       type: "featureGrid",
@@ -1167,6 +1260,7 @@ const internetServices: SeedPage = {
       "Looking for affordable, reliable internet?",
       "WirelessCom.Ca Inc. offers fixed access to wireless, cable, fiber, satellite, LTE and DSL internet. Call us today to discuss the options available at your location.",
       ["Fixed wireless", "Fiber & cable", "Satellite & LTE"],
+      photos.internet,
     ),
     {
       type: "richText",
@@ -1212,6 +1306,7 @@ const videoServices: SeedPage = {
       "Video broadcasting service",
       "At WirelessCom we offer various types of video streaming, from live events and press conferences to job site and fixed weather cameras. If you would like to broadcast your event or conference, give us a call to discuss your video streaming needs.",
       ["Live events", "Job site cameras", "Weather cameras"],
+      photos.video,
     ),
     {
       type: "featureGrid",
@@ -1279,6 +1374,8 @@ const liveBroadcasting: SeedPage = {
       "Live Video Broadcasting",
       "Client and private broadcasts",
       "Private feeds are protected by a password supplied by WirelessCom. Enter it on the stream you have been given access to.",
+      [],
+      photos.video,
     ),
     {
       type: "streamGrid",
@@ -1312,6 +1409,7 @@ const accessControl: SeedPage = {
       "Access control and parking gate systems",
       "Card readers, biometrics, smart locks and vehicle gates — specified, installed and serviced by one team.",
       ["Honeywell", "Paradox", "Kantech", "Schlage"],
+      photos.access,
     ),
     {
       type: "featureGrid",
@@ -1381,6 +1479,7 @@ const dataCabling: SeedPage = {
       "Structured cabling and fiber optic splicing",
       "The physical layer decides how well everything above it performs. We install and certify structured cabling, network racks and fiber for commercial and residential buildings.",
       ["Cat5e & Cat6", "Network racks", "Fiber fusion splicing"],
+      photos.cabling,
     ),
     {
       type: "featureGrid",
@@ -1433,6 +1532,7 @@ const evCharging: SeedPage = {
       "Level 2 EV charging, installed and certified",
       "Compatible with every EV and PHEV sold in North America. All installations are ESA-certified with electrical permits and inspection provided, and all chargers are in stock.",
       ["ESA certified", "Permits & inspection", "In stock"],
+      photos.ev,
     ),
     {
       type: "specTable",
@@ -1534,6 +1634,7 @@ const twoWayRadios: SeedPage = {
       "Your Hytera communications dealer",
       "Digital and analog two-way radios from leading brands, suitable for many industries and applications, with clear and dependable communication indoors and outdoors.",
       ["Authorised Hytera dealer", "Sales & rentals", "Service & training"],
+      photos.radio,
     ),
     {
       type: "richText",
@@ -1614,6 +1715,7 @@ const fleetTracking: SeedPage = {
       "Know where your fleet is, in real time",
       "Real-time, accurate GPS tracking for vehicles, trailers and equipment. The Tracki GPS tracker is the world's smallest and lightest, at only 1.26 ounces.",
       ["Real-time location", "History & reports", "Asset tracking"],
+      photos.fleet,
     ),
     {
       type: "featureGrid",
@@ -1669,6 +1771,7 @@ const digitalMarketing: SeedPage = {
       "Digital marketing & graphic design",
       "We help businesses capture attention and communicate their message through powerful visual solutions — dynamic digital screens backed by professional design.",
       ["Digital signage", "Graphic design", "Brand consistency"],
+      photos.signage,
     ),
     {
       type: "richText",
@@ -1699,6 +1802,8 @@ const support: SeedPage = {
       "Support",
       "Technical support",
       `Run a speed test, send us the details, or call ${PHONE}. Contracted clients also have 24/7 emergency access.`,
+      [],
+      photos.support,
     ),
     {
       type: "speedTest",
@@ -1772,6 +1877,8 @@ const contact: SeedPage = {
       "Contact",
       "Talk to WirelessCom",
       "Tell us what you need and the right person will get back to you. For urgent service, call us directly.",
+      [],
+      photos.contact,
     ),
     {
       type: "contactDetails",
@@ -1970,6 +2077,7 @@ const aiServices: SeedPage = {
       "AI on the cameras and phones you already need",
       "We install and support practical AI on two systems every site already runs: video surveillance and the telephone system. Analytics that find a person in last night’s recording. An attendant that routes a caller without a maze of menus. Designed, installed and supported by the same local team.",
       ["Camera analytics", "AI attendants", "Local support"],
+      photos.ai,
     ),
     {
       type: "imageText",
@@ -2146,6 +2254,7 @@ const firewalls: SeedPage = {
       "Next-generation firewalls we actually support",
       "A firewall that is sized, documented and still answerable six months later. WirelessCom.Ca Inc. designs, installs and supports Barracuda, Fortinet, Juniper and other next-generation platforms we are trained on — for offices, shops, plants and multi-site networks across Northern Ontario.",
       ["Barracuda", "Fortinet", "Juniper", "And similar NGFWs"],
+      photos.firewall,
     ),
     {
       type: "imageText",

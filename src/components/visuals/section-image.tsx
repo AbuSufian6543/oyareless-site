@@ -37,6 +37,7 @@ export function SectionImage({
   priority = false,
   width = 1400,
   height = 875,
+  fill = false,
 }: {
   src: string;
   alt: string;
@@ -45,6 +46,7 @@ export function SectionImage({
   priority?: boolean;
   width?: number;
   height?: number;
+  fill?: boolean;
 }) {
   if (!src) return null;
 
@@ -52,6 +54,19 @@ export function SectionImage({
 
   if (!name) {
     const remote = /^https?:\/\//i.test(src);
+    if (fill) {
+      return (
+        <Image
+          src={src}
+          alt={alt}
+          fill
+          sizes={sizes}
+          priority={priority}
+          unoptimized={remote}
+          className={cn("object-cover", className)}
+        />
+      );
+    }
     return (
       <Image
         src={src}
@@ -67,7 +82,7 @@ export function SectionImage({
   }
 
   return (
-    <picture>
+    <picture className={fill ? "absolute inset-0 block size-full" : undefined}>
       <source type="image/avif" srcSet={srcSet(name, "avif")} sizes={sizes} />
       <source type="image/webp" srcSet={srcSet(name, "webp")} sizes={sizes} />
       {/* Pre-optimised static derivatives; the optimiser would only re-encode
@@ -75,12 +90,12 @@ export function SectionImage({
       <img
         src={`/images/${name}-900.webp`}
         alt={alt}
-        width={1400}
-        height={875}
+        width={fill ? undefined : 1400}
+        height={fill ? undefined : 875}
         loading={priority ? "eager" : "lazy"}
         fetchPriority={priority ? "high" : "auto"}
         decoding="async"
-        className={cn(className)}
+        className={cn(fill && "size-full object-cover", className)}
       />
     </picture>
   );

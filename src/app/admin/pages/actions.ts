@@ -318,6 +318,7 @@ function templateBlocks(title: string, template: string): unknown[] {
       ],
       highlights: [],
       backgroundImageUrl: "",
+      backgroundImageAlt: "",
       backgroundVideoUrl: "",
       overlayOpacity: 70,
     },

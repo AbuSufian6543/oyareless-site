@@ -1,7 +1,7 @@
-import Image from "next/image";
 import { Check, ChevronRight } from "lucide-react";
 
 import { ButtonLink, type ButtonVariant } from "@/components/ui/button";
+import { SectionImage } from "@/components/visuals/section-image";
 import type { BlockOf, LinkItem } from "@/lib/blocks";
 import { cn } from "@/lib/utils";
 
@@ -40,11 +40,10 @@ export function HeroBlock({ block }: { block: BlockOf<"hero"> }) {
                   className="absolute -inset-4 rounded-2xl bg-accent-500/10 blur-2xl"
                   aria-hidden="true"
                 />
-                <Image
+                <SectionImage
                   src={data.backgroundImageUrl}
-                  alt=""
-                  width={1200}
-                  height={900}
+                  alt={data.backgroundImageAlt || data.headline}
+                  sizes="(min-width: 1024px) 42vw, 100vw"
                   className="relative w-full rounded-xl object-cover shadow-lift"
                   priority
                 />
@@ -76,14 +75,15 @@ export function HeroBlock({ block }: { block: BlockOf<"hero"> }) {
         />
       ) : (
         data.backgroundImageUrl && (
-          <Image
-            src={data.backgroundImageUrl}
-            alt=""
-            fill
-            priority
-            sizes="100vw"
-            className="absolute inset-0 -z-10 object-cover"
-          />
+          <div className="absolute inset-0 -z-10" aria-hidden="true">
+            <SectionImage
+              src={data.backgroundImageUrl}
+              alt=""
+              fill
+              priority
+              sizes="100vw"
+            />
+          </div>
         )
       )}
 

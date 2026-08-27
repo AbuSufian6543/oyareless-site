@@ -131,6 +131,46 @@ const IMAGES = [
     prompt:
       "Modern black executive VoIP desk phone on a dark desk, colour display showing an abstract cyan assistant waveform, cool blue rim lighting, no logos or readable brand names.",
   },
+  {
+    name: "access-control",
+    master: "gen-access-control.png",
+    alt: "Slim black card reader with a cyan LED beside a glass commercial entrance at dusk",
+    origin: "generated",
+    prompt:
+      "Premium B2B architectural photography of a commercial glass entrance at dusk: a slim black card reader and keypad on a dark charcoal wall beside a glass door, cool cyan LED on the reader, no logos, no brand names, no readable text, no people, navy colour grading, cinematic.",
+  },
+  {
+    name: "video-broadcast",
+    master: "gen-video-broadcast.png",
+    alt: "Professional video cameras on tripods in a dark studio with cyan rim lighting",
+    origin: "generated",
+    prompt:
+      "Premium B2B broadcast photography: professional black video cameras on tripods in a dark studio or event hall, cyan and cool-blue rim lighting, a blurred stage or lectern in the background, no logos, no readable screens, no people faces, cinematic navy colour grading.",
+  },
+  {
+    name: "ev-charging",
+    master: "gen-ev-charging.png",
+    alt: "Wall-mounted Level 2 EV charging station with a cyan status light on a dark commercial wall",
+    origin: "generated",
+    prompt:
+      "Premium B2B product photography of a wall-mounted Level 2 EV charging station on a dark charcoal commercial wall, charging cable neatly docked, cool cyan status light, blurred parking stall at dusk, no logos, no brand names, no readable text, no people, navy colour grading.",
+  },
+  {
+    name: "fleet-tracking",
+    master: "gen-fleet-tracking.png",
+    alt: "GPS tracker unit in the foreground with a commercial pickup truck in a dusk lot behind",
+    origin: "generated",
+    prompt:
+      "Premium B2B photography of a dark commercial pickup truck in a dusk lot, a small discrete GPS tracker unit in the sharp foreground on a workbench, cyan LED, blurred fleet vehicles behind, no logos, no brand names, no readable text, no people, navy colour grading.",
+  },
+  {
+    name: "digital-signage",
+    master: "gen-digital-signage.png",
+    alt: "Large digital signage display in a dark modern lobby showing an abstract navy and cyan graphic",
+    origin: "generated",
+    prompt:
+      "Premium B2B photography of a large digital signage display in a dark modern office lobby, the screen showing an abstract navy and cyan geometric graphic with no readable words or logos, cool ambient lighting, contemporary architecture, no people, cinematic.",
+  },
 ];
 
 async function main() {

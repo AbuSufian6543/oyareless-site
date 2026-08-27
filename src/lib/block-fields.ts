@@ -62,6 +62,12 @@ export const BLOCK_FIELDS: Record<BlockType, FieldDef[]> = {
     { kind: "image", key: "backgroundImageUrl", label: "Background image" },
     {
       kind: "text",
+      key: "backgroundImageAlt",
+      label: "Image description",
+      hint: "Used when the photo sits beside the headline (split style).",
+    },
+    {
+      kind: "text",
       key: "backgroundVideoUrl",
       label: "Background video URL",
       hint: "Optional MP4. Overrides the image.",
@@ -161,6 +167,7 @@ export const BLOCK_FIELDS: Record<BlockType, FieldDef[]> = {
         { kind: "textarea", key: "description", label: "Description", rows: 2 },
         { kind: "text", key: "href", label: "Link", placeholder: "/it-services" },
         { kind: "image", key: "imageUrl", label: "Image (optional)" },
+        { kind: "text", key: "imageAlt", label: "Image description" },
         { kind: "text", key: "badge", label: "Badge (optional)" },
       ],
     },
