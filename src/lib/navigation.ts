@@ -65,11 +65,54 @@ async function loadNav(location: NavLocation): Promise<NavNode[]> {
   }));
 }
 
+/**
+ * Shown when Postgres is unreachable so the public header is never empty.
+ * Live navigation still comes from NavItem once the database answers.
+ */
+const FALLBACK_HEADER: NavNode[] = [
+  {
+    id: "services",
+    label: "Services",
+    href: "/it-services",
+    openInNewTab: false,
+    children: [
+      { id: "it", label: "IT Services", href: "/it-services", openInNewTab: false, children: [] },
+      { id: "cyber", label: "Cybersecurity", href: "/cybersecurity", openInNewTab: false, children: [] },
+      { id: "security", label: "Security Systems", href: "/security-services", openInNewTab: false, children: [] },
+      { id: "phone", label: "Telephone (VoIP)", href: "/telephone-services", openInNewTab: false, children: [] },
+      { id: "internet", label: "Internet Services", href: "/internet-services", openInNewTab: false, children: [] },
+    ],
+  },
+  {
+    id: "tools",
+    label: "Tools",
+    href: "/speed-test",
+    openInNewTab: false,
+    children: [
+      { id: "speed", label: "Internet Speed Test", href: "/speed-test", openInNewTab: false, children: [] },
+      { id: "net-tools", label: "Network Tools", href: "/network-tools", openInNewTab: false, children: [] },
+      { id: "sec-tools", label: "Cybersecurity Tools", href: "/cybersecurity-tools", openInNewTab: false, children: [] },
+    ],
+  },
+  {
+    id: "support",
+    label: "Support",
+    href: "/support",
+    openInNewTab: false,
+    children: [
+      { id: "remote", label: "Remote Support", href: "/remote-support", openInNewTab: false, children: [] },
+      { id: "faq", label: "FAQ", href: "/faq", openInNewTab: false, children: [] },
+      { id: "contact", label: "Contact", href: "/contact", openInNewTab: false, children: [] },
+    ],
+  },
+];
+
 export const getHeaderNav = cache(async (): Promise<NavNode[]> => {
   try {
-    return await loadNav("HEADER");
+    const nav = await loadNav("HEADER");
+    return nav.length > 0 ? nav : FALLBACK_HEADER;
   } catch {
-    return [];
+    return FALLBACK_HEADER;
   }
 });
 

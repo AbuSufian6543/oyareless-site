@@ -90,7 +90,7 @@ export function SiteFooter({
             {/* Company */}
             <div className="lg:col-span-3">
               <Image
-                src={settings.logoInverseUrl}
+                src={settings.logoInverseUrl || "/brand/logo-inverse.png"}
                 alt={settings.companyName}
                 width={220}
                 height={42}

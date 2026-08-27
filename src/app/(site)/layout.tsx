@@ -1,5 +1,3 @@
-import Script from "next/script";
-
 import { AnnouncementBar } from "@/components/site/announcement-bar";
 import { CookieBanner } from "@/components/site/cookie-banner";
 import { SiteFooter } from "@/components/site/site-footer";
@@ -104,31 +102,17 @@ export default async function SiteLayout({
 
       {settings.cookieBannerEnabled && <CookieBanner />}
 
-      {settings.analyticsSnippet && (
-        <Script
-          id="site-analytics"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{ __html: settings.analyticsSnippet }}
-        />
-      )}
+      {settings.analyticsSnippet ? (
+        <script dangerouslySetInnerHTML={{ __html: settings.analyticsSnippet }} />
+      ) : null}
 
-      {/* Admin-managed third-party snippets. Only ever loaded on the public
-          site, never inside /admin. */}
-      {settings.headEmbedCode && (
-        <Script
-          id="site-head-embed"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{ __html: settings.headEmbedCode }}
-        />
-      )}
+      {settings.headEmbedCode ? (
+        <script dangerouslySetInnerHTML={{ __html: settings.headEmbedCode }} />
+      ) : null}
 
-      {settings.bodyEndEmbedCode && (
-        <Script
-          id="site-body-embed"
-          strategy="lazyOnload"
-          dangerouslySetInnerHTML={{ __html: settings.bodyEndEmbedCode }}
-        />
-      )}
+      {settings.bodyEndEmbedCode ? (
+        <script dangerouslySetInnerHTML={{ __html: settings.bodyEndEmbedCode }} />
+      ) : null}
     </>
   );
 }

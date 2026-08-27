@@ -32,14 +32,10 @@ export function SiteHeader({
   const [scrolled, setScrolled] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Menus close on navigation. Adjusting during render rather than in an effect
-  // avoids painting the drawer over the new page for a frame first.
-  const [renderedPath, setRenderedPath] = useState(pathname);
-  if (pathname !== renderedPath) {
-    setRenderedPath(pathname);
+  const closeMenus = () => {
     setMobileOpen(false);
     setOpenDropdown(null);
-  }
+  };
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -133,7 +129,7 @@ export function SiteHeader({
             aria-label={`${companyName} home`}
           >
             <Image
-              src={logoUrl}
+              src={logoUrl || "/brand/logo.png"}
               alt={companyName}
               width={230}
               height={44}
@@ -189,6 +185,7 @@ export function SiteHeader({
                             key={child.id}
                             node={child}
                             className="block px-4 py-2.5 text-sm text-navy-700 transition-colors hover:bg-navy-50 hover:text-brand-700"
+                            onNavigate={closeMenus}
                           />
                         ))}
                       </div>
@@ -205,6 +202,7 @@ export function SiteHeader({
                       ? "text-brand-700"
                       : "text-navy-700 hover:bg-navy-50 hover:text-brand-700",
                   )}
+                  onNavigate={closeMenus}
                 />
               ),
             )}
@@ -274,7 +272,7 @@ export function SiteHeader({
           <div className="absolute inset-y-0 right-0 flex w-full max-w-sm flex-col bg-white shadow-2xl">
             <div className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 px-5">
               <Image
-                src={logoUrl}
+                src={logoUrl || "/brand/logo.png"}
                 alt={companyName}
                 width={190}
                 height={36}
@@ -324,6 +322,7 @@ export function SiteHeader({
                               key={child.id}
                               node={child}
                               className="block rounded-lg px-3 py-2.5 text-sm text-navy-600 hover:bg-navy-50 hover:text-brand-700"
+                              onNavigate={closeMenus}
                             />
                           ))}
                         </div>
@@ -336,6 +335,7 @@ export function SiteHeader({
                         "block rounded-lg px-3 py-3 text-[0.9375rem] font-semibold hover:bg-navy-50",
                         isActive(item.href) ? "text-brand-700" : "text-navy-800",
                       )}
+                      onNavigate={closeMenus}
                     />
                   )}
                 </div>
@@ -343,7 +343,7 @@ export function SiteHeader({
             </nav>
 
             <div className="shrink-0 space-y-2 border-t border-slate-200 p-4">
-              <form action="/search" className="flex gap-2">
+              <form action="/search" className="flex gap-2" onSubmit={closeMenus}>
                 <label htmlFor="mobile-search" className="sr-only">
                   Search the site
                 </label>
@@ -370,6 +370,7 @@ export function SiteHeader({
               </a>
               <Link
                 href="/request-quote"
+                onClick={closeMenus}
                 className="flex items-center justify-center gap-2 rounded-lg bg-brand-600 px-4 py-3 text-sm font-semibold text-white"
               >
                 Request a quote
@@ -385,9 +386,11 @@ export function SiteHeader({
 function NavLink({
   node,
   className,
+  onNavigate,
 }: {
   node: NavNode;
   className?: string;
+  onNavigate?: () => void;
 }) {
   if (node.openInNewTab || /^https?:\/\//.test(node.href)) {
     return (
@@ -403,7 +406,7 @@ function NavLink({
     );
   }
   return (
-    <Link href={node.href} className={className}>
+    <Link href={node.href} className={className} onClick={onNavigate}>
       {node.label}
     </Link>
   );

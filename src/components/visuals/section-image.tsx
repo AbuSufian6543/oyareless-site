@@ -46,9 +46,12 @@ export function SectionImage({
   width?: number;
   height?: number;
 }) {
+  if (!src) return null;
+
   const name = builtName(src);
 
   if (!name) {
+    const remote = /^https?:\/\//i.test(src);
     return (
       <Image
         src={src}
@@ -57,6 +60,7 @@ export function SectionImage({
         height={height}
         sizes={sizes}
         priority={priority}
+        unoptimized={remote}
         className={className}
       />
     );

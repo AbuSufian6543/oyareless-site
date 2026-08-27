@@ -1,6 +1,36 @@
 import type { NextConfig } from "next";
 
 /**
+ * Security headers for HTML and API responses.
+ *
+ * Do not set script-src / style-src here. Next.js 16 re-applies CSS after
+ * hydration (often as a blob: URL). A style-src policy lets the first paint
+ * look correct, then drops the stylesheet and the layout collapses.
+ *
+ * Clickjacking is still covered by frame-ancestors and X-Frame-Options.
+ * Static assets are excluded so CSS/JS are not served with a document CSP.
+ */
+const securityHeaders = [
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  { key: "X-DNS-Prefetch-Control", value: "on" },
+  { key: "X-Frame-Options", value: "SAMEORIGIN" },
+  {
+    key: "Strict-Transport-Security",
+    value: "max-age=31536000; includeSubDomains",
+  },
+  {
+    key: "Content-Security-Policy",
+    value:
+      "frame-ancestors 'self'; object-src 'none'; base-uri 'self'; form-action 'self'",
+  },
+  {
+    key: "Permissions-Policy",
+    value: "camera=(), microphone=(), geolocation=()",
+  },
+];
+
+/**
  * `standalone` output keeps the runtime image small; the Docker build copies
  * only `.next/standalone` plus static assets.
  */
@@ -14,60 +44,25 @@ const nextConfig: NextConfig = {
     // Uploaded media is served from the app itself, so no remote loader is
     // needed. Admins may still reference off-site images in blocks.
     remotePatterns: [
-      { protocol: "https", hostname: "wirelesscom.ca" },
-      { protocol: "https", hostname: "www.wirelesscom.ca" },
-      { protocol: "https", hostname: "**.wirelesscom.ca" },
-      { protocol: "https", hostname: "wirelesscom.org" },
-      { protocol: "https", hostname: "www.wirelesscom.org" },
-      { protocol: "https", hostname: "hyteraradios.ca" },
-      { protocol: "https", hostname: "www.hyteraradios.ca" },
+      { protocol: "https", hostname: "**" },
+      { protocol: "http", hostname: "**" },
     ],
   },
   serverExternalPackages: ["sharp", "pg", "nodemailer"],
   async headers() {
     return [
       {
-        // Stylesheets requested with crossorigin need CORS, or the browser
-        // applies them on first paint then drops them after hydration.
         source: "/_next/static/:path*",
         headers: [
           { key: "Access-Control-Allow-Origin", value: "*" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
         ],
       },
       {
-        source: "/:path*",
-        headers: [
-          { key: "X-Content-Type-Options", value: "nosniff" },
-          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-          { key: "X-DNS-Prefetch-Control", value: "on" },
-          { key: "X-Frame-Options", value: "SAMEORIGIN" },
-          {
-            key: "Strict-Transport-Security",
-            value: "max-age=31536000; includeSubDomains",
-          },
-          {
-            key: "Content-Security-Policy",
-            value: [
-              "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: https:",
-              "style-src 'self' 'unsafe-inline' blob:",
-              "img-src 'self' data: blob: https:",
-              "font-src 'self' data:",
-              "connect-src 'self' blob:",
-              "media-src 'self' https: blob:",
-              "frame-src 'self' https:",
-              "worker-src 'self' blob:",
-              "frame-ancestors 'self'",
-              "base-uri 'self'",
-              "form-action 'self'",
-              "object-src 'none'",
-            ].join("; "),
-          },
-          {
-            key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=()",
-          },
-        ],
+        // Keep CSP off every /_next/* response. Next 16 rewrites CSS after
+        // hydration; a document policy on those files drops the stylesheet.
+        source: "/((?!_next/).*)",
+        headers: securityHeaders,
       },
     ];
   },

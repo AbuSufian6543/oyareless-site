@@ -64,6 +64,11 @@ server {
         proxy_pass http://wirelesscom_app;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
+        # Next.js 16 re-applies CSS from this path after hydration. A leftover
+        # document CSP on these files unstyles the whole site after first paint.
+        proxy_hide_header Content-Security-Policy;
+        proxy_hide_header Content-Security-Policy-Report-Only;
+        add_header Access-Control-Allow-Origin "*" always;
         add_header Cache-Control $wc_immutable always;
     }
 

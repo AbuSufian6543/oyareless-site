@@ -86,12 +86,19 @@ export default async function RootLayout({
   // Retints the accent/brand ramps when an admin has picked custom colours.
   const theme = themeCss(settings);
 
+  // Do not render a <head> here. Next.js injects metadata into head; a
+  // manual head tag hydrates against that text and then drops the CSS link.
   return (
     <html lang="en-CA">
-      <head>
-        {theme && <style id="wc-theme">{theme}</style>}
-      </head>
-      <body className="flex min-h-dvh flex-col antialiased">{children}</body>
+      <body className="flex min-h-dvh flex-col antialiased">
+        {theme ? (
+          <style
+            id="wc-theme"
+            dangerouslySetInnerHTML={{ __html: theme }}
+          />
+        ) : null}
+        {children}
+      </body>
     </html>
   );
 }

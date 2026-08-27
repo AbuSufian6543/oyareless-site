@@ -29,6 +29,8 @@ export async function searchSite(query: string): Promise<SearchHit[]> {
         noIndex: false,
         OR: [
           { title: { contains: q, mode: "insensitive" } },
+          { navLabel: { contains: q, mode: "insensitive" } },
+          { slug: { contains: q, mode: "insensitive" } },
           { metaDescription: { contains: q, mode: "insensitive" } },
         ],
       },
