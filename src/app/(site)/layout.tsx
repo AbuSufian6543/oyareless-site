@@ -74,8 +74,7 @@ export default async function SiteLayout({
 
   return (
     <>
-      <Script
-        id="ld-local-business"
+      <script
         type="application/ld+json"
         // Serialised server-side from trusted settings, not user input.
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
