@@ -13,6 +13,55 @@ import type { NavNode } from "@/lib/navigation";
 import type { SiteSettings } from "@/lib/settings";
 import { telHref } from "@/lib/utils";
 
+/**
+ * Replaces the flat partner-logo composite the legacy site used. Text keeps the
+ * claims editable, readable on mobile and honest — every entry here is a
+ * relationship the business already advertised.
+ */
+const PARTNER_MARKS = [
+  "Hytera Authorized Dealer",
+  "Rogers",
+  "Tait Communications",
+  "Ubiquiti Networks",
+  "SureCall",
+  "Genetec",
+];
+
+type FooterColumn = { key: string; heading: string; links: NavNode[] };
+
+/**
+ * Builds the footer link columns from the admin-managed FOOTER navigation.
+ *
+ * A top-level item with children becomes a column, using its own label as the
+ * heading. Loose top-level items are gathered into a final column so nothing an
+ * admin adds silently disappears. If nobody has grouped anything, the flat list
+ * is split in two so the footer still looks deliberate.
+ */
+function buildColumns(nav: NavNode[]): FooterColumn[] {
+  const grouped = nav.filter((item) => item.children.length > 0);
+  const loose = nav.filter((item) => item.children.length === 0);
+
+  if (grouped.length === 0) {
+    const midpoint = Math.ceil(loose.length / 2);
+    return [
+      { key: "services", heading: "Services", links: loose.slice(0, midpoint) },
+      { key: "company", heading: "Company", links: loose.slice(midpoint) },
+    ].filter((column) => column.links.length > 0);
+  }
+
+  const columns: FooterColumn[] = grouped.map((item) => ({
+    key: item.id,
+    heading: item.label,
+    links: item.children,
+  }));
+
+  if (loose.length > 0) {
+    columns.push({ key: "more", heading: "More", links: loose });
+  }
+
+  return columns;
+}
+
 export function SiteFooter({
   nav,
   settings,
@@ -31,9 +80,7 @@ export function SiteFooter({
     { href: settings.socialX, Icon: XIcon, label: "X" },
   ].filter((social) => social.href);
 
-  // Split the footer link list into two balanced columns.
-  const midpoint = Math.ceil(nav.length / 2);
-  const columns = [nav.slice(0, midpoint), nav.slice(midpoint)];
+  const columns = buildColumns(nav);
 
   return (
     <footer className="bg-navy-900 text-navy-200">
@@ -41,16 +88,14 @@ export function SiteFooter({
         <div className="container-page py-12 lg:py-16">
           <div className="grid gap-10 lg:grid-cols-12 lg:gap-8">
             {/* Company */}
-            <div className="lg:col-span-4">
-              <div className="inline-flex rounded-lg bg-white p-2.5">
-                <Image
-                  src="/brand/logo.jpg"
-                  alt={settings.companyName}
-                  width={220}
-                  height={42}
-                  className="h-8 w-auto"
-                />
-              </div>
+            <div className="lg:col-span-3">
+              <Image
+                src={settings.logoInverseUrl}
+                alt={settings.companyName}
+                width={220}
+                height={42}
+                className="h-9 w-auto"
+              />
               <p className="mt-4 max-w-sm text-sm leading-relaxed text-navy-300">
                 {settings.description}
               </p>
@@ -122,21 +167,16 @@ export function SiteFooter({
             </div>
 
             {/* Links */}
-            <div className="grid gap-8 sm:grid-cols-2 lg:col-span-5">
-              {columns.map((column, index) => (
-                <div key={index}>
+            <div className="grid gap-8 sm:grid-cols-2 lg:col-span-6 lg:grid-cols-4">
+              {columns.map((column) => (
+                <div key={column.key}>
                   <h3 className="mb-3.5 text-xs font-bold uppercase tracking-wider text-white">
-                    {index === 0 ? "Services" : "Company"}
+                    {column.heading}
                   </h3>
                   <ul className="space-y-2 text-sm">
-                    {column.map((item) => (
+                    {column.links.map((item) => (
                       <li key={item.id}>
-                        <Link
-                          href={item.href}
-                          className="text-navy-300 transition-colors hover:text-accent-300"
-                        >
-                          {item.label}
-                        </Link>
+                        <FooterLink node={item} />
                       </li>
                     ))}
                   </ul>
@@ -151,25 +191,20 @@ export function SiteFooter({
               </h3>
               <NewsletterForm />
 
-              <div className="mt-6 space-y-3">
-                <div className="rounded-lg bg-white p-2.5">
-                  <Image
-                    src="/brand/partner-logos.jpg"
-                    alt="Rogers, Hytera Authorized Dealer, Tait Communications, Ubiquiti Networks, SureCall, and Genetec certified partner"
-                    width={1024}
-                    height={266}
-                    className="h-auto w-full"
-                  />
-                </div>
-                <div className="inline-flex items-center gap-2 rounded-lg bg-white px-3 py-2">
-                  <Image
-                    src="/brand/cdn.jpg"
-                    alt="Proudly Canadian"
-                    width={148}
-                    height={38}
-                    className="h-5 w-auto"
-                  />
-                </div>
+              <div className="mt-6">
+                <h3 className="mb-2.5 text-xs font-bold uppercase tracking-wider text-white">
+                  Authorized &amp; certified
+                </h3>
+                <ul className="flex flex-wrap gap-1.5 text-[0.6875rem] font-medium text-navy-300">
+                  {PARTNER_MARKS.map((mark) => (
+                    <li
+                      key={mark}
+                      className="rounded border border-navy-700 bg-navy-800/70 px-2 py-1"
+                    >
+                      {mark}
+                    </li>
+                  ))}
+                </ul>
               </div>
             </div>
           </div>
@@ -195,6 +230,9 @@ export function SiteFooter({
           <Link href="/support" className="transition-colors hover:text-white">
             Support
           </Link>
+          <Link href="/portal" className="transition-colors hover:text-white">
+            Customer Portal
+          </Link>
           <Link
             href="/login"
             className="transition-colors hover:text-white"
@@ -205,5 +243,31 @@ export function SiteFooter({
         </div>
       </div>
     </footer>
+  );
+}
+
+/** External hrefs and new-tab links need an anchor rather than next/link. */
+function FooterLink({ node }: { node: NavNode }) {
+  const className =
+    "text-navy-300 transition-colors hover:text-accent-300";
+
+  if (node.openInNewTab || /^https?:\/\//.test(node.href)) {
+    return (
+      <a
+        href={node.href}
+        className={className}
+        {...(node.openInNewTab
+          ? { target: "_blank", rel: "noopener noreferrer" }
+          : {})}
+      >
+        {node.label}
+      </a>
+    );
+  }
+
+  return (
+    <Link href={node.href} className={className}>
+      {node.label}
+    </Link>
   );
 }

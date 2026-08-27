@@ -57,6 +57,21 @@ export async function updateSettings(
 function groupFor(key: SettingKey): string {
   if (key.startsWith("social")) return "social";
   if (key.startsWith("announcement")) return "announcement";
+  if (key.startsWith("theme")) return "theme";
+  if (
+    key === "logoUrl" ||
+    key === "logoInverseUrl" ||
+    key === "faviconUrl" ||
+    key === "ogImageUrl" ||
+    key.startsWith("homeHero")
+  ) {
+    return "branding";
+  }
+  if (key === "headEmbedCode" || key === "bodyEndEmbedCode") return "embed";
+  if (key.startsWith("rustdesk") || key.startsWith("remoteSupport")) {
+    return "remote-support";
+  }
+  if (key.startsWith("verification")) return "seo";
   if (key === "analyticsSnippet" || key === "cookieBannerEnabled") return "privacy";
   if (
     key === "phone" ||

@@ -479,6 +479,226 @@ export const BLOCK_FIELDS: Record<BlockType, FieldDef[]> = {
     },
     { kind: "boolean", key: "showDivider", label: "Show a divider line" },
   ],
+
+  techHero: [
+    { kind: "text", key: "eyebrow", label: "Eyebrow label" },
+    { kind: "text", key: "headline", label: "Headline" },
+    { kind: "textarea", key: "subheadline", label: "Sub-headline", rows: 3 },
+    {
+      kind: "select",
+      key: "height",
+      label: "Height",
+      options: [
+        { value: "sm", label: "Small" },
+        { value: "md", label: "Medium" },
+        { value: "lg", label: "Large" },
+      ],
+    },
+    {
+      kind: "image",
+      key: "backgroundImageUrl",
+      label: "Background photo",
+      hint: "Optional. The animated network mesh is used on its own when empty.",
+    },
+    { kind: "number", key: "overlayOpacity", label: "Overlay darkness (%)", min: 0, max: 100 },
+    {
+      kind: "number",
+      key: "networkDensity",
+      label: "Network animation intensity (%)",
+      min: 0,
+      max: 200,
+      hint: "0 turns the animation off. It is always off for visitors who ask for reduced motion.",
+    },
+    { kind: "stringList", key: "highlights", label: "Proof points", itemLabel: "Point" },
+    { kind: "links", key: "buttons", label: "Buttons", hint: LINK_STYLE_HINT },
+  ],
+
+  pillars: [
+    { kind: "text", key: "eyebrow", label: "Eyebrow label" },
+    { kind: "text", key: "heading", label: "Heading" },
+    { kind: "textarea", key: "description", label: "Description", rows: 2 },
+    {
+      kind: "objectList",
+      key: "items",
+      label: "Pillars",
+      itemLabel: "Pillar",
+      fields: [
+        { kind: "icon", key: "icon", label: "Icon" },
+        { kind: "text", key: "title", label: "Title" },
+        { kind: "textarea", key: "description", label: "Description", rows: 2 },
+        { kind: "stringList", key: "points", label: "Sub-points", itemLabel: "Point" },
+        { kind: "text", key: "href", label: "Link" },
+      ],
+    },
+  ],
+
+  capabilityGrid: [
+    { kind: "text", key: "eyebrow", label: "Eyebrow label" },
+    { kind: "text", key: "heading", label: "Heading" },
+    { kind: "textarea", key: "description", label: "Description", rows: 2 },
+    {
+      kind: "select",
+      key: "columns",
+      label: "Columns",
+      options: [
+        { value: "2", label: "2 columns" },
+        { value: "3", label: "3 columns" },
+      ],
+    },
+    { kind: "boolean", key: "showImages", label: "Show photos on the cards" },
+    {
+      kind: "objectList",
+      key: "items",
+      label: "Capabilities",
+      itemLabel: "Capability",
+      fields: [
+        { kind: "icon", key: "icon", label: "Icon" },
+        { kind: "text", key: "title", label: "Title" },
+        { kind: "textarea", key: "description", label: "Description", rows: 2 },
+        { kind: "text", key: "href", label: "Link" },
+        { kind: "image", key: "imageUrl", label: "Photo" },
+        { kind: "text", key: "imageAlt", label: "Photo description", hint: "Required when a photo is set." },
+      ],
+    },
+  ],
+
+  brandGrid: [
+    { kind: "text", key: "eyebrow", label: "Eyebrow label" },
+    { kind: "text", key: "heading", label: "Heading" },
+    { kind: "textarea", key: "description", label: "Description", rows: 2 },
+    {
+      kind: "text",
+      key: "disclaimer",
+      label: "Qualifier line",
+      hint: "Keep this accurate. Only say “partner” or “authorised dealer” where that is formally true.",
+    },
+    {
+      kind: "select",
+      key: "layout",
+      label: "Layout",
+      options: [
+        { value: "grid", label: "Static grid" },
+        { value: "marquee", label: "Scrolling strip" },
+      ],
+    },
+    {
+      kind: "objectList",
+      key: "items",
+      label: "Brands",
+      itemLabel: "Brand",
+      fields: [
+        { kind: "text", key: "name", label: "Name" },
+        { kind: "text", key: "category", label: "What we use it for" },
+        { kind: "image", key: "logoUrl", label: "Logo" },
+        { kind: "text", key: "href", label: "Link" },
+      ],
+    },
+  ],
+
+  statusStrip: [
+    { kind: "text", key: "heading", label: "Heading" },
+    { kind: "textarea", key: "description", label: "Description", rows: 2 },
+    { kind: "text", key: "href", label: "Status page link" },
+    { kind: "text", key: "linkLabel", label: "Link label" },
+    {
+      kind: "boolean",
+      key: "showLiveData",
+      label: "Show live measurements",
+      description:
+        "Reads real monitoring results. Turn this off and the block shows only the heading and link — it never displays made-up figures.",
+    },
+  ],
+
+  defenseInDepth: [
+    { kind: "text", key: "eyebrow", label: "Eyebrow label" },
+    { kind: "text", key: "heading", label: "Heading" },
+    { kind: "textarea", key: "description", label: "Description", rows: 2 },
+    { kind: "text", key: "centreLabel", label: "Centre label" },
+    {
+      kind: "objectList",
+      key: "layers",
+      label: "Layers (outermost first)",
+      itemLabel: "Layer",
+      fields: [
+        { kind: "icon", key: "icon", label: "Icon" },
+        { kind: "text", key: "title", label: "Title" },
+        { kind: "textarea", key: "description", label: "Description", rows: 2 },
+        { kind: "stringList", key: "controls", label: "Example controls", itemLabel: "Control" },
+      ],
+    },
+    { kind: "stringList", key: "threats", label: "Threats addressed", itemLabel: "Threat" },
+  ],
+
+  toolGrid: [
+    { kind: "text", key: "eyebrow", label: "Eyebrow label" },
+    { kind: "text", key: "heading", label: "Heading" },
+    { kind: "textarea", key: "description", label: "Description", rows: 2 },
+    { kind: "select", key: "columns", label: "Columns", options: COLUMN_OPTIONS_234 },
+    {
+      kind: "objectList",
+      key: "items",
+      label: "Tools",
+      itemLabel: "Tool",
+      fields: [
+        { kind: "icon", key: "icon", label: "Icon" },
+        { kind: "text", key: "title", label: "Name" },
+        { kind: "textarea", key: "description", label: "What it does", rows: 2 },
+        { kind: "text", key: "href", label: "Link" },
+        { kind: "text", key: "badge", label: "Badge", hint: "e.g. “Browser only”." },
+      ],
+    },
+  ],
+
+  caseStudyGrid: [
+    { kind: "text", key: "eyebrow", label: "Eyebrow label" },
+    { kind: "text", key: "heading", label: "Heading" },
+    { kind: "textarea", key: "description", label: "Description", rows: 2 },
+    {
+      kind: "objectList",
+      key: "items",
+      label: "Case studies",
+      itemLabel: "Case study",
+      fields: [
+        { kind: "text", key: "title", label: "Title" },
+        { kind: "text", key: "sector", label: "Sector" },
+        { kind: "textarea", key: "problem", label: "Problem", rows: 2 },
+        { kind: "textarea", key: "solution", label: "Solution", rows: 2 },
+        { kind: "textarea", key: "result", label: "Result", rows: 2 },
+        { kind: "text", key: "href", label: "Link" },
+        { kind: "image", key: "imageUrl", label: "Photo" },
+        { kind: "text", key: "imageAlt", label: "Photo description" },
+      ],
+    },
+  ],
+
+  kbHighlights: [
+    { kind: "text", key: "eyebrow", label: "Eyebrow label" },
+    { kind: "text", key: "heading", label: "Heading" },
+    { kind: "textarea", key: "description", label: "Description", rows: 2 },
+    {
+      kind: "select",
+      key: "columns",
+      label: "Columns",
+      options: [
+        { value: "2", label: "2 columns" },
+        { value: "3", label: "3 columns" },
+      ],
+    },
+    {
+      kind: "objectList",
+      key: "items",
+      label: "Articles",
+      itemLabel: "Article",
+      fields: [
+        { kind: "icon", key: "icon", label: "Icon" },
+        { kind: "text", key: "category", label: "Category" },
+        { kind: "text", key: "title", label: "Title" },
+        { kind: "textarea", key: "description", label: "Summary", rows: 2 },
+        { kind: "text", key: "href", label: "Link" },
+      ],
+    },
+    { kind: "links", key: "buttons", label: "Buttons" },
+  ],
 };
 
 /** Presentation controls shared by every block. */
@@ -494,7 +714,7 @@ export const SETTINGS_FIELDS: FieldDef[] = [
       { value: "navy", label: "Navy" },
       { value: "gradient", label: "Navy → blue gradient" },
       { value: "grid", label: "Navy with tech grid" },
-      { value: "accent", label: "Green accent" },
+      { value: "accent", label: "Cyan accent" },
     ],
   },
   {

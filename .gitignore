@@ -30,3 +30,7 @@ Thumbs.db
 next-env.d.ts
 tsconfig.tsbuildinfo
 sitemap_check.xml
+
+.stock-cache/
+
+assets/source-images/

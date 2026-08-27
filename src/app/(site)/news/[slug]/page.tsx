@@ -8,6 +8,7 @@ import { BlockList } from "@/components/blocks/block-renderer";
 import { parseBlocks } from "@/lib/blocks";
 import { env } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
+import { getSettings } from "@/lib/settings";
 import { formatDate } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -49,6 +50,7 @@ export default async function NewsArticlePage({ params }: Props) {
   if (!post) notFound();
 
   const blocks = parseBlocks(post.blocks);
+  const settings = await getSettings();
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -59,14 +61,14 @@ export default async function NewsArticlePage({ params }: Props) {
     dateModified: post.updatedAt.toISOString(),
     author: {
       "@type": "Organization",
-      name: post.author?.name ?? "WirelessCom.Ca Inc.",
+      name: post.author?.name ?? settings.companyName,
     },
     publisher: {
       "@type": "Organization",
-      name: "WirelessCom.Ca Inc.",
+      name: settings.companyName,
       logo: {
         "@type": "ImageObject",
-        url: `${env.siteUrl}/brand/logo.jpg`,
+        url: `${env.siteUrl}${settings.logoUrl}`,
       },
     },
     mainEntityOfPage: `${env.siteUrl}/news/${post.slug}`,

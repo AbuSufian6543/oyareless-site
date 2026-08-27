@@ -48,15 +48,21 @@ function safeBaseName(originalName: string): string {
   return cleaned || "file";
 }
 
+type PreparedUpload = {
+  buffer: Buffer;
+  mimeType: string;
+  extension: string;
+  width: number | null;
+  height: number | null;
+};
+
 /**
- * Writes an uploaded file to the uploads volume. Raster images are re-encoded
- * with sharp, which both strips metadata (EXIF/GPS) and neutralises files that
- * only pretend to be images.
+ * Validates and re-encodes an upload without writing it anywhere.
+ *
+ * Raster images go through sharp, which both strips metadata (EXIF/GPS) and
+ * neutralises files that only pretend to be images.
  */
-export async function storeUpload(
-  file: File,
-  folder = "general",
-): Promise<StoredUpload> {
+async function prepareUpload(file: File): Promise<PreparedUpload> {
   if (file.size === 0) throw new UploadError("That file is empty.");
   if (file.size > env.uploads.maxBytes) {
     const limit = Math.round(env.uploads.maxBytes / (1024 * 1024));
@@ -71,18 +77,13 @@ export async function storeUpload(
     );
   }
 
-  const directory = path.join(/* turbopackIgnore: true */ uploadRoot(), sanitiseFolder(folder));
-  await mkdir(directory, { recursive: true });
-
-  const stem = `${safeBaseName(file.name)}-${randomBytes(4).toString("hex")}`;
   let buffer = Buffer.from(await file.arrayBuffer());
   let width: number | null = null;
   let height: number | null = null;
   let mimeType = declared;
   let outputExtension = extension;
 
-  const isRaster =
-    declared.startsWith("image/") && declared !== "image/svg+xml";
+  const isRaster = declared.startsWith("image/") && declared !== "image/svg+xml";
 
   if (isRaster) {
     const { default: sharp } = await import("sharp");
@@ -128,17 +129,73 @@ export async function storeUpload(
     assertSafeSvg(buffer.toString("utf8"));
   }
 
-  const filename = `${stem}.${outputExtension}`;
-  await writeFile(path.join(directory, filename), buffer);
+  return { buffer, mimeType, extension: outputExtension, width, height };
+}
+
+/** Writes an uploaded file to the uploads volume under a fresh filename. */
+export async function storeUpload(
+  file: File,
+  folder = "general",
+): Promise<StoredUpload> {
+  const prepared = await prepareUpload(file);
+
+  const directory = path.join(
+    /* turbopackIgnore: true */ uploadRoot(),
+    sanitiseFolder(folder),
+  );
+  await mkdir(directory, { recursive: true });
+
+  const stem = `${safeBaseName(file.name)}-${randomBytes(4).toString("hex")}`;
+  const filename = `${stem}.${prepared.extension}`;
+  await writeFile(path.join(directory, filename), prepared.buffer);
 
   const relative = `${sanitiseFolder(folder)}/${filename}`;
   return {
     filename: relative,
     url: `/uploads/${relative}`,
-    mimeType,
-    sizeBytes: buffer.byteLength,
-    width,
-    height,
+    mimeType: prepared.mimeType,
+    sizeBytes: prepared.buffer.byteLength,
+    width: prepared.width,
+    height: prepared.height,
+  };
+}
+
+/**
+ * Overwrites an existing asset's bytes, keeping its path and therefore its URL.
+ *
+ * The point of replace-in-place is that pages already referencing the old URL
+ * pick up the new artwork, so a format change that would alter the extension is
+ * refused rather than silently breaking every reference.
+ */
+export async function replaceUpload(
+  existingFilename: string,
+  file: File,
+): Promise<Omit<StoredUpload, "filename" | "url">> {
+  const target = path.resolve(
+    /* turbopackIgnore: true */ uploadRoot(),
+    existingFilename,
+  );
+  if (!target.startsWith(uploadRoot())) {
+    throw new UploadError("That file is outside the uploads directory.");
+  }
+
+  const prepared = await prepareUpload(file);
+  const currentExtension = path.extname(existingFilename).replace(".", "").toLowerCase();
+
+  if (currentExtension !== prepared.extension) {
+    throw new UploadError(
+      `The replacement must be a .${currentExtension} file so the existing address keeps working. Upload a new file instead if you need a different format.`,
+    );
+  }
+
+  await mkdir(path.dirname(target), { recursive: true });
+  await writeFile(target, prepared.buffer);
+
+  return {
+    mimeType: prepared.mimeType,
+    sizeBytes: prepared.buffer.byteLength,
+    width: prepared.width,
+    height: prepared.height,
   };
 }
 

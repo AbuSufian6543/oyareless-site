@@ -53,6 +53,8 @@ model User {
   media             MediaAsset[]
   auditLogs         AuditLog[]
   assignedSubmissions FormSubmission[] @relation("SubmissionAssignee")
+  assignedTickets   Ticket[]         @relation("TicketAssignee")
+  ticketReplies     TicketMessage[]  @relation("TicketStaffAuthor")
 
   @@index([role])
   @@index([email])
@@ -451,4 +453,608 @@ model AuditLog {
   @@index([createdAt])
   @@index([userId, createdAt])
   @@index([entityType, entityId])
+}
+
+// ---------------------------------------------------------------------------
+// Service catalogue, brands, FAQ, knowledge base, case studies
+//
+// Each of these gets an admin CRUD section and a public page. They carry their
+// own slug and SEO fields so they are addressable independently of the page
+// builder, and a `blocks` column where long-form content is needed so the same
+// block editor can be reused.
+// ---------------------------------------------------------------------------
+
+model ServiceCategory {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  name        String
+  description String?
+  icon        String?
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  services    Service[]
+
+  @@index([order])
+}
+
+model Service {
+  id              String        @id @default(cuid())
+  slug            String        @unique
+  name            String
+  summary         String        @default("")
+  icon            String?
+  imageUrl        String?
+  imageAlt        String?
+
+  /// Long-form body, validated by src/lib/blocks.ts like any page.
+  blocks          Json          @default("[]")
+
+  status          ContentStatus @default(DRAFT)
+  featured        Boolean       @default(false)
+  order           Int           @default(0)
+
+  metaTitle       String?
+  metaDescription String?
+
+  categoryId      String?
+  category        ServiceCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  quoteRequests   QuoteRequest[]
+
+  @@index([status, order])
+  @@index([categoryId, order])
+}
+
+model Brand {
+  id          String        @id @default(cuid())
+  slug        String        @unique
+  name        String
+  logoUrl     String?
+  websiteUrl  String?
+
+  /// What the business actually does with this vendor's equipment. Kept as
+  /// free text so relationship claims stay accurate and editable.
+  category    String        @default("")
+  description String        @default("")
+
+  /// Only set where a formal relationship exists, e.g. "Authorized Dealer".
+  relationship String?
+
+  status      ContentStatus @default(PUBLISHED)
+  featured    Boolean       @default(false)
+  order       Int           @default(0)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([status, order])
+}
+
+model FaqItem {
+  id        String        @id @default(cuid())
+  question  String
+  answer    String
+  category  String        @default("General")
+  status    ContentStatus @default(PUBLISHED)
+  order     Int           @default(0)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([status, category, order])
+}
+
+model KbCategory {
+  id          String      @id @default(cuid())
+  slug        String      @unique
+  name        String
+  description String?
+  icon        String?
+  order       Int         @default(0)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  articles    KbArticle[]
+
+  @@index([order])
+}
+
+model KbArticle {
+  id              String        @id @default(cuid())
+  slug            String        @unique
+  title           String
+  summary         String        @default("")
+  blocks          Json          @default("[]")
+  status          ContentStatus @default(DRAFT)
+  featured        Boolean       @default(false)
+  order           Int           @default(0)
+
+  metaTitle       String?
+  metaDescription String?
+
+  /// Incremented on view so the most-read articles can be surfaced.
+  views           Int           @default(0)
+
+  categoryId      String?
+  category        KbCategory?   @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  publishedAt     DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([status, order])
+  @@index([categoryId, order])
+}
+
+model CaseStudy {
+  id              String        @id @default(cuid())
+  slug            String        @unique
+  title           String
+  sector          String        @default("")
+  clientName      String?
+
+  /// The four narrative stages the marketing pages render.
+  problem         String        @default("")
+  solution        String        @default("")
+  implementation  String        @default("")
+  result          String        @default("")
+
+  blocks          Json          @default("[]")
+  imageUrl        String?
+  imageAlt        String?
+
+  status          ContentStatus @default(DRAFT)
+  featured        Boolean       @default(false)
+  order           Int           @default(0)
+
+  metaTitle       String?
+  metaDescription String?
+
+  publishedAt     DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([status, order])
+}
+
+// ---------------------------------------------------------------------------
+// Admin-managed embeds
+// ---------------------------------------------------------------------------
+
+enum EmbedPlacement {
+  PAGE
+  HEAD
+  BODY_END
+}
+
+/// Named third-party embeds (dashboards, maps, camera feeds) so an admin can
+/// paste markup once and reference it by name. Rendered through a sanitiser.
+model EmbedSnippet {
+  id          String         @id @default(cuid())
+  slug        String         @unique
+  name        String
+  description String?
+  html        String
+  placement   EmbedPlacement @default(PAGE)
+
+  /// Empty means "available anywhere"; otherwise a list of page slugs.
+  allowedPages String[]      @default([])
+
+  isActive    Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([isActive])
+}
+
+// ---------------------------------------------------------------------------
+// Monitoring and incidents
+//
+// Every figure shown on the public status pages originates here, from probes
+// this application runs against endpoints an admin configured. Nothing is
+// synthesised: with no endpoints, the status surfaces say so.
+// ---------------------------------------------------------------------------
+
+enum ProbeKind {
+  HTTP
+  TCP
+  DNS
+}
+
+model MonitoredEndpoint {
+  id            String        @id @default(cuid())
+  name          String
+  kind          ProbeKind     @default(HTTP)
+
+  /// URL for HTTP, host for TCP/DNS.
+  target        String
+  port          Int?
+  /// HTTP status treated as healthy; ignored for TCP/DNS.
+  expectStatus  Int           @default(200)
+  timeoutMs     Int           @default(5000)
+  intervalSec   Int           @default(300)
+
+  enabled       Boolean       @default(true)
+  /// Internal-only endpoints are monitored but never shown to visitors.
+  isPublic      Boolean       @default(true)
+  order         Int           @default(0)
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  checks        StatusCheck[]
+
+  @@index([enabled, isPublic, order])
+}
+
+model StatusCheck {
+  id         String            @id @default(cuid())
+  endpointId String
+  endpoint   MonitoredEndpoint @relation(fields: [endpointId], references: [id], onDelete: Cascade)
+
+  ok         Boolean
+  latencyMs  Int?
+  statusCode Int?
+  error      String?
+  checkedAt  DateTime          @default(now())
+
+  @@index([endpointId, checkedAt])
+  @@index([checkedAt])
+}
+
+enum IncidentSeverity {
+  MINOR
+  MAJOR
+  CRITICAL
+  MAINTENANCE
+}
+
+model Incident {
+  id          String            @id @default(cuid())
+  title       String
+  severity    IncidentSeverity  @default(MINOR)
+  /// Free text so an admin can name affected services precisely.
+  affected    String            @default("")
+  startedAt   DateTime          @default(now())
+  resolvedAt  DateTime?
+  isPublic    Boolean           @default(true)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  updates     IncidentUpdate[]
+
+  @@index([resolvedAt, startedAt])
+}
+
+model IncidentUpdate {
+  id         String   @id @default(cuid())
+  incidentId String
+  incident   Incident @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  body       String
+  createdAt  DateTime @default(now())
+
+  @@index([incidentId, createdAt])
+}
+
+model MaintenanceWindow {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @default("")
+  affected    String   @default("")
+  startsAt    DateTime
+  endsAt      DateTime
+  isPublic    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([startsAt])
+}
+
+// ---------------------------------------------------------------------------
+// Tool abuse control
+// ---------------------------------------------------------------------------
+
+/// Records network/security tool invocations so abuse can be reviewed and
+/// blocked. Deliberately stores a hashed client IP rather than the address.
+model ToolUsageLog {
+  id         String   @id @default(cuid())
+  tool       String
+  target     String
+  ipHash     String
+  ok         Boolean  @default(true)
+  durationMs Int?
+  error      String?
+  createdAt  DateTime @default(now())
+
+  @@index([tool, createdAt])
+  @@index([ipHash, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Speed test results
+// ---------------------------------------------------------------------------
+
+/// Persisted so a completed test can be shared by link. Contains no personal
+/// data beyond a coarse network descriptor and a hashed IP.
+model SpeedTestResult {
+  id           String   @id @default(cuid())
+  shareToken   String   @unique
+  downloadMbps Float
+  uploadMbps   Float
+  latencyMs    Float
+  jitterMs     Float
+  /// Reverse-DNS derived descriptor, e.g. "rogers.com". Never an IP address.
+  networkName  String?
+  ipHash       String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Customer portal
+//
+// Deliberately separate from `User`: a portal account has no role field and no
+// relation into the admin tables, so it can never reach /admin.
+// ---------------------------------------------------------------------------
+
+model Customer {
+  id           String   @id @default(cuid())
+  name         String
+  accountRef   String?  @unique
+  phone        String?
+  email        String?
+  addressLine1 String?
+  addressLine2 String?
+  city         String?
+  province     String?
+  postalCode   String?
+  notes        String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  users        CustomerUser[]
+  tickets      Ticket[]
+  quotes       QuoteRequest[]
+  documents    CustomerDocument[]
+  services     CustomerServiceItem[]
+
+  @@index([isActive])
+}
+
+model CustomerUser {
+  id                 String    @id @default(cuid())
+  customerId         String
+  customer           Customer  @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  email              String    @unique
+  name               String
+  passwordHash       String
+  isActive           Boolean   @default(true)
+  mustChangePassword Boolean   @default(false)
+
+  twoFactorEnabled   Boolean   @default(false)
+  twoFactorSecret    String?
+  recoveryCodes      Json?
+
+  /// Single-use token for the invite / reset flow.
+  inviteTokenHash    String?
+  inviteExpiresAt    DateTime?
+
+  lastLoginAt        DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  sessions           CustomerSession[]
+  ticketMessages     TicketMessage[]
+  createdTickets     Ticket[]  @relation("TicketCreator")
+
+  @@index([customerId])
+}
+
+model CustomerSession {
+  id             String       @id @default(cuid())
+  customerUserId String
+  customerUser   CustomerUser @relation(fields: [customerUserId], references: [id], onDelete: Cascade)
+  tokenHash      String       @unique
+  userAgent      String?
+  ipAddress      String?
+  expiresAt      DateTime
+  revokedAt      DateTime?
+  createdAt      DateTime     @default(now())
+  lastSeenAt     DateTime     @default(now())
+
+  @@index([customerUserId])
+  @@index([expiresAt])
+}
+
+model CustomerServiceItem {
+  id          String   @id @default(cuid())
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  name        String
+  description String   @default("")
+  status      String   @default("Active")
+  startedAt   DateTime?
+  renewsAt    DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([customerId])
+}
+
+model CustomerDocument {
+  id          String   @id @default(cuid())
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  title       String
+  description String   @default("")
+  url         String
+  mimeType    String   @default("application/pdf")
+  sizeBytes   Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  @@index([customerId, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Support ticketing
+// ---------------------------------------------------------------------------
+
+enum TicketStatus {
+  NEW
+  OPEN
+  IN_PROGRESS
+  WAITING
+  RESOLVED
+  CLOSED
+}
+
+enum TicketPriority {
+  LOW
+  NORMAL
+  HIGH
+  EMERGENCY
+}
+
+model Ticket {
+  id             String         @id @default(cuid())
+  /// Short human reference shown to customers, e.g. WC-1042.
+  reference      String         @unique
+  subject        String
+  category       String         @default("General")
+  status         TicketStatus   @default(NEW)
+  priority       TicketPriority @default(NORMAL)
+
+  customerId     String
+  customer       Customer       @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  /// Null when a staff member opened the ticket on the customer's behalf.
+  createdById    String?
+  createdBy      CustomerUser?  @relation("TicketCreator", fields: [createdById], references: [id], onDelete: SetNull)
+
+  /// Staff owner. SetNull so deactivating a technician never deletes tickets.
+  assignedToId   String?
+  assignedTo     User?          @relation("TicketAssignee", fields: [assignedToId], references: [id], onDelete: SetNull)
+
+  firstResponseAt DateTime?
+  resolvedAt     DateTime?
+  closedAt       DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  messages       TicketMessage[]
+
+  @@index([customerId, status])
+  @@index([status, priority, createdAt])
+  @@index([assignedToId, status])
+}
+
+model TicketMessage {
+  id         String   @id @default(cuid())
+  ticketId   String
+  ticket     Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  body       String
+
+  /// Exactly one author side is set.
+  authorCustomerUserId String?
+  authorCustomerUser   CustomerUser? @relation(fields: [authorCustomerUserId], references: [id], onDelete: SetNull)
+  authorStaffId        String?
+  authorStaff          User?         @relation("TicketStaffAuthor", fields: [authorStaffId], references: [id], onDelete: SetNull)
+  /// Denormalised so a reply keeps its byline after the account is removed.
+  authorStaffName      String?
+
+  /// Internal notes are never returned to the portal.
+  isInternal Boolean  @default(false)
+
+  createdAt  DateTime @default(now())
+
+  attachments TicketAttachment[]
+
+  @@index([ticketId, createdAt])
+}
+
+model TicketAttachment {
+  id        String        @id @default(cuid())
+  messageId String
+  message   TicketMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  filename  String
+  url       String
+  mimeType  String
+  sizeBytes Int
+  createdAt DateTime      @default(now())
+
+  @@index([messageId])
+}
+
+// ---------------------------------------------------------------------------
+// Quote requests
+// ---------------------------------------------------------------------------
+
+enum QuoteStatus {
+  NEW
+  REVIEWING
+  QUOTED
+  WON
+  LOST
+  CANCELLED
+}
+
+model QuoteRequest {
+  id            String      @id @default(cuid())
+  reference     String      @unique
+  status        QuoteStatus @default(NEW)
+
+  contactName   String
+  email         String
+  phone         String?
+  companyName   String?
+  siteAddress   String?
+
+  /// Free-text project brief plus structured extras from the form.
+  details       String      @default("")
+  payload       Json        @default("{}")
+  timeframe     String?
+  budgetRange   String?
+
+  /// Optional link to a catalogue entry when the visitor picked one.
+  serviceId     String?
+  service       Service?    @relation(fields: [serviceId], references: [id], onDelete: SetNull)
+  serviceAreas  String[]    @default([])
+
+  /// Set once the request is matched to an existing customer.
+  customerId    String?
+  customer      Customer?   @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  internalNotes String?
+  respondedAt   DateTime?
+
+  sourcePage    String?
+  ipAddress     String?
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  attachments   QuoteAttachment[]
+
+  @@index([status, createdAt])
+}
+
+model QuoteAttachment {
+  id        String       @id @default(cuid())
+  quoteId   String
+  quote     QuoteRequest @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  filename  String
+  url       String
+  mimeType  String
+  sizeBytes Int
+  createdAt DateTime     @default(now())
+
+  @@index([quoteId])
 }

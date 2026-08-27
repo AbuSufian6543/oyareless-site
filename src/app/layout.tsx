@@ -2,12 +2,13 @@ import type { Metadata, Viewport } from "next";
 
 import { env } from "@/lib/env";
 import { getSettings } from "@/lib/settings";
+import { THEME_COLOR, themeCss } from "@/lib/theme";
 import "./globals.css";
 
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0a2a4e",
+  themeColor: THEME_COLOR,
 };
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -43,31 +44,53 @@ export async function generateMetadata(): Promise<Metadata> {
       title: `${settings.companyName} — ${settings.tagline}`,
       description: settings.description,
       url: env.siteUrl,
+      images: [
+        {
+          url: settings.ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: `${settings.companyName} — ${settings.tagline}`,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title: `${settings.companyName} — ${settings.tagline}`,
       description: settings.description,
+      images: [settings.ogImageUrl],
     },
     robots: { index: true, follow: true },
+    verification: {
+      ...(settings.verificationGoogle
+        ? { google: settings.verificationGoogle }
+        : {}),
+      ...(settings.verificationBing ? { other: { "msvalidate.01": settings.verificationBing } } : {}),
+    },
     icons: {
       icon: [
-        { url: "/favicon.svg", type: "image/svg+xml" },
-        { url: "/brand/logo.jpg", type: "image/jpeg" },
+        { url: settings.faviconUrl, type: "image/svg+xml" },
+        { url: "/icon.png", type: "image/png", sizes: "512x512" },
       ],
-      apple: "/brand/logo.jpg",
+      apple: "/apple-icon.png",
     },
     alternates: { canonical: "/" },
   };
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const settings = await getSettings();
+  // Retints the accent/brand ramps when an admin has picked custom colours.
+  const theme = themeCss(settings);
+
   return (
     <html lang="en-CA">
+      <head>
+        {theme && <style id="wc-theme">{theme}</style>}
+      </head>
       <body className="flex min-h-dvh flex-col antialiased">{children}</body>
     </html>
   );

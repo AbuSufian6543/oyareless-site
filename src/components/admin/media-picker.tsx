@@ -31,20 +31,19 @@ export function MediaPicker({
   onSelect: (item: MediaItem) => void;
 }) {
   const [items, setItems] = useState<MediaItem[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const [query, setQuery] = useState("");
   const fileInput = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async () => {
-    setLoading(true);
-    setError("");
     try {
       const response = await fetch("/api/admin/media", { cache: "no-store" });
       if (!response.ok) throw new Error("Failed to load");
       const data = (await response.json()) as { items: MediaItem[] };
       setItems(data.items);
+      setError("");
     } catch {
       setError("Could not load the media library.");
     } finally {
@@ -52,7 +51,11 @@ export function MediaPicker({
     }
   }, []);
 
+  // The picker is a dialog inside a client editor, so there is no server render
+  // to prefetch from: opening it has to go and fetch the library. The lint rule
+  // cannot see that every state update happens after the request resolves.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (open) void load();
   }, [open, load]);
 

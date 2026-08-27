@@ -33,12 +33,16 @@ export function BlockPalette({
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<BlockCategory | "All">("All");
 
-  useEffect(() => {
-    if (!open) {
+  // Each opening starts from a clean filter state. Handled during render rather
+  // than in an effect so the stale filters are never briefly visible.
+  const [wasOpen, setWasOpen] = useState(open);
+  if (open !== wasOpen) {
+    setWasOpen(open);
+    if (open) {
       setQuery("");
       setCategory("All");
     }
-  }, [open]);
+  }
 
   useEffect(() => {
     if (!open) return;

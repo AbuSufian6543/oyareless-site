@@ -1,10 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="WirelessCom.Ca">
-  <rect width="64" height="64" rx="12" fill="#0a2a4e"/>
-  <!-- Signal arcs echoing the logo's wireless mark -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0a2a4e"/>
+      <stop offset="100%" stop-color="#041325"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="13" fill="url(#bg)"/>
+  <!-- Signal arcs echoing the wireless mark in the wordmark -->
   <g fill="none" stroke-linecap="round">
-    <path d="M20 42a17 17 0 0 1 24 0" stroke="#6fc04a" stroke-width="4.5"/>
-    <path d="M26 48a9.5 9.5 0 0 1 12 0" stroke="#9fdd6c" stroke-width="4.5"/>
-    <path d="M14 36a25 25 0 0 1 36 0" stroke="#1478d4" stroke-width="4.5"/>
+    <path d="M13 35.5a26 26 0 0 1 38 0" stroke="#1478d4" stroke-width="4.6"/>
+    <path d="M19.5 42a17.5 17.5 0 0 1 25 0" stroke="#22b8d8" stroke-width="4.6"/>
+    <path d="M26 48.5a9.8 9.8 0 0 1 12 0" stroke="#7fe0f2" stroke-width="4.6"/>
   </g>
-  <circle cx="32" cy="53" r="3.6" fill="#ffffff"/>
+  <circle cx="32" cy="54" r="3.7" fill="#ffffff"/>
 </svg>
