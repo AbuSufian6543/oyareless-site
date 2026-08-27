@@ -54,6 +54,7 @@ export function SectionImage({
 
   if (!name) {
     const remote = /^https?:\/\//i.test(src);
+    const unoptimized = remote || /\.svg(?:$|\?)/i.test(src);
     if (fill) {
       return (
         <Image
@@ -62,7 +63,7 @@ export function SectionImage({
           fill
           sizes={sizes}
           priority={priority}
-          unoptimized={remote}
+          unoptimized={unoptimized}
           className={cn("object-cover", className)}
         />
       );
@@ -75,7 +76,7 @@ export function SectionImage({
         height={height}
         sizes={sizes}
         priority={priority}
-        unoptimized={remote}
+        unoptimized={unoptimized}
         className={className}
       />
     );

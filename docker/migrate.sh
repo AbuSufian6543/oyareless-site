@@ -1,12 +1,13 @@
 #!/bin/sh
 # ---------------------------------------------------------------------------
 # One-shot job: wait for Postgres, apply the schema, seed content, then
-# content-sync (new pages, unedited pages, empty photos on edited pages,
+# content-sync (new pages, unedited pages, empty photos/logos on edited pages,
+# missing service cards and brand tiles, a stats strip when Home is missing one,
 # additive nav). The `app` service
 # waits for this to finish successfully before starting. Safe to re-run:
 # the seed never overwrites edited records; content-sync fills empty photos
-# on edited pages and only replaces a page wholesale when it is unedited
-# or forced.
+# and logos on edited pages and only replaces a page wholesale when it is
+# unedited or forced.
 # ---------------------------------------------------------------------------
 set -eu
 

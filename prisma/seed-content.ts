@@ -25,6 +25,11 @@ export type SeedPage = {
 };
 
 const PHONE = "1-800-705-3189";
+const YEARS_SINCE_2005 = new Date().getFullYear() - 2005;
+
+function vendorLogo(slug: string) {
+  return `/brand/logos/${slug}.svg`;
+}
 
 function photo(name: string, alt: string) {
   return { url: `/images/${name}-1400.webp`, alt };
@@ -243,6 +248,23 @@ const home: SeedPage = {
             ],
             href: "/cybersecurity",
           },
+        ],
+      },
+    },
+    {
+      type: "stats",
+      settings: { background: "navy", paddingY: "md", align: "center" },
+      data: {
+        heading: "",
+        items: [
+          { value: "2005", label: "Serving Northern Ontario since", suffix: "" },
+          { value: "24/7", label: "Monitored alarm and video", suffix: "" },
+          {
+            value: String(YEARS_SINCE_2005),
+            suffix: "+",
+            label: "Years of local service",
+          },
+          { value: "4", label: "Pillars: data, voice, video, security", suffix: "" },
         ],
       },
     },
@@ -511,13 +533,20 @@ const home: SeedPage = {
         disclaimer:
           "Vendor names describe the equipment we install and support. WirelessCom.Ca Inc. is an authorized Hytera dealer; other names are listed as supported technologies and do not imply a formal partnership.",
         items: [
-          { name: "Hytera", category: "Two-way radio · authorized dealer", logoUrl: "", href: "/two-way-radios" },
-          { name: "Barracuda", category: "Firewall & email security", logoUrl: "", href: "/firewalls" },
-          { name: "Fortinet", category: "Next-generation firewall", logoUrl: "", href: "/firewalls" },
-          { name: "Juniper", category: "Firewall & routing", logoUrl: "", href: "/firewalls" },
+          { name: "Cisco", category: "Switching, routing and firewalls", logoUrl: vendorLogo("cisco"), href: "/it-services" },
+          { name: "UniFi", category: "Networking and Wi-Fi", logoUrl: vendorLogo("unifi"), href: "/it-services" },
+          { name: "MikroTik", category: "Routing and wireless", logoUrl: vendorLogo("mikrotik"), href: "/it-services" },
+          { name: "Fortinet", category: "Next-generation firewall", logoUrl: vendorLogo("fortinet"), href: "/firewalls" },
+          { name: "Barracuda", category: "Firewall and email security", logoUrl: vendorLogo("barracuda"), href: "/firewalls" },
+          { name: "Microsoft", category: "Windows and Microsoft 365", logoUrl: vendorLogo("microsoft"), href: "/it-services" },
+          { name: "Azure", category: "Cloud and identity", logoUrl: vendorLogo("azure"), href: "/it-services" },
+          { name: "Paradox", category: "Intrusion and alarm panels", logoUrl: vendorLogo("paradox"), href: "/security-services" },
+          { name: "Grandstream", category: "VoIP phones and PBX", logoUrl: vendorLogo("grandstream"), href: "/telephone-services" },
+          { name: "Hytera", category: "Two-way radio · authorized dealer", logoUrl: vendorLogo("hytera"), href: "/two-way-radios" },
+          { name: "Fanvil", category: "VoIP desk phones", logoUrl: vendorLogo("fanvil"), href: "/telephone-services" },
+          { name: "Juniper", category: "Firewall and routing", logoUrl: vendorLogo("juniper"), href: "/firewalls" },
           { name: "Rogers", category: "Connectivity", logoUrl: "", href: "" },
           { name: "Tait Communications", category: "Critical communications", logoUrl: "", href: "" },
-          { name: "Ubiquiti Networks", category: "Networking & Wi-Fi", logoUrl: "", href: "" },
           { name: "SureCall", category: "Cellular boosters", logoUrl: "", href: "" },
           { name: "Genetec", category: "Access control", logoUrl: "", href: "" },
         ],
@@ -2451,14 +2480,14 @@ const firewalls: SeedPage = {
         disclaimer:
           "Vendor names describe the equipment we install and support. They do not imply a formal partnership unless a relationship is stated. WirelessCom.Ca Inc. is an authorized Hytera dealer; firewall brands are supported technologies.",
         items: [
-          { name: "Barracuda", category: "NGFW, email and web security", logoUrl: "", href: "" },
-          { name: "Fortinet", category: "FortiGate next-generation firewall", logoUrl: "", href: "" },
-          { name: "Juniper", category: "SRX firewalls and routing", logoUrl: "", href: "" },
+          { name: "Barracuda", category: "NGFW, email and web security", logoUrl: vendorLogo("barracuda"), href: "" },
+          { name: "Fortinet", category: "FortiGate next-generation firewall", logoUrl: vendorLogo("fortinet"), href: "" },
+          { name: "Juniper", category: "SRX firewalls and routing", logoUrl: vendorLogo("juniper"), href: "" },
           { name: "SonicWall", category: "SMB and mid-market NGFW", logoUrl: "", href: "" },
           { name: "WatchGuard", category: "Unified threat management", logoUrl: "", href: "" },
           { name: "Palo Alto", category: "Enterprise NGFW", logoUrl: "", href: "" },
-          { name: "Cisco", category: "ASA / Firepower and related", logoUrl: "", href: "" },
-          { name: "Ubiquiti", category: "Gateway security where UniFi is the LAN", logoUrl: "", href: "" },
+          { name: "Cisco", category: "ASA / Firepower and related", logoUrl: vendorLogo("cisco"), href: "" },
+          { name: "Ubiquiti", category: "Gateway security where UniFi is the LAN", logoUrl: vendorLogo("unifi"), href: "" },
         ],
       },
     },

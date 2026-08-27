@@ -9,8 +9,10 @@
  *   - a PageRevision snapshot is written before a page is touched, so any
  *     change is reversible from the admin UI;
  *   - pages an admin has edited since seeding keep their copy unless named
- *     with --force; empty photos are still filled and missing service cards
- *     are still appended;
+ *     with --force; empty photos and logos are still filled, missing service
+ *     cards and brand tiles are still appended, and a missing home stats
+ *     strip is still inserted;
+
  *   - nothing is ever deleted, and redirects/navigation are only ever added to.
  *
  * Usage:
@@ -25,6 +27,7 @@ import {
   SEED_PAGES,
   SEED_REDIRECTS,
 } from "../prisma/seed-content";
+import { newBlockId } from "../src/lib/blocks";
 import { prisma } from "../src/lib/prisma";
 
 type Verdict = "create" | "update" | "skip-edited" | "identical";
@@ -96,10 +99,32 @@ function sameServiceCard(
   return Boolean(titleLeft && titleRight && titleLeft === titleRight);
 }
 
+function canonicalBrandName(value: unknown): string {
+  const name = normalizeTitle(value);
+  if (name === "unifi" || name === "ubiquiti" || name === "ubiquiti networks") {
+    return "unifi";
+  }
+  if (name === "azure" || name === "microsoft azure") return "azure";
+  if (name === "mikrotik" || name === "mikro tik") return "mikrotik";
+  if (name === "grandstream" || name === "grandstrea") return "grandstream";
+  if (name === "fortinet" || name === "fotinet") return "fortinet";
+  return name;
+}
+
+function sameBrand(
+  left: Record<string, unknown>,
+  right: Record<string, unknown>,
+): boolean {
+  const leftName = canonicalBrandName(left.name);
+  const rightName = canonicalBrandName(right.name);
+  return Boolean(leftName && rightName && leftName === rightName);
+}
+
 /**
- * On pages an admin has already edited, still fill empty photos and append
- * missing service cards. Copy, headlines, and photos the admin set are left
- * alone.
+ * On pages an admin has already edited, still fill empty photos and logos,
+ * append missing service cards and brand tiles, and insert a stats strip
+ * when the seed has one and the live page does not. Copy, headlines, and
+ * photos the admin set are left alone.
  */
 function fillMissingMedia(
   current: unknown,
@@ -134,6 +159,49 @@ function fillMissingMedia(
       currentItems.push({ ...seedItem });
       notes.push(`added ${String(seedItem.title)}`);
     }
+  }
+
+  const seedBrands = seed.filter((block) => block.type === "brandGrid");
+  const currentBrands = next.filter((block) => block.type === "brandGrid");
+  for (let index = 0; index < Math.min(seedBrands.length, currentBrands.length); index += 1) {
+    const seedItems = seedBrands[index].data.items as Array<Record<string, unknown>>;
+    const currentItems = currentBrands[index].data?.items;
+    if (!Array.isArray(currentItems)) continue;
+
+    for (const seedItem of seedItems) {
+      const match = currentItems.find((item) =>
+        sameBrand(item as Record<string, unknown>, seedItem),
+      ) as Record<string, unknown> | undefined;
+
+      if (match) {
+        if (!String(match.logoUrl ?? "") && seedItem.logoUrl) {
+          match.logoUrl = seedItem.logoUrl;
+          notes.push(`logo on ${String(match.name || seedItem.name)}`);
+        }
+        continue;
+      }
+
+      currentItems.push({ ...seedItem });
+      notes.push(`added brand ${String(seedItem.name)}`);
+    }
+  }
+
+  const seedStats = seed.find((block) => block.type === "stats");
+  const hasStats = next.some((block) => block.type === "stats");
+  if (seedStats && !hasStats) {
+    const insertAt = (() => {
+      const afterPillars = next.findIndex((block) => block.type === "pillars");
+      if (afterPillars >= 0) return afterPillars + 1;
+      const afterHero = next.findIndex(
+        (block) => block.type === "techHero" || block.type === "hero",
+      );
+      return afterHero >= 0 ? afterHero + 1 : 1;
+    })();
+    next.splice(insertAt, 0, {
+      ...(structuredClone(seedStats) as JsonBlock),
+      id: newBlockId(),
+    });
+    notes.push("stats highlights");
   }
 
   const seedHeroes = seed.filter((block) => block.type === "hero");
@@ -262,7 +330,7 @@ async function main(): Promise<void> {
       rows.push({
         slug: page.slug,
         verdict: "update",
-        detail: `filled missing photos without replacing copy (${filled.notes.join("; ")})`,
+        detail: `filled missing media without replacing copy (${filled.notes.join("; ")})`,
       });
 
       if (apply) {
@@ -270,7 +338,7 @@ async function main(): Promise<void> {
           existing.id,
           existing.title,
           existing.blocks,
-          "Automatic snapshot before filling missing photos",
+          "Automatic snapshot before filling missing media",
         );
         await prisma.page.update({
           where: { id: existing.id },

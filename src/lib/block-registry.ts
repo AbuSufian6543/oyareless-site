@@ -167,9 +167,9 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
     icon: "TrendingUp",
     seed: {
       items: [
-        { value: "2005", label: "Serving business since" },
-        { value: "24/7", label: "Monitoring & support" },
-        { value: "100%", label: "ESA certified installs" },
+        { value: "2005", label: "Serving Northern Ontario since" },
+        { value: "24/7", label: "Monitored alarm and video" },
+        { value: "4", label: "Pillars: data, voice, video, security" },
       ],
     },
   },

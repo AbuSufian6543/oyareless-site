@@ -102,7 +102,7 @@ export function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
               {data.highlights.map((highlight) => (
                 <li key={highlight} className="flex items-center gap-2">
                   <span
-                    className="size-1.5 rounded-full bg-accent-400"
+                    className="size-1.5 rounded-full bg-warm-400"
                     aria-hidden="true"
                   />
                   {highlight}
@@ -360,6 +360,40 @@ export function CapabilityGridBlock({
  * Vendor logos or typographic tiles. The qualifier line is content-driven so
  * relationship claims stay accurate.
  */
+function BrandLogo({
+  url,
+  name,
+  dark,
+}: {
+  url: string;
+  name: string;
+  dark: boolean;
+}) {
+  const className = cn(
+    "h-8 w-auto max-w-[10rem] object-contain",
+    dark ? "" : "opacity-90 transition-opacity group-hover:opacity-100",
+  );
+
+  if (/\.svg(?:$|\?)/i.test(url) || url.startsWith("/brand/")) {
+    return (
+      // Local SVG/PNG marks skip next/image so they are not re-encoded.
+      // eslint-disable-next-line @next/next/no-img-element
+      <img src={url} alt="" className={className} />
+    );
+  }
+
+  return (
+    <SectionImage
+      src={url}
+      alt={name}
+      width={160}
+      height={48}
+      sizes="160px"
+      className={className}
+    />
+  );
+}
+
 export function BrandGridBlock({ block }: { block: BlockOf<"brandGrid"> }) {
   const { data } = block;
   const dark = isDarkBackground(block.settings);
@@ -368,17 +402,7 @@ export function BrandGridBlock({ block }: { block: BlockOf<"brandGrid"> }) {
     const inner = (
       <>
         {item.logoUrl ? (
-          <SectionImage
-            src={item.logoUrl}
-            alt={item.name}
-            width={160}
-            height={48}
-            sizes="160px"
-            className={cn(
-              "h-8 w-auto object-contain",
-              dark ? "" : "opacity-80 transition-opacity group-hover:opacity-100",
-            )}
-          />
+          <BrandLogo url={item.logoUrl} name={item.name} dark={dark} />
         ) : (
           <span
             className={cn(
@@ -389,10 +413,20 @@ export function BrandGridBlock({ block }: { block: BlockOf<"brandGrid"> }) {
             {item.name}
           </span>
         )}
+        {item.logoUrl ? (
+          <span
+            className={cn(
+              "mt-1.5 text-center text-xs font-semibold tracking-tight",
+              dark ? "text-white" : "text-navy-800",
+            )}
+          >
+            {item.name}
+          </span>
+        ) : null}
         {item.category && (
           <span
             className={cn(
-              "mt-1.5 text-center text-[0.6875rem] leading-tight",
+              "mt-1 text-center text-[0.6875rem] leading-tight",
               dark ? "text-navy-400" : "text-slate-500",
             )}
           >
@@ -403,27 +437,41 @@ export function BrandGridBlock({ block }: { block: BlockOf<"brandGrid"> }) {
     );
 
     const className = cn(
-      "group flex h-24 shrink-0 flex-col items-center justify-center rounded-xl border px-5 transition-colors",
+      "group flex min-h-[7.25rem] shrink-0 flex-col items-center justify-center rounded-xl border px-4 py-3 transition-colors",
       data.layout === "marquee" ? "w-44" : "",
       dark
-        ? "border-navy-700 bg-navy-800/50 hover:border-accent-500/40"
-        : "border-slate-200 bg-white hover:border-brand-200",
+        ? "border-navy-700 bg-navy-800/50 hover:border-warm-400/45"
+        : "border-slate-200 bg-white hover:border-warm-300",
     );
 
-    return item.href ? (
-      <a
-        key={key}
-        href={item.href}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={className}
-      >
+    if (!item.href) {
+      return (
+        <div key={key} className={className}>
+          {inner}
+        </div>
+      );
+    }
+
+    const opensNewTab = /^(https?:)?\/\//.test(item.href);
+
+    if (opensNewTab) {
+      return (
+        <a
+          key={key}
+          href={item.href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={className}
+        >
+          {inner}
+        </a>
+      );
+    }
+
+    return (
+      <Link key={key} href={item.href} className={className}>
         {inner}
-      </a>
-    ) : (
-      <div key={key} className={className}>
-        {inner}
-      </div>
+      </Link>
     );
   };
 
@@ -449,7 +497,12 @@ export function BrandGridBlock({ block }: { block: BlockOf<"brandGrid"> }) {
           </div>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+        <div
+          className={cn(
+            "grid grid-cols-2 gap-4 sm:grid-cols-3",
+            data.items.length >= 12 ? "lg:grid-cols-4" : "lg:grid-cols-5",
+          )}
+        >
           {data.items.map((item, index) => tile(item, String(index)))}
         </div>
       )}

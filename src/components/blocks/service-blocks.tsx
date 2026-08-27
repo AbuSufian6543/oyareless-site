@@ -6,6 +6,7 @@ import { Section, SectionHeading, isDarkBackground } from "@/components/blocks/s
 import { ButtonLink } from "@/components/ui/button";
 import { BlockIcon } from "@/components/ui/icon";
 import { SectionImage } from "@/components/visuals/section-image";
+import { StatCounter } from "@/components/visuals/stat-counter";
 import type { BlockOf } from "@/lib/blocks";
 import { cn } from "@/lib/utils";
 
@@ -462,38 +463,50 @@ export function StatsBlock({ block }: { block: BlockOf<"stats"> }) {
   const dark = isDarkBackground(block.settings);
 
   return (
-    <Section settings={block.settings} defaultBackground="grid" defaultPadding="md">
+    <Section
+      settings={block.settings}
+      defaultBackground="navy"
+      defaultPadding="md"
+      className="before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-1 before:bg-gradient-to-r before:from-warm-500 before:via-warm-400 before:to-accent-400 before:content-['']"
+    >
       {block.data.heading && (
         <SectionHeading heading={block.data.heading} dark={dark} align="center" />
       )}
 
       <dl
         className={cn(
-          "grid gap-8 text-center",
+          "grid gap-4 text-center sm:gap-5",
           block.data.items.length === 2 && "sm:grid-cols-2",
           block.data.items.length === 3 && "sm:grid-cols-3",
-          block.data.items.length >= 4 && "grid-cols-2 lg:grid-cols-4",
+          block.data.items.length === 5 && "grid-cols-2 sm:grid-cols-3 lg:grid-cols-5",
+          (block.data.items.length === 4 || block.data.items.length > 5) &&
+            "grid-cols-2 lg:grid-cols-4",
         )}
       >
         {block.data.items.map((item, index) => (
-          <div key={index}>
+          <div
+            key={index}
+            className={cn(
+              "rounded-xl border px-4 py-6 lg:px-5 lg:py-7",
+              dark
+                ? "border-warm-400/25 bg-navy-900/55 shadow-[0_0_0_1px_rgb(232_148_58/0.08)]"
+                : "border-warm-200 bg-warm-50",
+            )}
+          >
             <dt className="sr-only">{item.label}</dt>
             <dd>
+              <StatCounter
+                value={item.value}
+                suffix={item.suffix}
+                className={cn(
+                  "block font-extrabold tracking-tight tabular-nums text-4xl lg:text-5xl",
+                  dark ? "text-warm-400" : "text-warm-600",
+                )}
+              />
               <span
                 className={cn(
-                  "block text-4xl font-extrabold tracking-tight lg:text-5xl",
-                  dark ? "text-accent-400" : "text-brand-600",
-                )}
-              >
-                {item.value}
-                {item.suffix && (
-                  <span className="text-2xl lg:text-3xl">{item.suffix}</span>
-                )}
-              </span>
-              <span
-                className={cn(
-                  "mt-2 block text-sm font-medium",
-                  dark ? "text-navy-200" : "text-slate-600",
+                  "mt-2.5 block text-sm font-medium leading-snug",
+                  dark ? "text-navy-100" : "text-slate-600",
                 )}
               >
                 {item.label}
