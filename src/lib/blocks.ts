@@ -178,6 +178,8 @@ const statItem = z.object({
 
 const statsData = z.object({
   heading: z.string().default(""),
+  /** Short labels for controls and technologies shown under the numbers. */
+  chips: z.array(z.string()).default([]),
   items: z.array(statItem).default([]),
 });
 

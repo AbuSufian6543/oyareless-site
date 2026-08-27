@@ -11,7 +11,7 @@
  *   - pages an admin has edited since seeding keep their copy unless named
  *     with --force; empty photos and logos are still filled, missing service
  *     cards and brand tiles are still appended, and a missing home stats
- *     strip is still inserted;
+ *     strip or defense-in-depth section is still inserted;
 
  *   - nothing is ever deleted, and redirects/navigation are only ever added to.
  *
@@ -120,11 +120,39 @@ function sameBrand(
   return Boolean(leftName && rightName && leftName === rightName);
 }
 
+function insertMissingSeedBlock(
+  next: JsonBlock[],
+  seed: ReturnType<typeof buildBlocks>,
+  type: string,
+  afterTypes: string[],
+  notes: string[],
+  note: string,
+): void {
+  const seedBlock = seed.find((block) => block.type === type);
+  if (!seedBlock || next.some((block) => block.type === type)) return;
+
+  let insertAt = -1;
+  for (const after of afterTypes) {
+    const index = next.findIndex((block) => block.type === after);
+    if (index >= 0) {
+      insertAt = index + 1;
+      break;
+    }
+  }
+  if (insertAt < 0) insertAt = Math.min(next.length, 2);
+
+  next.splice(insertAt, 0, {
+    ...(structuredClone(seedBlock) as JsonBlock),
+    id: newBlockId(),
+  });
+  notes.push(note);
+}
+
 /**
  * On pages an admin has already edited, still fill empty photos and logos,
  * append missing service cards and brand tiles, and insert a stats strip
- * when the seed has one and the live page does not. Copy, headlines, and
- * photos the admin set are left alone.
+ * or defense-in-depth section when the seed has one and the live page does
+ * not. Copy, headlines, and photos the admin set are left alone.
  */
 function fillMissingMedia(
   current: unknown,
@@ -187,22 +215,42 @@ function fillMissingMedia(
   }
 
   const seedStats = seed.find((block) => block.type === "stats");
-  const hasStats = next.some((block) => block.type === "stats");
-  if (seedStats && !hasStats) {
-    const insertAt = (() => {
-      const afterPillars = next.findIndex((block) => block.type === "pillars");
-      if (afterPillars >= 0) return afterPillars + 1;
-      const afterHero = next.findIndex(
-        (block) => block.type === "techHero" || block.type === "hero",
-      );
-      return afterHero >= 0 ? afterHero + 1 : 1;
-    })();
-    next.splice(insertAt, 0, {
-      ...(structuredClone(seedStats) as JsonBlock),
-      id: newBlockId(),
-    });
-    notes.push("stats highlights");
+  const currentStats = next.find((block) => block.type === "stats");
+  if (seedStats && currentStats) {
+    const seedData = seedStats.data as unknown as Record<string, unknown>;
+    const currentData = (currentStats.data ??= {});
+    if (!String(currentData.heading ?? "") && seedData.heading) {
+      currentData.heading = seedData.heading;
+      notes.push("stats heading");
+    }
+    const seedChips = seedData.chips;
+    const currentChips = currentData.chips;
+    if (
+      Array.isArray(seedChips) &&
+      seedChips.length > 0 &&
+      (!Array.isArray(currentChips) || currentChips.length === 0)
+    ) {
+      currentData.chips = [...seedChips];
+      notes.push("stats chips");
+    }
   }
+
+  insertMissingSeedBlock(
+    next,
+    seed,
+    "stats",
+    ["pillars", "techHero", "hero"],
+    notes,
+    "stats highlights",
+  );
+  insertMissingSeedBlock(
+    next,
+    seed,
+    "defenseInDepth",
+    ["imageText", "stats", "statusStrip", "pillars"],
+    notes,
+    "defense in depth",
+  );
 
   const seedHeroes = seed.filter((block) => block.type === "hero");
   const currentHeroes = next.filter((block) => block.type === "hero");

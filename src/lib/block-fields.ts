@@ -217,6 +217,13 @@ export const BLOCK_FIELDS: Record<BlockType, FieldDef[]> = {
   stats: [
     { kind: "text", key: "heading", label: "Heading" },
     {
+      kind: "stringList",
+      key: "chips",
+      label: "Network and security labels",
+      itemLabel: "Label",
+      hint: "Short tags such as NGFW, VLAN or VPN. Leave empty to hide the row.",
+    },
+    {
       kind: "objectList",
       key: "items",
       label: "Statistics",

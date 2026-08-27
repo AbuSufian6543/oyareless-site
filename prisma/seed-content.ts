@@ -189,9 +189,9 @@ const home: SeedPage = {
         ],
         highlights: [
           "Serving businesses since 2005",
-          "Windows & macOS environments",
+          "Firewalls, VLANs, VPN and Wi-Fi",
           "24/7 monitored alarm & video",
-          "Certified, permitted installations",
+          "Endpoint protection and backups",
         ],
       },
     },
@@ -253,9 +253,21 @@ const home: SeedPage = {
     },
     {
       type: "stats",
-      settings: { background: "navy", paddingY: "md", align: "center" },
+      settings: { background: "grid", paddingY: "md", align: "center" },
       data: {
-        heading: "",
+        heading: "Networks and security, locally owned",
+        chips: [
+          "NGFW",
+          "VLAN",
+          "VPN",
+          "Wi-Fi",
+          "EDR",
+          "Email security",
+          "CCTV",
+          "Access control",
+          "VoIP",
+          "DMR",
+        ],
         items: [
           { value: "2005", label: "Serving Northern Ontario since", suffix: "" },
           { value: "24/7", label: "Monitored alarm and video", suffix: "" },
@@ -466,6 +478,58 @@ const home: SeedPage = {
       },
     },
     {
+      type: "defenseInDepth",
+      settings: { background: "navy", paddingY: "xl" },
+      data: {
+        eyebrow: "Networking and cybersecurity",
+        heading: "Layered, not bolted on",
+        description:
+          "We design the network and the security together. Segmentation, firewalls, endpoints and recovery are planned as one system so a failure in one place does not become an outage or a breach. We help protect systems and reduce risk — we do not claim to eliminate it.",
+        centreLabel: "Your data",
+        layers: [
+          {
+            icon: "shield",
+            title: "Perimeter",
+            description: "Next-generation firewalls, VPN and email filtering before traffic reaches the LAN.",
+            controls: ["NGFW", "VPN", "geo-blocking", "email security"],
+          },
+          {
+            icon: "network",
+            title: "Network",
+            description: "Switching, VLANs and Wi-Fi isolation so a compromised endpoint cannot roam.",
+            controls: ["VLANs", "ACLs", "Wi-Fi isolation", "fiber"],
+          },
+          {
+            icon: "monitor",
+            title: "Endpoint",
+            description: "The PCs, phones and servers people actually use.",
+            controls: ["EDR", "patching", "encryption"],
+          },
+          {
+            icon: "database",
+            title: "Data & recovery",
+            description: "Backups that still work after ransomware, with a restore you have actually tested.",
+            controls: ["immutable backups", "restore tests", "DR runbooks"],
+          },
+          {
+            icon: "cctv",
+            title: "Building",
+            description: "Cameras, doors and alarms on the same network, with 24/7 monitoring where you contract it.",
+            controls: ["IP CCTV", "access control", "monitored alarms"],
+          },
+        ],
+        threats: [
+          "Phishing and credential theft",
+          "Ransomware",
+          "Business email compromise",
+          "Unpatched internet-facing services",
+          "Unsecured remote access",
+          "Lost or stolen laptops",
+          "Unsegmented cameras and IoT",
+        ],
+      },
+    },
+    {
       type: "featureGrid",
       settings: { background: "white", paddingY: "lg" },
       data: {
@@ -525,10 +589,10 @@ const home: SeedPage = {
       type: "brandGrid",
       settings: { background: "light", paddingY: "lg" },
       data: {
-        eyebrow: "",
+        eyebrow: "Networking, cybersecurity, voice and physical security",
         heading: "Technologies we deploy and support",
         description:
-          "We design around equipment we are trained on and can support long term.",
+          "Switching, firewalls, Wi-Fi, phones, radios, cameras and cloud — equipment we are trained on and can support long term.",
         layout: "grid",
         disclaimer:
           "Vendor names describe the equipment we install and support. WirelessCom.Ca Inc. is an authorized Hytera dealer; other names are listed as supported technologies and do not imply a formal partnership.",

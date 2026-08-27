@@ -166,6 +166,8 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
     category: "Content",
     icon: "TrendingUp",
     seed: {
+      heading: "Networks and security, locally owned",
+      chips: ["NGFW", "VLAN", "VPN", "Wi-Fi", "EDR", "Email security"],
       items: [
         { value: "2005", label: "Serving Northern Ontario since" },
         { value: "24/7", label: "Monitored alarm and video" },

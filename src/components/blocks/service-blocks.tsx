@@ -461,16 +461,43 @@ export function PricingBlock({ block }: { block: BlockOf<"pricing"> }) {
 
 export function StatsBlock({ block }: { block: BlockOf<"stats"> }) {
   const dark = isDarkBackground(block.settings);
+  const chips = block.data.chips ?? [];
 
   return (
     <Section
       settings={block.settings}
-      defaultBackground="navy"
+      defaultBackground="grid"
       defaultPadding="md"
-      className="before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-1 before:bg-gradient-to-r before:from-warm-500 before:via-warm-400 before:to-accent-400 before:content-['']"
+      className="isolate before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-1 before:bg-gradient-to-r before:from-warm-500 before:via-warm-400 before:to-accent-400 before:content-['']"
     >
-      {block.data.heading && (
-        <SectionHeading heading={block.data.heading} dark={dark} align="center" />
+      {(block.data.heading || chips.length > 0) && (
+        <div className={cn("mb-8", block.data.heading ? "" : "text-center")}>
+          {block.data.heading ? (
+            <SectionHeading
+              heading={block.data.heading}
+              dark={dark}
+              align="center"
+              className={chips.length > 0 ? "mb-5" : undefined}
+            />
+          ) : null}
+          {chips.length > 0 && (
+            <ul className="flex flex-wrap items-center justify-center gap-2">
+              {chips.map((chip) => (
+                <li
+                  key={chip}
+                  className={cn(
+                    "rounded-full border px-2.5 py-1 font-mono text-[0.6875rem] font-semibold tracking-wide",
+                    dark
+                      ? "border-accent-500/25 bg-navy-950/40 text-accent-200"
+                      : "border-slate-200 bg-white text-navy-700",
+                  )}
+                >
+                  {chip}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       )}
 
       <dl
@@ -495,6 +522,16 @@ export function StatsBlock({ block }: { block: BlockOf<"stats"> }) {
           >
             <dt className="sr-only">{item.label}</dt>
             <dd>
+              <span
+                className={cn(
+                  "mx-auto mb-3 flex size-9 items-center justify-center rounded-lg",
+                  dark
+                    ? "bg-warm-400/15 text-warm-300"
+                    : "bg-warm-100 text-warm-700",
+                )}
+              >
+                <BlockIcon name={statIcon(item.value, item.label)} className="size-4" />
+              </span>
               <StatCounter
                 value={item.value}
                 suffix={item.suffix}
@@ -517,6 +554,18 @@ export function StatsBlock({ block }: { block: BlockOf<"stats"> }) {
       </dl>
     </Section>
   );
+}
+
+function statIcon(value: string, label: string): string {
+  const hay = `${value} ${label}`.toLowerCase();
+  if (hay.includes("24/7") || hay.includes("alarm") || hay.includes("monitor")) {
+    return "siren";
+  }
+  if (hay.includes("2005") || hay.includes("since")) return "award";
+  if (hay.includes("year")) return "activity";
+  if (hay.includes("pillar")) return "layers";
+  if (hay.includes("esa")) return "shield-check";
+  return "network";
 }
 
 export function LogoStripBlock({ block }: { block: BlockOf<"logoStrip"> }) {

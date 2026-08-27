@@ -10,6 +10,7 @@ import { ButtonLink, type ButtonVariant } from "@/components/ui/button";
 import { BlockIcon } from "@/components/ui/icon";
 import { SectionImage } from "@/components/visuals/section-image";
 import { TechBackdrop } from "@/components/visuals/tech-backdrop";
+import { SiteStackPanel } from "@/components/visuals/site-stack-panel";
 import type { BlockOf } from "@/lib/blocks";
 import { cn } from "@/lib/utils";
 
@@ -59,6 +60,13 @@ export function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
       />
 
       <div className="container-page relative">
+        <div
+          className={cn(
+            "grid items-center gap-12",
+            !data.backgroundImageUrl &&
+              "lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,22rem)] lg:gap-16",
+          )}
+        >
         <div className="max-w-3xl">
           {data.eyebrow && (
             <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-accent-500/30 bg-accent-500/10 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-accent-300">
@@ -110,6 +118,8 @@ export function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
               ))}
             </ul>
           )}
+        </div>
+          {!data.backgroundImageUrl && <SiteStackPanel />}
         </div>
       </div>
     </section>
@@ -885,9 +895,13 @@ export function DefenseInDepthBlock({
                 key={index}
                 className={cn(
                   "absolute rounded-full border",
-                  dark
-                    ? "border-accent-500/25 bg-accent-500/[0.04]"
-                    : "border-brand-300/60 bg-brand-500/[0.04]",
+                  index === layers.length - 1
+                    ? dark
+                      ? "border-warm-400/45 bg-warm-400/[0.06]"
+                      : "border-warm-300 bg-warm-50"
+                    : dark
+                      ? "border-accent-500/25 bg-accent-500/[0.04]"
+                      : "border-brand-300/60 bg-brand-500/[0.04]",
                 )}
                 style={{
                   inset: `${inset / 2}%`,
@@ -896,12 +910,24 @@ export function DefenseInDepthBlock({
                 <span
                   className={cn(
                     "absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-[0.625rem] font-bold uppercase tracking-wider",
-                    dark ? "text-accent-300" : "text-brand-700",
+                    index === layers.length - 1
+                      ? dark
+                        ? "text-warm-300"
+                        : "text-warm-700"
+                      : dark
+                        ? "text-accent-300"
+                        : "text-brand-700",
                   )}
                   style={{ top: "0.5rem" }}
                 >
                   {layer.title}
                 </span>
+                <span
+                  className={cn(
+                    "absolute left-1/2 top-0 size-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full animate-live-dot",
+                    index === layers.length - 1 ? "bg-warm-400" : "bg-accent-400",
+                  )}
+                />
               </div>
             );
           })}
@@ -910,7 +936,7 @@ export function DefenseInDepthBlock({
             className={cn(
               "absolute left-1/2 top-1/2 flex size-24 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full text-center text-xs font-bold",
               dark
-                ? "bg-accent-500 text-navy-950"
+                ? "bg-warm-400 text-navy-950"
                 : "bg-brand-600 text-white",
             )}
           >
