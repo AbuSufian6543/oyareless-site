@@ -6,6 +6,8 @@ import { LoaderCircle } from "lucide-react";
 const AREAS = [
   "IT services",
   "Cybersecurity",
+  "Firewalls",
+  "AI cameras & phones",
   "Networking / Wi-Fi",
   "VoIP telephone",
   "Video surveillance",

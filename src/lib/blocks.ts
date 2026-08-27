@@ -85,6 +85,8 @@ const itemIcon = z
     "wrench",
     "support",
     "endpoint",
+    "sparkles",
+    "cpu",
   ])
   .default("check");
 

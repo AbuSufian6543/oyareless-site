@@ -11,6 +11,9 @@ import { NextResponse, type NextRequest } from "next/server";
 const EXPLICIT_REDIRECTS: Record<string, string> = {
   "/index.html": "/",
   "/home.html": "/",
+  "/ai.html": "/ai-services",
+  "/firewall.html": "/firewalls",
+  "/firewalls.html": "/firewalls",
   "/blog.html": "/news",
   "/news.html": "/news",
   "/live-video-broadcasting.html": "/live",

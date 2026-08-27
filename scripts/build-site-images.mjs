@@ -107,6 +107,30 @@ const IMAGES = [
     prompt:
       "Technician in a dark navy work shirt terminating network cables into a rack-mounted patch panel, neatly bundled blue and white cables, cool cyan work light, face not visible.",
   },
+  {
+    name: "firewall",
+    master: "gen-firewall.png",
+    alt: "Rack-mounted next-generation firewall appliances in a dark cabinet with cyan status lights and dressed ethernet",
+    origin: "generated",
+    prompt:
+      "Rack-mounted next-generation firewall appliances in a dark enterprise cabinet, generic unbranded black hardware, cyan and blue status LEDs, neatly dressed ethernet, no logos or text.",
+  },
+  {
+    name: "ai-camera",
+    master: "gen-ai-camera.png",
+    alt: "IP dome camera in the foreground with a security monitor showing cyan AI detection overlays on a night-time scene",
+    origin: "generated",
+    prompt:
+      "Professional IP dome camera in the foreground of a dark security desk, monitor showing abstract cyan bounding-box overlays on a muted night feed, no logos or readable UI text.",
+  },
+  {
+    name: "ai-phone",
+    master: "gen-ai-phone.png",
+    alt: "Black executive VoIP desk phone whose display shows an abstract cyan assistant waveform",
+    origin: "generated",
+    prompt:
+      "Modern black executive VoIP desk phone on a dark desk, colour display showing an abstract cyan assistant waveform, cool blue rim lighting, no logos or readable brand names.",
+  },
 ];
 
 async function main() {

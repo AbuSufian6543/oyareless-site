@@ -302,6 +302,49 @@ async function seedCatalogue(): Promise<void> {
       description: "Access control platforms we install and maintain.",
       order: 4,
     },
+    {
+      slug: "barracuda",
+      name: "Barracuda",
+      category: "Firewall & email security",
+      description:
+        "Next-generation firewalls, email and web security we design, install and support.",
+      order: 5,
+    },
+    {
+      slug: "fortinet",
+      name: "Fortinet",
+      category: "Next-generation firewall",
+      description: "FortiGate firewalls we size, install and support for offices and multi-site networks.",
+      order: 6,
+    },
+    {
+      slug: "juniper",
+      name: "Juniper",
+      category: "Firewall & routing",
+      description: "SRX firewalls and related routing we deploy and maintain.",
+      order: 7,
+    },
+    {
+      slug: "sonicwall",
+      name: "SonicWall",
+      category: "Next-generation firewall",
+      description: "SMB and mid-market firewalls we take over or replace as needed.",
+      order: 8,
+    },
+    {
+      slug: "watchguard",
+      name: "WatchGuard",
+      category: "Unified threat management",
+      description: "UTM and firewall appliances we install and support.",
+      order: 9,
+    },
+    {
+      slug: "palo-alto",
+      name: "Palo Alto",
+      category: "Enterprise firewall",
+      description: "Enterprise next-generation firewalls we deploy where the site needs that class of appliance.",
+      order: 10,
+    },
   ];
 
   for (const brand of brands) {
@@ -339,6 +382,20 @@ async function seedCatalogue(): Promise<void> {
         "Open /remote-support, download the client we host, and read us the ID and one-time password. Nothing happens until you share those, and you can end the session by closing the window.",
       category: "Support",
       order: 3,
+    },
+    {
+      question: "Do you install Barracuda, Fortinet or Juniper firewalls?",
+      answer:
+        "Yes. Those are platforms we design, install and support, along with similar next-generation firewalls such as SonicWall, WatchGuard, Palo Alto and Cisco. We pick the appliance for the circuit and the applications, then we own the rule base. Listing a brand means we support the technology; it is not a claim of partnership unless we say so.",
+      category: "IT & networking",
+      order: 4,
+    },
+    {
+      question: "Do you offer AI on cameras and phones?",
+      answer:
+        "Yes. On cameras we add analytics — people, vehicles, line crossing and search of recorded video — on the system we install. On phones we turn on intelligent attendants, routing and transcription in the VoIP platform we already support. Analytics and transcripts stay on equipment you choose; we do not send video or calls to a third party unless you ask us to.",
+      category: "Security & telephone",
+      order: 5,
     },
   ];
 

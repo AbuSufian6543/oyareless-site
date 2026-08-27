@@ -26,7 +26,9 @@ export function FallbackHome() {
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-navy-200">
             IT services, cybersecurity, networking, telephone systems, security
             and alarm systems, internet, and structured cabling — designed,
-            installed, and supported by our team in Sault Ste. Marie.
+            installed, and supported by our team in Sault Ste. Marie. Firewalls
+            we support include Barracuda, Fortinet and Juniper. Cameras and
+            phones can include practical AI analytics and attendants.
           </p>
           <div className="mt-9 flex flex-wrap gap-3">
             <Link

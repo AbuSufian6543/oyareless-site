@@ -46,6 +46,8 @@ import {
   Wifi,
   Wrench,
   Zap,
+  Sparkles,
+  Cpu,
   type LucideIcon,
 } from "lucide-react";
 
@@ -105,6 +107,8 @@ const ICONS: Record<string, LucideIcon> = {
   wrench: Wrench,
   support: LifeBuoy,
   endpoint: MonitorSmartphone,
+  sparkles: Sparkles,
+  cpu: Cpu,
 };
 
 export const ICON_NAMES = Object.keys(ICONS);

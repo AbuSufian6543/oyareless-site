@@ -78,6 +78,8 @@ const FALLBACK_HEADER: NavNode[] = [
     children: [
       { id: "it", label: "IT Services", href: "/it-services", openInNewTab: false, children: [] },
       { id: "cyber", label: "Cybersecurity", href: "/cybersecurity", openInNewTab: false, children: [] },
+      { id: "firewalls", label: "Firewalls", href: "/firewalls", openInNewTab: false, children: [] },
+      { id: "ai", label: "AI cameras & phones", href: "/ai-services", openInNewTab: false, children: [] },
       { id: "security", label: "Security Systems", href: "/security-services", openInNewTab: false, children: [] },
       { id: "phone", label: "Telephone (VoIP)", href: "/telephone-services", openInNewTab: false, children: [] },
       { id: "internet", label: "Internet Services", href: "/internet-services", openInNewTab: false, children: [] },

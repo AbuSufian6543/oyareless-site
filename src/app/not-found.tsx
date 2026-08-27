@@ -51,6 +51,8 @@ export default function NotFound() {
                 {[
                   { href: "/search", label: "Search" },
                   { href: "/speed-test", label: "Speed test" },
+                  { href: "/firewalls", label: "Firewalls" },
+                  { href: "/ai-services", label: "AI cameras & phones" },
                   { href: "/it-services", label: "IT Services" },
                   { href: "/cybersecurity", label: "Cybersecurity" },
                   { href: "/security-services", label: "Security Services" },

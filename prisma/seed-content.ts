@@ -82,7 +82,7 @@ const home: SeedPage = {
   navLabel: "Home",
   metaTitle: "IT, Networking, Cybersecurity & Security Systems in Northern Ontario",
   metaDescription:
-    "WirelessCom.Ca Inc. delivers managed IT, cybersecurity, networking, VoIP telephone, video surveillance and alarm security systems to businesses across Northern Ontario. Serving Sault Ste. Marie since 2005.",
+    "WirelessCom.Ca Inc. delivers managed IT, cybersecurity, Barracuda Fortinet and Juniper firewalls, AI camera analytics, VoIP with AI attendants, video surveillance and alarm security to businesses across Northern Ontario. Serving Sault Ste. Marie since 2005.",
   showInHeaderNav: true,
   navOrder: 0,
   isSystem: true,
@@ -137,7 +137,7 @@ const home: SeedPage = {
             description: "Business telephony and licensed two-way radio.",
             points: [
               "Cloud-hosted VoIP and desk phones",
-              "Auto-attendants and voicemail-to-email",
+              "AI attendant, routing and transcription",
               "Hytera DMR radios and repeaters",
             ],
             href: "/telephone-services",
@@ -148,7 +148,7 @@ const home: SeedPage = {
             description: "Surveillance you can actually review after an incident.",
             points: [
               "IP cameras and network video recorders",
-              "Retention planning and remote viewing",
+              "AI analytics for people, vehicles and search",
               "Live event and job site broadcasting",
             ],
             href: "/security-services",
@@ -159,7 +159,7 @@ const home: SeedPage = {
             description: "Layered protection for the network and the building.",
             points: [
               "Firewalls, endpoint protection and patching",
-              "Monitored intrusion detection",
+              "Barracuda, Fortinet, Juniper and similar NGFWs",
               "Access control and smart locks",
             ],
             href: "/cybersecurity",
@@ -202,7 +202,16 @@ const home: SeedPage = {
             description:
               "Firewalls, endpoint protection, vulnerability assessments, ransomware defence and backup with disaster recovery.",
             href: "/cybersecurity",
-            imageUrl: "",
+            imageUrl: "/images/cybersecurity-1400.webp",
+            badge: "",
+          },
+          {
+            icon: "router",
+            title: "Firewalls",
+            description:
+              "Next-generation firewalls we design, install and support — Barracuda, Fortinet, Juniper and other platforms we are trained on.",
+            href: "/firewalls",
+            imageUrl: "/images/firewall-1400.webp",
             badge: "",
           },
           {
@@ -211,7 +220,16 @@ const home: SeedPage = {
             description:
               "IP CCTV, network video recorders, intrusion detection and 24/7 monitored alarm systems.",
             href: "/security-services",
-            imageUrl: "",
+            imageUrl: "/images/surveillance-1400.webp",
+            badge: "",
+          },
+          {
+            icon: "sparkles",
+            title: "AI for cameras & phones",
+            description:
+              "Analytics on your cameras and intelligent features on your telephone system — installed and supported by the same local team.",
+            href: "/ai-services",
+            imageUrl: "/images/ai-camera-1400.webp",
             badge: "",
           },
           {
@@ -220,7 +238,7 @@ const home: SeedPage = {
             description:
               "Cloud-hosted IP VoIP with auto-attendants, voicemail-to-email, mobile apps and a full range of desk phones.",
             href: "/telephone-services",
-            imageUrl: "",
+            imageUrl: "/images/voip-1400.webp",
             badge: "",
           },
           {
@@ -390,7 +408,10 @@ const home: SeedPage = {
         disclaimer:
           "Vendor names describe the equipment we install and support. WirelessCom.Ca Inc. is an authorized Hytera dealer; other names are listed as supported technologies and do not imply a formal partnership.",
         items: [
-          { name: "Hytera", category: "Two-way radio · authorized dealer", logoUrl: "", href: "" },
+          { name: "Hytera", category: "Two-way radio · authorized dealer", logoUrl: "", href: "/two-way-radios" },
+          { name: "Barracuda", category: "Firewall & email security", logoUrl: "", href: "/firewalls" },
+          { name: "Fortinet", category: "Next-generation firewall", logoUrl: "", href: "/firewalls" },
+          { name: "Juniper", category: "Firewall & routing", logoUrl: "", href: "/firewalls" },
           { name: "Rogers", category: "Connectivity", logoUrl: "", href: "" },
           { name: "Tait Communications", category: "Critical communications", logoUrl: "", href: "" },
           { name: "Ubiquiti Networks", category: "Networking & Wi-Fi", logoUrl: "", href: "" },
@@ -567,7 +588,7 @@ const cybersecurity: SeedPage = {
   title: "Cybersecurity",
   metaTitle: "Cybersecurity Services for Business",
   metaDescription:
-    "Enterprise-grade cybersecurity for Ontario businesses: network security, endpoint protection, firewalls, vulnerability assessments, ransomware defence, backup and disaster recovery.",
+    "Enterprise-grade cybersecurity for Ontario businesses: Barracuda, Fortinet and Juniper firewalls, endpoint protection, vulnerability assessments, ransomware defence, backup and disaster recovery.",
   showInHeaderNav: true,
   navOrder: 20,
   blocks: [
@@ -628,16 +649,41 @@ const cybersecurity: SeedPage = {
       settings: { background: "light", paddingY: "xl" },
       data: {
         heading: "Firewall & perimeter security",
-        description: "A properly configured firewall is your first line of defence.",
+        description:
+          "A properly configured next-generation firewall is the first serious control on the network. We design, install and support the platforms we are trained on — Barracuda, Fortinet, Juniper and similar appliances — rather than dropping a box in and walking away.",
         columns: "3",
         style: "card",
         items: [
-          { icon: "shield", title: "Next-generation firewalls", description: "" },
-          { icon: "alert", title: "Intrusion Prevention Systems (IPS)", description: "" },
-          { icon: "eye", title: "Intrusion Detection Systems (IDS)", description: "" },
+          { icon: "shield", title: "Next-generation firewalls (NGFW)", description: "Application-aware rules, IPS and encrypted inspection where the site needs it." },
+          { icon: "router", title: "Barracuda, Fortinet, Juniper and similar", description: "We size, install and support the appliance that fits the site — not a single-vendor lock-in." },
+          { icon: "alert", title: "Intrusion prevention (IPS/IDS)", description: "" },
           { icon: "globe", title: "Web content filtering", description: "" },
           { icon: "map", title: "Geo-blocking", description: "" },
-          { icon: "lock", title: "Secure remote access", description: "" },
+          { icon: "lock", title: "Site-to-site and remote-access VPN", description: "" },
+        ],
+      },
+    },
+    {
+      type: "imageText",
+      settings: { background: "white", paddingY: "xl" },
+      data: {
+        eyebrow: "Firewalls we deploy",
+        heading: "The right appliance for the site, then ongoing support",
+        html: "<p>Most businesses do not need a data-centre chassis. They need a firewall that is sized for their internet circuit, their VPN users and the applications they actually run — then someone who will still answer the phone when a rule change is required.</p><p>WirelessCom.Ca Inc. designs, installs and supports next-generation firewalls including <strong>Barracuda</strong>, <strong>Fortinet</strong> and <strong>Juniper</strong>, along with other platforms we are trained on such as SonicWall, WatchGuard, Palo Alto and Cisco. These are technologies we deploy and support; listing them does not imply a formal partnership unless we say so.</p>",
+        image: {
+          url: "/images/firewall-1400.webp",
+          alt: "Rack-mounted next-generation firewall appliances in a dark cabinet with cyan status lights and dressed ethernet",
+          caption: "",
+        },
+        imagePosition: "left",
+        bullets: [
+          "Site survey, sizing and a documented rule base",
+          "High availability where downtime is not acceptable",
+          "VPN for staff, partners and other sites",
+          "Firmware, backups of the config, and change control",
+        ],
+        buttons: [
+          { label: "Firewall services", href: "/firewalls", style: "secondary", openInNewTab: false },
         ],
       },
     },
@@ -809,7 +855,7 @@ const securityServices: SeedPage = {
   title: "Security Services",
   navLabel: "Security Systems",
   metaDescription:
-    "IP CCTV surveillance, access control, intrusion detection and 24/7 monitored alarm systems for businesses in Sault Ste. Marie and Northern Ontario.",
+    "IP CCTV surveillance with optional AI analytics, access control, intrusion detection and 24/7 monitored alarm systems for businesses in Sault Ste. Marie and Northern Ontario.",
   showInHeaderNav: true,
   navOrder: 30,
   blocks: [
@@ -860,7 +906,7 @@ const securityServices: SeedPage = {
       data: {
         heading: "What we install and service",
         description: "",
-        columns: "2",
+        columns: "3",
         style: "card",
         items: [
           {
@@ -870,11 +916,41 @@ const securityServices: SeedPage = {
               "High-definition IP cameras with on-site or cloud recording, remote viewing and retention that meets your policy.",
           },
           {
+            icon: "sparkles",
+            title: "AI camera analytics",
+            description:
+              "People, vehicle and line-crossing detection, smarter search of recorded video, and fewer false alarms — running on the system we install.",
+          },
+          {
             icon: "phone",
             title: "VoIP telephone entry systems",
             description:
               "Door and gate entry that rings your phones and mobiles, with video verification where required.",
           },
+        ],
+      },
+    },
+    {
+      type: "imageText",
+      settings: { background: "white", paddingY: "xl" },
+      data: {
+        eyebrow: "AI on your cameras",
+        heading: "See what matters, not every leaf in the wind",
+        html: "<p>A camera that records everything is only useful if you can find the event afterwards. We install and support IP camera systems with optional <strong>AI analytics</strong>: person and vehicle detection, line crossing, loitering, and search across recorded video so a technician is not scrubbing hours of footage by hand.</p><p>Analytics run on the camera, the recorder, or a service you choose — we will say which, and we will not send your video to a third party unless you ask us to. The same team that pulls the cable also sets the rules.</p>",
+        image: {
+          url: "/images/ai-camera-1400.webp",
+          alt: "IP dome camera in the foreground with a security monitor showing cyan AI detection overlays on a night-time scene",
+          caption: "",
+        },
+        imagePosition: "right",
+        bullets: [
+          "Fewer nuisance alarms from weather, headlights and wildlife",
+          "Search recorded video by object type and time window",
+          "Alerts to staff phones when a rule actually matches",
+          "Designed with the network, storage and retention in one plan",
+        ],
+        buttons: [
+          { label: "AI for cameras & phones", href: "/ai-services", style: "secondary", openInNewTab: false },
         ],
       },
     },
@@ -920,7 +996,7 @@ const telephoneServices: SeedPage = {
   title: "Telephone Services",
   navLabel: "Telephone (VoIP)",
   metaDescription:
-    "Cloud-hosted IP VoIP telephone service for business: scalable, mobile-friendly, feature-rich and supported locally from Sault Ste. Marie.",
+    "Cloud-hosted IP VoIP telephone service for business: desk phones, AI attendants, call transcription, mobile apps and local support from Sault Ste. Marie.",
   showInHeaderNav: true,
   navOrder: 40,
   blocks: [
@@ -964,6 +1040,12 @@ const telephoneServices: SeedPage = {
               "Voicemail-to-email, call forwarding, auto-attendants, conference calling and more.",
           },
           {
+            icon: "sparkles",
+            title: "AI attendant, routing and transcription",
+            description:
+              "Intelligent auto-attendants, call summaries and voicemail transcription on the telephone system we install — so callers reach the right person without a maze of menus.",
+          },
+          {
             icon: "lock",
             title: "Reliability and security",
             description:
@@ -993,6 +1075,30 @@ const telephoneServices: SeedPage = {
           ["IP video phones for Android", "Powerful voice, video and web portal in one device"],
           ["DECT cordless IP phones", "Mobilising your VoIP solution around a building or yard"],
           ["Softphone app", "Any SIP account on any mobile device"],
+        ],
+      },
+    },
+    {
+      type: "imageText",
+      settings: { background: "white", paddingY: "xl" },
+      data: {
+        eyebrow: "AI on your phones",
+        heading: "A receptionist that never misses the first ring",
+        html: "<p>Business telephone systems now include practical AI: an attendant that understands what the caller is asking, routes to the right queue, transcribes voicemail, and summarises a long call so staff are not starting from a blank note.</p><p>We install and support those features on the VoIP platforms we already put in — desk phones, DECT, and the mobile app — with the same local team that handles the rest of the PBX. Nothing is sent to a mystery cloud unless you choose that option and we document it.</p>",
+        image: {
+          url: "/images/ai-phone-1400.webp",
+          alt: "Black executive VoIP desk phone whose display shows an abstract cyan assistant waveform",
+          caption: "",
+        },
+        imagePosition: "left",
+        bullets: [
+          "Natural-language auto-attendant instead of a deep DTMF tree",
+          "Voicemail and call transcription into email",
+          "After-hours coverage without adding a night receptionist",
+          "Works with the handsets and softphones we already supply",
+        ],
+        buttons: [
+          { label: "AI for cameras & phones", href: "/ai-services", style: "secondary", openInNewTab: false },
         ],
       },
     },
@@ -1849,10 +1955,332 @@ const e911: SeedPage = {
   ],
 };
 
+const aiServices: SeedPage = {
+  slug: "ai-services",
+  title: "AI for cameras & phones",
+  navLabel: "AI cameras & phones",
+  metaTitle: "AI Camera Analytics and AI Telephone Systems",
+  metaDescription:
+    "WirelessCom.Ca Inc. installs and supports AI analytics on business cameras and intelligent features on VoIP phones — person and vehicle detection, smarter search, AI attendants and call transcription in Sault Ste. Marie and Northern Ontario.",
+  showInHeaderNav: true,
+  navOrder: 25,
+  blocks: [
+    serviceHero(
+      "AI services",
+      "AI on the cameras and phones you already need",
+      "We install and support practical AI on two systems every site already runs: video surveillance and the telephone system. Analytics that find a person in last night’s recording. An attendant that routes a caller without a maze of menus. Designed, installed and supported by the same local team.",
+      ["Camera analytics", "AI attendants", "Local support"],
+    ),
+    {
+      type: "imageText",
+      settings: { background: "white", paddingY: "xl" },
+      data: {
+        eyebrow: "Cameras",
+        heading: "AI that watches with you, not instead of you",
+        html: "<p>A recorder full of video is only useful if you can find the incident. We add <strong>AI analytics</strong> to the IP camera systems we design: person and vehicle detection, line crossing, loitering, license-plate capture where it is lawful, and search across recorded footage so staff are not scrubbing hours by hand.</p><p>Rules run on the camera, the network video recorder, or a service you choose. We will tell you which, and we will not send video off-site unless you ask us to and we document it.</p>",
+        image: {
+          url: "/images/ai-camera-1400.webp",
+          alt: "IP dome camera in the foreground with a security monitor showing cyan AI detection overlays on a night-time scene",
+          caption: "",
+        },
+        imagePosition: "right",
+        bullets: [
+          "Fewer false alarms from weather, headlights and wildlife",
+          "Search recorded video by object type and time",
+          "Alerts to phones when a rule actually matches",
+          "Sized with storage, bandwidth and retention in one design",
+        ],
+        buttons: [
+          { label: "Security systems", href: "/security-services", style: "secondary", openInNewTab: false },
+        ],
+      },
+    },
+    {
+      type: "featureGrid",
+      settings: { background: "light", paddingY: "xl" },
+      data: {
+        heading: "What AI on the cameras actually does",
+        description:
+          "These are features we turn on and support. They are not a replacement for a guard, and they are not a marketing score.",
+        columns: "3",
+        style: "card",
+        items: [
+          {
+            icon: "cctv",
+            title: "People and vehicles",
+            description:
+              "Detect a person or a vehicle in a defined zone so the recorder is not treating every shadow as an event.",
+          },
+          {
+            icon: "activity",
+            title: "Line crossing and loitering",
+            description:
+              "Fence lines, loading docks and after-hours lots — alerts when something crosses a line you drew.",
+          },
+          {
+            icon: "search",
+            title: "Search recorded video",
+            description:
+              "Find a red truck at 2 a.m. without watching the whole night. Time window plus object type is enough to start.",
+          },
+          {
+            icon: "siren",
+            title: "Fewer nuisance alarms",
+            description:
+              "Weather, insects and headlights generate motion. Analytics cut the noise so staff still look at the real ones.",
+          },
+          {
+            icon: "phone",
+            title: "Alerts to the people on site",
+            description:
+              "A match can ring a phone, send a snapshot, or open the live view — using the same numbers we already support.",
+          },
+          {
+            icon: "lock",
+            title: "On the equipment you own",
+            description:
+              "Prefer the analytics on the camera or NVR. Cloud processing is optional and only if you choose it.",
+          },
+        ],
+      },
+    },
+    {
+      type: "imageText",
+      settings: { background: "white", paddingY: "xl" },
+      data: {
+        eyebrow: "Phones",
+        heading: "An attendant that understands the first sentence",
+        html: "<p>The same idea on the telephone system: <strong>AI attendants</strong> that understand what the caller is asking, route to the right queue, transcribe voicemail, and summarise a long call so staff are not starting from a blank note.</p><p>We turn those features on in the VoIP platforms we already install — desk phones, DECT cordless, video phones and the mobile app — with training for your receptionist and a documented after-hours plan. E-911 behaviour does not change; read the notice if you are moving to VoIP.</p>",
+        image: {
+          url: "/images/ai-phone-1400.webp",
+          alt: "Black executive VoIP desk phone whose display shows an abstract cyan assistant waveform",
+          caption: "",
+        },
+        imagePosition: "left",
+        bullets: [
+          "Natural-language auto-attendant instead of a deep keypad tree",
+          "Voicemail and call transcription into email",
+          "After-hours coverage without adding a night receptionist",
+          "Works with the handsets we already supply",
+        ],
+        buttons: [
+          { label: "Telephone services", href: "/telephone-services", style: "secondary", openInNewTab: false },
+        ],
+      },
+    },
+    {
+      type: "featureGrid",
+      settings: { background: "light", paddingY: "xl" },
+      data: {
+        heading: "What AI on the phones actually does",
+        description: "",
+        columns: "3",
+        style: "card",
+        items: [
+          {
+            icon: "sparkles",
+            title: "Intelligent attendant",
+            description:
+              "Callers say what they need. The attendant routes to sales, support, a named person or voicemail.",
+          },
+          {
+            icon: "headset",
+            title: "Queue and overflow",
+            description:
+              "Busy queues get a callback or a summary instead of hold music until the caller hangs up.",
+          },
+          {
+            icon: "mail",
+            title: "Transcription",
+            description:
+              "Voicemail and, where you enable it, call notes into email so nothing lives only on the handset.",
+          },
+          {
+            icon: "cpu",
+            title: "Call summaries",
+            description:
+              "A short written recap after a long conversation, for staff who were not on the line.",
+          },
+          {
+            icon: "phone",
+            title: "Same phones, extra features",
+            description:
+              "Desk sets, DECT, video phones and the softphone app — we do not make you replace working handsets to add AI.",
+          },
+          {
+            icon: "map",
+            title: "Local configuration",
+            description:
+              "Menus, greetings and hours are set with you in Sault Ste. Marie, then changed when the business changes.",
+          },
+        ],
+      },
+    },
+    {
+      type: "richText",
+      settings: { background: "white", paddingY: "lg", width: "narrow" },
+      data: {
+        html: "<p><strong>How we treat the data.</strong> Camera analytics and phone AI can run on equipment at your site, or on a vendor service you choose. We will write down which it is before anything is switched on. We do not sell recordings or transcripts, and we do not use your video to train a model of our own.</p><p>AI does not replace a lock, a firewall or a person who answers the phone. It is a layer on systems we already design. If a feature is not a good fit for a clinic, a school or a shop floor, we will say so.</p>",
+        columns: "1",
+      },
+    },
+    closingCta(
+      "Add AI to the cameras or the phones you already have",
+      "Tell us the site, the number of cameras or extensions, and whether you want analytics, an attendant, or both. We will quote the hardware, licences and the work to turn it on.",
+    ),
+  ],
+};
+
+const firewalls: SeedPage = {
+  slug: "firewalls",
+  title: "Firewalls",
+  navLabel: "Firewalls",
+  metaTitle: "Barracuda, Fortinet and Juniper Firewalls",
+  metaDescription:
+    "Next-generation firewall design, installation and support in Northern Ontario. Barracuda, Fortinet, Juniper and similar platforms WirelessCom.Ca Inc. is trained on — sized for your circuit, VPN users and applications.",
+  showInHeaderNav: true,
+  navOrder: 22,
+  blocks: [
+    serviceHero(
+      "Firewalls",
+      "Next-generation firewalls we actually support",
+      "A firewall that is sized, documented and still answerable six months later. WirelessCom.Ca Inc. designs, installs and supports Barracuda, Fortinet, Juniper and other next-generation platforms we are trained on — for offices, shops, plants and multi-site networks across Northern Ontario.",
+      ["Barracuda", "Fortinet", "Juniper", "And similar NGFWs"],
+    ),
+    {
+      type: "imageText",
+      settings: { background: "white", paddingY: "xl" },
+      data: {
+        eyebrow: "Perimeter security",
+        heading: "The box is the easy part. The rule base is the work.",
+        html: "<p>Most sites do not fail because they lack a firewall. They fail because the appliance is undersized, the firmware is a year behind, or nobody owns the rules. We start with the circuit, the applications and the people who need VPN access, then we pick a platform we can support for the life of the box.</p><p><strong>Barracuda</strong>, <strong>Fortinet</strong> and <strong>Juniper</strong> are the names customers ask for most. We also deploy and support SonicWall, WatchGuard, Palo Alto and Cisco where that is the right fit. These are technologies we install and maintain. Listing them does not imply a formal partnership unless we say so — Hytera two-way radio is our authorised dealership; firewall brands are supported platforms.</p>",
+        image: {
+          url: "/images/firewall-1400.webp",
+          alt: "Rack-mounted next-generation firewall appliances in a dark cabinet with cyan status lights and dressed ethernet",
+          caption: "",
+        },
+        imagePosition: "right",
+        bullets: [
+          "Sized for the internet circuit, not a brochure throughput number",
+          "Documented rule base, objects and change control",
+          "Site-to-site and remote-access VPN",
+          "Config backups, firmware and someone who still picks up the phone",
+        ],
+        buttons: [
+          { label: "Cybersecurity services", href: "/cybersecurity", style: "secondary", openInNewTab: false },
+        ],
+      },
+    },
+    {
+      type: "featureGrid",
+      settings: { background: "light", paddingY: "xl" },
+      data: {
+        heading: "What we do with a firewall",
+        description: "",
+        columns: "3",
+        style: "card",
+        items: [
+          {
+            icon: "assessment",
+            title: "Design and sizing",
+            description:
+              "Users, VPN, inspection of encrypted traffic and HA — chosen before the purchase order, not after the box arrives.",
+          },
+          {
+            icon: "router",
+            title: "Install and cutover",
+            description:
+              "Rack, address, licenses, a tested fallback, and a window that does not take the whole office down twice.",
+          },
+          {
+            icon: "lock",
+            title: "Rules that match the business",
+            description:
+              "Application control, IPS, web filtering and geo-blocking where they earn their keep — not a default deny that breaks payroll.",
+          },
+          {
+            icon: "network",
+            title: "VPN and other sites",
+            description:
+              "Staff, partners and branch offices. Certificates, MFA where you use it, and a revoke process when someone leaves.",
+          },
+          {
+            icon: "eye",
+            title: "Monitoring and changes",
+            description:
+              "Firmware, config backups, and a ticket when a new application needs a hole — with a note in the documentation.",
+          },
+          {
+            icon: "layers",
+            title: "High availability",
+            description:
+              "Active/passive pairs where an hour of downtime is more expensive than a second appliance.",
+          },
+        ],
+      },
+    },
+    {
+      type: "brandGrid",
+      settings: { background: "white", paddingY: "xl" },
+      data: {
+        eyebrow: "Platforms",
+        heading: "Firewalls we deploy and support",
+        description:
+          "We design around equipment we are trained on. If you already own a box, we will tell you honestly whether we can take it over or whether a replacement is the cheaper path.",
+        layout: "grid",
+        disclaimer:
+          "Vendor names describe the equipment we install and support. They do not imply a formal partnership unless a relationship is stated. WirelessCom.Ca Inc. is an authorized Hytera dealer; firewall brands are supported technologies.",
+        items: [
+          { name: "Barracuda", category: "NGFW, email and web security", logoUrl: "", href: "" },
+          { name: "Fortinet", category: "FortiGate next-generation firewall", logoUrl: "", href: "" },
+          { name: "Juniper", category: "SRX firewalls and routing", logoUrl: "", href: "" },
+          { name: "SonicWall", category: "SMB and mid-market NGFW", logoUrl: "", href: "" },
+          { name: "WatchGuard", category: "Unified threat management", logoUrl: "", href: "" },
+          { name: "Palo Alto", category: "Enterprise NGFW", logoUrl: "", href: "" },
+          { name: "Cisco", category: "ASA / Firepower and related", logoUrl: "", href: "" },
+          { name: "Ubiquiti", category: "Gateway security where UniFi is the LAN", logoUrl: "", href: "" },
+        ],
+      },
+    },
+    {
+      type: "specTable",
+      settings: { background: "light", paddingY: "xl" },
+      data: {
+        heading: "Which conversation we start with",
+        description:
+          "The brand is rarely the first decision. The circuit, the users and the applications are.",
+        columns: ["If you need…", "We typically look at…"],
+        rows: [
+          ["A first serious firewall for a small office", "Barracuda, Fortinet, SonicWall or WatchGuard, sized to the circuit"],
+          ["Multiple sites and a lot of VPN users", "Fortinet or Juniper, with a documented tunnel standard"],
+          ["Email security in the same family as the firewall", "Barracuda, or Fortinet with the matching email appliance"],
+          ["An existing Juniper or Cisco estate", "Stay on that family if the box is sound; replace if it is not"],
+          ["UniFi switching and Wi-Fi already in place", "A UniFi gateway, or a dedicated NGFW in front of it"],
+          ["High availability for a plant or clinic", "A matched pair, tested failover, and a written runbook"],
+        ],
+      },
+    },
+    {
+      type: "richText",
+      settings: { background: "white", paddingY: "lg", width: "narrow" },
+      data: {
+        html: "<p>A firewall is one layer. Endpoints, backups, MFA and the people who click links still matter — that work lives on our <a href=\"/cybersecurity\">cybersecurity</a> page. If you also want cameras or phones on the same network, we will segment them properly instead of plugging everything into one flat LAN.</p>",
+        columns: "1",
+      },
+    },
+    closingCta(
+      "Replace, take over, or start from a clean rule base",
+      "Send the current model if you have one, the internet speed, and how many people need VPN. We will tell you whether to keep the box, replace it, or put a second one in for failover.",
+    ),
+  ],
+};
+
 export const SEED_PAGES: SeedPage[] = [
   home,
   itServices,
   cybersecurity,
+  firewalls,
+  aiServices,
   securityServices,
   telephoneServices,
   internetServices,
@@ -1892,6 +2320,12 @@ export const SEED_REDIRECTS: Array<{ source: string; destination: string }> = [
   { source: "/it", destination: "/it-services" },
   { source: "/voip", destination: "/telephone-services" },
   { source: "/cameras", destination: "/security-services" },
+  { source: "/ai", destination: "/ai-services" },
+  { source: "/firewall", destination: "/firewalls" },
+  { source: "/ngfw", destination: "/firewalls" },
+  { source: "/fortinet", destination: "/firewalls" },
+  { source: "/barracuda", destination: "/firewalls" },
+  { source: "/juniper", destination: "/firewalls" },
   { source: "/alarm", destination: "/security-services" },
   { source: "/speedtest", destination: "/support" },
   { source: "/e911", destination: "/e-911" },
@@ -1927,6 +2361,8 @@ export const SEED_NAV: Array<{
     children: [
       { label: "IT Services", href: "/it-services" },
       { label: "Cybersecurity", href: "/cybersecurity" },
+      { label: "Firewalls", href: "/firewalls" },
+      { label: "AI cameras & phones", href: "/ai-services" },
       { label: "Security Systems", href: "/security-services" },
       { label: "Access Control", href: "/access-control" },
       { label: "Telephone (VoIP)", href: "/telephone-services" },
@@ -1988,6 +2424,8 @@ export const SEED_NAV: Array<{
     children: [
       { label: "IT Services", href: "/it-services" },
       { label: "Cybersecurity", href: "/cybersecurity" },
+      { label: "Firewalls", href: "/firewalls" },
+      { label: "AI cameras & phones", href: "/ai-services" },
       { label: "Security Systems", href: "/security-services" },
       { label: "Access Control", href: "/access-control" },
       { label: "Telephone (VoIP)", href: "/telephone-services" },

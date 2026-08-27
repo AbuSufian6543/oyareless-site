@@ -185,6 +185,8 @@ export async function searchSite(query: string): Promise<SearchHit[]> {
     { title: "Internet speed test", href: "/speed-test", kind: "Tool", snippet: "Download, upload, latency and jitter." },
     { title: "Network tools", href: "/network-tools", kind: "Tool", snippet: "DNS, TCP, WHOIS, subnet and cable calculators." },
     { title: "Cybersecurity tools", href: "/cybersecurity-tools", kind: "Tool", snippet: "TLS, headers, SPF/DKIM/DMARC, DNSBL." },
+    { title: "Firewalls", href: "/firewalls", kind: "Service", snippet: "Barracuda, Fortinet, Juniper and similar next-generation firewalls." },
+    { title: "AI for cameras and phones", href: "/ai-services", kind: "Service", snippet: "Camera analytics, AI attendants and call transcription." },
   ].filter(
     (tool) =>
       tool.title.toLowerCase().includes(q.toLowerCase()) ||

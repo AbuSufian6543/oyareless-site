@@ -50,6 +50,21 @@ prompt is recorded so a replacement can be produced in the same style.
 - **Alt text:** Technician's hands terminating blue and white network cables into a rack-mounted patch panel
 - **Prompt:** Technician in a dark navy work shirt terminating network cables into a rack-mounted patch panel, neatly bundled blue and white cables, cool cyan work light, face not visible.
 
+### `firewall`
+
+- **Alt text:** Rack-mounted next-generation firewall appliances in a dark cabinet with cyan status lights and dressed ethernet
+- **Prompt:** Rack-mounted next-generation firewall appliances in a dark enterprise cabinet, generic unbranded black hardware, cyan and blue status LEDs, neatly dressed ethernet, no logos or text.
+
+### `ai-camera`
+
+- **Alt text:** IP dome camera in the foreground with a security monitor showing cyan AI detection overlays on a night-time scene
+- **Prompt:** Professional IP dome camera in the foreground of a dark security desk, monitor showing abstract cyan bounding-box overlays on a muted night feed, no logos or readable UI text.
+
+### `ai-phone`
+
+- **Alt text:** Black executive VoIP desk phone whose display shows an abstract cyan assistant waveform
+- **Prompt:** Modern black executive VoIP desk phone on a dark desk, colour display showing an abstract cyan assistant waveform, cool blue rim lighting, no logos or readable brand names.
+
 ## CC0 photography
 
 Sourced via the Openverse API filtered to CC0. CC0 places the work in the
@@ -63,11 +78,10 @@ provenance stays auditable.
 
 ## Photographs owned by WirelessCom.Ca Inc.
 
-None yet. `public/brand/` holds only the logo derivatives and the social
-card. When real field photography of tower builds, cabling work and signage
-installations is supplied, add the masters to `assets/source-images/`, list
-them in `scripts/build-site-images.mjs`, and record them here — company
-photos of actual jobs are always preferable to generated imagery.
+These live in `public/brand/` and are the company's own field photography:
+`home-hero.png` (the Sault Ste. Marie office at dusk), `internet-1.jpg`
+through `internet-5.jpg` (wireless relay and antenna installations) and
+`marketing-1.png` / `marketing-2.png` (digital signage installations).
 
 ## Full-bleed backgrounds
 

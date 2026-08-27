@@ -1,8 +1,10 @@
 #!/bin/sh
 # ---------------------------------------------------------------------------
-# One-shot job: wait for Postgres, apply the schema, seed content, exit.
-# The `app` service waits for this to finish successfully before starting.
-# Safe to re-run on every deploy — the seed never overwrites edited records.
+# One-shot job: wait for Postgres, apply the schema, seed content, then
+# content-sync (new pages, unedited pages, additive nav). The `app` service
+# waits for this to finish successfully before starting. Safe to re-run:
+# the seed never overwrites edited records; content-sync skips admin-edited
+# pages unless forced.
 # ---------------------------------------------------------------------------
 set -eu
 
@@ -42,6 +44,8 @@ fi
 if [ "${RUN_SEED:-true}" = "true" ]; then
   log "Seeding..."
   npx tsx prisma/seed.ts
+  log "Syncing additive content (new pages, unedited pages, new nav entries)..."
+  npx tsx scripts/content-sync.ts --apply
 else
   log "RUN_SEED is not 'true'; skipping the seed."
 fi
