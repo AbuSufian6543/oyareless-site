@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getSettings } from "@/lib/settings";
 import "../globals.css";
 
 export const dynamic = "force-dynamic";
@@ -24,12 +25,17 @@ export default async function AdminLayout({
   // VIEWER exists for future read-only reporting access; it has no admin UI yet.
   if (user.role === "VIEWER") redirect("/");
 
-  const newSubmissions = await prisma.formSubmission
-    .count({ where: { status: "NEW" } })
-    .catch(() => 0);
+  const [newSubmissions, settings] = await Promise.all([
+    prisma.formSubmission.count({ where: { status: "NEW" } }).catch(() => 0),
+    getSettings(),
+  ]);
 
   return (
-    <AdminShell user={user} newSubmissions={newSubmissions}>
+    <AdminShell
+      user={user}
+      newSubmissions={newSubmissions}
+      logoUrl={settings.logoInverseUrl}
+    >
       {children}
     </AdminShell>
   );

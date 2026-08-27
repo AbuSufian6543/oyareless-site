@@ -94,10 +94,12 @@ function collectionEntries(group: CollectionGroup): NavEntry[] {
 export function AdminShell({
   user,
   newSubmissions,
+  logoUrl,
   children,
 }: {
   user: SessionUser;
   newSubmissions: number;
+  logoUrl?: string;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -174,7 +176,7 @@ export function AdminShell({
       <div className="flex h-16 shrink-0 items-center justify-between border-b border-navy-800 px-4">
         <Link href="/admin" className="flex items-center">
           <Image
-            src="/brand/logo-inverse.png"
+            src={logoUrl || "/brand/logo-inverse.png"}
             alt="WirelessCom.Ca Inc."
             width={190}
             height={36}

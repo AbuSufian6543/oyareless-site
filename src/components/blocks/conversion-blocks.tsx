@@ -2,6 +2,7 @@ import { ChevronDown, Clock, Mail, MapPin, Phone, Quote, Star } from "lucide-rea
 
 import { Section, SectionHeading, isDarkBackground } from "@/components/blocks/section";
 import { ButtonLink, type ButtonVariant } from "@/components/ui/button";
+import { SectionImage } from "@/components/visuals/section-image";
 import type { BlockOf } from "@/lib/blocks";
 import { prisma } from "@/lib/prisma";
 import { getSettings } from "@/lib/settings";
@@ -205,6 +206,7 @@ export async function TestimonialsBlock({
     authorName: item.authorName,
     authorRole: item.authorRole,
     company: item.company,
+    avatarUrl: item.avatarUrl,
     rating: item.rating,
   }));
 
@@ -220,6 +222,7 @@ export async function TestimonialsBlock({
         authorName: record.authorName,
         authorRole: record.authorRole ?? "",
         company: record.company ?? "",
+        avatarUrl: record.avatarUrl ?? "",
         rating: record.rating,
       }));
     } catch {
@@ -288,28 +291,40 @@ export async function TestimonialsBlock({
 
             <figcaption
               className={cn(
-                "mt-4 border-t pt-4",
+                "mt-4 flex items-center gap-3 border-t pt-4",
                 dark ? "border-navy-700" : "border-slate-200",
               )}
             >
-              <span
-                className={cn(
-                  "block font-bold",
-                  dark ? "text-white" : "text-navy-800",
-                )}
-              >
-                {item.authorName}
-              </span>
-              {(item.authorRole || item.company) && (
+              {item.avatarUrl ? (
+                <SectionImage
+                  src={item.avatarUrl}
+                  alt=""
+                  width={48}
+                  height={48}
+                  sizes="48px"
+                  className="size-12 shrink-0 rounded-full object-cover"
+                />
+              ) : null}
+              <span>
                 <span
                   className={cn(
-                    "text-sm",
-                    dark ? "text-navy-400" : "text-slate-500",
+                    "block font-bold",
+                    dark ? "text-white" : "text-navy-800",
                   )}
                 >
-                  {[item.authorRole, item.company].filter(Boolean).join(", ")}
+                  {item.authorName}
                 </span>
-              )}
+                {(item.authorRole || item.company) && (
+                  <span
+                    className={cn(
+                      "text-sm",
+                      dark ? "text-navy-400" : "text-slate-500",
+                    )}
+                  >
+                    {[item.authorRole, item.company].filter(Boolean).join(", ")}
+                  </span>
+                )}
+              </span>
             </figcaption>
           </figure>
         ))}

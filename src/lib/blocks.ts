@@ -212,6 +212,7 @@ const testimonialsData = z.object({
         authorName: z.string().default(""),
         authorRole: z.string().default(""),
         company: z.string().default(""),
+        avatarUrl: z.string().default(""),
         rating: z.number().min(1).max(5).default(5),
       }),
     )
@@ -371,6 +372,7 @@ const techHeroData = z.object({
   subheadline: z.string().default(""),
   /** Optional photo behind the animated mesh. The mesh alone is the default. */
   backgroundImageUrl: z.string().default(""),
+  backgroundImageAlt: z.string().default(""),
   overlayOpacity: z.number().min(0).max(100).default(78),
   /** Node-mesh intensity; 0 disables the animation entirely. */
   networkDensity: z.number().min(0).max(200).default(100),

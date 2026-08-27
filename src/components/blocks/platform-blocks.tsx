@@ -12,6 +12,7 @@ import { SectionImage } from "@/components/visuals/section-image";
 import { TechBackdrop } from "@/components/visuals/tech-backdrop";
 import { SiteStackPanel } from "@/components/visuals/site-stack-panel";
 import type { BlockOf } from "@/lib/blocks";
+import { getSettings } from "@/lib/settings";
 import { cn } from "@/lib/utils";
 
 const HEIGHTS: Record<string, string> = {
@@ -24,8 +25,10 @@ const HEIGHTS: Record<string, string> = {
  * Primary hero for the platform pages. The background is the animated node
  * mesh, optionally over a photograph.
  */
-export function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
+export async function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
   const { data } = block;
+  const settings = await getSettings();
+  const photo = data.backgroundImageUrl || settings.homeHeroImageUrl;
 
   return (
     <section
@@ -35,11 +38,11 @@ export function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
         HEIGHTS[data.height] ?? HEIGHTS.lg,
       )}
     >
-      {data.backgroundImageUrl && (
+      {photo && (
         <div className="absolute inset-0 -z-20" aria-hidden="true">
           <SectionImage
-            src={data.backgroundImageUrl}
-            alt=""
+            src={photo}
+            alt={data.backgroundImageAlt || ""}
             priority
             sizes="100vw"
             className="size-full object-cover"
@@ -56,14 +59,14 @@ export function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
         density={data.networkDensity / 100}
         glow="right"
         // The photo layer already supplies the base color when present.
-        className={data.backgroundImageUrl ? "bg-transparent" : undefined}
+        className={photo ? "bg-transparent" : undefined}
       />
 
       <div className="container-page relative">
         <div
           className={cn(
             "grid items-center gap-12",
-            !data.backgroundImageUrl &&
+            !photo &&
               "lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,22rem)] lg:gap-16",
           )}
         >
@@ -119,7 +122,7 @@ export function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
             </ul>
           )}
         </div>
-          {!data.backgroundImageUrl && <SiteStackPanel />}
+          {!photo && <SiteStackPanel />}
         </div>
       </div>
     </section>

@@ -402,6 +402,7 @@ export const BLOCK_FIELDS: Record<BlockType, FieldDef[]> = {
         { kind: "text", key: "authorName", label: "Name" },
         { kind: "text", key: "authorRole", label: "Role" },
         { kind: "text", key: "company", label: "Company" },
+        { kind: "image", key: "avatarUrl", label: "Photo" },
         { kind: "number", key: "rating", label: "Rating (1–5)", min: 1, max: 5 },
       ],
     },
@@ -512,7 +513,13 @@ export const BLOCK_FIELDS: Record<BlockType, FieldDef[]> = {
       kind: "image",
       key: "backgroundImageUrl",
       label: "Background photo",
-      hint: "Optional. The animated network mesh is used on its own when empty.",
+      hint: "Upload or pick a replacement. The animated network mesh is used on its own when empty.",
+    },
+    {
+      kind: "text",
+      key: "backgroundImageAlt",
+      label: "Image description",
+      hint: "Describe the photo for screen readers.",
     },
     { kind: "number", key: "overlayOpacity", label: "Overlay darkness (%)", min: 0, max: 100 },
     {

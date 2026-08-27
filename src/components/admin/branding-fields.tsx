@@ -76,19 +76,27 @@ export function ImageUrlField({
   defaultValue,
   hint,
   previewOnDark = false,
+  placeholder = "/brand/logo.png",
 }: {
   label: string;
   name: string;
   defaultValue: string;
   hint?: string;
   previewOnDark?: boolean;
+  placeholder?: string;
 }) {
   const [value, setValue] = useState(defaultValue);
   const [pickerOpen, setPickerOpen] = useState(false);
 
   return (
     <div>
-      <Label htmlFor={name} hint={hint}>
+      <Label
+        htmlFor={name}
+        hint={
+          hint ??
+          "Upload a new file or pick a replacement from the media library."
+        }
+      >
         {label}
       </Label>
       <div className="flex gap-2">
@@ -98,7 +106,7 @@ export function ImageUrlField({
           value={value}
           onChange={(event) => setValue(event.target.value)}
           spellCheck={false}
-          placeholder="/brand/logo.png"
+          placeholder={placeholder}
           className={cn(inputClass, "font-mono text-xs")}
         />
         <button
@@ -107,7 +115,7 @@ export function ImageUrlField({
           className="flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-navy-800 transition-colors hover:bg-slate-50"
         >
           <ImageIcon className="size-4" aria-hidden="true" />
-          Browse
+          {value ? "Change photo" : "Choose photo"}
         </button>
       </div>
 

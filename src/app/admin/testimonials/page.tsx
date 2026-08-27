@@ -4,6 +4,7 @@ import {
   deleteTestimonialAction,
   saveTestimonialAction,
 } from "@/app/admin/testimonials/actions";
+import { ImageUrlField } from "@/components/admin/branding-fields";
 import {
   Alert,
   Badge,
@@ -123,11 +124,6 @@ export default async function TestimonialsPage({
                       name="company"
                       defaultValue={testimonial.company ?? ""}
                     />
-                    <TextField
-                      label="Avatar URL"
-                      name="avatarUrl"
-                      defaultValue={testimonial.avatarUrl ?? ""}
-                    />
                     <SelectField
                       label="Rating"
                       name="rating"
@@ -145,6 +141,14 @@ export default async function TestimonialsPage({
                       defaultValue={testimonial.order}
                     />
                   </div>
+
+                  <ImageUrlField
+                    label="Photo"
+                    name="avatarUrl"
+                    defaultValue={testimonial.avatarUrl ?? ""}
+                    hint="Optional. Shown beside the name on the public site."
+                    placeholder="/uploads/photo.jpg"
+                  />
 
                   <div className="grid gap-2.5 sm:grid-cols-2">
                     <CheckboxField
@@ -214,6 +218,13 @@ export default async function TestimonialsPage({
                 placeholder="Operations Manager"
               />
               <TextField label="Company" name="company" />
+              <ImageUrlField
+                label="Photo"
+                name="avatarUrl"
+                defaultValue=""
+                hint="Optional. Shown beside the name on the public site."
+                placeholder="/uploads/photo.jpg"
+              />
               <SelectField
                 label="Rating"
                 name="rating"

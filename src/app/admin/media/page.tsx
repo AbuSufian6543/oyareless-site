@@ -32,7 +32,7 @@ export default async function AdminMediaPage() {
     <div>
       <PageHeader
         title="Media library"
-        description="Images and documents available to every page, post and section. Folders group the library, alt text feeds screen readers, and Replace swaps artwork everywhere it is used."
+        description="Every photograph and logo on the site is listed here, including the ones that shipped with the product. Upload a new file, or open one and use Replace to swap it everywhere it appears."
       />
       <MediaManager
         canDelete={hasRole(user, "ADMIN")}

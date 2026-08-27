@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { PageHero } from "@/components/site/page-hero";
+import { SectionImage } from "@/components/visuals/section-image";
 import { env } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
 
@@ -37,23 +38,35 @@ export default async function CaseStudiesPage() {
           ) : (
             <ul className="grid gap-5 lg:grid-cols-2">
               {studies.map((study) => (
-                <li key={study.id} className="rounded-xl border border-slate-200 p-6">
-                  {study.sector && (
-                    <p className="text-xs font-bold uppercase tracking-wide text-brand-700">
-                      {study.sector}
-                    </p>
-                  )}
-                  <Link
-                    href={`/case-studies/${study.slug}`}
-                    className="mt-1 block text-xl font-bold text-navy-900 hover:text-brand-700"
-                  >
-                    {study.title}
-                  </Link>
-                  {study.problem && (
-                    <p className="mt-3 text-sm leading-relaxed text-slate-600">
-                      {study.problem}
-                    </p>
-                  )}
+                <li key={study.id} className="overflow-hidden rounded-xl border border-slate-200">
+                  {study.imageUrl ? (
+                    <div className="relative aspect-16/10 bg-navy-900">
+                      <SectionImage
+                        src={study.imageUrl}
+                        alt={study.imageAlt || study.title}
+                        fill
+                        sizes="(min-width: 1024px) 50vw, 100vw"
+                      />
+                    </div>
+                  ) : null}
+                  <div className="p-6">
+                    {study.sector && (
+                      <p className="text-xs font-bold uppercase tracking-wide text-brand-700">
+                        {study.sector}
+                      </p>
+                    )}
+                    <Link
+                      href={`/case-studies/${study.slug}`}
+                      className="mt-1 block text-xl font-bold text-navy-900 hover:text-brand-700"
+                    >
+                      {study.title}
+                    </Link>
+                    {study.problem && (
+                      <p className="mt-3 text-sm leading-relaxed text-slate-600">
+                        {study.problem}
+                      </p>
+                    )}
+                  </div>
                 </li>
               ))}
             </ul>

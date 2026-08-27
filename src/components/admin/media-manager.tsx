@@ -25,6 +25,9 @@ type Item = MediaItem & { folder: string; createdAt: string };
  */
 const FOLDER_SUGGESTIONS = [
   "general",
+  "site",
+  "logos",
+  "branding",
   "brand",
   "services",
   "cybersecurity",
@@ -513,8 +516,9 @@ export function MediaManager({
                   Replace file
                 </button>
                 <p className="mt-1.5 text-xs text-slate-500">
-                  Swaps the artwork everywhere it is already used. The
-                  replacement must be the same file type.
+                  {selected.filename.startsWith("site:")
+                    ? "Replaces this picture everywhere it is used. You can upload a different format; the new file is stored in Uploads so the next deploy keeps your change."
+                    : "Swaps the artwork everywhere it is already used. The replacement must be the same file type so existing links keep working."}
                 </p>
               </div>
             ) : (

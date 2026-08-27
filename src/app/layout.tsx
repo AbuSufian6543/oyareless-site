@@ -68,10 +68,10 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     icons: {
       icon: [
-        { url: settings.faviconUrl, type: "image/svg+xml" },
-        { url: "/icon.png", type: "image/png", sizes: "512x512" },
+        { url: settings.faviconUrl },
+        { url: settings.iconPngUrl, type: "image/png", sizes: "512x512" },
       ],
-      apple: "/apple-icon.png",
+      apple: settings.appleIconUrl,
     },
     alternates: { canonical: "/" },
   };

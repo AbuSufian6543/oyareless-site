@@ -48,6 +48,8 @@ export default async function CaseStudyPage({ params }: Props) {
             ? `Prepared with permission for ${study.clientName}.`
             : "A project WirelessCom.Ca Inc. designed and supports."
         }
+        imageUrl={study.imageUrl ?? undefined}
+        imageAlt={study.imageAlt || study.title}
       />
       <section className="bg-white py-12">
         <div className="container-page grid gap-6 md:grid-cols-2">

@@ -63,6 +63,8 @@ function groupFor(key: SettingKey): string {
     key === "logoInverseUrl" ||
     key === "faviconUrl" ||
     key === "ogImageUrl" ||
+    key === "iconPngUrl" ||
+    key === "appleIconUrl" ||
     key.startsWith("homeHero")
   ) {
     return "branding";

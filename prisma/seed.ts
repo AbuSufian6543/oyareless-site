@@ -11,6 +11,7 @@ import { env } from "../src/lib/env";
 import { hashPassword, validatePasswordStrength } from "../src/lib/passwords";
 import { prisma } from "../src/lib/prisma";
 import { DEFAULT_SETTINGS } from "../src/lib/settings-defaults";
+import { ensureSiteMedia } from "../src/lib/site-media";
 import { buildBlocks, SEED_NAV, SEED_PAGES, SEED_REDIRECTS } from "./seed-content";
 
 function log(message: string): void {
@@ -497,6 +498,9 @@ async function main(): Promise<void> {
   await seedLaunchPost();
   await seedExampleStream();
   await seedCatalogue();
+  const mediaAdded = await ensureSiteMedia();
+  if (mediaAdded > 0) log(`Media library: added ${mediaAdded} site photographs`);
+  else log("Media library: site photographs already catalogued");
 
   process.stdout.write("\nSeed complete.\n\n");
 }

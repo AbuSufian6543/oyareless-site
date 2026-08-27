@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { PageHero } from "@/components/site/page-hero";
+import { SectionImage } from "@/components/visuals/section-image";
 import { env } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
 
@@ -41,6 +42,18 @@ export default async function BrandsPage() {
                   key={brand.id}
                   className="rounded-xl border border-slate-200 bg-slate-50/70 p-5"
                 >
+                  {brand.logoUrl ? (
+                    <div className="mb-4 flex h-12 items-center">
+                      <SectionImage
+                        src={brand.logoUrl}
+                        alt={brand.name}
+                        width={160}
+                        height={48}
+                        sizes="160px"
+                        className="h-8 w-auto max-w-[10rem] object-contain"
+                      />
+                    </div>
+                  ) : null}
                   <h2 className="font-bold text-navy-900">{brand.name}</h2>
                   {brand.relationship && (
                     <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-brand-700">

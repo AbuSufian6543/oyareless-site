@@ -13,6 +13,7 @@ import {
   inputClass,
   Label,
 } from "@/components/admin/ui";
+import { ImageUrlField } from "@/components/admin/branding-fields";
 import { cn } from "@/lib/utils";
 
 export type StreamFormValues = {
@@ -136,13 +137,15 @@ export function StreamForm({
               defaultValue={values.location}
               placeholder="Sault Ste. Marie, ON"
             />
-            <TextField
-              label="Poster image URL"
-              name="posterUrl"
-              defaultValue={values.posterUrl}
-              hint="Shown before playback starts."
-            />
           </div>
+
+          <ImageUrlField
+            label="Poster image"
+            name="posterUrl"
+            defaultValue={values.posterUrl}
+            hint="Shown before playback starts. Upload a new photo or pick one from the library."
+            placeholder="/uploads/poster.jpg"
+          />
         </div>
       </Card>
 

@@ -50,7 +50,7 @@ export default async function BrandingPage({
         <input type="hidden" name="returnTo" value="/admin/branding" />
 
         <Card>
-          <CardTitle description="Upload replacements through Browse, or paste any URL. The inverse logo is the one shown on dark backgrounds such as the footer.">
+          <CardTitle description="Upload or pick a replacement through Browse. Every logo and icon on the site reads from these fields.">
             Logo & icons
           </CardTitle>
           <div className="space-y-5">
@@ -78,6 +78,18 @@ export default async function BrandingPage({
               name="ogImageUrl"
               defaultValue={settings.ogImageUrl}
               hint="1200 × 630 px"
+            />
+            <ImageUrlField
+              label="App icon"
+              name="iconPngUrl"
+              defaultValue={settings.iconPngUrl}
+              hint="PNG, used in browser tabs that do not support SVG"
+            />
+            <ImageUrlField
+              label="Apple touch icon"
+              name="appleIconUrl"
+              defaultValue={settings.appleIconUrl}
+              hint="shown when someone saves the site to their home screen"
             />
           </div>
         </Card>
@@ -115,7 +127,7 @@ export default async function BrandingPage({
         </Card>
 
         <Card>
-          <CardTitle description="Background used behind the home page hero.">
+          <CardTitle description="Optional photograph behind the home page hero. You can also set this on the Home page’s Tech hero section. The page field wins if both are set.">
             Home page hero
           </CardTitle>
           <div className="space-y-5">

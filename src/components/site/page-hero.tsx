@@ -1,18 +1,36 @@
+import { SectionImage } from "@/components/visuals/section-image";
 import { TechBackdrop } from "@/components/visuals/tech-backdrop";
 
 export function PageHero({
   eyebrow,
   title,
   description,
+  imageUrl,
+  imageAlt,
 }: {
   eyebrow?: string;
   title: string;
   description: string;
+  imageUrl?: string;
+  imageAlt?: string;
 }) {
   return (
     <section className="relative isolate overflow-hidden">
-      <TechBackdrop density={0.55} />
-      <div className="container-page py-14 lg:py-18">
+      {imageUrl ? (
+        <div className="absolute inset-0" aria-hidden="true">
+          <SectionImage
+            src={imageUrl}
+            alt={imageAlt || ""}
+            fill
+            sizes="100vw"
+            className="object-cover"
+          />
+          <div className="absolute inset-0 bg-navy-950/72" />
+        </div>
+      ) : (
+        <TechBackdrop density={0.55} />
+      )}
+      <div className="container-page relative py-14 lg:py-18">
         {eyebrow && (
           <p className="text-xs font-bold uppercase tracking-widest text-accent-300">
             {eyebrow}

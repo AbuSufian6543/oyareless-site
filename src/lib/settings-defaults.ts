@@ -31,6 +31,8 @@ export const DEFAULT_SETTINGS = {
   logoUrl: "/brand/logo.png",
   logoInverseUrl: "/brand/logo-inverse.png",
   faviconUrl: "/favicon.svg",
+  iconPngUrl: "/icon.png",
+  appleIconUrl: "/apple-icon.png",
   ogImageUrl: "/brand/og-default.png",
 
   // Theme. `themeAccent` drives the whole accent ramp at runtime via

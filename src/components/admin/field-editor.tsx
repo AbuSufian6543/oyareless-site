@@ -615,7 +615,14 @@ function ImageField({
   return (
     <div>
       {label && (
-        <Label hint={hint}>{label}</Label>
+        <Label
+          hint={
+            hint ??
+            "Upload a new file or pick a replacement from the media library."
+          }
+        >
+          {label}
+        </Label>
       )}
       <div className="flex gap-2">
         {!compact && value && <MediaThumb url={value} />}
@@ -632,7 +639,7 @@ function ImageField({
           className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-300 px-2.5 py-2 text-xs font-semibold text-navy-700 transition-colors hover:border-brand-400 hover:bg-brand-50"
         >
           <ImageIcon className="size-3.5" aria-hidden="true" />
-          Browse
+          {value ? "Change photo" : "Choose photo"}
         </button>
       </div>
 

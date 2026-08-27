@@ -6,6 +6,7 @@ import { ArrowLeft, ShieldCheck } from "lucide-react";
 
 import { LoginForm } from "@/app/login/login-form";
 import { getCurrentUser } from "@/lib/auth";
+import { getSettings } from "@/lib/settings";
 
 export const dynamic = "force-dynamic";
 
@@ -17,6 +18,8 @@ export const metadata: Metadata = {
 export default async function LoginPage() {
   const user = await getCurrentUser();
   if (user) redirect("/admin");
+
+  const settings = await getSettings();
 
   return (
     <div className="relative isolate flex min-h-dvh items-center justify-center overflow-hidden bg-navy-900 px-4 py-12">
@@ -30,8 +33,8 @@ export default async function LoginPage() {
         <div className="mb-6 text-center">
           <Link href="/" className="inline-flex">
             <Image
-              src="/brand/logo-inverse.png"
-              alt="WirelessCom.Ca Inc."
+              src={settings.logoInverseUrl || "/brand/logo-inverse.png"}
+              alt={settings.companyName}
               width={240}
               height={46}
               className="h-10 w-auto"

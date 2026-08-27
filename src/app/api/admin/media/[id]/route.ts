@@ -1,10 +1,18 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { recordAudit } from "@/lib/audit";
 import { requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { deleteUpload, replaceUpload, UploadError } from "@/lib/uploads";
+import { rewriteMediaUrl } from "@/lib/rewrite-media-url";
+import { isCataloguedFilename } from "@/lib/site-media";
+import { deleteUpload, replaceUpload, storeUpload, UploadError } from "@/lib/uploads";
+
+function uploadPathFromUrl(url: string): string | null {
+  if (!url.startsWith("/uploads/")) return null;
+  return url.slice("/uploads/".length);
+}
 
 export const runtime = "nodejs";
 
@@ -66,7 +74,7 @@ export async function PUT(
   const { id } = await params;
   const existing = await prisma.mediaAsset.findUnique({
     where: { id },
-    select: { id: true, filename: true, originalName: true },
+    select: { id: true, filename: true, originalName: true, url: true, folder: true },
   });
   if (!existing) {
     return NextResponse.json({ message: "Not found." }, { status: 404 });
@@ -88,16 +96,36 @@ export async function PUT(
   }
 
   try {
-    const stored = await replaceUpload(existing.filename, file);
+    const catalogued = isCataloguedFilename(existing.filename);
+    const uploaded = catalogued
+      ? await storeUpload(file, existing.folder || "site")
+      : null;
+    const replaced = catalogued
+      ? null
+      : await replaceUpload(existing.filename, file);
+
+    if (uploaded) {
+      await rewriteMediaUrl(existing.url, uploaded.url);
+      const previous = uploadPathFromUrl(existing.url);
+      if (previous) await deleteUpload(previous);
+    }
+
+    const bytes = uploaded ?? replaced;
+    if (!bytes) {
+      return NextResponse.json({ message: "The replacement failed." }, { status: 500 });
+    }
 
     const asset = await prisma.mediaAsset.update({
       where: { id },
       data: {
-        mimeType: stored.mimeType,
-        sizeBytes: stored.sizeBytes,
-        width: stored.width,
-        height: stored.height,
+        mimeType: bytes.mimeType,
+        sizeBytes: bytes.sizeBytes,
+        width: bytes.width,
+        height: bytes.height,
         originalName: file.name.slice(0, 200),
+        // Keep the `site:` filename so the next seed does not re-catalogue the
+        // original public file. The bytes now live under /uploads.
+        ...(uploaded ? { url: uploaded.url } : {}),
       },
       select: {
         id: true,
@@ -121,6 +149,8 @@ export async function PUT(
       entityId: id,
       summary: `${existing.originalName} → ${asset.originalName}`,
     });
+
+    revalidatePath("/", "layout");
 
     return NextResponse.json({ item: asset });
   } catch (caught) {
@@ -151,7 +181,12 @@ export async function DELETE(
   }
 
   await prisma.mediaAsset.delete({ where: { id } });
-  await deleteUpload(asset.filename);
+  const migrated = uploadPathFromUrl(asset.url);
+  if (migrated) {
+    await deleteUpload(migrated);
+  } else if (!isCataloguedFilename(asset.filename)) {
+    await deleteUpload(asset.filename);
+  }
 
   await recordAudit({
     action: "media.deleted",
