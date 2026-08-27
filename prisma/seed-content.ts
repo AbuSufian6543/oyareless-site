@@ -34,7 +34,7 @@ function photo(name: string, alt: string) {
 const photos = {
   it: photo(
     "server-rack",
-    "Row of rack-mounted enterprise servers in a dark data centre aisle lit by blue status indicators",
+    "Row of rack-mounted enterprise servers in a dark data center aisle lit by blue status indicators",
   ),
   cybersecurity: photo(
     "cybersecurity",
@@ -54,7 +54,7 @@ const photos = {
   ),
   telephone: photo(
     "voip",
-    "Black executive VoIP desk phone with a colour display on a dark office desk",
+    "Black executive VoIP desk phone with a color display on a dark office desk",
   ),
   internet: photo(
     "wifi",
@@ -94,7 +94,7 @@ const photos = {
   ),
   contact: photo(
     "networking",
-    "Dense bundles of blue and grey network patch cables terminated into a switch",
+    "Dense bundles of blue and gray network patch cables terminated into a switch",
   ),
 };
 
@@ -157,7 +157,7 @@ const home: SeedPage = {
   navLabel: "Home",
   metaTitle: "IT, Networking, Cybersecurity & Security Systems in Northern Ontario",
   metaDescription:
-    "WirelessCom.Ca Inc. delivers managed IT, cybersecurity, Barracuda Fortinet and Juniper firewalls, AI camera analytics, VoIP with AI attendants, video surveillance and alarm security to businesses across Northern Ontario. Serving Sault Ste. Marie since 2005.",
+    "WirelessCom.Ca Inc. delivers managed IT, cybersecurity, Barracuda, Fortinet, and Juniper firewalls, AI camera analytics, VoIP with AI attendants, video surveillance, and alarm security to businesses across Northern Ontario. Serving Sault Ste. Marie since 2005.",
   showInHeaderNav: true,
   navOrder: 0,
   isSystem: true,
@@ -179,7 +179,7 @@ const home: SeedPage = {
           { label: "Talk to support", href: "/support", style: "outline", openInNewTab: false },
         ],
         highlights: [
-          "Serving business since 2005",
+          "Serving businesses since 2005",
           "Windows & macOS environments",
           "24/7 monitored alarm & video",
           "Certified, permitted installations",
@@ -202,7 +202,7 @@ const home: SeedPage = {
             points: [
               "Switching, routing and VLAN segmentation",
               "Wi-Fi design and site surveys",
-              "Structured cabling and fibre",
+              "Structured cabling and fiber",
             ],
             href: "/it-services",
           },
@@ -276,7 +276,7 @@ const home: SeedPage = {
             icon: "shield",
             title: "Cybersecurity",
             description:
-              "Firewalls, endpoint protection, vulnerability assessments, ransomware defence and backup with disaster recovery.",
+              "Firewalls, endpoint protection, vulnerability assessments, ransomware defense, and backup with disaster recovery.",
             href: "/cybersecurity",
             imageUrl: photos.cybersecurity.url,
             imageAlt: photos.cybersecurity.alt,
@@ -376,7 +376,7 @@ const home: SeedPage = {
             icon: "radio",
             title: "Two-Way Radios",
             description:
-              "Authorised Hytera dealer for DMR handhelds, mobiles and repeaters, with sales, rentals and service.",
+              "Authorized Hytera dealer for DMR handhelds, mobiles and repeaters, with sales, rentals and service.",
             href: "/two-way-radios",
             imageUrl: photos.radio.url,
             imageAlt: photos.radio.alt,
@@ -420,7 +420,7 @@ const home: SeedPage = {
         imagePosition: "right",
         bullets: [
           "Expertise across Windows and macOS environments",
-          "Proactive monitoring and preventative maintenance",
+          "Proactive monitoring and preventive maintenance",
           "ESA-certified electrical work with permits and inspection",
           "Responsive local support, not an offshore queue",
         ],
@@ -435,7 +435,7 @@ const home: SeedPage = {
       data: {
         heading: "Industries we support",
         description:
-          "We work with organisations of every size across Northern Ontario.",
+          "We work with organizations of every size across Northern Ontario.",
         columns: "3",
         style: "plain",
         items: [
@@ -445,8 +445,8 @@ const home: SeedPage = {
           { icon: "check", title: "Retail", description: "" },
           { icon: "check", title: "Manufacturing", description: "" },
           { icon: "check", title: "Construction", description: "" },
-          { icon: "check", title: "Municipal organisations", description: "" },
-          { icon: "check", title: "Non-profits", description: "" },
+          { icon: "check", title: "Municipal organizations", description: "" },
+          { icon: "check", title: "Nonprofits", description: "" },
           { icon: "check", title: "Educational facilities", description: "" },
         ],
       },
@@ -558,7 +558,7 @@ const itServices: SeedPage = {
     serviceHero(
       "IT Services",
       "IT infrastructure built for uptime",
-      "WirelessCom provides professional IT infrastructure, network management, server administration and cybersecurity services for business environments running Windows and macOS. We design, implement and maintain secure, high-availability systems aligned with industry best practices.",
+      "WirelessCom provides professional IT infrastructure, network management, server administration, and cybersecurity services for business environments running Windows and macOS. We design, implement, and maintain secure, high-availability systems aligned with industry best practices.",
       ["Network design", "Endpoint support", "Server administration", "Security"],
       photos.it,
     ),
@@ -568,13 +568,13 @@ const itServices: SeedPage = {
       data: {
         heading: "Network infrastructure & management",
         description:
-          "We deploy and manage reliable, secure network infrastructures tailored to business requirements. Our designs prioritise security, scalability and uptime.",
+          "We deploy and manage reliable, secure network infrastructures tailored to business requirements. Our designs prioritize security, scalability, and uptime.",
         columns: "2",
         style: "bordered",
         items: [
           { icon: "network", title: "Layered wired and wireless network design", description: "" },
           { icon: "network", title: "VLAN configuration and traffic segmentation", description: "" },
-          { icon: "activity", title: "Network performance analysis and optimisation", description: "" },
+          { icon: "activity", title: "Network performance analysis and optimization", description: "" },
           { icon: "lock", title: "Secure VPN and remote access solutions", description: "" },
           { icon: "eye", title: "Network monitoring and fault resolution", description: "" },
         ],
@@ -610,9 +610,9 @@ const itServices: SeedPage = {
         items: [
           { icon: "server", title: "Windows Server deployment and administration", description: "" },
           { icon: "database", title: "Active Directory, DNS, DHCP and Group Policy", description: "" },
-          { icon: "hard-drive", title: "Virtualisation and resource optimisation", description: "" },
+          { icon: "hard-drive", title: "Virtualization and resource optimization", description: "" },
           { icon: "cloud", title: "Backup, recovery and redundancy planning", description: "" },
-          { icon: "globe", title: "On-premise and cloud-based server solutions", description: "" },
+          { icon: "globe", title: "On-premises and cloud-based server solutions", description: "" },
         ],
       },
     },
@@ -678,7 +678,7 @@ const cybersecurity: SeedPage = {
   title: "Cybersecurity",
   metaTitle: "Cybersecurity Services for Business",
   metaDescription:
-    "Enterprise-grade cybersecurity for Ontario businesses: Barracuda, Fortinet and Juniper firewalls, endpoint protection, vulnerability assessments, ransomware defence, backup and disaster recovery.",
+    "Enterprise-grade cybersecurity for Ontario businesses: Barracuda, Fortinet, and Juniper firewalls, endpoint protection, vulnerability assessments, ransomware defense, backup, and disaster recovery.",
   showInHeaderNav: true,
   navOrder: 20,
   blocks: [
@@ -686,7 +686,7 @@ const cybersecurity: SeedPage = {
       "Cybersecurity",
       "Protect your business with enterprise-grade cybersecurity",
       "Cyber threats continue to evolve, placing businesses of every size at risk of data breaches, ransomware, phishing attacks and network compromise. WirelessCom.Ca Inc. delivers practical, business-focused security that protects your systems, data, employees and reputation.",
-      ["Layered defence", "Managed monitoring", "Incident response"],
+      ["Layered defense", "Managed monitoring", "Incident response"],
       photos.cybersecurity,
     ),
     {
@@ -703,7 +703,7 @@ const cybersecurity: SeedPage = {
       data: {
         heading: "Network security",
         description:
-          "Your network is the foundation of your business. We design, deploy and manage secure network environments that help prevent unauthorised access and protect sensitive information.",
+          "Your network is the foundation of your business. We design, deploy and manage secure network environments that help prevent unauthorized access and protect sensitive information.",
         columns: "3",
         style: "card",
         items: [
@@ -760,7 +760,7 @@ const cybersecurity: SeedPage = {
       data: {
         eyebrow: "Firewalls we deploy",
         heading: "The right appliance for the site, then ongoing support",
-        html: "<p>Most businesses do not need a data-centre chassis. They need a firewall that is sized for their internet circuit, their VPN users and the applications they actually run — then someone who will still answer the phone when a rule change is required.</p><p>WirelessCom.Ca Inc. designs, installs and supports next-generation firewalls including <strong>Barracuda</strong>, <strong>Fortinet</strong> and <strong>Juniper</strong>, along with other platforms we are trained on such as SonicWall, WatchGuard, Palo Alto and Cisco. These are technologies we deploy and support; listing them does not imply a formal partnership unless we say so.</p>",
+        html: "<p>Most businesses do not need a data-center chassis. They need a firewall that is sized for their internet circuit, their VPN users and the applications they actually run — then someone who will still answer the phone when a rule change is required.</p><p>WirelessCom.Ca Inc. designs, installs and supports next-generation firewalls including <strong>Barracuda</strong>, <strong>Fortinet</strong> and <strong>Juniper</strong>, along with other platforms we are trained on such as SonicWall, WatchGuard, Palo Alto and Cisco. These are technologies we deploy and support; listing them does not imply a formal partnership unless we say so.</p>",
         image: {
           url: "/images/firewall-1400.webp",
           alt: "Rack-mounted next-generation firewall appliances in a dark cabinet with cyan status lights and dressed ethernet",
@@ -803,7 +803,7 @@ const cybersecurity: SeedPage = {
       data: {
         heading: "Ransomware protection",
         description:
-          "Ransomware attacks can halt business operations within minutes. We minimise that risk with:",
+          "Ransomware attacks can halt business operations within minutes. We minimize that risk with:",
         columns: "3",
         style: "card",
         items: [
@@ -841,7 +841,7 @@ const cybersecurity: SeedPage = {
       data: {
         heading: "Security monitoring, maintenance & consulting",
         description:
-          "Cybersecurity requires continuous attention. Our managed services cover monitoring, updates, patching, threat detection and preventative maintenance — and our consultants help with planning, risk assessments, policy development, compliance readiness and infrastructure reviews.",
+          "Cybersecurity requires continuous attention. Our managed services cover monitoring, updates, patching, threat detection and preventive maintenance — and our consultants help with planning, risk assessments, policy development, compliance readiness and infrastructure reviews.",
         columns: "3",
         style: "bordered",
         items: [
@@ -892,9 +892,9 @@ const cybersecurity: SeedPage = {
       settings: { background: "navy", paddingY: "xl" },
       data: {
         eyebrow: "How we think about risk",
-        heading: "Defence in depth",
+        heading: "Defense in depth",
         description:
-          "No single control is enough. We layer prevention, detection and recovery so a failure in one place does not become an outage or a breach. The wording is deliberate: we help protect systems and reduce risk — we do not claim to eliminate it.",
+          "No single control is enough. We layer prevention, detection, and recovery so a failure in one place does not become an outage or a breach. The wording is deliberate: we help protect systems and reduce risk — we do not claim to eliminate it.",
         centreLabel: "Your data",
         layers: [
           {
@@ -953,7 +953,7 @@ const securityServices: SeedPage = {
     serviceHero(
       "Security Services",
       "Comprehensive security for your business, assets and people",
-      "WirelessCom.Ca Inc. is committed to providing security services that safeguard your business, assets and personnel. Based in Sault Ste. Marie, Ontario, we specialise in tailored solutions designed around the real risks at your site.",
+      "WirelessCom.Ca Inc. is committed to providing security services that safeguard your business, assets and personnel. Based in Sault Ste. Marie, Ontario, we specialize in tailored solutions designed around the real risks at your site.",
       ["IP CCTV & NVRs", "Access control", "24/7 monitoring"],
       photos.security,
     ),
@@ -977,7 +977,7 @@ const securityServices: SeedPage = {
           {
             title: "Intrusion detection and alarm systems",
             description:
-              "Protect your property against unauthorised access with 24/7 monitoring, instant alerts and rapid response to potential breaches to minimise risk and loss.",
+              "Protect your property against unauthorized access with 24/7 monitoring, instant alerts and rapid response to potential breaches to minimize risk and loss.",
           },
           {
             title: "Security consultation and assessment",
@@ -1050,7 +1050,7 @@ const securityServices: SeedPage = {
       type: "featureGrid",
       settings: { background: "white", paddingY: "lg" },
       data: {
-        heading: "Why choose WirelessCom.Ca Inc?",
+        heading: "Why choose WirelessCom.Ca Inc.?",
         description: "",
         columns: "3",
         style: "card",
@@ -1071,7 +1071,7 @@ const securityServices: SeedPage = {
             icon: "headset",
             title: "Customer satisfaction",
             description:
-              "Responsive service, personalised solutions and ongoing support for genuine peace of mind.",
+              "Responsive service, personalized solutions and ongoing support for genuine peace of mind.",
           },
         ],
       },
@@ -1095,7 +1095,7 @@ const telephoneServices: SeedPage = {
     serviceHero(
       "Telephone Services",
       "Cloud-hosted IP VoIP telephone service",
-      "WirelessCom.Ca Inc. offers advanced cloud-hosted IP VoIP telephone service designed to modernise your communications with flexibility, reliability and cost-effectiveness — with local support from Sault Ste. Marie.",
+      "WirelessCom.Ca Inc. offers advanced cloud-hosted IP VoIP telephone service designed to modernize your communications with flexibility, reliability, and cost-effectiveness — with local support from Sault Ste. Marie.",
       ["Scalable", "Mobile-friendly", "Locally supported"],
       photos.telephone,
     ),
@@ -1166,7 +1166,7 @@ const telephoneServices: SeedPage = {
           ["Mid-range IP phones", "Mid-range capacity with a high-end design"],
           ["High-end IP phones", "Users who are on the phone most of the day"],
           ["IP video phones for Android", "Powerful voice, video and web portal in one device"],
-          ["DECT cordless IP phones", "Mobilising your VoIP solution around a building or yard"],
+          ["DECT cordless IP phones", "Mobilizing your VoIP solution around a building or yard"],
           ["Softphone app", "Any SIP account on any mobile device"],
         ],
       },
@@ -1177,7 +1177,7 @@ const telephoneServices: SeedPage = {
       data: {
         eyebrow: "AI on your phones",
         heading: "A receptionist that never misses the first ring",
-        html: "<p>Business telephone systems now include practical AI: an attendant that understands what the caller is asking, routes to the right queue, transcribes voicemail, and summarises a long call so staff are not starting from a blank note.</p><p>We install and support those features on the VoIP platforms we already put in — desk phones, DECT, and the mobile app — with the same local team that handles the rest of the PBX. Nothing is sent to a mystery cloud unless you choose that option and we document it.</p>",
+        html: "<p>Business telephone systems now include practical AI: an attendant that understands what the caller is asking, routes to the right queue, transcribes voicemail, and summarizes a long call so staff are not starting from a blank note.</p><p>We install and support those features on the VoIP platforms we already put in — desk phones, DECT, and the mobile app — with the same local team that handles the rest of the PBX. Nothing is sent to a mystery cloud unless you choose that option and we document it.</p>",
         image: {
           url: "/images/ai-phone-1400.webp",
           alt: "Black executive VoIP desk phone whose display shows an abstract cyan assistant waveform",
@@ -1199,7 +1199,7 @@ const telephoneServices: SeedPage = {
       type: "featureGrid",
       settings: { background: "white", paddingY: "lg" },
       data: {
-        heading: "Why choose WirelessCom.Ca Inc?",
+        heading: "Why choose WirelessCom.Ca Inc.?",
         description: "",
         columns: "3",
         style: "plain",
@@ -1494,7 +1494,7 @@ const dataCabling: SeedPage = {
             icon: "cable",
             title: "Cat5e & Cat6 data cabling",
             description:
-              "Network rack and structured cable installations, dressed, labelled and tested.",
+              "Network rack and structured cable installations, dressed, labeled and tested.",
           },
           {
             icon: "monitor",
@@ -1540,7 +1540,7 @@ const evCharging: SeedPage = {
       data: {
         heading: "GrizzLE EV Charge",
         description:
-          "UL tested and certified, IP67 water and fire-resistant indoor aluminium cast enclosure, eligible for rebates in Quebec and BC.",
+          "UL tested and certified, IP67 water and fire-resistant indoor aluminum cast enclosure, eligible for rebates in Quebec and BC.",
         columns: ["Specification", "Detail"],
         rows: [
           ["Maximum power output", "40 A, 10 kW — configurable to 16 A, 24 A or 32 A"],
@@ -1557,7 +1557,7 @@ const evCharging: SeedPage = {
           ["Plug", "NEMA 14-50P · 24 ft output cable"],
           ["Connector", "J1772"],
           ["Mounting", "Wall mounted, bracket with anti-theft features"],
-          ["Enclosure", "Indoor and outdoor, NEMA 4 aluminium cast"],
+          ["Enclosure", "Indoor and outdoor, NEMA 4 aluminum cast"],
           ["Operating temperature", "−30 °C to +50 °C (−22 °F to 122 °F)"],
         ],
       },
@@ -1625,7 +1625,7 @@ const twoWayRadios: SeedPage = {
   slug: "two-way-radios",
   title: "Two-Way Radios",
   metaDescription:
-    "Authorised Hytera dealer for digital and analog two-way radios: DMR handhelds, mobiles, repeaters and accessories, with sales, rentals, training and service.",
+    "Authorized Hytera dealer for digital and analog two-way radios: DMR handhelds, mobiles, repeaters and accessories, with sales, rentals, training and service.",
   showInHeaderNav: true,
   navOrder: 100,
   blocks: [
@@ -1633,14 +1633,14 @@ const twoWayRadios: SeedPage = {
       "Two-Way Radios",
       "Your Hytera communications dealer",
       "Digital and analog two-way radios from leading brands, suitable for many industries and applications, with clear and dependable communication indoors and outdoors.",
-      ["Authorised Hytera dealer", "Sales & rentals", "Service & training"],
+      ["Authorized Hytera dealer", "Sales & rentals", "Service & training"],
       photos.radio,
     ),
     {
       type: "richText",
       settings: { background: "white", paddingY: "lg", width: "narrow" },
       data: {
-        html: "<p>WirelessCom.Ca Inc. is an authorised dealer of Hytera Communications, a global leader in professional mobile radio (DMR) solutions and radio communication systems. Hytera is known for its commitment to excellence and cutting-edge technology, whether you need robust radios for public safety, efficient communication for an enterprise, or versatile devices for personal use.</p>",
+        html: "<p>WirelessCom.Ca Inc. is an authorized dealer of Hytera Communications, a global leader in professional mobile radio (DMR) solutions and radio communication systems. Hytera is known for its commitment to excellence and cutting-edge technology, whether you need robust radios for public safety, efficient communication for an enterprise, or versatile devices for personal use.</p>",
         columns: "1",
       },
     },
@@ -1659,17 +1659,17 @@ const twoWayRadios: SeedPage = {
           {
             title: "Custom solutions",
             description:
-              "We start by understanding your communication requirements, then integrate Hytera technology to optimise operational efficiency and productivity.",
+              "We start by understanding your communication requirements, then integrate Hytera technology to optimize operational efficiency and productivity.",
           },
           {
             title: "Consulting and support",
             description:
-              "Help selecting the right products, optimising your communication infrastructure and integrating with existing systems.",
+              "Help selecting the right products, optimizing your communication infrastructure, and integrating with existing systems.",
           },
           {
             title: "Training and maintenance",
             description:
-              "Training programmes on radio operation and maintenance, plus comprehensive service to keep your fleet reliable.",
+              "Training programs on radio operation and maintenance, plus comprehensive service to keep your fleet reliable.",
           },
         ],
       },
@@ -1777,7 +1777,7 @@ const digitalMarketing: SeedPage = {
       type: "richText",
       settings: { background: "white", paddingY: "lg", width: "narrow" },
       data: {
-        html: "<p>Our digital marketing screens provide a dynamic way to promote products, services and brand messaging in real time. Whether installed in retail spaces, office lobbies, trade shows or public venues, these screens deliver engaging content that is flexible and impactful. We specialise in sourcing and setting up high-quality displays, so your marketing is always clear, modern and visually striking.</p><p>To complement our digital screens, we also offer professional graphic design services. From custom advertisements and social media visuals to brand identity assets and digital content for display, our design team creates visuals that reflect your business's personality and goals. Every design is tailored to your audience, with a focus on clarity, creativity and brand consistency.</p><p>By combining cutting-edge display technology with expert graphic design, WirelessCom enables businesses to stand out, strengthen their brand presence and connect with customers in meaningful ways.</p>",
+        html: "<p>Our digital marketing screens provide a dynamic way to promote products, services and brand messaging in real time. Whether installed in retail spaces, office lobbies, trade shows or public venues, these screens deliver engaging content that is flexible and impactful. We specialize in sourcing and setting up high-quality displays, so your marketing is always clear, modern and visually striking.</p><p>To complement our digital screens, we also offer professional graphic design services. From custom advertisements and social media visuals to brand identity assets and digital content for display, our design team creates visuals that reflect your business's personality and goals. Every design is tailored to your audience, with a focus on clarity, creativity and brand consistency.</p><p>By combining cutting-edge display technology with expert graphic design, WirelessCom enables businesses to stand out, strengthen their brand presence and connect with customers in meaningful ways.</p>",
         columns: "2",
       },
     },
@@ -1821,7 +1821,7 @@ const support: SeedPage = {
       data: {
         heading: "Technical support request",
         description:
-          "Tell us what is happening and the best number to reach you on. Include any error messages you are seeing.",
+          "Tell us what is happening and the best number to reach you at. Include any error messages you are seeing.",
         formType: "SUPPORT",
         showCompany: true,
         showAddress: false,
@@ -1897,7 +1897,7 @@ const contact: SeedPage = {
       data: {
         heading: "Send us a message",
         description:
-          "Fields marked with an asterisk are required. We reply to every enquiry.",
+          "Fields marked with an asterisk are required. We reply to every inquiry.",
         formType: "CONTACT",
         showCompany: true,
         showAddress: true,
@@ -1950,8 +1950,8 @@ const privacyPolicy: SeedPage = {
 <h2>2. Purpose of collection and use of information</h2>
 <ul>
 <li><strong>To provide and improve our services:</strong> to process orders, deliver products and services and manage customer relationships, including improving our website, products and customer service.</li>
-<li><strong>To communicate with you:</strong> to send updates, promotional material and information about our services, and to respond to enquiries and provide support.</li>
-<li><strong>To personalise your experience:</strong> using your preferences, purchase history and browsing behaviour to offer relevant content and services.</li>
+<li><strong>To communicate with you:</strong> to send updates, promotional material and information about our services, and to respond to inquiries and provide support.</li>
+<li><strong>To personalize your experience:</strong> using your preferences, purchase history and browsing behavior to offer relevant content and services.</li>
 <li><strong>For security and legal compliance:</strong> to protect the security of our services, prevent fraud and comply with legal requirements or requests from law enforcement.</li>
 </ul>
 
@@ -1964,7 +1964,7 @@ const privacyPolicy: SeedPage = {
 </ul>
 
 <h2>4. Security practices</h2>
-<p>We take the protection of your personal information seriously and implement reasonable technical, administrative and physical security measures to safeguard it from unauthorised access, disclosure, alteration or destruction. These measures include encryption, secure servers and access controls. However, no security system is impenetrable, and while we strive to protect your information we cannot guarantee the absolute security of data transmitted over the internet.</p>
+<p>We take the protection of your personal information seriously and implement reasonable technical, administrative, and physical security measures to safeguard it from unauthorized access, disclosure, alteration, or destruction. These measures include encryption, secure servers, and access controls. However, no security system is impenetrable, and while we strive to protect your information, we cannot guarantee the absolute security of data transmitted over the internet.</p>
 
 <h2>5. Your rights and choices</h2>
 <p>As a resident of Ontario, Canada, you have certain rights under applicable privacy laws, including:</p>
@@ -1976,13 +1976,13 @@ const privacyPolicy: SeedPage = {
 </ul>
 
 <h2>6. Cookies and tracking technologies</h2>
-<p>We use cookies and similar technologies to collect information about your browsing activity on our website. These help us improve your experience, analyse trends and gather demographic information. You can control cookies through your browser settings, though disabling them may limit some functionality.</p>
+<p>We use cookies and similar technologies to collect information about your browsing activity on our website. These help us improve your experience, analyze trends and gather demographic information. You can control cookies through your browser settings, though disabling them may limit some functionality.</p>
 
 <h2>7. Third-party websites</h2>
 <p>Our website may contain links to third-party websites, including social media platforms, advertisers and business partners. These sites have their own privacy policies and we are not responsible for their practices. We encourage you to review their policies before providing any personal information.</p>
 
 <h2>8. Changes to this Privacy Policy</h2>
-<p>We may update this policy from time to time to reflect changes in our practices or legal requirements. When we make material changes we will post the revised policy on our website and update the effective date. Please review this policy periodically.</p>
+<p>We may update this policy from time to time to reflect changes in our practices or legal requirements. When we make material changes, we will post the revised policy on our website and update the effective date. Please review this policy periodically.</p>
 
 <h2>9. Contact information</h2>
 <p>If you have questions or concerns about this Privacy Policy or our privacy practices, contact us at:</p>
@@ -2033,10 +2033,10 @@ const e911: SeedPage = {
       data: {
         columns: "1",
         html: `<h2>How VoIP 9-1-1 differs</h2>
-<p>With traditional telephone service, a 9-1-1 call is automatically routed to the emergency centre for the physical address of the line. A VoIP call travels over the internet, so the emergency operator may not automatically receive your location. Always be prepared to state your address and phone number to the operator.</p>
+<p>With traditional telephone service, a 9-1-1 call is automatically routed to the emergency center for the physical address of the line. A VoIP call travels over the internet, so the emergency operator may not automatically receive your location. Always be prepared to state your address and phone number to the operator.</p>
 
 <h2>Keep your service address current</h2>
-<p>Emergency calls are routed using the service address registered for your line. If you move a phone, an office or a whole site, you must tell WirelessCom so the registered address can be updated. Until it is updated, an emergency call may be routed to the wrong centre.</p>
+<p>Emergency calls are routed using the service address registered for your line. If you move a phone, an office or a whole site, you must tell WirelessCom so the registered address can be updated. Until it is updated, an emergency call may be routed to the wrong center.</p>
 
 <h2>Power and internet outages</h2>
 <p>VoIP service requires both power and a working internet connection. During a power failure or internet outage, and if your equipment has no battery backup, you will not be able to place or receive calls, including calls to 9-1-1. We recommend keeping a mobile phone available as a backup.</p>
@@ -2052,7 +2052,7 @@ const e911: SeedPage = {
 <p>Make sure staff, family members, guests and anyone else who may use the phones understands these limitations. Labels on or near each handset are a simple and effective reminder.</p>
 
 <h2>Questions</h2>
-<p>If anything here is unclear, or you need to update the service address on your account, contact us on ${PHONE} or email service@wirelesscom.ca.</p>`,
+<p>If anything here is unclear, or you need to update the service address on your account, contact us at ${PHONE} or email service@wirelesscom.ca.</p>`,
       },
     },
     closingCta(
@@ -2075,7 +2075,7 @@ const aiServices: SeedPage = {
     serviceHero(
       "AI services",
       "AI on the cameras and phones you already need",
-      "We install and support practical AI on two systems every site already runs: video surveillance and the telephone system. Analytics that find a person in last night’s recording. An attendant that routes a caller without a maze of menus. Designed, installed and supported by the same local team.",
+      "We install and support practical AI on two systems every site already runs: video surveillance and the telephone system. You get analytics that find a person in last night's recording, and an attendant that routes a caller without a maze of menus — designed, installed, and supported by the same local team.",
       ["Camera analytics", "AI attendants", "Local support"],
       photos.ai,
     ),
@@ -2158,7 +2158,7 @@ const aiServices: SeedPage = {
       data: {
         eyebrow: "Phones",
         heading: "An attendant that understands the first sentence",
-        html: "<p>The same idea on the telephone system: <strong>AI attendants</strong> that understand what the caller is asking, route to the right queue, transcribe voicemail, and summarise a long call so staff are not starting from a blank note.</p><p>We turn those features on in the VoIP platforms we already install — desk phones, DECT cordless, video phones and the mobile app — with training for your receptionist and a documented after-hours plan. E-911 behaviour does not change; read the notice if you are moving to VoIP.</p>",
+        html: "<p>The same idea on the telephone system: <strong>AI attendants</strong> that understand what the caller is asking, route to the right queue, transcribe voicemail, and summarize a long call so staff are not starting from a blank note.</p><p>We turn those features on in the VoIP platforms we already install — desk phones, DECT cordless, video phones and the mobile app — with training for your receptionist and a documented after-hours plan. E-911 behavior does not change; read the notice if you are moving to VoIP.</p>",
         image: {
           url: "/images/ai-phone-1400.webp",
           alt: "Black executive VoIP desk phone whose display shows an abstract cyan assistant waveform",
@@ -2234,7 +2234,7 @@ const aiServices: SeedPage = {
     },
     closingCta(
       "Add AI to the cameras or the phones you already have",
-      "Tell us the site, the number of cameras or extensions, and whether you want analytics, an attendant, or both. We will quote the hardware, licences and the work to turn it on.",
+      "Tell us the site, the number of cameras or extensions, and whether you want analytics, an attendant, or both. We will quote the hardware, licenses and the work to turn it on.",
     ),
   ],
 };
@@ -2243,7 +2243,7 @@ const firewalls: SeedPage = {
   slug: "firewalls",
   title: "Firewalls",
   navLabel: "Firewalls",
-  metaTitle: "Barracuda, Fortinet and Juniper Firewalls",
+  metaTitle: "Barracuda, Fortinet, and Juniper Firewalls",
   metaDescription:
     "Next-generation firewall design, installation and support in Northern Ontario. Barracuda, Fortinet, Juniper and similar platforms WirelessCom.Ca Inc. is trained on — sized for your circuit, VPN users and applications.",
   showInHeaderNav: true,
@@ -2262,7 +2262,7 @@ const firewalls: SeedPage = {
       data: {
         eyebrow: "Perimeter security",
         heading: "The box is the easy part. The rule base is the work.",
-        html: "<p>Most sites do not fail because they lack a firewall. They fail because the appliance is undersized, the firmware is a year behind, or nobody owns the rules. We start with the circuit, the applications and the people who need VPN access, then we pick a platform we can support for the life of the box.</p><p><strong>Barracuda</strong>, <strong>Fortinet</strong> and <strong>Juniper</strong> are the names customers ask for most. We also deploy and support SonicWall, WatchGuard, Palo Alto and Cisco where that is the right fit. These are technologies we install and maintain. Listing them does not imply a formal partnership unless we say so — Hytera two-way radio is our authorised dealership; firewall brands are supported platforms.</p>",
+        html: "<p>Most sites do not fail because they lack a firewall. They fail because the appliance is undersized, the firmware is a year behind, or nobody owns the rules. We start with the circuit, the applications and the people who need VPN access, then we pick a platform we can support for the life of the box.</p><p><strong>Barracuda</strong>, <strong>Fortinet</strong> and <strong>Juniper</strong> are the names customers ask for most. We also deploy and support SonicWall, WatchGuard, Palo Alto and Cisco where that is the right fit. These are technologies we install and maintain. Listing them does not imply a formal partnership unless we say so — Hytera two-way radio is our authorized dealership; firewall brands are supported platforms.</p>",
         image: {
           url: "/images/firewall-1400.webp",
           alt: "Rack-mounted next-generation firewall appliances in a dark cabinet with cyan status lights and dressed ethernet",

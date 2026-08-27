@@ -32,7 +32,7 @@ export default async function BrandingPage({
     <div className="max-w-3xl">
       <PageHeader
         title="Branding & theme"
-        description="Logo, favicon, social card, brand colours and site-wide embed codes. Changes apply immediately — no redeploy needed."
+        description="Logo, favicon, social card, brand colors, and site-wide embed codes. Changes apply immediately — no redeploy needed."
       />
 
       {params.saved && (
@@ -83,8 +83,8 @@ export default async function BrandingPage({
         </Card>
 
         <Card>
-          <CardTitle description="These two colours generate the full light-to-dark ranges used across the site.">
-            Brand colours
+          <CardTitle description="These two colors generate the full light-to-dark ranges used across the site.">
+            Brand colors
           </CardTitle>
           <div className="grid gap-5 sm:grid-cols-2">
             <ColorField
@@ -105,7 +105,7 @@ export default async function BrandingPage({
               <span className="flex items-start gap-2">
                 <Info className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
                 <span>
-                  Pick colours with enough contrast against white and against
+                  Pick colors with enough contrast against white and against
                   navy. Very light accents can fail accessibility checks on
                   white backgrounds.
                 </span>

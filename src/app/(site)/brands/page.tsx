@@ -31,7 +31,7 @@ export default async function BrandsPage() {
         <div className="container-page">
           {brands.length === 0 ? (
             <p className="text-slate-600">
-              Brand entries are managed in the admin catalogue and will appear
+              Brand entries are managed in the admin catalog and will appear
               here once published.
             </p>
           ) : (

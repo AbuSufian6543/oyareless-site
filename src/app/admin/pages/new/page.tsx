@@ -33,7 +33,7 @@ const TEMPLATES = [
   {
     value: "contact",
     label: "Contact page",
-    description: "Contact details with a map plus an enquiry form.",
+    description: "Contact details with a map plus an inquiry form.",
     icon: Mail,
   },
 ] as const;

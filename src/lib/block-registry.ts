@@ -436,13 +436,13 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   },
   {
     type: "defenseInDepth",
-    label: "Defence in depth",
+    label: "Defense in depth",
     description: "Concentric security layers with the controls in each and a threat list.",
     category: "Networking & Security",
     icon: "ShieldHalf",
     seed: {
       eyebrow: "Our approach",
-      heading: "Defence in depth",
+      heading: "Defense in depth",
       description:
         "No single control stops everything. Layering them means one failure does not become a breach.",
       centreLabel: "Your data",

@@ -123,7 +123,7 @@ export function SpeedGauge({
         })}
 
         {/* The needle is drawn at the dial's zero position and rotated about
-            the face centre; a percentage origin would use the line's own
+            the face center; a percentage origin would use the line's own
             bounding box instead. */}
         <g
           className={active ? "transition-transform duration-200 ease-out" : ""}

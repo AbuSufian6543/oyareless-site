@@ -140,7 +140,7 @@ if (hidden.size === 0) {
   const body = await submit.text();
 
   const signedIn = cookies.has("wc_session");
-  const wrongPassword = /incorrect|invalid|not recognis/i.test(body);
+  const wrongPassword = /incorrect|invalid|not recogni[sz]/i.test(body);
   report(
     `sign in as ${email}`,
     signedIn,

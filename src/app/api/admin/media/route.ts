@@ -53,7 +53,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   const user = await requireRole("EDITOR").catch(() => null);
   if (!user) {
-    return NextResponse.json({ message: "Not authorised." }, { status: 401 });
+    return NextResponse.json({ message: "Not authorized." }, { status: 401 });
   }
 
   let formData: FormData;
@@ -121,6 +121,6 @@ async function authorise(role: "EDITOR" | "ADMIN"): Promise<Response | null> {
   } catch (caught) {
     const status =
       caught instanceof AuthError && caught.code === "FORBIDDEN" ? 403 : 401;
-    return NextResponse.json({ message: "Not authorised." }, { status });
+    return NextResponse.json({ message: "Not authorized." }, { status });
   }
 }

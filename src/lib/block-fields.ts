@@ -232,7 +232,7 @@ export const BLOCK_FIELDS: Record<BlockType, FieldDef[]> = {
   logoStrip: [
     { kind: "text", key: "heading", label: "Heading" },
     { kind: "imageList", key: "images", label: "Logos" },
-    { kind: "boolean", key: "grayscale", label: "Grey-scale until hovered" },
+    { kind: "boolean", key: "grayscale", label: "Grayscale until hovered" },
   ],
 
   gallery: [
@@ -350,7 +350,7 @@ export const BLOCK_FIELDS: Record<BlockType, FieldDef[]> = {
         { value: "QUOTE", label: "Quote request" },
         { value: "CALLBACK", label: "Request a callback" },
       ],
-      hint: "Controls how the enquiry is labelled in the admin inbox.",
+      hint: "Controls how the inquiry is labeled in the admin inbox.",
     },
     { kind: "boolean", key: "showCompany", label: "Ask for company name" },
     { kind: "boolean", key: "showAddress", label: "Ask for service address" },
@@ -577,7 +577,7 @@ export const BLOCK_FIELDS: Record<BlockType, FieldDef[]> = {
       kind: "text",
       key: "disclaimer",
       label: "Qualifier line",
-      hint: "Keep this accurate. Only say “partner” or “authorised dealer” where that is formally true.",
+      hint: "Keep this accurate. Only say “partner” or “authorized dealer” where that is formally true.",
     },
     {
       kind: "select",
@@ -620,7 +620,7 @@ export const BLOCK_FIELDS: Record<BlockType, FieldDef[]> = {
     { kind: "text", key: "eyebrow", label: "Eyebrow label" },
     { kind: "text", key: "heading", label: "Heading" },
     { kind: "textarea", key: "description", label: "Description", rows: 2 },
-    { kind: "text", key: "centreLabel", label: "Centre label" },
+    { kind: "text", key: "centreLabel", label: "Center label" },
     {
       kind: "objectList",
       key: "layers",
@@ -716,7 +716,7 @@ export const SETTINGS_FIELDS: FieldDef[] = [
     label: "Background",
     options: [
       { value: "white", label: "White" },
-      { value: "light", label: "Light grey" },
+      { value: "light", label: "Light gray" },
       { value: "dark", label: "Dark navy" },
       { value: "navy", label: "Navy" },
       { value: "gradient", label: "Navy → blue gradient" },
@@ -753,7 +753,7 @@ export const SETTINGS_FIELDS: FieldDef[] = [
     label: "Text alignment",
     options: [
       { value: "left", label: "Left" },
-      { value: "center", label: "Centre" },
+      { value: "center", label: "Center" },
       { value: "right", label: "Right" },
     ],
   },

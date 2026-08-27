@@ -194,7 +194,7 @@ async function main(): Promise<void> {
 
   // Navigation is additive in both directions: missing top-level items are
   // created, and missing children are appended to items that already exist so
-  // newly introduced sections reach a menu an admin has already customised.
+  // newly introduced sections reach a menu an admin has already customized.
   let navAdded = 0;
   for (const item of SEED_NAV) {
     const existing = await prisma.navItem.findFirst({

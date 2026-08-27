@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
  *
  * Images built by `scripts/build-site-images.mjs` already exist as AVIF and
  * WebP at three widths, so those are served through a plain `<picture>`: the
- * browser negotiates the format, no server-side optimisation runs, and the
+ * browser negotiates the format, no server-side optimization runs, and the
  * files are cacheable static assets.
  *
  * Anything else — most importantly images an admin uploads or pastes through
@@ -85,7 +85,7 @@ export function SectionImage({
     <picture className={fill ? "absolute inset-0 block size-full" : undefined}>
       <source type="image/avif" srcSet={srcSet(name, "avif")} sizes={sizes} />
       <source type="image/webp" srcSet={srcSet(name, "webp")} sizes={sizes} />
-      {/* Pre-optimised static derivatives; the optimiser would only re-encode
+      {/* Pre-optimized static derivatives; the optimizer would only re-encode
           what the build already produced. */}
       <img
         src={`/images/${name}-900.webp`}

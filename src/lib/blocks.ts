@@ -458,7 +458,7 @@ const defenseLayer = z.object({
 
 const defenseInDepthData = z.object({
   eyebrow: z.string().default(""),
-  heading: z.string().default("Defence in depth"),
+  heading: z.string().default("Defense in depth"),
   description: z.string().default(""),
   centreLabel: z.string().default("Your data"),
   layers: z.array(defenseLayer).default([]),

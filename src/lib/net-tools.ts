@@ -256,7 +256,7 @@ export async function inspectTls(
   host: string;
   address: string;
   protocol: string | null;
-  authorised: boolean;
+  authorized: boolean;
   fingerprintSha256: string | null;
   subject: string | null;
   issuer: string | null;
@@ -271,7 +271,7 @@ export async function inspectTls(
   const details = await withTimeout(
     new Promise<{
       protocol: string | null;
-      authorised: boolean;
+      authorized: boolean;
       fingerprintSha256: string | null;
       subject: string | null;
       issuer: string | null;
@@ -289,13 +289,13 @@ export async function inspectTls(
         },
         () => {
           const cert = socket.getPeerCertificate();
-          const authorised = socket.authorized;
+          const authorized = socket.authorized;
           const protocol = socket.getProtocol();
           const raw = cert.raw as Buffer | undefined;
           socket.end();
           resolve({
             protocol,
-            authorised,
+            authorized,
             fingerprintSha256: raw
               ? createHash("sha256").update(raw).digest("hex")
               : (cert.fingerprint256 ?? null),

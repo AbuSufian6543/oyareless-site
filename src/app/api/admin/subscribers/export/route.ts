@@ -10,7 +10,7 @@ export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
   const user = await requireRole("ADMIN").catch(() => null);
   if (!user) {
-    return NextResponse.json({ message: "Not authorised." }, { status: 401 });
+    return NextResponse.json({ message: "Not authorized." }, { status: 401 });
   }
 
   const confirmedOnly =

@@ -54,7 +54,7 @@ export function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
         network={data.networkDensity > 0}
         density={data.networkDensity / 100}
         glow="right"
-        // The photo layer already supplies the base colour when present.
+        // The photo layer already supplies the base color when present.
         className={data.backgroundImageUrl ? "bg-transparent" : undefined}
       />
 
@@ -793,7 +793,7 @@ export function KbHighlightsBlock({
 }
 
 /**
- * Concentric "defence in depth" diagram.
+ * Concentric "defense in depth" diagram.
  *
  * Rendered as nested rings on wide screens and a stacked list on narrow ones.
  * The list is the accessible representation in both cases — the rings are

@@ -1,13 +1,13 @@
 import { DEFAULT_SETTINGS, type SiteSettings } from "@/lib/settings-defaults";
 
 /**
- * Turns the two admin-editable brand colours into the CSS custom properties the
+ * Turns the two admin-editable brand colors into the CSS custom properties the
  * Tailwind theme already reads.
  *
  * Tailwind v4 compiles `text-accent-500` to `color: var(--color-accent-500)`,
  * so redefining those variables on `:root` at runtime retints the whole site
  * without a rebuild. Intermediate shades are derived with `color-mix()` rather
- * than stored individually, which keeps the admin form to a single colour
+ * than stored individually, which keeps the admin form to a single color
  * picker per ramp.
  */
 
@@ -57,7 +57,7 @@ function ramp(name: string, hex: string): string {
 }
 
 /**
- * Returns a stylesheet body, or an empty string when both colours are still the
+ * Returns a stylesheet body, or an empty string when both colors are still the
  * compiled-in defaults so the common case ships no extra bytes.
  */
 export function themeCss(settings: SiteSettings): string {

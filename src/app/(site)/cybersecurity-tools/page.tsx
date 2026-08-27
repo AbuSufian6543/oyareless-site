@@ -10,7 +10,7 @@ import { env } from "@/lib/env";
 export const metadata: Metadata = {
   title: "Cybersecurity tools",
   description:
-    "TLS certificate inspection, security-header checks, SPF/DKIM/DMARC lookups and DNSBL reputation — all self-hosted.",
+    "TLS certificate inspection, security-header checks, SPF/DKIM/DMARC lookups, and DNSBL reputation — all self-hosted.",
   alternates: { canonical: `${env.siteUrl}/cybersecurity-tools` },
 };
 
@@ -29,7 +29,7 @@ export default function CybersecurityToolsPage() {
           </h1>
           <p className="mt-4 max-w-2xl text-lg text-navy-200">
             Certificate and header checks run from our server. Password tools
-            never leave your browser. IP reputation is DNSBL-based and labelled
+            never leave your browser. IP reputation is DNSBL-based and labeled
             as such — it is not a commercial threat feed.
           </p>
           <Link

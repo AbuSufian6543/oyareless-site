@@ -37,7 +37,7 @@ export function ColorField({
       <div className="flex items-center gap-2">
         <input
           type="color"
-          aria-label={`${label} colour picker`}
+          aria-label={`${label} color picker`}
           value={swatch}
           onChange={(event) => setValue(event.target.value)}
           className="size-10 shrink-0 cursor-pointer rounded-lg border border-slate-300 bg-white p-1"
@@ -55,7 +55,7 @@ export function ColorField({
             type="button"
             onClick={() => setValue(fallback)}
             className="shrink-0 rounded-lg border border-slate-300 p-2.5 text-slate-500 transition-colors hover:bg-slate-50 hover:text-navy-800"
-            title="Reset to the default colour"
+            title="Reset to the default color"
           >
             <RotateCcw className="size-4" aria-hidden="true" />
             <span className="sr-only">Reset {label}</span>

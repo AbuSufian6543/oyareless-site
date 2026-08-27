@@ -13,7 +13,7 @@ const AREAS = [
   "Video surveillance",
   "Alarm security",
   "Access control",
-  "Cabling / fibre",
+  "Cabling / fiber",
   "Two-way radio",
   "EV charging",
   "Other",

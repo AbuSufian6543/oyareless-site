@@ -83,7 +83,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const settings = await getSettings();
-  // Retints the accent/brand ramps when an admin has picked custom colours.
+  // Retints the accent/brand ramps when an admin has picked custom colors.
   const theme = themeCss(settings);
 
   // Do not render a <head> here. Next.js injects metadata into head; a

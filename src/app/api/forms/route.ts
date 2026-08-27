@@ -103,7 +103,7 @@ export async function POST(request: Request) {
     );
   }
 
-  // The enquiry is already stored, so email problems must not fail the request.
+  // The inquiry is already stored, so email problems must not fail the request.
   const notification = submissionNotificationEmail({
     type: data.type,
     name: data.name,

@@ -163,7 +163,7 @@ export default async function SubmissionDetailPage({
             <div className="mt-4 space-y-2 text-sm">
               <a
                 href={`mailto:${submission.email}?subject=${encodeURIComponent(
-                  `Re: ${submission.subject || "Your enquiry"}`,
+                  `Re: ${submission.subject || "Your inquiry"}`,
                 )}`}
                 className="flex items-center gap-2 font-medium text-brand-700 hover:underline"
               >

@@ -441,7 +441,7 @@ export function MediaManager({
                 >
                   Folder
                   <span className="ml-2 text-xs font-normal text-slate-500">
-                    organises the library only — the address never changes
+                    organizes the library only — the address never changes
                   </span>
                 </label>
                 <input

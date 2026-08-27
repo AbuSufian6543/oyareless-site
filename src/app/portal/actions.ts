@@ -41,7 +41,7 @@ export async function portalLoginAction(
     !(await verifyPassword(password, user.passwordHash))
   ) {
     await recordLoginAttempt(email, ip, false, "portal");
-    return { error: "Those details were not recognised." };
+    return { error: "Those details were not recognized." };
   }
 
   await recordLoginAttempt(email, ip, true, "portal");

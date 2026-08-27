@@ -7,23 +7,23 @@ Widths: 1400, 900, 560 px, in AVIF and WebP, cropped to 16:10.
 
 ## Generated imagery
 
-Produced for this site, so there is no third-party licence attached. The
+Produced for this site, so there is no third-party license attached. The
 prompt is recorded so a replacement can be produced in the same style.
 
 ### `server-rack`
 
-- **Alt text:** Row of rack-mounted enterprise servers in a dark data centre aisle lit by blue status indicators
-- **Prompt:** Modern enterprise server rack in a clean data centre aisle, dark navy and near-black, cyan and blue status LEDs as the only accent, neatly dressed cabling, shallow depth of field, cinematic premium B2B look.
+- **Alt text:** Row of rack-mounted enterprise servers in a dark data center aisle lit by blue status indicators
+- **Prompt:** Modern enterprise server rack in a clean data center aisle, dark navy and near-black, cyan and blue status LEDs as the only accent, neatly dressed cabling, shallow depth of field, cinematic premium B2B look.
 
 ### `wifi`
 
 - **Alt text:** White enterprise Wi-Fi access point mounted on a dark office ceiling with a blue status ring
-- **Prompt:** Modern white enterprise Wi-Fi access point on a dark ceiling in a contemporary office, faint cool blue status glow, blurred glass-partitioned office behind, navy colour grading.
+- **Prompt:** Modern white enterprise Wi-Fi access point on a dark ceiling in a contemporary office, faint cool blue status glow, blurred glass-partitioned office behind, navy color grading.
 
 ### `surveillance`
 
 - **Alt text:** Dome and bullet security cameras mounted under the soffit of a modern commercial building at dusk
-- **Prompt:** Dome and bullet security cameras on the exterior soffit of a contemporary dark grey commercial building at dusk, cool blue evening sky, cyan reflection on the housings, architectural security photography.
+- **Prompt:** Dome and bullet security cameras on the exterior soffit of a contemporary dark gray commercial building at dusk, cool blue evening sky, cyan reflection on the housings, architectural security photography.
 
 ### `cybersecurity`
 
@@ -32,8 +32,8 @@ prompt is recorded so a replacement can be produced in the same style.
 
 ### `voip`
 
-- **Alt text:** Black executive VoIP desk phone with a colour display on a dark office desk
-- **Prompt:** Modern black executive VoIP desk phone with colour display and corded handset on a dark desk, cool blue and cyan rim lighting, deep navy blurred office background.
+- **Alt text:** Black executive VoIP desk phone with a color display on a dark office desk
+- **Prompt:** Modern black executive VoIP desk phone with color display and corded handset on a dark desk, cool blue and cyan rim lighting, deep navy blurred office background.
 
 ### `two-way-radio`
 
@@ -63,27 +63,27 @@ prompt is recorded so a replacement can be produced in the same style.
 ### `ai-phone`
 
 - **Alt text:** Black executive VoIP desk phone whose display shows an abstract cyan assistant waveform
-- **Prompt:** Modern black executive VoIP desk phone on a dark desk, colour display showing an abstract cyan assistant waveform, cool blue rim lighting, no logos or readable brand names.
+- **Prompt:** Modern black executive VoIP desk phone on a dark desk, color display showing an abstract cyan assistant waveform, cool blue rim lighting, no logos or readable brand names.
 
 ### `access-control`
 
 - **Alt text:** Slim black card reader with a cyan LED beside a glass commercial entrance at dusk
-- **Prompt:** Premium B2B architectural photography of a commercial glass entrance at dusk: a slim black card reader and keypad on a dark charcoal wall beside a glass door, cool cyan LED on the reader, no logos, no brand names, no readable text, no people, navy colour grading, cinematic.
+- **Prompt:** Premium B2B architectural photography of a commercial glass entrance at dusk: a slim black card reader and keypad on a dark charcoal wall beside a glass door, cool cyan LED on the reader, no logos, no brand names, no readable text, no people, navy color grading, cinematic.
 
 ### `video-broadcast`
 
 - **Alt text:** Professional video cameras on tripods in a dark studio with cyan rim lighting
-- **Prompt:** Premium B2B broadcast photography: professional black video cameras on tripods in a dark studio or event hall, cyan and cool-blue rim lighting, a blurred stage or lectern in the background, no logos, no readable screens, no people faces, cinematic navy colour grading.
+- **Prompt:** Premium B2B broadcast photography: professional black video cameras on tripods in a dark studio or event hall, cyan and cool-blue rim lighting, a blurred stage or lectern in the background, no logos, no readable screens, no people faces, cinematic navy color grading.
 
 ### `ev-charging`
 
 - **Alt text:** Wall-mounted Level 2 EV charging station with a cyan status light on a dark commercial wall
-- **Prompt:** Premium B2B product photography of a wall-mounted Level 2 EV charging station on a dark charcoal commercial wall, charging cable neatly docked, cool cyan status light, blurred parking stall at dusk, no logos, no brand names, no readable text, no people, navy colour grading.
+- **Prompt:** Premium B2B product photography of a wall-mounted Level 2 EV charging station on a dark charcoal commercial wall, charging cable neatly docked, cool cyan status light, blurred parking stall at dusk, no logos, no brand names, no readable text, no people, navy color grading.
 
 ### `fleet-tracking`
 
 - **Alt text:** GPS tracker unit in the foreground with a commercial pickup truck in a dusk lot behind
-- **Prompt:** Premium B2B photography of a dark commercial pickup truck in a dusk lot, a small discrete GPS tracker unit in the sharp foreground on a workbench, cyan LED, blurred fleet vehicles behind, no logos, no brand names, no readable text, no people, navy colour grading.
+- **Prompt:** Premium B2B photography of a dark commercial pickup truck in a dusk lot, a small discrete GPS tracker unit in the sharp foreground on a workbench, cyan LED, blurred fleet vehicles behind, no logos, no brand names, no readable text, no people, navy color grading.
 
 ### `digital-signage`
 
@@ -96,7 +96,7 @@ Sourced via the Openverse API filtered to CC0. CC0 places the work in the
 public domain and imposes no attribution requirement; sources are listed so
 provenance stays auditable.
 
-| File | Title | Source | Licence | Landing page |
+| File | Title | Source | License | Landing page |
 | --- | --- | --- | --- | --- |
 | `networking-*` | Feeling Wired | rawpixel | CC0 | https://www.rawpixel.com/image/5975692/feeling-wired |
 | `cabling-*` | Fiber Optics Close-Up | rawpixel | CC0 | https://www.rawpixel.com/image/5966166/fiber-optics-close-up |
@@ -112,4 +112,4 @@ through `internet-5.jpg` (wireless relay and antenna installations) and
 
 Hero and section backgrounds use `src/components/visuals/TechBackdrop`
 instead of a photograph — a gradient, grid and animated node mesh drawn in
-the browser. It scales to any viewport and carries no licence obligations.
+the browser. It scales to any viewport and carries no license obligations.

@@ -352,20 +352,20 @@ async function seedCatalogue(): Promise<void> {
     if (existing) continue;
     await prisma.brand.create({ data: { ...brand, status: "PUBLISHED" } });
   }
-  log(`Brands: ensured ${brands.length} catalogue entries`);
+  log(`Brands: ensured ${brands.length} catalog entries`);
 
   const faqs = [
     {
       question: "Do you serve residential customers?",
       answer:
-        "We focus on businesses and organisations. Home EV chargers and the occasional structured-cabling job are exceptions — call and we will tell you honestly if we are the right fit.",
+        "We focus on businesses and organizations. Home EV chargers and the occasional structured-cabling job are exceptions — call and we will tell you honestly if we are the right fit.",
       category: "General",
       order: 0,
     },
     {
-      question: "Are you an authorised Hytera dealer?",
+      question: "Are you an authorized Hytera dealer?",
       answer:
-        "Yes. Two-way radio sales, rentals and service are through our Hytera authorisation. See hyteraradios.ca for the current catalogue.",
+        "Yes. Two-way radio sales, rentals, and service are through our Hytera authorization. See hyteraradios.ca for the current catalog.",
       category: "Two-way radio",
       order: 1,
     },
@@ -384,9 +384,9 @@ async function seedCatalogue(): Promise<void> {
       order: 3,
     },
     {
-      question: "Do you install Barracuda, Fortinet or Juniper firewalls?",
+      question: "Do you install Barracuda, Fortinet, or Juniper firewalls?",
       answer:
-        "Yes. Those are platforms we design, install and support, along with similar next-generation firewalls such as SonicWall, WatchGuard, Palo Alto and Cisco. We pick the appliance for the circuit and the applications, then we own the rule base. Listing a brand means we support the technology; it is not a claim of partnership unless we say so.",
+        "Yes. Those are platforms we design, install, and support, along with similar next-generation firewalls such as SonicWall, WatchGuard, Palo Alto, and Cisco. We pick the appliance for the circuit and the applications, then we own the rule base. Listing a brand means we support the technology; it is not a claim of partnership unless we say so.",
       category: "IT & networking",
       order: 4,
     },
@@ -398,6 +398,29 @@ async function seedCatalogue(): Promise<void> {
       order: 5,
     },
   ];
+
+  await prisma.faqItem.updateMany({
+    where: { question: "Are you an authorised Hytera dealer?" },
+    data: { question: "Are you an authorized Hytera dealer?" },
+  });
+  await prisma.faqItem.updateMany({
+    where: { question: "Do you install Barracuda, Fortinet or Juniper firewalls?" },
+    data: { question: "Do you install Barracuda, Fortinet, or Juniper firewalls?" },
+  });
+  await prisma.faqItem.updateMany({
+    where: {
+      question: "Do you serve residential customers?",
+      answer: { contains: "organisations" },
+    },
+    data: { answer: faqs[0].answer },
+  });
+  await prisma.faqItem.updateMany({
+    where: {
+      question: "Are you an authorized Hytera dealer?",
+      answer: { contains: "authorisation" },
+    },
+    data: { answer: faqs[1].answer },
+  });
 
   for (const item of faqs) {
     const existing = await prisma.faqItem.findFirst({ where: { question: item.question } });

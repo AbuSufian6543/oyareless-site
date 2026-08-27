@@ -10,7 +10,7 @@ export type SearchHit = {
 };
 
 /**
- * Postgres full-text search across public catalogue content.
+ * Postgres full-text search across public catalog content.
  *
  * Uses `websearch_to_tsquery` so visitors can type naturally. Each query is
  * scoped to published rows. Failures return an empty list so a missing index

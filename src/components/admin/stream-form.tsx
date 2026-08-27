@@ -79,7 +79,7 @@ export function StreamForm({
       {values.id && <input type="hidden" name="id" value={values.id} />}
 
       <Card>
-        <CardTitle description="Where the video comes from and how it is labelled on the site.">
+        <CardTitle description="Where the video comes from and how it is labeled on the site.">
           Stream source
         </CardTitle>
 
@@ -254,7 +254,7 @@ export function StreamForm({
       </Card>
 
       <Card>
-        <CardTitle>Player behaviour</CardTitle>
+        <CardTitle>Player behavior</CardTitle>
         <div className="space-y-2.5">
           <CheckboxField
             label="Start playing automatically"

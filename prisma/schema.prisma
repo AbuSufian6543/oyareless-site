@@ -456,7 +456,7 @@ model AuditLog {
 }
 
 // ---------------------------------------------------------------------------
-// Service catalogue, brands, FAQ, knowledge base, case studies
+// Service catalog, brands, FAQ, knowledge base, case studies
 //
 // Each of these gets an admin CRUD section and a public page. They carry their
 // own slug and SEO fields so they are addressable independently of the page
@@ -1023,7 +1023,7 @@ model QuoteRequest {
   timeframe     String?
   budgetRange   String?
 
-  /// Optional link to a catalogue entry when the visitor picked one.
+  /// Optional link to a catalog entry when the visitor picked one.
   serviceId     String?
   service       Service?    @relation(fields: [serviceId], references: [id], onDelete: SetNull)
   serviceAreas  String[]    @default([])

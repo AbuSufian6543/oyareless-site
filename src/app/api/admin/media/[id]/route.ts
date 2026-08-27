@@ -24,7 +24,7 @@ export async function PATCH(
 ) {
   const user = await requireRole("EDITOR").catch(() => null);
   if (!user) {
-    return NextResponse.json({ message: "Not authorised." }, { status: 401 });
+    return NextResponse.json({ message: "Not authorized." }, { status: 401 });
   }
 
   const { id } = await params;
@@ -60,7 +60,7 @@ export async function PUT(
 ) {
   const user = await requireRole("EDITOR").catch(() => null);
   if (!user) {
-    return NextResponse.json({ message: "Not authorised." }, { status: 401 });
+    return NextResponse.json({ message: "Not authorized." }, { status: 401 });
   }
 
   const { id } = await params;
@@ -141,7 +141,7 @@ export async function DELETE(
 ) {
   const user = await requireRole("ADMIN").catch(() => null);
   if (!user) {
-    return NextResponse.json({ message: "Not authorised." }, { status: 401 });
+    return NextResponse.json({ message: "Not authorized." }, { status: 401 });
   }
 
   const { id } = await params;

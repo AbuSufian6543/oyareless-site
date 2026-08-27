@@ -1,7 +1,7 @@
 /**
  * Single pipeline for the site's section photography.
  *
- * Only the optimised AVIF/WebP derivatives are committed. Masters live in the
+ * Only the optimized AVIF/WebP derivatives are committed. Masters live in the
  * gitignored inbox `assets/source-images/`, and every entry below records
  * exactly where its master came from — either a CC0 download or the generation
  * prompt used — so the whole set is reproducible.
@@ -10,7 +10,7 @@
  *
  * Hero and other full-bleed backgrounds intentionally have no photograph: they
  * use src/components/visuals/TechBackdrop, which scales to any viewport and
- * carries no licence obligations.
+ * carries no license obligations.
  */
 import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -28,7 +28,7 @@ const IMAGES = [
   {
     name: "networking",
     master: "networking.jpg",
-    alt: "Dense bundles of blue and grey network patch cables terminated into a switch",
+    alt: "Dense bundles of blue and gray network patch cables terminated into a switch",
     origin: "cc0",
     title: "Feeling Wired",
     source: "rawpixel",
@@ -37,7 +37,7 @@ const IMAGES = [
   {
     name: "cabling",
     master: "cabling.jpg",
-    alt: "Fibre optic strands fanned out against a black background with light glowing at the tips",
+    alt: "Fiber optic strands fanned out against a black background with light glowing at the tips",
     origin: "cc0",
     title: "Fiber Optics Close-Up",
     source: "rawpixel",
@@ -46,10 +46,10 @@ const IMAGES = [
   {
     name: "server-rack",
     master: "gen-server-rack.png",
-    alt: "Row of rack-mounted enterprise servers in a dark data centre aisle lit by blue status indicators",
+    alt: "Row of rack-mounted enterprise servers in a dark data center aisle lit by blue status indicators",
     origin: "generated",
     prompt:
-      "Modern enterprise server rack in a clean data centre aisle, dark navy and near-black, cyan and blue status LEDs as the only accent, neatly dressed cabling, shallow depth of field, cinematic premium B2B look.",
+      "Modern enterprise server rack in a clean data center aisle, dark navy and near-black, cyan and blue status LEDs as the only accent, neatly dressed cabling, shallow depth of field, cinematic premium B2B look.",
   },
   {
     name: "wifi",
@@ -57,7 +57,7 @@ const IMAGES = [
     alt: "White enterprise Wi-Fi access point mounted on a dark office ceiling with a blue status ring",
     origin: "generated",
     prompt:
-      "Modern white enterprise Wi-Fi access point on a dark ceiling in a contemporary office, faint cool blue status glow, blurred glass-partitioned office behind, navy colour grading.",
+      "Modern white enterprise Wi-Fi access point on a dark ceiling in a contemporary office, faint cool blue status glow, blurred glass-partitioned office behind, navy color grading.",
   },
   {
     name: "surveillance",
@@ -65,7 +65,7 @@ const IMAGES = [
     alt: "Dome and bullet security cameras mounted under the soffit of a modern commercial building at dusk",
     origin: "generated",
     prompt:
-      "Dome and bullet security cameras on the exterior soffit of a contemporary dark grey commercial building at dusk, cool blue evening sky, cyan reflection on the housings, architectural security photography.",
+      "Dome and bullet security cameras on the exterior soffit of a contemporary dark gray commercial building at dusk, cool blue evening sky, cyan reflection on the housings, architectural security photography.",
   },
   {
     name: "cybersecurity",
@@ -78,10 +78,10 @@ const IMAGES = [
   {
     name: "voip",
     master: "gen-voip.png",
-    alt: "Black executive VoIP desk phone with a colour display on a dark office desk",
+    alt: "Black executive VoIP desk phone with a color display on a dark office desk",
     origin: "generated",
     prompt:
-      "Modern black executive VoIP desk phone with colour display and corded handset on a dark desk, cool blue and cyan rim lighting, deep navy blurred office background.",
+      "Modern black executive VoIP desk phone with color display and corded handset on a dark desk, cool blue and cyan rim lighting, deep navy blurred office background.",
   },
   {
     name: "two-way-radio",
@@ -129,7 +129,7 @@ const IMAGES = [
     alt: "Black executive VoIP desk phone whose display shows an abstract cyan assistant waveform",
     origin: "generated",
     prompt:
-      "Modern black executive VoIP desk phone on a dark desk, colour display showing an abstract cyan assistant waveform, cool blue rim lighting, no logos or readable brand names.",
+      "Modern black executive VoIP desk phone on a dark desk, color display showing an abstract cyan assistant waveform, cool blue rim lighting, no logos or readable brand names.",
   },
   {
     name: "access-control",
@@ -137,7 +137,7 @@ const IMAGES = [
     alt: "Slim black card reader with a cyan LED beside a glass commercial entrance at dusk",
     origin: "generated",
     prompt:
-      "Premium B2B architectural photography of a commercial glass entrance at dusk: a slim black card reader and keypad on a dark charcoal wall beside a glass door, cool cyan LED on the reader, no logos, no brand names, no readable text, no people, navy colour grading, cinematic.",
+      "Premium B2B architectural photography of a commercial glass entrance at dusk: a slim black card reader and keypad on a dark charcoal wall beside a glass door, cool cyan LED on the reader, no logos, no brand names, no readable text, no people, navy color grading, cinematic.",
   },
   {
     name: "video-broadcast",
@@ -145,7 +145,7 @@ const IMAGES = [
     alt: "Professional video cameras on tripods in a dark studio with cyan rim lighting",
     origin: "generated",
     prompt:
-      "Premium B2B broadcast photography: professional black video cameras on tripods in a dark studio or event hall, cyan and cool-blue rim lighting, a blurred stage or lectern in the background, no logos, no readable screens, no people faces, cinematic navy colour grading.",
+      "Premium B2B broadcast photography: professional black video cameras on tripods in a dark studio or event hall, cyan and cool-blue rim lighting, a blurred stage or lectern in the background, no logos, no readable screens, no people faces, cinematic navy color grading.",
   },
   {
     name: "ev-charging",
@@ -153,7 +153,7 @@ const IMAGES = [
     alt: "Wall-mounted Level 2 EV charging station with a cyan status light on a dark commercial wall",
     origin: "generated",
     prompt:
-      "Premium B2B product photography of a wall-mounted Level 2 EV charging station on a dark charcoal commercial wall, charging cable neatly docked, cool cyan status light, blurred parking stall at dusk, no logos, no brand names, no readable text, no people, navy colour grading.",
+      "Premium B2B product photography of a wall-mounted Level 2 EV charging station on a dark charcoal commercial wall, charging cable neatly docked, cool cyan status light, blurred parking stall at dusk, no logos, no brand names, no readable text, no people, navy color grading.",
   },
   {
     name: "fleet-tracking",
@@ -161,7 +161,7 @@ const IMAGES = [
     alt: "GPS tracker unit in the foreground with a commercial pickup truck in a dusk lot behind",
     origin: "generated",
     prompt:
-      "Premium B2B photography of a dark commercial pickup truck in a dusk lot, a small discrete GPS tracker unit in the sharp foreground on a workbench, cyan LED, blurred fleet vehicles behind, no logos, no brand names, no readable text, no people, navy colour grading.",
+      "Premium B2B photography of a dark commercial pickup truck in a dusk lot, a small discrete GPS tracker unit in the sharp foreground on a workbench, cyan LED, blurred fleet vehicles behind, no logos, no brand names, no readable text, no people, navy color grading.",
   },
   {
     name: "digital-signage",
@@ -238,7 +238,7 @@ async function main() {
     "",
     "## Generated imagery",
     "",
-    "Produced for this site, so there is no third-party licence attached. The",
+    "Produced for this site, so there is no third-party license attached. The",
     "prompt is recorded so a replacement can be produced in the same style.",
     "",
   ];
@@ -254,7 +254,7 @@ async function main() {
     "public domain and imposes no attribution requirement; sources are listed so",
     "provenance stays auditable.",
     "",
-    "| File | Title | Source | Licence | Landing page |",
+    "| File | Title | Source | License | Landing page |",
     "| --- | --- | --- | --- | --- |",
   );
 
@@ -277,7 +277,7 @@ async function main() {
     "",
     "Hero and section backgrounds use `src/components/visuals/TechBackdrop`",
     "instead of a photograph — a gradient, grid and animated node mesh drawn in",
-    "the browser. It scales to any viewport and carries no licence obligations.",
+    "the browser. It scales to any viewport and carries no license obligations.",
     "",
   );
 

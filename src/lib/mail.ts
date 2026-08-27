@@ -149,12 +149,12 @@ function detailRows(fields: Array<[string, string | undefined | null]>): string 
 }
 
 const TYPE_LABEL: Record<string, string> = {
-  CONTACT: "Contact enquiry",
+  CONTACT: "Contact inquiry",
   SUPPORT: "Technical support request",
   QUOTE: "Quote request",
   CALLBACK: "Callback request",
   APPLICATION: "Job application",
-  OTHER: "Website enquiry",
+  OTHER: "Website inquiry",
 };
 
 /** Internal notification sent to staff. */
@@ -171,7 +171,7 @@ export function submissionNotificationEmail(input: {
   submissionId: string;
   adminPath?: string;
 }): { subject: string; html: string } {
-  const label = TYPE_LABEL[input.type] ?? "Website enquiry";
+  const label = TYPE_LABEL[input.type] ?? "Website inquiry";
 
   const extraRows = Object.entries(input.extra ?? {})
     .filter(([, value]) => value !== null && value !== undefined && value !== "")

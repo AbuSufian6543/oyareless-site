@@ -8,7 +8,7 @@ import { prisma } from "@/lib/prisma";
 export const metadata: Metadata = {
   title: "Case studies",
   description:
-    "How WirelessCom.Ca Inc. has designed, installed and supported networks, security and communications for Northern Ontario organisations.",
+    "How WirelessCom.Ca Inc. has designed, installed, and supported networks, security, and communications for Northern Ontario organizations.",
   alternates: { canonical: `${env.siteUrl}/case-studies` },
 };
 

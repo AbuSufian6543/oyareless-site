@@ -22,7 +22,7 @@ export type PasswordProblem = string | null;
 
 /**
  * Deliberately stricter than a typical marketing site: these accounts can
- * publish content and read customer enquiries.
+ * publish content and read customer inquiries.
  */
 export function validatePasswordStrength(password: string): PasswordProblem {
   if (password.length < 12) {

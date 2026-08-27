@@ -112,7 +112,7 @@ export default function NetworkToolsPage() {
             <PoeCalculator />
           </ToolCard>
           <ToolCard
-            title="Cable & fibre guide"
+            title="Cable & fiber guide"
             description="Typical lengths and rates we spec. Not a substitute for a site survey."
             className="lg:col-span-2"
           >

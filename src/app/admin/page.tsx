@@ -53,7 +53,7 @@ export default async function AdminDashboard() {
     { label: "Live streams", value: streams, href: "/admin/streams", Icon: Radio },
     { label: "News articles", value: posts, href: "/admin/posts", Icon: Newspaper },
     { label: "Open positions", value: jobs, href: "/admin/jobs", Icon: Briefcase },
-    { label: "New enquiries", value: newSubmissions, href: "/admin/submissions", Icon: Inbox },
+    { label: "New inquiries", value: newSubmissions, href: "/admin/submissions", Icon: Inbox },
     { label: "Subscribers", value: subscribers, href: "/admin/subscribers", Icon: Users },
   ];
 
@@ -61,7 +61,7 @@ export default async function AdminDashboard() {
     <>
       <PageHeader
         title="Dashboard"
-        description="Overview of site content and recent customer enquiries."
+        description="Overview of site content and recent customer inquiries."
         actions={
           <Link
             href="/admin/pages/new"
@@ -115,13 +115,13 @@ export default async function AdminDashboard() {
         <div className="lg:col-span-2">
           <Card>
             <CardTitle description="The six most recent form submissions.">
-              Recent enquiries
+              Recent inquiries
             </CardTitle>
 
             {recentSubmissions.length === 0 ? (
               <EmptyState
                 icon={<Inbox className="size-8" />}
-                title="No enquiries yet"
+                title="No inquiries yet"
                 description="Messages sent through the contact, support, and quote forms appear here."
               />
             ) : (

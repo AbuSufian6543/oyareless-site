@@ -1,5 +1,5 @@
 /**
- * Declarative admin CRUD for the catalogue and operations models.
+ * Declarative admin CRUD for the catalog and operations models.
  *
  * Eleven models introduced in this phase need the same thing: a searchable
  * list, a create/edit form, validation, an audit entry and role gating. Rather
@@ -139,7 +139,7 @@ export const COLLECTIONS: CollectionDefinition[] = [
     model: "serviceCategory",
     label: "Service category",
     plural: "Service categories",
-    description: "Groups the service catalogue on the public pages.",
+    description: "Groups the service catalog on the public pages.",
     icon: "FolderTree",
     group: "Catalogue",
     titleField: "name",
@@ -165,7 +165,7 @@ export const COLLECTIONS: CollectionDefinition[] = [
     label: "Service",
     plural: "Services",
     description:
-      "The service catalogue. Each entry gets its own page built with the same section editor as any other page.",
+      "The service catalog. Each entry gets its own page built with the same section editor as any other page.",
     icon: "Wrench",
     group: "Catalogue",
     titleField: "name",
@@ -516,7 +516,7 @@ export const COLLECTIONS: CollectionDefinition[] = [
     orderBy: [{ order: "asc" }, { name: "asc" }],
     publicPath: "/network-status",
     guidance:
-      "Probes run from the server, so only target hosts you are authorised to check. Public endpoints appear on /network-status; leave that off for internal-only monitoring.",
+      "Probes run from the server, so only target hosts you are authorized to check. Public endpoints appear on /network-status; leave that off for internal-only monitoring.",
     listColumns: [
       { field: "name", label: "Name" },
       { field: "kind", label: "Type" },
