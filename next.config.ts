@@ -51,8 +51,8 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["sharp", "pg", "nodemailer"],
   transpilePackages: ["@cloudflare/speedtest"],
   async rewrites() {
-    // Edited pages may still point at the old .svg paths after Grandstream,
-    // Fanvil and Paradox switched to the vendors' own PNG files.
+    // Edited pages may still point at the old .svg paths after vendors
+    // switched to the files they actually publish.
     return [
       { source: "/brand/logos/grandstream.svg", destination: "/brand/logos/grandstream.png" },
       { source: "/brand/logos/fanvil.svg", destination: "/brand/logos/fanvil.png" },
@@ -62,6 +62,9 @@ const nextConfig: NextConfig = {
       { source: "/brand/logos/unifi.svg", destination: "/brand/logos/unifi.png" },
       { source: "/brand/logos/mikrotik.svg", destination: "/brand/logos/mikrotik.png" },
       { source: "/brand/logos/juniper.svg", destination: "/brand/logos/juniper.png" },
+      { source: "/brand/logos/fortinet.svg", destination: "/brand/logos/fortinet.png" },
+      { source: "/brand/logos/barracuda.svg", destination: "/brand/logos/barracuda.png" },
+      { source: "/brand/logos/hytera.svg", destination: "/brand/logos/hytera.png" },
     ];
   },
   async headers() {

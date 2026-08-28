@@ -658,7 +658,7 @@ const home: SeedPage = {
           { name: "Juniper", category: "Firewall and routing", logoUrl: vendorLogo("juniper"), href: "/firewalls" },
           { name: "Rogers", category: "Connectivity", logoUrl: vendorLogo("rogers"), href: "/internet-services" },
           { name: "Tait Communications", category: "Critical communications", logoUrl: vendorLogo("tait"), href: "/two-way-radios" },
-          { name: "SureCall", category: "Cellular boosters", logoUrl: "", href: "" },
+          { name: "SureCall", category: "Cellular boosters", logoUrl: vendorLogo("surecall"), href: "" },
           { name: "Genetec", category: "Access control", logoUrl: vendorLogo("genetec"), href: "/access-control" },
         ],
       },

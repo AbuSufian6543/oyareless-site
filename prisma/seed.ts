@@ -298,6 +298,7 @@ async function seedCatalogue(): Promise<void> {
       name: "SureCall",
       category: "Cellular boosters",
       description: "In-building cellular amplification.",
+      logoUrl: vendorLogoUrl("surecall"),
       order: 3,
     },
     {

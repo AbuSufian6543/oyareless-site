@@ -51,6 +51,7 @@ export const SITE_PICTURES: SitePicture[] = [
   logo("paradox", "Paradox"),
   logo("grandstream", "Grandstream"),
   logo("hytera", "Hytera"),
+  logo("surecall", "SureCall"),
   logo("fanvil", "Fanvil"),
   logo("juniper", "Juniper"),
   logo("genetec", "Genetec"),
