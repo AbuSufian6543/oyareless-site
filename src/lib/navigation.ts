@@ -1,7 +1,7 @@
 import "server-only";
 
 import { cache } from "react";
-import { prisma } from "@/lib/prisma";
+import { prisma, withTimeout } from "@/lib/prisma";
 import type { NavLocation } from "@/generated/prisma/client";
 
 export type NavNode = {
@@ -18,16 +18,18 @@ export type NavNode = {
  * is never left without a menu.
  */
 async function loadNav(location: NavLocation): Promise<NavNode[]> {
-  const items = await prisma.navItem.findMany({
-    where: { location, isVisible: true, parentId: null },
-    orderBy: { order: "asc" },
-    include: {
-      children: {
-        where: { isVisible: true },
-        orderBy: { order: "asc" },
+  const items = await withTimeout(
+    prisma.navItem.findMany({
+      where: { location, isVisible: true, parentId: null },
+      orderBy: { order: "asc" },
+      include: {
+        children: {
+          where: { isVisible: true },
+          orderBy: { order: "asc" },
+        },
       },
-    },
-  });
+    }),
+  );
 
   if (items.length > 0) {
     return items.map((item) => ({
@@ -45,16 +47,18 @@ async function loadNav(location: NavLocation): Promise<NavNode[]> {
     }));
   }
 
-  const pages = await prisma.page.findMany({
-    where: {
-      status: "PUBLISHED",
-      ...(location === "FOOTER"
-        ? { showInFooterNav: true }
-        : { showInHeaderNav: true }),
-    },
-    orderBy: { navOrder: "asc" },
-    select: { id: true, slug: true, title: true, navLabel: true },
-  });
+  const pages = await withTimeout(
+    prisma.page.findMany({
+      where: {
+        status: "PUBLISHED",
+        ...(location === "FOOTER"
+          ? { showInFooterNav: true }
+          : { showInHeaderNav: true }),
+      },
+      orderBy: { navOrder: "asc" },
+      select: { id: true, slug: true, title: true, navLabel: true },
+    }),
+  );
 
   return pages.map((page) => ({
     id: page.id,

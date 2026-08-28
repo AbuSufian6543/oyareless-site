@@ -1,7 +1,7 @@
 import "server-only";
 
 import { cache } from "react";
-import { prisma } from "@/lib/prisma";
+import { prisma, withTimeout } from "@/lib/prisma";
 import {
   DEFAULT_SETTINGS,
   type SettingKey,
@@ -21,7 +21,7 @@ export {
  */
 export const getSettings = cache(async (): Promise<SiteSettings> => {
   try {
-    const rows = await prisma.siteSetting.findMany();
+    const rows = await withTimeout(prisma.siteSetting.findMany());
     const merged: Record<string, unknown> = { ...DEFAULT_SETTINGS };
     for (const row of rows) {
       if (row.key in DEFAULT_SETTINGS && row.value !== null) {

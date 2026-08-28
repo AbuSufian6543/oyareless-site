@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 
 import { env } from "@/lib/env";
 import { parseBlocks, type Block } from "@/lib/blocks";
-import { prisma } from "@/lib/prisma";
+import { prisma, withTimeout } from "@/lib/prisma";
 import { stripHtml, truncate } from "@/lib/utils";
 
 export type RenderablePage = {
@@ -22,9 +22,9 @@ export type RenderablePage = {
 
 export const getPublishedPage = cache(
   async (slug: string): Promise<RenderablePage | null> => {
-    const page = await prisma.page
-      .findFirst({ where: { slug, status: "PUBLISHED" } })
-      .catch(() => null);
+    const page = await withTimeout(
+      prisma.page.findFirst({ where: { slug, status: "PUBLISHED" } }),
+    ).catch(() => null);
 
     if (!page) return null;
 
