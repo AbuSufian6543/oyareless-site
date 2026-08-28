@@ -2,7 +2,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
 
+import { FooterProducts } from "@/components/site/footer-products";
 import { NewsletterForm } from "@/components/site/newsletter-form";
+import { ProudlyCanadian } from "@/components/site/proudly-canadian";
 import {
   FacebookIcon,
   LinkedInIcon,
@@ -13,19 +15,10 @@ import type { NavNode } from "@/lib/navigation";
 import type { SiteSettings } from "@/lib/settings";
 import { telHref } from "@/lib/utils";
 
-/**
- * Replaces the flat partner-logo composite the legacy site used. Text keeps the
- * claims editable, readable on mobile and honest — every entry here is a
- * relationship the business already advertised.
- */
-const PARTNER_MARKS = [
-  "Hytera Authorized Dealer",
-  "Rogers",
-  "Tait Communications",
-  "Ubiquiti Networks",
-  "SureCall",
-  "Genetec",
-];
+/** Drops a leading “Proudly Canadian” so the visual badge is not repeated. */
+function servingNote(footerNote: string): string {
+  return footerNote.replace(/Proudly Canadian\.?\s*/gi, "").trim();
+}
 
 type FooterColumn = { key: string; heading: string; links: NavNode[] };
 
@@ -184,39 +177,28 @@ export function SiteFooter({
               ))}
             </div>
 
-            {/* Newsletter + trust marks */}
+            {/* Newsletter */}
             <div className="lg:col-span-3">
               <h3 className="mb-3.5 text-xs font-bold uppercase tracking-wider text-white">
                 Stay informed
               </h3>
               <NewsletterForm />
-
-              <div className="mt-6">
-                <h3 className="mb-2.5 text-xs font-bold uppercase tracking-wider text-white">
-                  Authorized &amp; certified
-                </h3>
-                <ul className="flex flex-wrap gap-1.5 text-[0.6875rem] font-medium text-navy-300">
-                  {PARTNER_MARKS.map((mark) => (
-                    <li
-                      key={mark}
-                      className="rounded-md border border-navy-700 bg-navy-800/80 px-2.5 py-1"
-                    >
-                      {mark}
-                    </li>
-                  ))}
-                </ul>
-              </div>
             </div>
           </div>
+
+          <FooterProducts />
         </div>
       </div>
 
       {/* Bottom bar */}
-      <div className="container-page flex flex-col gap-3 py-5 text-xs text-navy-400 sm:flex-row sm:items-center sm:justify-between">
-        <p>
-          &copy; {year} {legalName}. All rights reserved.
-          {settings.footerNote ? ` ${settings.footerNote}` : ""}
-        </p>
+      <div className="container-page flex flex-col gap-4 py-5 text-xs text-navy-400 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:gap-5">
+          <ProudlyCanadian />
+          <p>
+            &copy; {year} {legalName}. All rights reserved.
+            {settings.footerNote ? ` ${servingNote(settings.footerNote)}` : ""}
+          </p>
+        </div>
         <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
           <Link
             href="/privacy-policy"
