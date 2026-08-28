@@ -4,7 +4,6 @@ import { notFound } from "next/navigation";
 import { ArrowDown, ArrowUp, Gauge, Timer, Waves } from "lucide-react";
 
 import { TechBackdrop } from "@/components/visuals/tech-backdrop";
-import { env } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
 import { cn } from "@/lib/utils";
 
@@ -60,8 +59,8 @@ export default async function SharedResultPage({
           </h1>
           <p className="mt-3 text-navy-300">
             Measured {measured} (Eastern Time)
-            {result.networkName ? ` on ${result.networkName}` : ""}, against the{" "}
-            {env.siteUrl.replace(/^https?:\/\//, "")} test server.
+            {result.networkName ? ` on ${result.networkName}` : ""}, against
+            Cloudflare&rsquo;s edge network.
           </p>
         </div>
 
@@ -96,9 +95,10 @@ export default async function SharedResultPage({
 
         <div className="mx-auto mt-10 max-w-3xl rounded-xl border border-navy-700 bg-navy-900/70 p-5 text-sm leading-relaxed text-navy-300">
           <p>
-            This is a snapshot of one browser&rsquo;s path to our server at that
-            moment, not a guarantee of the subscribed rate. Packet loss was not
-            measured — it cannot be established reliably over HTTP.
+            This is a snapshot of one browser&rsquo;s path to Cloudflare&rsquo;s
+            nearest edge at that moment, not a guarantee of the subscribed rate.
+            Packet loss was not measured — it cannot be established reliably
+            over HTTP.
           </p>
           <p className="mt-3">
             <Link

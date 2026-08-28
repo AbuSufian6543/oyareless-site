@@ -12,12 +12,11 @@ import {
 import { SpeedTest } from "@/components/blocks/speed-test";
 import { TechBackdrop } from "@/components/visuals/tech-backdrop";
 import { env } from "@/lib/env";
-import { getSettings } from "@/lib/settings";
 
 export const metadata: Metadata = {
   title: "Internet speed test",
   description:
-    "Measure your download speed, upload speed, latency and jitter against our own server in Northern Ontario. No third-party test service, no account, no tracking.",
+    "Measure your download speed, upload speed, latency and jitter against Cloudflare's public edge network. No account required.",
   alternates: { canonical: `${env.siteUrl}/speed-test` },
 };
 
@@ -41,8 +40,6 @@ const FACTORS = [
 ];
 
 export default async function SpeedTestPage() {
-  const settings = await getSettings();
-
   return (
     <>
       <section className="relative isolate overflow-hidden">
@@ -57,9 +54,9 @@ export default async function SpeedTestPage() {
               Internet speed test
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-lg leading-relaxed text-navy-200">
-              Measured directly against our own server in {settings.city} — not a
-              third-party test network. Press GO and the test will check latency,
-              then download, then upload.
+              Measured against Cloudflare's public edge network — the same
+              servers behind speed.cloudflare.com — not our website. Press GO
+              and the test will check latency, then download, then upload.
             </p>
           </div>
 
@@ -103,33 +100,32 @@ export default async function SpeedTestPage() {
                 <strong className="font-semibold text-navy-800">
                   Latency and jitter
                 </strong>{" "}
-                come from seven small round trips. The first is discarded because
-                it also pays for connection setup. Latency is the fastest trip;
-                jitter is how much the rest varied.
+                come from a series of small requests to Cloudflare. Latency is
+                the typical round trip; jitter is how much those trips varied.
               </li>
               <li>
                 <strong className="font-semibold text-navy-800">
                   Download and upload
                 </strong>{" "}
-                transfer random, incompressible data in growing chunks, so
-                compression anywhere along the path cannot flatter the result.
-                The first half-second is excluded while the connection ramps up.
+                transfer growing amounts of data to the nearest Cloudflare
+                location so the figure reflects your path onto the public
+                internet, not the capacity of this website.
               </li>
               <li>
                 <strong className="font-semibold text-navy-800">
                   Packet loss is not measured.
                 </strong>{" "}
-                It cannot be established reliably from a browser over HTTP, so it
-                is left blank rather than estimated. If you suspect a lossy line,
-                ask us to run a proper ICMP or MTR test.
+                It cannot be established reliably from a browser over HTTP, so
+                it is left blank rather than estimated. If you suspect a lossy
+                line, ask us to run a proper ICMP or MTR test.
               </li>
               <li>
                 <strong className="font-semibold text-navy-800">
                   Your network name
                 </strong>{" "}
-                comes from a reverse DNS lookup of your address and nothing else.
-                There is no geo-IP or ASN database involved, so it is blank
-                whenever your provider publishes no useful record.
+                comes from a reverse DNS lookup of your address and nothing
+                else. There is no geo-IP or ASN database involved, so it is
+                blank whenever your provider publishes no useful record.
               </li>
             </ul>
           </div>

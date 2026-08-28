@@ -6,10 +6,8 @@ import { reverse } from "node:dns/promises";
 import { env } from "@/lib/env";
 
 /**
- * Shared limits for the three transfer endpoints.
- *
- * The budget is generous enough for several honest tests in a row — a full run
- * moves roughly 30 MB — while making the endpoints useless as free bandwidth.
+ * Shared helpers for speed-test API routes (IP hashing, reverse DNS, leftover
+ * transfer limits on the unused self-hosted download/upload endpoints).
  */
 export const SPEEDTEST_LIMITS = {
   /** Bytes per IP per window, counted across download and upload together. */
@@ -43,9 +41,9 @@ export function hashIp(ip: string): string {
  * Best-effort network name from reverse DNS.
  *
  * Deliberately not an ASN or geo-IP lookup: those need a third-party service or
- * a licensed database, and the plan keeps these tools self-hosted. A PTR record
- * usually reveals the carrier (`...rogerscable.com`), which is all this claims
- * to show. Returns null rather than guessing when there is no useful record.
+ * a licensed database. A PTR record usually reveals the carrier
+ * (`...rogerscable.com`), which is all this claims to show. Returns null
+ * rather than guessing when there is no useful record.
  */
 export async function networkNameFor(ip: string): Promise<string | null> {
   if (!ip || ip === "unknown" || isPrivateAddress(ip)) return null;

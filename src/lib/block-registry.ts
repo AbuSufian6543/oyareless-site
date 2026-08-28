@@ -276,7 +276,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     type: "speedTest",
     label: "Internet speed test",
-    description: "Built-in download/upload speed measurement.",
+    description: "Download, upload, latency and jitter against Cloudflare.",
     category: "Dynamic",
     icon: "Gauge",
   },

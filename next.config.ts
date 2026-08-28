@@ -49,6 +49,7 @@ const nextConfig: NextConfig = {
     ],
   },
   serverExternalPackages: ["sharp", "pg", "nodemailer"],
+  transpilePackages: ["@cloudflare/speedtest"],
   async rewrites() {
     // Edited pages may still point at the old .svg paths after Grandstream,
     // Fanvil and Paradox switched to the vendors' own PNG files.

@@ -22,6 +22,7 @@ import {
   type SpeedTestOutcome,
   type SpeedTestPhase,
 } from "@/lib/speedtest-client";
+import { SPEEDTEST_PROVIDER } from "@/lib/speedtest-provider";
 import { cn } from "@/lib/utils";
 
 type Info = {
@@ -42,8 +43,8 @@ const PHASE_COPY: Record<SpeedTestPhase, string> = {
 };
 
 /**
- * Self-hosted throughput test. It measures against this server rather than a
- * third-party, so results reflect the path to WirelessCom infrastructure.
+ * Throughput test against Cloudflare's public edge network. Results reflect
+ * this browser's path to the nearest Cloudflare location, not our server.
  */
 export function SpeedTest({
   note,
@@ -279,7 +280,7 @@ export function SpeedTest({
               value={
                 info?.server
                   ? `${info.server.host} · ${info.server.location}`
-                  : "This website"
+                  : `${SPEEDTEST_PROVIDER.host} · ${SPEEDTEST_PROVIDER.location}`
               }
             />
             <Detail
@@ -350,7 +351,7 @@ export function SpeedTest({
             )}
           >
             {note ||
-              "Close file-sharing software and pause downloads before testing, and use a wired connection where you can — Wi-Fi usually limits the result before your internet service does. Figures are a measurement of this browser's path to our server at this moment, not a guarantee of your subscribed rate."}
+              "Close file-sharing software and pause downloads before testing, and use a wired connection where you can — Wi-Fi usually limits the result before your internet service does. Figures are a measurement of this browser's path to Cloudflare's nearest edge at this moment, not a guarantee of your subscribed rate."}
           </p>
         </div>
       </div>

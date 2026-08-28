@@ -1,10 +1,13 @@
 /**
  * Browser-side measurement engine for the speed test.
  *
- * Kept apart from the UI so the maths is readable on its own, and so the
- * component only has to deal with rendering. Everything here runs against this
- * site's own endpoints — there is no third-party test server involved.
+ * Throughput is measured against Cloudflare's public edge
+ * (speed.cloudflare.com) — the same network behind Cloudflare's own speed
+ * test — not against this website. The UI still talks to our /api/speedtest
+ * routes only to show the visitor's IP and to save a shareable snapshot.
  */
+
+import CloudflareSpeedTest from "@cloudflare/speedtest";
 
 export type SpeedTestPhase =
   | "idle"
@@ -33,304 +36,171 @@ export type SpeedTestHandlers = {
   onPartial: (partial: Partial<SpeedTestOutcome>) => void;
 };
 
-/** Latency samples. The first is discarded: it pays for connection setup. */
-const PING_SAMPLES = 7;
-
-/** Chunk sizes in MB. Ramping keeps slow links off a huge single request. */
-const DOWNLOAD_STEPS = [4, 8, 16, 25];
-
-/** Must stay within the server's per-request upload ceiling. */
-const UPLOAD_CHUNK_BYTES = 6 * 1024 * 1024;
-const UPLOAD_ROUNDS = 2;
-
-/** Stop a transfer phase once it has had long enough to be representative. */
-const PHASE_BUDGET_MS = 10_000;
-
-/** Ignored at the start of a transfer, while TCP is still ramping up. */
-const SLOW_START_MS = 500;
-
-/** Window for the live figure, long enough to be steady but still responsive. */
-const INSTANT_WINDOW_MS = 700;
+/**
+ * Cloudflare's default sequence minus the WebRTC packet-loss step. TURN is
+ * often blocked on business networks, and we already tell visitors packet
+ * loss cannot be measured reliably from a browser.
+ */
+const MEASUREMENTS = [
+  { type: "latency" as const, numPackets: 2 },
+  { type: "download" as const, bytes: 1e5, count: 1, bypassMinDuration: true },
+  { type: "latency" as const, numPackets: 20 },
+  { type: "download" as const, bytes: 1e5, count: 9 },
+  { type: "latency" as const, numPackets: 2 },
+  { type: "download" as const, bytes: 1e6, count: 8 },
+  { type: "latency" as const, numPackets: 2 },
+  { type: "upload" as const, bytes: 1e5, count: 8 },
+  { type: "latency" as const, numPackets: 2 },
+  { type: "download" as const, bytes: 1e7, count: 6 },
+  { type: "latency" as const, numPackets: 2 },
+  { type: "upload" as const, bytes: 1e7, count: 4 },
+  { type: "latency" as const, numPackets: 2 },
+  { type: "download" as const, bytes: 25e6, count: 4 },
+  { type: "latency" as const, numPackets: 2 },
+  { type: "upload" as const, bytes: 25e6, count: 4 },
+  { type: "latency" as const, numPackets: 2 },
+  { type: "download" as const, bytes: 1e8, count: 3 },
+  { type: "latency" as const, numPackets: 2 },
+  { type: "upload" as const, bytes: 5e7, count: 3 },
+];
 
 export class SpeedTestError extends Error {}
 
 export async function runSpeedTest(
   handlers: SpeedTestHandlers,
 ): Promise<SpeedTestOutcome> {
-  const { signal, onPhase, onProgress } = handlers;
+  const { signal, onPhase, onSample, onProgress, onPartial } = handlers;
 
   onPhase("connecting");
   onProgress(0);
-  // A throwaway request opens the TCP and TLS connection, so the first latency
-  // sample measures the network rather than the handshake.
-  await fetch(`/api/speedtest/ping?warmup=1`, {
-    cache: "no-store",
-    signal,
-  }).catch(() => undefined);
-  throwIfAborted(signal);
 
-  const { latencyMs, jitterMs } = await measureLatency(handlers);
-  handlers.onPartial({ latencyMs, jitterMs });
+  const engine = new CloudflareSpeedTest({
+    autoStart: false,
+    // Do not post the finished run to Cloudflare's AIM logging endpoint.
+    logAimApiUrl: null,
+    logMeasurementApiUrl: null,
+    measurements: MEASUREMENTS,
+  });
 
-  const downloadMbps = await measureDownload(handlers);
-  handlers.onPartial({ downloadMbps });
-
-  const uploadMbps = await measureUpload(handlers);
-  handlers.onPartial({ uploadMbps });
-
-  onPhase("complete");
-  onProgress(1);
-
-  return { latencyMs, jitterMs, downloadMbps, uploadMbps };
-}
-
-async function measureLatency({
-  signal,
-  onPhase,
-  onSample,
-  onProgress,
-}: SpeedTestHandlers): Promise<{ latencyMs: number; jitterMs: number }> {
-  onPhase("ping");
-  const samples: number[] = [];
-
-  for (let index = 0; index < PING_SAMPLES; index += 1) {
-    throwIfAborted(signal);
-    const started = performance.now();
-    const response = await fetch(`/api/speedtest/ping?n=${index}`, {
-      cache: "no-store",
-      signal,
-    });
-    if (response.status === 429) throw rateLimited();
-    const roundTrip = performance.now() - started;
-    samples.push(roundTrip);
-    onSample(roundTrip);
-    onProgress(((index + 1) / PING_SAMPLES) * 0.15);
-  }
-
-  const timed = samples.slice(1);
-  const latencyMs = Math.min(...timed);
-  const mean = timed.reduce((sum, value) => sum + value, 0) / timed.length;
-  // Mean absolute deviation rather than standard deviation: it is the figure
-  // people recognise as jitter and it is not skewed by a single outlier.
-  const jitterMs =
-    timed.reduce((sum, value) => sum + Math.abs(value - mean), 0) /
-    timed.length;
-
-  return { latencyMs, jitterMs };
-}
-
-async function measureDownload({
-  signal,
-  onPhase,
-  onSample,
-  onProgress,
-}: SpeedTestHandlers): Promise<number> {
-  onPhase("download");
-  const tracker = new ThroughputTracker();
-
-  for (const megabytes of DOWNLOAD_STEPS) {
-    throwIfAborted(signal);
-    if (tracker.elapsedMs() > PHASE_BUDGET_MS) break;
-
-    const response = await fetch(
-      `/api/speedtest/download?mb=${megabytes}&t=${Date.now()}`,
-      { cache: "no-store", signal },
-    );
-    if (response.status === 429) throw rateLimited();
-    if (!response.ok || !response.body) {
-      throw new SpeedTestError("The download test could not start.");
-    }
-
-    const reader = response.body.getReader();
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      tracker.add(value?.byteLength ?? 0);
-      const instant = tracker.instantMbps();
-      if (instant !== null) onSample(instant);
-      onProgress(
-        0.15 + Math.min(tracker.elapsedMs() / PHASE_BUDGET_MS, 1) * 0.5,
-      );
-      if (tracker.elapsedMs() > PHASE_BUDGET_MS) {
-        await reader.cancel().catch(() => undefined);
-        break;
-      }
-    }
-  }
-
-  const mbps = tracker.averageMbps();
-  if (mbps === null) {
-    throw new SpeedTestError("No data was received during the download test.");
-  }
-  return mbps;
-}
-
-async function measureUpload({
-  signal,
-  onPhase,
-  onSample,
-  onProgress,
-}: SpeedTestHandlers): Promise<number> {
-  onPhase("upload");
-  const payload = randomPayload(UPLOAD_CHUNK_BYTES);
-  const tracker = new ThroughputTracker();
-
-  for (let round = 0; round < UPLOAD_ROUNDS; round += 1) {
-    throwIfAborted(signal);
-    if (tracker.elapsedMs() > PHASE_BUDGET_MS) break;
-
-    await postWithProgress(payload, signal, (deltaBytes) => {
-      tracker.add(deltaBytes);
-      const instant = tracker.instantMbps();
-      if (instant !== null) onSample(instant);
-      onProgress(
-        0.65 + Math.min(tracker.elapsedMs() / PHASE_BUDGET_MS, 1) * 0.35,
-      );
-    });
-  }
-
-  const mbps = tracker.averageMbps();
-  if (mbps === null) {
-    throw new SpeedTestError("No data was sent during the upload test.");
-  }
-  return mbps;
-}
-
-/**
- * Accumulates transferred bytes and derives both a live figure and a final
- * average. The average deliberately excludes the opening moments, where TCP
- * congestion control has not yet reached the line rate and would understate a
- * fast connection.
- */
-class ThroughputTracker {
-  private readonly marks: Array<{ at: number; total: number }> = [];
-  private total = 0;
-  private startedAt: number | null = null;
-
-  add(bytes: number): void {
-    if (bytes <= 0) return;
-    const now = performance.now();
-    this.startedAt ??= now;
-    this.total += bytes;
-    this.marks.push({ at: now, total: this.total });
-    // Only the recent tail matters for the live figure.
-    while (this.marks.length > 2 && now - this.marks[0].at > 2000) {
-      this.marks.shift();
-    }
-  }
-
-  elapsedMs(): number {
-    if (this.startedAt === null) return 0;
-    return performance.now() - this.startedAt;
-  }
-
-  instantMbps(): number | null {
-    if (this.marks.length < 2) return null;
-    const latest = this.marks[this.marks.length - 1];
-    const cutoff = latest.at - INSTANT_WINDOW_MS;
-    const earliest =
-      this.marks.find((mark) => mark.at >= cutoff) ?? this.marks[0];
-    const seconds = (latest.at - earliest.at) / 1000;
-    if (seconds <= 0.05) return null;
-    return ((latest.total - earliest.total) * 8) / seconds / 1e6;
-  }
-
-  averageMbps(): number | null {
-    if (this.startedAt === null || this.total === 0) return null;
-    const elapsed = this.elapsedMs();
-
-    // Too short to bother trimming; the whole transfer is the sample.
-    if (elapsed <= SLOW_START_MS * 2) {
-      return (this.total * 8) / (elapsed / 1000) / 1e6;
-    }
-
-    const cutoff = this.startedAt + SLOW_START_MS;
-    const first = this.marks.find((mark) => mark.at >= cutoff);
-    const last = this.marks[this.marks.length - 1];
-    if (!first || last.at - first.at < 250) {
-      return (this.total * 8) / (elapsed / 1000) / 1e6;
-    }
-
-    const seconds = (last.at - first.at) / 1000;
-    return ((last.total - first.total) * 8) / seconds / 1e6;
-  }
-}
-
-/**
- * Uploads through XMLHttpRequest rather than fetch: only XHR reports upload
- * progress, and without it the needle would sit still for the whole phase.
- */
-function postWithProgress(
-  payload: ArrayBuffer,
-  signal: AbortSignal,
-  onDelta: (deltaBytes: number) => void,
-): Promise<void> {
   return new Promise((resolve, reject) => {
-    const request = new XMLHttpRequest();
-    let lastLoaded = 0;
+    let settled = false;
 
-    const abort = () => request.abort();
-    signal.addEventListener("abort", abort, { once: true });
-
-    const settle = (finish: () => void) => {
-      signal.removeEventListener("abort", abort);
-      finish();
+    const finish = (action: () => void) => {
+      if (settled) return;
+      settled = true;
+      signal.removeEventListener("abort", onAbort);
+      action();
     };
 
-    request.upload.addEventListener("progress", (event) => {
-      const delta = event.loaded - lastLoaded;
-      lastLoaded = event.loaded;
-      onDelta(delta);
-    });
+    const onAbort = () => {
+      engine.pause();
+      finish(() => reject(new DOMException("Aborted", "AbortError")));
+    };
 
-    request.addEventListener("load", () => {
-      if (request.status === 429) {
-        settle(() => reject(rateLimited()));
+    if (signal.aborted) {
+      onAbort();
+      return;
+    }
+    signal.addEventListener("abort", onAbort);
+
+    engine.onError = (message) => {
+      finish(() =>
+        reject(
+          new SpeedTestError(
+            message ||
+              "The test could not complete. Please check your connection and try again.",
+          ),
+        ),
+      );
+    };
+
+    engine.onPhaseChange = ({ measurement, measurementId }) => {
+      if (settled) return;
+      if (measurement.type === "download") onPhase("download");
+      else if (measurement.type === "upload") onPhase("upload");
+      else if (measurement.type === "latency") {
+        // Opening latency rounds, before any real transfer has started.
+        if (measurementId <= 2) onPhase("ping");
+      }
+      onProgress(Math.min((measurementId + 1) / MEASUREMENTS.length, 0.98));
+    };
+
+    engine.onResultsChange = ({ type }) => {
+      if (settled) return;
+      const results = engine.results;
+      const latencyMs = results.getUnloadedLatency();
+      const jitter = results.getUnloadedJitter();
+      if (latencyMs !== undefined) {
+        onPartial({
+          latencyMs,
+          jitterMs: typeof jitter === "number" ? jitter : 0,
+        });
+      }
+
+      if (type === "latency") {
+        const pings = results.getUnloadedLatencyPoints();
+        const latest = pings[pings.length - 1];
+        if (typeof latest === "number") onSample(latest);
         return;
       }
-      if (request.status < 200 || request.status >= 300) {
-        settle(() =>
-          reject(new SpeedTestError("The upload test could not complete.")),
+
+      if (type === "download") {
+        const points = results.getDownloadBandwidthPoints();
+        const latest = points[points.length - 1];
+        if (latest) onSample(bpsToMbps(latest.bps));
+        const download = results.getDownloadBandwidth();
+        if (download) onPartial({ downloadMbps: bpsToMbps(download) });
+        return;
+      }
+
+      if (type === "upload") {
+        const points = results.getUploadBandwidthPoints();
+        const latest = points[points.length - 1];
+        if (latest) onSample(bpsToMbps(latest.bps));
+        const upload = results.getUploadBandwidth();
+        if (upload) onPartial({ uploadMbps: bpsToMbps(upload) });
+      }
+    };
+
+    engine.onFinish = (results) => {
+      if (settled) return;
+      const summary = results.getSummary();
+      const downloadMbps = summary.download ? bpsToMbps(summary.download) : null;
+      const uploadMbps = summary.upload ? bpsToMbps(summary.upload) : null;
+      const latencyMs = summary.latency;
+      const jitterMs = summary.jitter ?? 0;
+
+      if (
+        downloadMbps === null ||
+        uploadMbps === null ||
+        latencyMs === undefined
+      ) {
+        finish(() =>
+          reject(
+            new SpeedTestError(
+              "The test finished without a complete set of figures. Please try again.",
+            ),
+          ),
         );
         return;
       }
-      settle(resolve);
-    });
 
-    request.addEventListener("error", () =>
-      settle(() => reject(new SpeedTestError("The upload test failed."))),
-    );
-    request.addEventListener("abort", () =>
-      settle(() => reject(new DOMException("Aborted", "AbortError"))),
-    );
+      const outcome: SpeedTestOutcome = {
+        downloadMbps,
+        uploadMbps,
+        latencyMs,
+        jitterMs,
+      };
+      onPartial(outcome);
+      onPhase("complete");
+      onProgress(1);
+      finish(() => resolve(outcome));
+    };
 
-    request.open("POST", "/api/speedtest/upload");
-    request.setRequestHeader("Content-Type", "application/octet-stream");
-    request.send(payload);
+    engine.play();
   });
 }
 
-/**
- * Random bytes so nothing along the path can compress the body and report a
- * throughput the link cannot actually deliver. getRandomValues caps at 64 KB
- * per call, hence the loop.
- */
-function randomPayload(bytes: number): ArrayBuffer {
-  const buffer = new ArrayBuffer(bytes);
-  const view = new Uint8Array(buffer);
-  const step = 65536;
-  for (let offset = 0; offset < bytes; offset += step) {
-    crypto.getRandomValues(view.subarray(offset, Math.min(offset + step, bytes)));
-  }
-  return buffer;
-}
-
-function rateLimited(): SpeedTestError {
-  return new SpeedTestError(
-    "This connection has run the test several times recently. Please wait a few minutes and try again.",
-  );
-}
-
-function throwIfAborted(signal: AbortSignal): void {
-  if (signal.aborted) throw new DOMException("Aborted", "AbortError");
+function bpsToMbps(bps: number): number {
+  return bps / 1e6;
 }
