@@ -184,7 +184,7 @@ function HeroCopy({
               )}
             >
               <Check
-                className="size-4 shrink-0 text-warm-400"
+                className="size-4 shrink-0 text-accent-400"
                 aria-hidden="true"
               />
               {highlight}

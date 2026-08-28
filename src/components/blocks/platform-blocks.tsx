@@ -113,7 +113,7 @@ export async function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
               {data.highlights.map((highlight) => (
                 <li key={highlight} className="flex items-center gap-2">
                   <span
-                    className="size-1.5 rounded-full bg-warm-400"
+                    className="size-1.5 rounded-full bg-accent-400"
                     aria-hidden="true"
                   />
                   {highlight}
@@ -376,26 +376,20 @@ export function CapabilityGridBlock({
 function BrandLogo({
   url,
   name,
-  dark,
 }: {
   url: string;
   name: string;
   dark: boolean;
 }) {
   const className = cn(
-    "h-8 w-auto max-w-[10rem] object-contain",
-    dark ? "" : "opacity-90 transition-opacity group-hover:opacity-100",
+    "h-7 w-auto max-w-[9.5rem] object-contain",
   );
 
-  if (/\.svg(?:$|\?)/i.test(url) || url.startsWith("/brand/")) {
-    return (
-      // Local SVG/PNG marks skip next/image so they are not re-encoded.
-      // eslint-disable-next-line @next/next/no-img-element
-      <img src={url} alt="" className={className} />
-    );
-  }
-
-  return (
+  const mark = /\.svg(?:$|\?)/i.test(url) || url.startsWith("/brand/") ? (
+    // Official vendor marks skip next/image so they are not re-encoded.
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={url} alt="" className={className} />
+  ) : (
     <SectionImage
       src={url}
       alt={name}
@@ -404,6 +398,12 @@ function BrandLogo({
       sizes="160px"
       className={className}
     />
+  );
+
+  return (
+    <span className="flex h-12 w-full items-center justify-center rounded-md bg-white px-3 py-1.5">
+      {mark}
+    </span>
   );
 }
 
@@ -453,8 +453,8 @@ export function BrandGridBlock({ block }: { block: BlockOf<"brandGrid"> }) {
       "group flex min-h-[7.25rem] shrink-0 flex-col items-center justify-center rounded-xl border px-4 py-3 transition-colors",
       data.layout === "marquee" ? "w-44" : "",
       dark
-        ? "border-navy-700 bg-navy-800/50 hover:border-warm-400/45"
-        : "border-slate-200 bg-white hover:border-warm-300",
+        ? "border-navy-700 bg-navy-800/50 hover:border-accent-400/45"
+        : "border-slate-200 bg-white hover:border-brand-300",
     );
 
     if (!item.href) {
@@ -900,8 +900,8 @@ export function DefenseInDepthBlock({
                   "absolute rounded-full border",
                   index === layers.length - 1
                     ? dark
-                      ? "border-warm-400/45 bg-warm-400/[0.06]"
-                      : "border-warm-300 bg-warm-50"
+                      ? "border-brand-400/50 bg-brand-500/[0.08]"
+                      : "border-brand-300 bg-brand-50"
                     : dark
                       ? "border-accent-500/25 bg-accent-500/[0.04]"
                       : "border-brand-300/60 bg-brand-500/[0.04]",
@@ -915,8 +915,8 @@ export function DefenseInDepthBlock({
                     "absolute left-1/2 -translate-x-1/2 whitespace-nowrap text-[0.625rem] font-bold uppercase tracking-wider",
                     index === layers.length - 1
                       ? dark
-                        ? "text-warm-300"
-                        : "text-warm-700"
+                        ? "text-brand-200"
+                        : "text-brand-700"
                       : dark
                         ? "text-accent-300"
                         : "text-brand-700",
@@ -928,7 +928,7 @@ export function DefenseInDepthBlock({
                 <span
                   className={cn(
                     "absolute left-1/2 top-0 size-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full animate-live-dot",
-                    index === layers.length - 1 ? "bg-warm-400" : "bg-accent-400",
+                    index === layers.length - 1 ? "bg-brand-400" : "bg-accent-400",
                   )}
                 />
               </div>
@@ -939,7 +939,7 @@ export function DefenseInDepthBlock({
             className={cn(
               "absolute left-1/2 top-1/2 flex size-24 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full text-center text-xs font-bold",
               dark
-                ? "bg-warm-400 text-navy-950"
+                ? "bg-accent-400 text-navy-950"
                 : "bg-brand-600 text-white",
             )}
           >

@@ -9,7 +9,9 @@
  *   - a PageRevision snapshot is written before a page is touched, so any
  *     change is reversible from the admin UI;
  *   - pages an admin has edited since seeding keep their copy unless named
- *     with --force; empty photos and logos are still filled, missing service
+ *     with --force; empty photos and logos are still filled, shipped vendor
+ *     logo files under /brand/logos/ are refreshed in place, missing service
+ *     cards and brand tiles are still appended, and a missing home stats
  *     cards and brand tiles are still appended, and a missing home stats
  *     strip or defense-in-depth section is still inserted;
 
@@ -202,9 +204,20 @@ function fillMissingMedia(
       ) as Record<string, unknown> | undefined;
 
       if (match) {
-        if (!String(match.logoUrl ?? "") && seedItem.logoUrl) {
-          match.logoUrl = seedItem.logoUrl;
+        const currentLogo = String(match.logoUrl ?? "");
+        const seedLogo = String(seedItem.logoUrl ?? "");
+        if (!currentLogo && seedLogo) {
+          match.logoUrl = seedLogo;
           notes.push(`logo on ${String(match.name || seedItem.name)}`);
+        } else if (
+          seedLogo &&
+          currentLogo !== seedLogo &&
+          currentLogo.startsWith("/brand/logos/")
+        ) {
+          // Keep admin uploads under /uploads. Refresh shipped files in place
+          // when the seed now points at the vendor's own mark.
+          match.logoUrl = seedLogo;
+          notes.push(`updated logo for ${String(match.name || seedItem.name)}`);
         }
         continue;
       }

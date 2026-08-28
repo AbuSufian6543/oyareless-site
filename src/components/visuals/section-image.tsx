@@ -54,7 +54,8 @@ export function SectionImage({
 
   if (!name) {
     const remote = /^https?:\/\//i.test(src);
-    const unoptimized = remote || /\.svg(?:$|\?)/i.test(src);
+    const unoptimized =
+      remote || /\.svg(?:$|\?)/i.test(src) || src.startsWith("/brand/");
     if (fill) {
       return (
         <Image

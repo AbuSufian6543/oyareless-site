@@ -102,8 +102,9 @@ function photo(stem: string, name: string, alt: string): SitePicture {
 }
 
 function logo(slug: string, name: string): SitePicture {
+  const raster = slug === "grandstream" || slug === "fanvil" || slug === "paradox";
   return {
-    url: `/brand/logos/${slug}.svg`,
+    url: `/brand/logos/${slug}.${raster ? "png" : "svg"}`,
     name: `${name} logo`,
     alt: name,
     folder: "logos",

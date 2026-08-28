@@ -57,7 +57,7 @@ export function SiteStackPanel() {
 
         <ol className="relative px-5 py-4">
           <span
-            className="absolute top-6 bottom-6 left-[2.05rem] w-px bg-gradient-to-b from-accent-400/80 via-warm-400/50 to-accent-400/30"
+            className="absolute top-6 bottom-6 left-[2.05rem] w-px bg-gradient-to-b from-accent-400/80 via-brand-400/50 to-accent-400/30"
             aria-hidden="true"
           />
 

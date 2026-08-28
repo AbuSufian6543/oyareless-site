@@ -272,6 +272,7 @@ async function seedCatalogue(): Promise<void> {
       relationship: "Authorized Dealer",
       description: "DMR handhelds, mobiles, repeaters and accessories.",
       websiteUrl: "https://hyteraradios.ca",
+      logoUrl: "/brand/logos/hytera.svg",
       featured: true,
       order: 0,
     },
@@ -287,6 +288,7 @@ async function seedCatalogue(): Promise<void> {
       name: "Ubiquiti Networks",
       category: "Networking & Wi-Fi",
       description: "Switching, routing and UniFi wireless we design and support.",
+      logoUrl: "/brand/logos/unifi.svg",
       order: 2,
     },
     {
@@ -309,6 +311,7 @@ async function seedCatalogue(): Promise<void> {
       category: "Firewall & email security",
       description:
         "Next-generation firewalls, email and web security we design, install and support.",
+      logoUrl: "/brand/logos/barracuda.svg",
       order: 5,
     },
     {
@@ -316,6 +319,7 @@ async function seedCatalogue(): Promise<void> {
       name: "Fortinet",
       category: "Next-generation firewall",
       description: "FortiGate firewalls we size, install and support for offices and multi-site networks.",
+      logoUrl: "/brand/logos/fortinet.svg",
       order: 6,
     },
     {
@@ -323,6 +327,7 @@ async function seedCatalogue(): Promise<void> {
       name: "Juniper",
       category: "Firewall & routing",
       description: "SRX firewalls and related routing we deploy and maintain.",
+      logoUrl: "/brand/logos/juniper.svg",
       order: 7,
     },
     {
@@ -383,7 +388,7 @@ async function seedCatalogue(): Promise<void> {
       name: "Paradox",
       category: "Intrusion and alarm panels",
       description: "Alarm and intrusion panels we install and connect to monitoring.",
-      logoUrl: "/brand/logos/paradox.svg",
+      logoUrl: "/brand/logos/paradox.png",
       order: 15,
     },
     {
@@ -391,7 +396,7 @@ async function seedCatalogue(): Promise<void> {
       name: "Grandstream",
       category: "VoIP phones and PBX",
       description: "Desk phones and on-prem / cloud PBX endpoints we provision.",
-      logoUrl: "/brand/logos/grandstream.svg",
+      logoUrl: "/brand/logos/grandstream.png",
       order: 16,
     },
     {
@@ -399,14 +404,22 @@ async function seedCatalogue(): Promise<void> {
       name: "Fanvil",
       category: "VoIP desk phones",
       description: "Business desk phones we supply with hosted and on-prem telephone systems.",
-      logoUrl: "/brand/logos/fanvil.svg",
+      logoUrl: "/brand/logos/fanvil.png",
       order: 17,
     },
   ];
 
   for (const brand of brands) {
     const existing = await prisma.brand.findUnique({ where: { slug: brand.slug } });
-    if (existing) continue;
+    if (existing) {
+      if (!existing.logoUrl && "logoUrl" in brand && brand.logoUrl) {
+        await prisma.brand.update({
+          where: { slug: brand.slug },
+          data: { logoUrl: brand.logoUrl },
+        });
+      }
+      continue;
+    }
     await prisma.brand.create({ data: { ...brand, status: "PUBLISHED" } });
   }
   log(`Brands: ensured ${brands.length} catalog entries`);

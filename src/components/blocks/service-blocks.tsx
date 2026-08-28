@@ -468,7 +468,7 @@ export function StatsBlock({ block }: { block: BlockOf<"stats"> }) {
       settings={block.settings}
       defaultBackground="grid"
       defaultPadding="md"
-      className="isolate before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-1 before:bg-gradient-to-r before:from-warm-500 before:via-warm-400 before:to-accent-400 before:content-['']"
+      className="isolate before:pointer-events-none before:absolute before:inset-x-0 before:top-0 before:h-1 before:bg-gradient-to-r before:from-brand-500 before:via-accent-400 before:to-brand-400 before:content-['']"
     >
       {(block.data.heading || chips.length > 0) && (
         <div className={cn("mb-8", block.data.heading ? "" : "text-center")}>
@@ -516,8 +516,8 @@ export function StatsBlock({ block }: { block: BlockOf<"stats"> }) {
             className={cn(
               "rounded-xl border px-4 py-6 lg:px-5 lg:py-7",
               dark
-                ? "border-warm-400/25 bg-navy-900/55 shadow-[0_0_0_1px_rgb(232_148_58/0.08)]"
-                : "border-warm-200 bg-warm-50",
+                ? "border-accent-400/25 bg-navy-900/55 shadow-[0_0_0_1px_rgb(34_184_216/0.08)]"
+                : "border-accent-200 bg-accent-50",
             )}
           >
             <dt className="sr-only">{item.label}</dt>
@@ -526,8 +526,8 @@ export function StatsBlock({ block }: { block: BlockOf<"stats"> }) {
                 className={cn(
                   "mx-auto mb-3 flex size-9 items-center justify-center rounded-lg",
                   dark
-                    ? "bg-warm-400/15 text-warm-300"
-                    : "bg-warm-100 text-warm-700",
+                    ? "bg-accent-400/15 text-accent-300"
+                    : "bg-accent-100 text-accent-700",
                 )}
               >
                 <BlockIcon name={statIcon(item.value, item.label)} className="size-4" />
@@ -537,7 +537,7 @@ export function StatsBlock({ block }: { block: BlockOf<"stats"> }) {
                 suffix={item.suffix}
                 className={cn(
                   "block font-extrabold tracking-tight tabular-nums text-4xl lg:text-5xl",
-                  dark ? "text-warm-400" : "text-warm-600",
+                  dark ? "text-accent-300" : "text-brand-700",
                 )}
               />
               <span

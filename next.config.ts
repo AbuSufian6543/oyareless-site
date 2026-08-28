@@ -49,6 +49,15 @@ const nextConfig: NextConfig = {
     ],
   },
   serverExternalPackages: ["sharp", "pg", "nodemailer"],
+  async rewrites() {
+    // Edited pages may still point at the old .svg paths after Grandstream,
+    // Fanvil and Paradox switched to the vendors' own PNG files.
+    return [
+      { source: "/brand/logos/grandstream.svg", destination: "/brand/logos/grandstream.png" },
+      { source: "/brand/logos/fanvil.svg", destination: "/brand/logos/fanvil.png" },
+      { source: "/brand/logos/paradox.svg", destination: "/brand/logos/paradox.png" },
+    ];
+  },
   async headers() {
     return [
       {

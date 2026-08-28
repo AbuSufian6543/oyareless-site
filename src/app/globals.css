@@ -42,19 +42,6 @@
   --color-accent-900: #164f63;
   --color-accent-950: #082f3d;
 
-  /* Warm copper — used on proof-point numbers and quiet highlights so the
-     navy / cyan system has a third note without replacing the live accent. */
-  --color-warm-50: #fdf6ee;
-  --color-warm-100: #fbe8d4;
-  --color-warm-200: #f6d0a8;
-  --color-warm-300: #efb06e;
-  --color-warm-400: #e8943a;
-  --color-warm-500: #d97b28;
-  --color-warm-600: #c05f1e;
-  --color-warm-700: #9a4a1c;
-  --color-warm-800: #7c3d1d;
-  --color-warm-900: #65341c;
-
   --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, "SFMono-Regular", "Cascadia Code", Menlo, monospace;

@@ -28,7 +28,8 @@ const PHONE = "1-800-705-3189";
 const YEARS_SINCE_2005 = new Date().getFullYear() - 2005;
 
 function vendorLogo(slug: string) {
-  return `/brand/logos/${slug}.svg`;
+  const raster = new Set(["grandstream", "fanvil", "paradox"]);
+  return `/brand/logos/${slug}.${raster.has(slug) ? "png" : "svg"}`;
 }
 
 function photo(name: string, alt: string) {

@@ -43,14 +43,14 @@ export default async function BrandsPage() {
                   className="rounded-xl border border-slate-200 bg-slate-50/70 p-5"
                 >
                   {brand.logoUrl ? (
-                    <div className="mb-4 flex h-12 items-center">
+                    <div className="mb-4 flex h-12 items-center justify-center rounded-md bg-white px-3 py-1.5">
                       <SectionImage
                         src={brand.logoUrl}
                         alt={brand.name}
                         width={160}
                         height={48}
                         sizes="160px"
-                        className="h-8 w-auto max-w-[10rem] object-contain"
+                        className="h-7 w-auto max-w-[9.5rem] object-contain"
                       />
                     </div>
                   ) : null}
