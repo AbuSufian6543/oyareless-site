@@ -23,6 +23,7 @@ type Node = {
   vx: number;
   vy: number;
   r: number;
+  sensor: boolean;
 };
 
 type Pulse = {
@@ -32,11 +33,21 @@ type Pulse = {
   speed: number;
 };
 
+type Ring = {
+  node: number;
+  radius: number;
+  max: number;
+  speed: number;
+};
+
+export type NetworkMood = "network" | "ai" | "ops";
+
 const LINK_DISTANCE = 148;
 const MAX_NODES = 68;
 const MIN_NODES = 18;
 const NODE_AREA = 17000; // one node per this many CSS pixels²
 const MAX_PULSES = 5;
+const MAX_RINGS = 4;
 
 export function NetworkCanvas({
   className,
@@ -48,9 +59,11 @@ export function NetworkCanvas({
   density?: number;
   /**
    * `ai` uses a few slightly larger nodes so the mesh reads a little closer.
+   * `ops` adds quiet sensor pings — security / alarm heartbeats on the same
+   * network mesh — used in the site footer.
    * No detection boxes — those read as a scanner on the page background.
    */
-  mood?: "network" | "ai";
+  mood?: NetworkMood;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -70,9 +83,12 @@ export function NetworkCanvas({
     const styles = getComputedStyle(canvas);
     const nodeColor = styles.getPropertyValue("--wc-net-node").trim() || "#34c5e4";
     const linkColor = styles.getPropertyValue("--wc-net-link").trim() || "#22b8d8";
+    const alertColor =
+      styles.getPropertyValue("--wc-net-alert").trim() || "#fb7185";
 
     let nodes: Node[] = [];
     let pulses: Pulse[] = [];
+    let rings: Ring[] = [];
     let width = 0;
     let height = 0;
     let frame = 0;
@@ -92,17 +108,23 @@ export function NetworkCanvas({
       const target = Math.round(((width * height) / NODE_AREA) * density);
       const count = Math.max(MIN_NODES, Math.min(MAX_NODES, target));
 
-      nodes = Array.from({ length: count }, (_, index) => ({
-        x: Math.random() * width,
-        y: Math.random() * height,
-        vx: (Math.random() - 0.5) * 0.19,
-        vy: (Math.random() - 0.5) * 0.19,
-        r:
-          mood === "ai" && index % 7 === 0
-            ? 2.2 + Math.random() * 0.8
-            : 1 + Math.random() * 1.5,
-      }));
+      nodes = Array.from({ length: count }, (_, index) => {
+        const sensor = mood === "ops" && index % 9 === 0;
+        return {
+          x: Math.random() * width,
+          y: Math.random() * height,
+          vx: (Math.random() - 0.5) * (mood === "ops" ? 0.12 : 0.19),
+          vy: (Math.random() - 0.5) * (mood === "ops" ? 0.12 : 0.19),
+          r: sensor
+            ? 2.1 + Math.random() * 0.6
+            : mood === "ai" && index % 7 === 0
+              ? 2.2 + Math.random() * 0.8
+              : 1 + Math.random() * 1.5,
+          sensor,
+        };
+      });
       pulses = [];
+      rings = [];
     };
 
     const spawnPulse = () => {
@@ -124,6 +146,20 @@ export function NetworkCanvas({
         to: candidates[Math.floor(Math.random() * candidates.length)],
         progress: 0,
         speed: 0.006 + Math.random() * 0.009,
+      });
+    };
+
+    const spawnRing = () => {
+      if (mood !== "ops" || rings.length >= MAX_RINGS) return;
+      const sensors = nodes
+        .map((node, index) => (node.sensor ? index : -1))
+        .filter((index) => index >= 0);
+      if (sensors.length === 0) return;
+      rings.push({
+        node: sensors[Math.floor(Math.random() * sensors.length)],
+        radius: 2,
+        max: 28 + Math.random() * 22,
+        speed: 0.22 + Math.random() * 0.12,
       });
     };
 
@@ -161,13 +197,35 @@ export function NetworkCanvas({
         }
       }
 
-      // Nodes.
-      context.globalAlpha = 0.72;
-      context.fillStyle = nodeColor;
+      // Nodes. Sensor nodes sit on the same mesh in a warmer alarm colour.
       for (const node of nodes) {
+        context.globalAlpha = node.sensor ? 0.88 : 0.72;
+        context.fillStyle = node.sensor ? alertColor : nodeColor;
         context.beginPath();
         context.arc(node.x, node.y, node.r, 0, Math.PI * 2);
         context.fill();
+      }
+
+      // Quiet radar pings from alarm / camera sensors.
+      if (mood === "ops") {
+        if (animate) {
+          for (const ring of rings) {
+            ring.radius += ring.speed;
+          }
+          rings = rings.filter((ring) => ring.radius < ring.max);
+          if (Math.random() < 0.012) spawnRing();
+        }
+
+        context.lineWidth = 1.15;
+        context.strokeStyle = alertColor;
+        for (const ring of rings) {
+          const origin = nodes[ring.node];
+          if (!origin) continue;
+          context.globalAlpha = (1 - ring.radius / ring.max) * 0.45;
+          context.beginPath();
+          context.arc(origin.x, origin.y, ring.radius, 0, Math.PI * 2);
+          context.stroke();
+        }
       }
 
       // Data pulses travelling along links.
@@ -216,6 +274,7 @@ export function NetworkCanvas({
     };
 
     resize();
+    if (mood === "ops") spawnRing();
     draw(false);
 
     if (reduceMotion) {
@@ -267,6 +326,7 @@ export function NetworkCanvas({
         {
           "--wc-net-node": "var(--color-accent-400)",
           "--wc-net-link": "var(--color-accent-500)",
+          "--wc-net-alert": "#fb7185",
         } as React.CSSProperties
       }
     />

@@ -1,4 +1,7 @@
-import { NetworkCanvas } from "@/components/visuals/network-canvas";
+import {
+  NetworkCanvas,
+  type NetworkMood,
+} from "@/components/visuals/network-canvas";
 import { cn } from "@/lib/utils";
 
 /**
@@ -13,6 +16,7 @@ export function TechBackdrop({
   density = 1,
   glow = "right",
   mood = "network",
+  scrim = "hero",
   className,
 }: {
   network?: boolean;
@@ -20,13 +24,19 @@ export function TechBackdrop({
   glow?: "right" | "left" | "center" | "none";
   /**
    * `ai` warms the navy and adds a second, slow-breathing glow. Used on the
-   * home hero only. No scan line, no viewfinder on the full field — that
-   * chrome belongs on the camera photograph, not the page background.
+   * home hero only. `ops` keeps the network mesh and adds a faint alarm glow
+   * for the footer. No scan line, no viewfinder on the full field.
    */
-  mood?: "network" | "ai";
+  mood?: NetworkMood;
+  /**
+   * `hero` darkens the lower half for headline type. `section` is lighter so
+   * a footer or band still shows the particles. `none` leaves the mesh raw.
+   */
+  scrim?: "hero" | "section" | "none";
   className?: string;
 }) {
   const ai = mood === "ai";
+  const ops = mood === "ops";
 
   return (
     <div
@@ -55,12 +65,20 @@ export function TechBackdrop({
 
       {ai && (
         <>
-          <div
-            className="animate-ambient-glow absolute -bottom-32 -left-24 size-[36rem] rounded-full blur-3xl bg-[radial-gradient(circle,var(--color-brand-500)_0%,transparent_70%)]"
-          />
+          <div className="animate-ambient-glow absolute -bottom-32 -left-24 size-[36rem] rounded-full blur-3xl bg-[radial-gradient(circle,var(--color-brand-500)_0%,transparent_70%)]" />
           {/* Static depth, not a travelling band. */}
           <div className="absolute inset-x-0 top-0 h-1/2 bg-[radial-gradient(ellipse_at_top,rgb(52_197_228_/_0.08),transparent_58%)]" />
         </>
+      )}
+
+      {ops && (
+        <div
+          className="absolute -bottom-28 left-[18%] size-[26rem] rounded-full opacity-30 blur-3xl"
+          style={{
+            background:
+              "radial-gradient(circle, rgb(251 113 133 / 0.55) 0%, transparent 70%)",
+          }}
+        />
       )}
 
       {network && (
@@ -71,8 +89,12 @@ export function TechBackdrop({
         />
       )}
 
-      {/* Keeps text legible where the mesh is densest. */}
-      <div className="absolute inset-0 bg-gradient-to-t from-navy-950/85 via-navy-950/35 to-transparent" />
+      {scrim === "hero" && (
+        <div className="absolute inset-0 bg-gradient-to-t from-navy-950/85 via-navy-950/35 to-transparent" />
+      )}
+      {scrim === "section" && (
+        <div className="absolute inset-0 bg-navy-950/25" />
+      )}
     </div>
   );
 }

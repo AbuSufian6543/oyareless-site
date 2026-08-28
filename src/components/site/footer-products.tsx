@@ -5,92 +5,72 @@ import {
   vendorLogoUrl,
   type FooterProduct,
 } from "@/lib/vendor-logos";
-import { cn } from "@/lib/utils";
 
 /**
- * Full-width product wall for the public footer. Every shipped vendor mark
- * is shown. Copy stays honest: only Hytera is an authorized dealership.
+ * Compact product strip for the public footer. Small uniform plates so mixed
+ * vendor files do not stretch into a second page of tiles. Hytera is the only
+ * authorized dealership; the rest are platforms we deploy.
  */
 export function FooterProducts() {
   return (
     <section
       aria-labelledby="footer-products-heading"
-      className="mt-12 border-t border-navy-800 pt-10"
+      className="mt-10 border-t border-white/10 pt-7"
     >
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <p className="eyebrow text-accent-400">What we put in the rack</p>
-          <h3
-            id="footer-products-heading"
-            className="mt-1.5 text-lg font-bold tracking-tight text-white"
-          >
-            Products we use
-          </h3>
-        </div>
+      <div className="flex items-baseline justify-between gap-4">
+        <h3
+          id="footer-products-heading"
+          className="text-[0.6875rem] font-bold uppercase tracking-[0.16em] text-navy-400"
+        >
+          Platforms we deploy
+        </h3>
         <Link
           href="/brands"
-          className="text-sm font-semibold text-accent-300 transition-colors hover:text-white"
+          className="text-[0.6875rem] font-semibold text-navy-300 transition-colors hover:text-white"
         >
-          Full catalogue
+          Catalogue
         </Link>
       </div>
 
-      <ul className="mt-5 grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-10">
+      <ul className="mt-3 flex flex-wrap items-center gap-x-2.5 gap-y-2">
         {FOOTER_PRODUCTS.map((product) => (
           <li key={product.slug}>
-            <ProductTile product={product} />
+            <ProductChip product={product} />
           </li>
         ))}
       </ul>
 
-      <p className="mt-4 max-w-3xl text-[0.6875rem] leading-relaxed text-navy-400">
-        WirelessCom.Ca Inc. is an authorized Hytera dealer. Other names are
-        equipment and cloud platforms we install and support — listing them
-        does not imply a formal partnership.
+      <p className="mt-3 max-w-3xl text-[0.625rem] leading-relaxed text-navy-500">
+        Authorized Hytera dealer. Other names are equipment and platforms we
+        install and support.
       </p>
     </section>
   );
 }
 
-function ProductTile({ product }: { product: FooterProduct }) {
+function ProductChip({ product }: { product: FooterProduct }) {
   const src = vendorLogoUrl(product.slug);
   const alt = product.authorizedDealer
     ? `${product.name} (authorized dealer)`
     : product.name;
 
-  const mark = (
-    // Official vendor marks skip next/image so they are not re-encoded.
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={src}
-      alt={alt}
-      width={160}
-      height={48}
-      loading="lazy"
-      decoding="async"
-      className={cn(
-        "object-contain",
-        product.plate === "fill"
-          ? "h-full w-full object-cover"
-          : product.plate === "dark"
-            ? "h-full w-full p-1.5"
-            : "max-h-8 w-auto max-w-[90%]",
-      )}
-    />
-  );
-
-  const className = cn(
-    "flex h-12 w-full items-center justify-center overflow-hidden rounded-lg border transition-colors sm:h-14",
-    product.plate === "light" &&
-      "border-white/70 bg-white hover:border-accent-300",
-    product.plate === "dark" &&
-      "border-navy-700 bg-black hover:border-accent-500/40",
-    product.plate === "fill" && "border-transparent hover:opacity-90",
-  );
-
   return (
-    <Link href={product.href} className={className} title={alt}>
-      {mark}
+    <Link
+      href={product.href}
+      title={alt}
+      className="flex h-7 items-center justify-center rounded-md bg-white px-2.5 opacity-90 transition-opacity hover:opacity-100"
+    >
+      {/* Official vendor marks skip next/image so they are not re-encoded. */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt={alt}
+        width={96}
+        height={28}
+        loading="lazy"
+        decoding="async"
+        className="h-3.5 w-auto max-w-[5rem] object-contain"
+      />
     </Link>
   );
 }

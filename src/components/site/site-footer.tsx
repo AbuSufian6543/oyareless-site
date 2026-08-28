@@ -11,6 +11,7 @@ import {
   XIcon,
   YouTubeIcon,
 } from "@/components/ui/social-icons";
+import { TechBackdrop } from "@/components/visuals/tech-backdrop";
 import type { NavNode } from "@/lib/navigation";
 import type { SiteSettings } from "@/lib/settings";
 import { telHref } from "@/lib/utils";
@@ -76,9 +77,16 @@ export function SiteFooter({
   const columns = buildColumns(nav);
 
   return (
-    <footer className="border-t border-accent-500/20 bg-navy-900 text-navy-200">
-      <div className="bg-tech-grid border-b border-navy-800">
-        <div className="container-page py-12 lg:py-16">
+    <footer className="relative isolate overflow-hidden border-t border-accent-500/20 bg-navy-950 text-navy-200">
+      <TechBackdrop
+        density={0.72}
+        glow="center"
+        mood="ops"
+        scrim="section"
+      />
+
+      <div className="relative border-b border-white/10">
+        <div className="container-page py-12 lg:py-14">
           <div className="grid gap-10 lg:grid-cols-12 lg:gap-8">
             {/* Company */}
             <div className="lg:col-span-3">
@@ -191,7 +199,7 @@ export function SiteFooter({
       </div>
 
       {/* Bottom bar */}
-      <div className="container-page flex flex-col gap-4 py-5 text-xs text-navy-400 sm:flex-row sm:items-center sm:justify-between">
+      <div className="relative container-page flex flex-col gap-4 py-4 text-xs text-navy-400 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:gap-5">
           <ProudlyCanadian />
           <p>
