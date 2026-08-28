@@ -50,11 +50,11 @@ export default async function SharedResultPage({
       <TechBackdrop density={0.6} glow="center" />
       <div className="container-page py-16 lg:py-24">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="inline-flex items-center gap-2 rounded-full border border-accent-500/30 bg-accent-500/10 px-3.5 py-1.5 text-xs font-bold uppercase tracking-widest text-accent-300">
+          <p className="eyebrow-pill">
             <Gauge className="size-3.5" aria-hidden="true" />
             Shared result
           </p>
-          <h1 className="mt-5 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+          <h1 className="mt-5 text-3xl font-bold tracking-tight text-white sm:text-4xl">
             Speed test result
           </h1>
           <p className="mt-3 text-navy-300">

@@ -83,7 +83,7 @@ export function SiteFooter({
   const columns = buildColumns(nav);
 
   return (
-    <footer className="bg-navy-900 text-navy-200">
+    <footer className="border-t border-accent-500/20 bg-navy-900 text-navy-200">
       <div className="bg-tech-grid border-b border-navy-800">
         <div className="container-page py-12 lg:py-16">
           <div className="grid gap-10 lg:grid-cols-12 lg:gap-8">
@@ -157,7 +157,7 @@ export function SiteFooter({
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={label}
-                      className="rounded-lg bg-navy-800 p-2.5 text-navy-300 transition-colors hover:bg-brand-600 hover:text-white"
+                      className="rounded-lg bg-navy-800 p-2.5 text-navy-300 transition-colors hover:bg-accent-500 hover:text-navy-950"
                     >
                       <Icon className="size-4" aria-hidden="true" />
                     </a>
@@ -199,7 +199,7 @@ export function SiteFooter({
                   {PARTNER_MARKS.map((mark) => (
                     <li
                       key={mark}
-                      className="rounded border border-navy-700 bg-navy-800/70 px-2 py-1"
+                      className="rounded-md border border-navy-700 bg-navy-800/80 px-2.5 py-1"
                     >
                       {mark}
                     </li>

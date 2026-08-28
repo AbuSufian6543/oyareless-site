@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ShieldCheck, Wrench } from "lucide-react";
 
+import { PageHero } from "@/components/site/page-hero";
 import { PasswordTools } from "@/components/tools/password-tools";
 import { ToolCard, ToolForm } from "@/components/tools/tool-panel";
-import { TechBackdrop } from "@/components/visuals/tech-backdrop";
 import { env } from "@/lib/env";
 
 export const metadata: Metadata = {
@@ -17,30 +17,24 @@ export const metadata: Metadata = {
 export default function CybersecurityToolsPage() {
   return (
     <>
-      <section className="relative isolate overflow-hidden">
-        <TechBackdrop density={0.6} />
-        <div className="container-page py-14 lg:py-18">
-          <p className="inline-flex items-center gap-2 rounded-full border border-accent-500/30 bg-accent-500/10 px-3.5 py-1.5 text-xs font-bold uppercase tracking-widest text-accent-300">
+      <PageHero
+        eyebrow={
+          <>
             <ShieldCheck className="size-3.5" aria-hidden="true" />
             Self-hosted tools
-          </p>
-          <h1 className="mt-5 max-w-2xl text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-            Cybersecurity tools
-          </h1>
-          <p className="mt-4 max-w-2xl text-lg text-navy-200">
-            Certificate and header checks run from our server. Password tools
-            never leave your browser. IP reputation is DNSBL-based and labeled
-            as such — it is not a commercial threat feed.
-          </p>
-          <Link
-            href="/network-tools"
-            className="mt-6 inline-flex items-center gap-1.5 text-sm text-accent-300 underline-offset-4 hover:underline"
-          >
-            <Wrench className="size-4" aria-hidden="true" />
-            Network tools
-          </Link>
-        </div>
-      </section>
+          </>
+        }
+        title="Cybersecurity tools"
+        description="Certificate and header checks run from our server. Password tools never leave your browser. IP reputation is DNSBL-based and labeled as such — it is not a commercial threat feed."
+      >
+        <Link
+          href="/network-tools"
+          className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-accent-300 underline-offset-4 hover:underline"
+        >
+          <Wrench className="size-4" aria-hidden="true" />
+          Network tools
+        </Link>
+      </PageHero>
 
       <section className="bg-slate-50 py-12 lg:py-16">
         <div className="container-page grid gap-5 lg:grid-cols-2">

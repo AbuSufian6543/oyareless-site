@@ -40,7 +40,7 @@ export default async function BrandsPage() {
               {brands.map((brand) => (
                 <li
                   key={brand.id}
-                  className="rounded-xl border border-slate-200 bg-slate-50/70 p-5"
+                  className="surface-card p-5"
                 >
                   {brand.logoUrl ? (
                     <div className="mb-4 flex h-16 items-center justify-center rounded-md bg-white px-3 py-2">

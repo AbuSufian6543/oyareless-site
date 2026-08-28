@@ -10,6 +10,7 @@ import {
   Wallet,
 } from "lucide-react";
 
+import { PageHero } from "@/components/site/page-hero";
 import { ButtonLink } from "@/components/ui/button";
 import { prisma } from "@/lib/prisma";
 import { getSettings } from "@/lib/settings";
@@ -65,26 +66,11 @@ export default async function CareersPage() {
 
   return (
     <>
-      <section className="relative isolate overflow-hidden bg-navy-900">
-        <div
-          className="absolute inset-0 -z-10 bg-gradient-to-br from-navy-950 via-navy-900 to-brand-900"
-          aria-hidden="true"
-        />
-        <div className="bg-tech-grid absolute inset-0 -z-10" aria-hidden="true" />
-        <div className="container-page py-16 lg:py-24">
-          <p className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-accent-400">
-            Careers
-          </p>
-          <h1 className="text-balance-tight text-4xl text-white lg:text-5xl">
-            Build networks that keep the North connected
-          </h1>
-          <p className="mt-5 max-w-2xl text-lg text-navy-200">
-            We are a team of technicians, engineers and support specialists
-            delivering IT, networking, surveillance and alarm systems to
-            businesses across Northern Ontario.
-          </p>
-        </div>
-      </section>
+      <PageHero
+        eyebrow="Careers"
+        title="Build networks that keep the North connected"
+        description="We are a team of technicians, engineers and support specialists delivering IT, networking, surveillance and alarm systems to businesses across Northern Ontario."
+      />
 
       <section className="bg-white py-16 lg:py-20">
         <div className="container-page">
@@ -92,7 +78,7 @@ export default async function CareersPage() {
             {BENEFITS.map((benefit) => (
               <div
                 key={benefit.title}
-                className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
+                className="surface-card p-6"
               >
                 <span className="mb-4 flex size-11 items-center justify-center rounded-lg bg-brand-50 text-brand-600">
                   <benefit.icon className="size-5" aria-hidden="true" />
@@ -115,7 +101,7 @@ export default async function CareersPage() {
             </h2>
 
             {open.length === 0 ? (
-              <div className="mt-7 rounded-xl border-2 border-dashed border-slate-300 bg-white p-10 text-center">
+              <div className="surface-empty mt-7">
                 <Briefcase
                   className="mx-auto mb-3 size-8 text-slate-300"
                   aria-hidden="true"
@@ -137,7 +123,7 @@ export default async function CareersPage() {
                   <li key={job.id}>
                     <Link
                       href={`/careers/${job.slug}`}
-                      className="group flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-5 transition-all hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-lift sm:flex-row sm:items-center sm:justify-between"
+                      className="group flex flex-col gap-3 surface-card surface-card-hover p-5 sm:flex-row sm:items-center sm:justify-between"
                     >
                       <div className="min-w-0">
                         <h3 className="font-bold text-navy-900 group-hover:text-brand-700">

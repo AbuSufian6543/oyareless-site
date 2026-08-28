@@ -99,11 +99,6 @@ export async function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
                   openInNewTab={button.openInNewTab}
                   size="lg"
                   variant={heroButtonVariant(button.style, index)}
-                  className={
-                    button.style === "outline"
-                      ? "border-white/35 text-white hover:bg-white/10"
-                      : undefined
-                  }
                 >
                   {button.label}
                 </ButtonLink>
@@ -145,7 +140,7 @@ function HeroHeadline({ text }: { text: string }) {
 }
 
 function heroButtonVariant(style: string, index: number): ButtonVariant {
-  if (style === "outline" || style === "ghost") return "outline";
+  if (style === "outline" || style === "ghost") return "onDark";
   if (style === "secondary") return "secondary";
   // First primary button gets the accent so it reads against navy.
   return index === 0 ? "accent" : "primary";
@@ -241,10 +236,10 @@ export function PillarsBlock({ block }: { block: BlockOf<"pillars"> }) {
           );
 
           const className = cn(
-            "group flex flex-col rounded-2xl border p-6 transition-all",
+            "group flex flex-col p-6",
             dark
-              ? "border-navy-700 bg-navy-800/50 hover:border-accent-500/40 hover:bg-navy-800"
-              : "border-slate-200 bg-white hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-lift",
+              ? "surface-card-dark surface-card-dark-hover"
+              : "surface-card surface-card-hover",
           );
 
           return item.href ? (
@@ -363,10 +358,10 @@ export function CapabilityGridBlock({
           );
 
           const className = cn(
-            "group flex flex-col overflow-hidden rounded-2xl border transition-all",
+            "group flex flex-col overflow-hidden",
             dark
-              ? "border-navy-700 bg-navy-800/50 hover:border-accent-500/40"
-              : "border-slate-200 bg-white hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-lift",
+              ? "surface-card-dark surface-card-dark-hover"
+              : "surface-card surface-card-hover",
           );
 
           return item.href ? (
@@ -621,10 +616,10 @@ export function ToolGridBlock({ block }: { block: BlockOf<"toolGrid"> }) {
           );
 
           const className = cn(
-            "group flex flex-col rounded-xl border p-5 transition-all",
+            "group flex flex-col p-5",
             dark
-              ? "border-navy-700 bg-navy-800/50 hover:border-accent-500/40 hover:bg-navy-800"
-              : "border-slate-200 bg-white hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-lift",
+              ? "surface-card-dark surface-card-dark-hover"
+              : "surface-card surface-card-hover",
           );
 
           return item.href ? (
@@ -797,10 +792,10 @@ export function KbHighlightsBlock({
             key={index}
             href={item.href || "/knowledge-base"}
             className={cn(
-              "group flex gap-4 rounded-xl border p-5 transition-all",
+              "group flex gap-4 p-5",
               dark
-                ? "border-navy-700 bg-navy-800/50 hover:border-accent-500/40"
-                : "border-slate-200 bg-white hover:border-brand-200 hover:shadow-sm",
+                ? "surface-card-dark surface-card-dark-hover"
+                : "surface-card surface-card-hover",
             )}
           >
             <span
@@ -857,11 +852,8 @@ export function KbHighlightsBlock({
               key={index}
               href={button.href}
               openInNewTab={button.openInNewTab}
-              variant={button.style === "primary" ? "primary" : "outline"}
-              className={
-                dark && button.style !== "primary"
-                  ? "border-white/35 text-white hover:bg-white/10"
-                  : undefined
+              variant={
+                dark && button.style !== "primary" ? "onDark" : button.style === "primary" ? "primary" : "outline"
               }
             >
               {button.label}

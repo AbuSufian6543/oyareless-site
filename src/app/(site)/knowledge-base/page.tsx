@@ -54,7 +54,7 @@ export default async function KnowledgeBasePage() {
               </aside>
               <ul className="space-y-4">
                 {articles.map((article) => (
-                  <li key={article.id} className="rounded-xl border border-slate-200 p-5">
+                  <li key={article.id} className="surface-card surface-card-hover p-5">
                     <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
                       {article.category?.name ?? "General"}
                     </p>

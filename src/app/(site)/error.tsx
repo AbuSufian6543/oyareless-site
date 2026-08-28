@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Button, ButtonLink } from "@/components/ui/button";
 
 export default function SiteError({
   reset,
@@ -11,10 +11,8 @@ export default function SiteError({
   return (
     <section className="bg-navy-900 py-24">
       <div className="container-page max-w-xl text-center">
-        <p className="text-xs font-bold uppercase tracking-widest text-accent-300">
-          Error
-        </p>
-        <h1 className="mt-3 text-3xl font-extrabold text-white">
+        <p className="eyebrow-pill mx-auto">Error</p>
+        <h1 className="mt-3 text-3xl font-bold text-white">
           This page could not be shown
         </h1>
         <p className="mt-3 text-navy-200">
@@ -22,19 +20,12 @@ export default function SiteError({
           the home page.
         </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <button
-            type="button"
-            onClick={reset}
-            className="rounded-lg bg-accent-500 px-5 py-2.5 text-sm font-semibold text-navy-950 hover:bg-accent-400"
-          >
+          <Button type="button" variant="accent" onClick={reset}>
             Try again
-          </button>
-          <Link
-            href="/"
-            className="rounded-lg border border-white/30 px-5 py-2.5 text-sm font-semibold text-white hover:bg-white/10"
-          >
+          </Button>
+          <ButtonLink href="/" variant="onDark">
             Home
-          </Link>
+          </ButtonLink>
         </div>
       </div>
     </section>

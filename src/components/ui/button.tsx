@@ -8,6 +8,7 @@ export type ButtonVariant =
   | "primary"
   | "secondary"
   | "outline"
+  | "onDark"
   | "ghost"
   | "accent"
   | "danger";
@@ -23,9 +24,11 @@ const VARIANTS: Record<ButtonVariant, string> = {
   secondary:
     "bg-navy-800 text-white hover:bg-navy-900 shadow-sm hover:shadow-md active:translate-y-px",
   accent:
-    "bg-accent-500 text-navy-950 hover:bg-accent-400 shadow-sm hover:shadow-md active:translate-y-px",
+    "bg-accent-500 text-navy-950 hover:bg-accent-400 shadow-glow hover:shadow-md active:translate-y-px",
   outline:
-    "border-2 border-current text-navy-800 hover:bg-navy-50 active:translate-y-px",
+    "border-2 border-navy-200 text-navy-800 hover:border-brand-600 hover:text-brand-700 hover:bg-navy-50 active:translate-y-px",
+  onDark:
+    "border-2 border-white/35 text-white hover:border-white hover:bg-white/10 active:translate-y-px",
   ghost: "text-navy-700 hover:bg-navy-50 active:translate-y-px",
   danger:
     "bg-red-600 text-white hover:bg-red-700 shadow-sm hover:shadow-md active:translate-y-px",

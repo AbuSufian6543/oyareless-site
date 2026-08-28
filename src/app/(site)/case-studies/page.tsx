@@ -38,7 +38,7 @@ export default async function CaseStudiesPage() {
           ) : (
             <ul className="grid gap-5 lg:grid-cols-2">
               {studies.map((study) => (
-                <li key={study.id} className="overflow-hidden rounded-xl border border-slate-200">
+                <li key={study.id} className="surface-card overflow-hidden">
                   {study.imageUrl ? (
                     <div className="relative aspect-16/10 bg-navy-900">
                       <SectionImage

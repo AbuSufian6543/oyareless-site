@@ -122,8 +122,9 @@ export function SectionHeading({
       {eyebrow && (
         <p
           className={cn(
-            "mb-3 text-xs font-bold uppercase tracking-[0.14em]",
-            dark ? "text-accent-400" : "text-brand-600",
+            dark ? "eyebrow-pill mb-4" : "eyebrow mb-3 text-brand-600",
+            align === "center" && "mx-auto",
+            align === "right" && "ml-auto",
           )}
         >
           {eyebrow}
@@ -132,7 +133,7 @@ export function SectionHeading({
       {heading && (
         <Tag
           className={cn(
-            "text-balance-tight text-3xl leading-tight lg:text-[2.5rem]",
+            "text-balance-tight text-3xl font-bold leading-tight lg:text-[2.5rem]",
             dark ? "text-white" : "text-navy-900",
           )}
         >

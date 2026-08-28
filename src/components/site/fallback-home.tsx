@@ -1,6 +1,6 @@
-import Link from "next/link";
-import { ArrowRight, Phone } from "lucide-react";
+import { Phone } from "lucide-react";
 
+import { ButtonLink } from "@/components/ui/button";
 import { AiFocusPanel } from "@/components/visuals/ai-focus-panel";
 import { TechBackdrop } from "@/components/visuals/tech-backdrop";
 
@@ -17,7 +17,7 @@ export function FallbackHome() {
       <div className="container-page relative">
         <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,22rem)] lg:gap-16">
           <div className="max-w-3xl">
-            <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-accent-500/30 bg-accent-500/10 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-accent-300">
+            <p className="eyebrow-pill mb-4">
               Practical AI · Sault Ste. Marie, Ontario
             </p>
             <h1 className="text-balance-tight text-4xl leading-[1.08] font-bold text-white sm:text-5xl lg:text-[3.5rem]">
@@ -32,20 +32,13 @@ export function FallbackHome() {
               support are still ours.
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
-              <Link
-                href="/request-quote"
-                className="inline-flex items-center gap-2 rounded-lg bg-accent-500 px-6 py-3.5 font-semibold text-navy-950 transition-colors hover:bg-accent-400"
-              >
+              <ButtonLink href="/request-quote" variant="accent" size="lg">
                 Request a quote
-                <ArrowRight className="size-4" aria-hidden="true" />
-              </Link>
-              <a
-                href="tel:18007053189"
-                className="inline-flex items-center gap-2 rounded-lg border-2 border-white/35 px-6 py-3.5 font-semibold text-white transition-colors hover:bg-white/10"
-              >
+              </ButtonLink>
+              <ButtonLink href="tel:18007053189" variant="onDark" size="lg">
                 <Phone className="size-4" aria-hidden="true" />
                 1-800-705-3189
-              </a>
+              </ButtonLink>
             </div>
           </div>
           <AiFocusPanel />

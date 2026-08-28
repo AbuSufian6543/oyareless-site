@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ChevronDown } from "lucide-react";
 
 import { PageHero } from "@/components/site/page-hero";
 import { env } from "@/lib/env";
@@ -47,24 +48,35 @@ export default async function FaqPage() {
         title="Frequently asked questions"
         description="Short answers we give most often. If yours is not here, call 1-800-705-3189 or open a ticket."
       />
-      <section className="bg-white py-14">
+      <section className="bg-white py-14 lg:py-16">
         <div className="container-page max-w-3xl space-y-10">
           {items.length === 0 && (
-            <p className="text-slate-600">FAQ entries will appear here once published in the admin.</p>
+            <p className="surface-empty">
+              FAQ entries will appear here once published in the admin.
+            </p>
           )}
           {[...groups.entries()].map(([category, group]) => (
             <div key={category}>
-              <h2 className="text-lg font-bold text-navy-900">{category}</h2>
-              <dl className="mt-4 divide-y divide-slate-200">
+              <h2 className="eyebrow text-slate-500">{category}</h2>
+              <div className="mt-4 space-y-3">
                 {group.map((item) => (
-                  <div key={item.id} className="py-4">
-                    <dt className="font-semibold text-navy-900">{item.question}</dt>
-                    <dd className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-slate-600">
+                  <details
+                    key={item.id}
+                    className="group surface-card open:border-brand-200"
+                  >
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-5 font-semibold text-navy-900">
+                      {item.question}
+                      <ChevronDown
+                        className="size-5 shrink-0 text-slate-400 transition-transform group-open:rotate-180"
+                        aria-hidden="true"
+                      />
+                    </summary>
+                    <div className="px-5 pb-5 text-sm leading-relaxed text-slate-600 whitespace-pre-wrap">
                       {item.answer}
-                    </dd>
-                  </div>
+                    </div>
+                  </details>
                 ))}
-              </dl>
+              </div>
             </div>
           ))}
         </div>

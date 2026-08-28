@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Check, LoaderCircle, Send } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
+
 export function NewsletterForm() {
   const [email, setEmail] = useState("");
   const [state, setState] = useState<"idle" | "loading" | "done" | "error">(
@@ -60,12 +62,14 @@ export function NewsletterForm() {
           onChange={(event) => setEmail(event.target.value)}
           placeholder="you@company.com"
           autoComplete="email"
-          className="min-w-0 flex-1 rounded-lg border border-navy-600 bg-navy-800/70 px-3 py-2.5 text-sm text-white placeholder:text-navy-400 focus:border-accent-500 focus:outline-none"
+          className="field-dark min-w-0 flex-1"
         />
-        <button
+        <Button
           type="submit"
+          variant="accent"
+          size="sm"
           disabled={state === "loading"}
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-accent-500 px-4 py-2.5 text-sm font-bold text-navy-950 transition-colors hover:bg-accent-400 disabled:opacity-60"
+          className="shrink-0"
         >
           {state === "loading" ? (
             <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
@@ -73,7 +77,7 @@ export function NewsletterForm() {
             <Send className="size-4" aria-hidden="true" />
           )}
           Join
-        </button>
+        </Button>
       </div>
       {state === "error" && (
         <p className="text-xs text-red-300" role="alert">

@@ -9,7 +9,7 @@ import {
   SubnetCalculator,
 } from "@/components/tools/calculators";
 import { ToolCard, ToolForm } from "@/components/tools/tool-panel";
-import { TechBackdrop } from "@/components/visuals/tech-backdrop";
+import { PageHero } from "@/components/site/page-hero";
 import { env } from "@/lib/env";
 
 export const metadata: Metadata = {
@@ -22,36 +22,33 @@ export const metadata: Metadata = {
 export default function NetworkToolsPage() {
   return (
     <>
-      <section className="relative isolate overflow-hidden">
-        <TechBackdrop density={0.6} />
-        <div className="container-page py-14 lg:py-18">
-          <p className="inline-flex items-center gap-2 rounded-full border border-accent-500/30 bg-accent-500/10 px-3.5 py-1.5 text-xs font-bold uppercase tracking-widest text-accent-300">
+      <PageHero
+        eyebrow={
+          <>
             <Wrench className="size-3.5" aria-hidden="true" />
             Self-hosted tools
-          </p>
-          <h1 className="mt-5 max-w-2xl text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-            Network tools
-          </h1>
-          <p className="mt-4 max-w-2xl text-lg text-navy-200">
-            Lookups run from our own server in Sault Ste. Marie. Private,
-            loopback and cloud-metadata targets are refused. Latency figures are
-            TCP connect times, not ICMP ping.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3 text-sm">
-            <Link href="/speed-test" className="text-accent-300 underline-offset-4 hover:underline">
-              <Gauge className="mr-1 inline size-4" aria-hidden="true" />
-              Speed test
-            </Link>
-            <Link
-              href="/cybersecurity-tools"
-              className="text-accent-300 underline-offset-4 hover:underline"
-            >
-              <ShieldCheck className="mr-1 inline size-4" aria-hidden="true" />
-              Security tools
-            </Link>
-          </div>
+          </>
+        }
+        title="Network tools"
+        description="Lookups run from our own server in Sault Ste. Marie. Private, loopback and cloud-metadata targets are refused. Latency figures are TCP connect times, not ICMP ping."
+      >
+        <div className="mt-6 flex flex-wrap gap-3 text-sm">
+          <Link
+            href="/speed-test"
+            className="inline-flex items-center gap-1.5 font-semibold text-accent-300 underline-offset-4 hover:underline"
+          >
+            <Gauge className="size-4" aria-hidden="true" />
+            Speed test
+          </Link>
+          <Link
+            href="/cybersecurity-tools"
+            className="inline-flex items-center gap-1.5 font-semibold text-accent-300 underline-offset-4 hover:underline"
+          >
+            <ShieldCheck className="size-4" aria-hidden="true" />
+            Security tools
+          </Link>
         </div>
-      </section>
+      </PageHero>
 
       <section className="bg-slate-50 py-12 lg:py-16">
         <div className="container-page grid gap-5 lg:grid-cols-2">

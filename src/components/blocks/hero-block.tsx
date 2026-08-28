@@ -139,10 +139,8 @@ function HeroCopy({
       {data.eyebrow && (
         <p
           className={cn(
-            "mb-4 inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.14em]",
-            dark
-              ? "border-accent-500/30 bg-accent-500/10 text-accent-300"
-              : "border-brand-200 bg-brand-50 text-brand-700",
+            "mb-4",
+            dark ? "eyebrow-pill" : "inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-brand-700",
           )}
         >
           <span
@@ -202,14 +200,11 @@ function HeroCopy({
               openInNewTab={button.openInNewTab}
               size="lg"
               variant={
-                button.style === "primary" && dark
-                  ? "accent"
-                  : (STYLE_TO_VARIANT[button.style] ?? "primary")
-              }
-              className={
                 button.style === "outline" && dark
-                  ? "border-white/35 text-white hover:bg-white/10"
-                  : undefined
+                  ? "onDark"
+                  : button.style === "primary" && dark
+                    ? "accent"
+                    : (STYLE_TO_VARIANT[button.style] ?? "primary")
               }
             >
               {button.label}

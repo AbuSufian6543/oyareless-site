@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 
+import { Button } from "@/components/ui/button";
+
 const LOWER = "abcdefghijkmnopqrstuvwxyz";
 const UPPER = "ABCDEFGHJKLMNPQRSTUVWXYZ";
 const DIGITS = "23456789";
@@ -66,7 +68,7 @@ export function PasswordTools() {
           autoComplete="off"
           value={value}
           onChange={(event) => setValue(event.target.value)}
-          className="w-full rounded-lg border border-slate-300 px-3 py-2.5 font-mono text-sm"
+          className="field font-mono"
         />
         <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-slate-200">
           <div
@@ -90,20 +92,19 @@ export function PasswordTools() {
         )}
       </div>
       <div className="flex flex-wrap gap-2">
-        <button
+        <Button
           type="button"
           onClick={() => setGenerated(randomPassword(20, true))}
-          className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700"
         >
           Generate a 20-character password
-        </button>
-        <button
+        </Button>
+        <Button
           type="button"
+          variant="outline"
           onClick={() => void hashValue()}
-          className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold text-navy-800 hover:bg-slate-50"
         >
           SHA-256 hash (stays local)
-        </button>
+        </Button>
       </div>
       {generated && (
         <p className="break-all rounded-lg bg-slate-50 p-3 font-mono text-sm">{generated}</p>

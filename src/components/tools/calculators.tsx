@@ -22,7 +22,7 @@ export function SubnetCalculator() {
         id="cidr"
         value={input}
         onChange={(event) => setInput(event.target.value)}
-        className="w-full rounded-lg border border-slate-300 px-3 py-2.5 font-mono text-sm"
+        className="field font-mono"
       />
       {result ? (
         <dl className="mt-4 grid gap-2 text-sm sm:grid-cols-2">
@@ -62,7 +62,7 @@ export function Ipv6Expander() {
         id="ipv6"
         value={input}
         onChange={(event) => setInput(event.target.value)}
-        className="w-full rounded-lg border border-slate-300 px-3 py-2.5 font-mono text-sm"
+        className="field font-mono"
       />
       <p className="mt-3 font-mono text-sm text-navy-900">
         {expanded ?? "That does not look like an IPv6 address."}
@@ -115,7 +115,7 @@ export function PoeCalculator() {
         value={watts}
         onChange={(event) => setWatts(event.target.value)}
         inputMode="decimal"
-        className="w-full max-w-xs rounded-lg border border-slate-300 px-3 py-2.5 text-sm"
+        className="field max-w-xs"
       />
       {match ? (
         <p className="mt-3 text-sm text-navy-800">

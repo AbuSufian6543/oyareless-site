@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { ChevronDown, Mail, Menu, Phone, Search, Shield, X } from "lucide-react";
 
+import { Button, ButtonLink, buttonClasses } from "@/components/ui/button";
 import type { NavNode } from "@/lib/navigation";
 import { cn, telHref } from "@/lib/utils";
 
@@ -83,7 +84,7 @@ export function SiteHeader({
       </a>
 
       {/* Utility bar */}
-      <div className="hidden bg-navy-900 text-navy-100 lg:block">
+      <div className="hidden border-b border-navy-800 bg-navy-900 text-navy-100 lg:block">
         <div className="container-page flex h-10 items-center justify-between text-[0.8125rem]">
           <div className="flex items-center gap-2 text-navy-200">
             <Shield className="size-3.5 text-accent-400" aria-hidden="true" />
@@ -118,8 +119,8 @@ export function SiteHeader({
       {/* Main bar */}
       <header
         className={cn(
-          "sticky top-0 z-50 border-b bg-white/95 backdrop-blur-md transition-shadow",
-          scrolled ? "border-slate-200 shadow-sm" : "border-transparent",
+          "sticky top-0 z-50 border-b bg-white/95 backdrop-blur-md transition-[box-shadow,border-color] duration-200",
+          scrolled ? "border-slate-200 shadow-card" : "border-slate-200/70",
         )}
       >
         <div className="container-page flex h-16 items-center justify-between gap-4 lg:h-[4.5rem]">
@@ -161,9 +162,9 @@ export function SiteHeader({
                       setOpenDropdown(openDropdown === item.id ? null : item.id)
                     }
                     className={cn(
-                      "flex items-center gap-1 rounded-md px-3 py-2 text-[0.9375rem] font-medium transition-colors",
+                      "flex items-center gap-1 rounded-lg px-3 py-2 text-[0.9375rem] font-medium transition-colors",
                       isActive(item.href)
-                        ? "text-brand-700"
+                        ? "bg-navy-50 text-brand-700"
                         : "text-navy-700 hover:bg-navy-50 hover:text-brand-700",
                     )}
                   >
@@ -197,9 +198,9 @@ export function SiteHeader({
                   key={item.id}
                   node={item}
                   className={cn(
-                    "rounded-md px-3 py-2 text-[0.9375rem] font-medium transition-colors",
+                    "rounded-lg px-3 py-2 text-[0.9375rem] font-medium transition-colors",
                     isActive(item.href)
-                      ? "text-brand-700"
+                      ? "bg-navy-50 text-brand-700"
                       : "text-navy-700 hover:bg-navy-50 hover:text-brand-700",
                   )}
                   onNavigate={closeMenus}
@@ -222,7 +223,7 @@ export function SiteHeader({
                 type="search"
                 name="q"
                 placeholder="Search"
-                className="w-40 rounded-lg border border-slate-200 bg-slate-50 py-2 pl-8 pr-3 text-sm text-navy-800 placeholder:text-navy-400 focus:border-brand-400 focus:bg-white focus:outline-none xl:w-52"
+                className="field w-40 py-2 pl-8 xl:w-52"
               />
             </form>
             <Link
@@ -234,18 +235,22 @@ export function SiteHeader({
             </Link>
             <a
               href={telHref(phone)}
-              className="hidden items-center gap-2 rounded-lg border-2 border-navy-200 px-3.5 py-2 text-sm font-semibold text-navy-800 transition-colors hover:border-brand-600 hover:text-brand-700 sm:flex xl:hidden 2xl:flex"
+              className={cn(
+                buttonClasses("outline", "sm"),
+                "hidden sm:inline-flex xl:hidden 2xl:inline-flex",
+              )}
             >
               <Phone className="size-4" aria-hidden="true" />
               <span className="hidden 2xl:inline">{phone}</span>
               <span className="2xl:hidden">Call</span>
             </a>
-            <Link
+            <ButtonLink
               href="/request-quote"
-              className="hidden rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-brand-700 hover:shadow-md sm:block"
+              size="sm"
+              className="hidden sm:inline-flex"
             >
               Request a quote
-            </Link>
+            </ButtonLink>
 
             <button
               type="button"
@@ -352,18 +357,15 @@ export function SiteHeader({
                   type="search"
                   name="q"
                   placeholder="Search"
-                  className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2.5 text-sm"
+                  className="field min-w-0 flex-1"
                 />
-                <button
-                  type="submit"
-                  className="rounded-lg bg-navy-800 px-3 py-2.5 text-sm font-semibold text-white"
-                >
+                <Button type="submit" variant="secondary" size="sm">
                   Search
-                </button>
+                </Button>
               </form>
               <a
                 href={telHref(phone)}
-                className="flex items-center justify-center gap-2 rounded-lg bg-navy-800 px-4 py-3 text-sm font-semibold text-white"
+                className={buttonClasses("secondary")}
               >
                 <Phone className="size-4" aria-hidden="true" />
                 {phone}
@@ -371,7 +373,7 @@ export function SiteHeader({
               <Link
                 href="/request-quote"
                 onClick={closeMenus}
-                className="flex items-center justify-center gap-2 rounded-lg bg-brand-600 px-4 py-3 text-sm font-semibold text-white"
+                className={buttonClasses("primary", "md", "w-full")}
               >
                 Request a quote
               </Link>

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { ArrowRight, House, Phone, Search } from "lucide-react";
 
+import { ButtonLink } from "@/components/ui/button";
+
 export default function NotFound() {
   return (
     <div className="flex min-h-dvh flex-col">
@@ -26,20 +28,14 @@ export default function NotFound() {
             </p>
 
             <div className="mt-9 flex flex-wrap justify-center gap-3">
-              <Link
-                href="/"
-                className="inline-flex items-center gap-2 rounded-lg bg-accent-500 px-6 py-3.5 font-semibold text-navy-950 transition-colors hover:bg-accent-400"
-              >
+              <ButtonLink href="/" variant="accent" size="lg">
                 <House className="size-4" aria-hidden="true" />
                 Go to home page
-              </Link>
-              <Link
-                href="/contact"
-                className="inline-flex items-center gap-2 rounded-lg border-2 border-white/35 px-6 py-3.5 font-semibold text-white transition-colors hover:bg-white/10"
-              >
+              </ButtonLink>
+              <ButtonLink href="/contact" variant="onDark" size="lg">
                 Contact us
                 <ArrowRight className="size-4" aria-hidden="true" />
-              </Link>
+              </ButtonLink>
             </div>
 
             <div className="mt-12 border-t border-white/10 pt-8">

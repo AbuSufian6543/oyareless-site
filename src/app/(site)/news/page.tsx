@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowUpRight, Clock } from "lucide-react";
 
+import { PageHero } from "@/components/site/page-hero";
 import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/utils";
 
@@ -25,30 +26,16 @@ export default async function NewsIndexPage() {
 
   return (
     <>
-      <section className="relative isolate overflow-hidden bg-navy-900">
-        <div
-          className="absolute inset-0 -z-10 bg-gradient-to-br from-navy-950 via-navy-900 to-brand-900"
-          aria-hidden="true"
-        />
-        <div className="bg-tech-grid absolute inset-0 -z-10" aria-hidden="true" />
-        <div className="container-page py-16 lg:py-24">
-          <p className="mb-3 text-xs font-bold uppercase tracking-[0.14em] text-accent-400">
-            WirelessCom.Ca Inc.
-          </p>
-          <h1 className="text-balance-tight text-4xl text-white lg:text-5xl">
-            News &amp; Insights
-          </h1>
-          <p className="mt-5 max-w-2xl text-lg text-navy-200">
-            Security advisories, technology guidance, and updates on the services
-            we deliver across Northern Ontario.
-          </p>
-        </div>
-      </section>
+      <PageHero
+        eyebrow="WirelessCom.Ca Inc."
+        title="News & Insights"
+        description="Security advisories, technology guidance, and updates on the services we deliver across Northern Ontario."
+      />
 
       <section className="bg-slate-50 py-16 lg:py-20">
         <div className="container-page">
           {posts.length === 0 ? (
-            <div className="rounded-xl border-2 border-dashed border-slate-300 bg-white p-14 text-center">
+            <div className="surface-empty p-14">
               <p className="text-slate-500">
                 No articles have been published yet. Please check back soon.
               </p>
@@ -59,7 +46,7 @@ export default async function NewsIndexPage() {
                 <Link
                   key={post.id}
                   href={`/news/${post.slug}`}
-                  className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition-all hover:-translate-y-1 hover:shadow-lift"
+                  className="group flex flex-col overflow-hidden surface-card surface-card-hover"
                 >
                   <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
                     {post.coverImageUrl ? (

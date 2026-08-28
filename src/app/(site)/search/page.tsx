@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 import { PageHero } from "@/components/site/page-hero";
+import { Button } from "@/components/ui/button";
 import { env } from "@/lib/env";
 import { searchSite } from "@/lib/search";
 
@@ -31,16 +32,14 @@ export default async function SearchPage({
               name="q"
               defaultValue={q}
               placeholder="Search the site…"
-              className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2.5"
+              className="field min-w-0 flex-1"
             />
-            <button type="submit" className="rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white">
-              Search
-            </button>
+            <Button type="submit">Search</Button>
           </form>
           {q && (
             <ul className="mt-8 space-y-4">
               {hits.map((hit) => (
-                <li key={`${hit.kind}-${hit.href}-${hit.title}`}>
+                <li key={`${hit.kind}-${hit.href}-${hit.title}`} className="surface-card p-4">
                   <p className="text-xs font-bold uppercase tracking-wide text-slate-500">{hit.kind}</p>
                   <a href={hit.href} className="font-bold text-navy-900 hover:text-brand-700">
                     {hit.title}

@@ -105,16 +105,13 @@ function CtaActions({
           href={button.href}
           openInNewTab={button.openInNewTab}
           size="lg"
-          variant={
-            button.style === "primary" && dark
-              ? "accent"
-              : (STYLE_TO_VARIANT[button.style] ?? "primary")
-          }
-          className={
-            button.style === "outline" && dark
-              ? "border-white/35 text-white hover:bg-white/10"
-              : undefined
-          }
+              variant={
+                button.style === "outline" && dark
+                  ? "onDark"
+                  : button.style === "primary" && dark
+                    ? "accent"
+                    : (STYLE_TO_VARIANT[button.style] ?? "primary")
+              }
         >
           {button.label}
         </ButtonLink>
@@ -158,10 +155,10 @@ export function FaqBlock({ block }: { block: BlockOf<"faq"> }) {
           <details
             key={index}
             className={cn(
-              "group rounded-xl border transition-colors",
-              dark
-                ? "border-navy-700 bg-navy-800/50 open:border-accent-500/40"
-                : "border-slate-200 bg-white open:border-brand-200 open:shadow-card",
+            "group rounded-xl border transition-colors",
+            dark
+              ? "surface-card-dark open:border-accent-500/40"
+              : "surface-card open:border-brand-200",
             )}
           >
             <summary
@@ -247,8 +244,8 @@ export async function TestimonialsBlock({
           <figure
             key={index}
             className={cn(
-              "flex flex-col rounded-xl border p-6",
-              dark ? "border-navy-700 bg-navy-800/60" : "border-slate-200 bg-white",
+              "flex flex-col p-6",
+              dark ? "surface-card-dark" : "surface-card",
             )}
           >
             <Quote

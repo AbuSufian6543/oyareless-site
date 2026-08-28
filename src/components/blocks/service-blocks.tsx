@@ -37,8 +37,8 @@ export function FeatureGridBlock({ block }: { block: BlockOf<"featureGrid"> }) {
               "group relative",
               data.style === "card" &&
                 (dark
-                  ? "rounded-xl border border-navy-700 bg-navy-800/60 p-6 transition-all hover:border-accent-500/40 hover:bg-navy-800"
-                  : "rounded-xl border border-slate-200 bg-white p-6 transition-all hover:-translate-y-0.5 hover:border-brand-200 hover:shadow-lift"),
+                  ? "surface-card-dark surface-card-dark-hover p-6"
+                  : "surface-card surface-card-hover p-6"),
               data.style === "bordered" &&
                 (dark
                   ? "border-l-2 border-accent-500/50 pl-5"
@@ -186,10 +186,10 @@ export function ServiceGridBlock({ block }: { block: BlockOf<"serviceGrid"> }) {
           );
 
           const cardClass = cn(
-            "group flex h-full flex-col rounded-xl border p-6 transition-all",
+            "group flex h-full flex-col p-6",
             dark
-              ? "border-navy-700 bg-navy-800/60 hover:border-accent-500/40 hover:bg-navy-800"
-              : "border-slate-200 bg-white hover:-translate-y-1 hover:border-brand-200 hover:shadow-lift",
+              ? "surface-card-dark surface-card-dark-hover"
+              : "surface-card surface-card-hover",
           );
 
           return item.href ? (
@@ -360,12 +360,12 @@ export function PricingBlock({ block }: { block: BlockOf<"pricing"> }) {
           <div
             key={index}
             className={cn(
-              "relative flex flex-col rounded-xl border p-6",
+              "relative flex flex-col p-6",
               plan.highlighted
-                ? "border-brand-500 bg-white shadow-lift ring-1 ring-brand-500"
+                ? "surface-card border-brand-500 shadow-lift ring-1 ring-brand-500"
                 : dark
-                  ? "border-navy-700 bg-navy-800/60"
-                  : "border-slate-200 bg-white",
+                  ? "surface-card-dark"
+                  : "surface-card",
             )}
           >
             {plan.highlighted && (

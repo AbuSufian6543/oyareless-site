@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { LoaderCircle } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export type ToolId =
@@ -73,7 +74,7 @@ export function ToolForm({
           onChange={(event) => setTarget(event.target.value)}
           placeholder={placeholder}
           required={tool !== "ip"}
-          className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-navy-900 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
+          className="field min-w-0 flex-1"
         />
         {extra === "port" && (
           <input
@@ -81,17 +82,13 @@ export function ToolForm({
             onChange={(event) => setPort(event.target.value)}
             inputMode="numeric"
             aria-label="Port"
-            className="w-24 rounded-lg border border-slate-300 px-3 py-2.5 text-sm text-navy-900 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
+            className="field w-24"
           />
         )}
-        <button
-          type="submit"
-          disabled={busy}
-          className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-60"
-        >
+        <Button type="submit" disabled={busy} size="sm">
           {busy && <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />}
           Look up
-        </button>
+        </Button>
       </form>
       {hint && <p className="mt-2 text-xs text-slate-500">{hint}</p>}
       {error && (
@@ -151,7 +148,7 @@ export function ToolCard({
   className?: string;
 }) {
   return (
-    <section className={cn("rounded-xl border border-slate-200 bg-white p-5 shadow-sm", className)}>
+    <section className={cn("surface-card p-5 sm:p-6", className)}>
       <h2 className="text-lg font-bold text-navy-900">{title}</h2>
       <p className="mt-1 text-sm text-slate-600">{description}</p>
       <div className="mt-4">{children}</div>

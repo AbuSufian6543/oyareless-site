@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { MonitorSmartphone } from "lucide-react";
 
 import { PageHero } from "@/components/site/page-hero";
+import { ButtonLink } from "@/components/ui/button";
 import { env } from "@/lib/env";
 import { getSettings } from "@/lib/settings";
 
@@ -70,14 +71,10 @@ export default async function RemoteSupportPage() {
           {downloads.length > 0 ? (
             <div className="grid gap-3 sm:grid-cols-2">
               {downloads.map((item) => (
-                <a
-                  key={item.key}
-                  href={item.href}
-                  className="inline-flex items-center justify-center gap-2 rounded-lg bg-brand-600 px-4 py-3 text-sm font-semibold text-white hover:bg-brand-700"
-                >
+                <ButtonLink key={item.key} href={item.href} className="w-full">
                   <MonitorSmartphone className="size-4" aria-hidden="true" />
                   Download for {item.label}
-                </a>
+                </ButtonLink>
               ))}
             </div>
           ) : (
@@ -88,7 +85,7 @@ export default async function RemoteSupportPage() {
           )}
 
           {(settings.rustdeskIdServer || settings.rustdeskPublicKey) && (
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-5 text-sm">
+            <div className="surface-card bg-slate-50 p-5 text-sm">
               <h2 className="font-bold text-navy-900">Self-hosted relay</h2>
               <p className="mt-2 text-slate-600">
                 If the client asks for a server, use the values below. Only the

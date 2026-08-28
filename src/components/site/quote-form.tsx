@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { LoaderCircle } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
+
 const AREAS = [
   "IT services",
   "Cybersecurity",
@@ -61,7 +63,7 @@ export function QuoteForm() {
 
   if (done) {
     return (
-      <p className="rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-sm text-emerald-900">
+      <p className="surface-card border-emerald-200 bg-emerald-50 p-5 text-sm text-emerald-900">
         Thank you. Your quote request is {done}. We will reply to the email you
         gave. For urgent work call 1-800-705-3189.
       </p>
@@ -99,18 +101,14 @@ export function QuoteForm() {
           name="details"
           required
           rows={6}
-          className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm"
+          className="field resize-y"
         />
       </label>
       {error && <p className="text-sm text-red-700">{error}</p>}
-      <button
-        type="submit"
-        disabled={busy}
-        className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-60"
-      >
+      <Button type="submit" disabled={busy}>
         {busy && <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />}
         Request a quote
-      </button>
+      </Button>
     </form>
   );
 }
@@ -136,7 +134,7 @@ function Field({
         type={type}
         required={required}
         placeholder={placeholder}
-        className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm"
+        className="field"
       />
     </label>
   );

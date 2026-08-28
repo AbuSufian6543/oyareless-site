@@ -1,9 +1,24 @@
 import type { Metadata, Viewport } from "next";
+import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 
 import { env } from "@/lib/env";
 import { getSettings } from "@/lib/settings";
 import { THEME_COLOR, themeCss } from "@/lib/theme";
 import "./globals.css";
+
+const plexSans = IBM_Plex_Sans({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-ibm-sans",
+  display: "swap",
+});
+
+const plexMono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-ibm-mono",
+  display: "swap",
+});
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -89,7 +104,7 @@ export default async function RootLayout({
   // Do not render a <head> here. Next.js injects metadata into head; a
   // manual head tag hydrates against that text and then drops the CSS link.
   return (
-    <html lang="en-CA">
+    <html lang="en-CA" className={`${plexSans.variable} ${plexMono.variable}`}>
       <body className="flex min-h-dvh flex-col antialiased">
         {theme ? (
           <style

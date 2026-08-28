@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { CircleCheck, LoaderCircle, Send, TriangleAlert } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export type ContactFormConfig = {
@@ -236,18 +237,14 @@ export function ContactFormBlock({ config }: { config: ContactFormConfig }) {
       )}
 
       <div className="mt-6 flex flex-wrap items-center gap-4">
-        <button
-          type="submit"
-          disabled={state === "loading"}
-          className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-6 py-3 font-semibold text-white shadow-sm transition-all hover:bg-brand-700 hover:shadow-md disabled:opacity-60"
-        >
+        <Button type="submit" disabled={state === "loading"} size="lg">
           {state === "loading" ? (
             <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
           ) : (
             <Send className="size-4" aria-hidden="true" />
           )}
           {state === "loading" ? "Sending…" : "Send message"}
-        </button>
+        </Button>
         <p className={cn("text-xs", dark ? "text-navy-400" : "text-slate-500")}>
           Fields marked * are required.
         </p>
@@ -257,12 +254,7 @@ export function ContactFormBlock({ config }: { config: ContactFormConfig }) {
 }
 
 function inputClass(dark: boolean): string {
-  return cn(
-    "w-full rounded-lg border px-3.5 py-2.5 text-[0.9375rem] transition-colors focus:outline-none",
-    dark
-      ? "border-navy-600 bg-navy-900 text-white placeholder:text-navy-500 focus:border-accent-500"
-      : "border-slate-300 bg-white text-navy-900 placeholder:text-slate-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-100",
-  );
+  return dark ? "field-dark" : "field";
 }
 
 function FieldLabel({

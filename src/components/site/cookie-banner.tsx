@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Cookie } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
+
 const STORAGE_KEY = "wc_cookie_consent";
 
 /**
@@ -40,7 +42,7 @@ export function CookieBanner() {
       role="dialog"
       aria-live="polite"
       aria-label="Cookie notice"
-      className="animate-fade-up fixed inset-x-3 bottom-3 z-90 mx-auto max-w-3xl rounded-xl border border-slate-200 bg-white p-4 shadow-lift sm:inset-x-6 sm:bottom-6 sm:p-5"
+      className="animate-fade-up surface-card fixed inset-x-3 bottom-3 z-90 mx-auto max-w-3xl p-4 shadow-lift sm:inset-x-6 sm:bottom-6 sm:p-5"
     >
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
         <Cookie
@@ -59,20 +61,17 @@ export function CookieBanner() {
           .
         </p>
         <div className="flex shrink-0 gap-2">
-          <button
+          <Button
             type="button"
+            variant="outline"
+            size="sm"
             onClick={() => decide("declined")}
-            className="rounded-lg border-2 border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-50"
           >
             Decline
-          </button>
-          <button
-            type="button"
-            onClick={() => decide("accepted")}
-            className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
-          >
+          </Button>
+          <Button type="button" size="sm" onClick={() => decide("accepted")}>
             Accept
-          </button>
+          </Button>
         </div>
       </div>
     </div>

@@ -46,11 +46,11 @@ export default async function SpeedTestPage() {
         <TechBackdrop density={0.8} glow="center" />
         <div className="container-page py-14 lg:py-20">
           <div className="mx-auto max-w-3xl text-center">
-            <p className="inline-flex items-center gap-2 rounded-full border border-accent-500/30 bg-accent-500/10 px-3.5 py-1.5 text-xs font-bold uppercase tracking-widest text-accent-300">
+            <p className="eyebrow-pill">
               <Gauge className="size-3.5" aria-hidden="true" />
               Network tool
             </p>
-            <h1 className="mt-5 text-3xl font-extrabold tracking-tight text-white sm:text-4xl lg:text-5xl">
+            <h1 className="mt-5 text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
               Internet speed test
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-lg leading-relaxed text-navy-200">
@@ -69,7 +69,7 @@ export default async function SpeedTestPage() {
       <section className="bg-white py-14 lg:py-20">
         <div className="container-page">
           <div className="max-w-2xl">
-            <h2 className="text-2xl font-extrabold tracking-tight text-navy-900 sm:text-3xl">
+            <h2 className="text-2xl font-bold tracking-tight text-navy-900 sm:text-3xl">
               Why your result may differ from what you pay for
             </h2>
             <p className="mt-3 text-slate-600">
@@ -83,7 +83,7 @@ export default async function SpeedTestPage() {
             {FACTORS.map((factor) => (
               <div
                 key={factor.title}
-                className="rounded-xl border border-slate-200 bg-slate-50/70 p-5"
+                className="surface-card p-5"
               >
                 <h3 className="font-bold text-navy-900">{factor.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-slate-600">
@@ -93,7 +93,7 @@ export default async function SpeedTestPage() {
             ))}
           </div>
 
-          <div className="mt-10 rounded-xl border border-slate-200 bg-white p-6 shadow-card">
+          <div className="surface-card mt-10 p-6">
             <h3 className="font-bold text-navy-900">How this test works</h3>
             <ul className="mt-3 space-y-2.5 text-sm leading-relaxed text-slate-600">
               <li>
@@ -134,7 +134,7 @@ export default async function SpeedTestPage() {
 
       <section className="bg-slate-50 py-14 lg:py-20">
         <div className="container-page">
-          <h2 className="text-2xl font-extrabold tracking-tight text-navy-900 sm:text-3xl">
+          <h2 className="text-2xl font-bold tracking-tight text-navy-900 sm:text-3xl">
             Results not what they should be?
           </h2>
           <p className="mt-3 max-w-2xl text-slate-600">
@@ -190,7 +190,7 @@ function NextStep({
   return (
     <Link
       href={href}
-      className="group rounded-xl border border-slate-200 bg-white p-5 transition-all hover:-translate-y-0.5 hover:border-brand-300 hover:shadow-md"
+            className="group surface-card surface-card-hover p-5"
     >
       <Icon className="size-6 text-brand-600" aria-hidden="true" />
       <h3 className="mt-3 flex items-center gap-1.5 font-bold text-navy-900">
