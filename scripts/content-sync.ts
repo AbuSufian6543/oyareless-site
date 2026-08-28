@@ -109,6 +109,17 @@ function canonicalBrandName(value: unknown): string {
     return "unifi";
   }
   if (name === "azure" || name === "microsoft azure") return "azure";
+  if (name === "aws" || name === "amazon web services" || name === "amazon") return "aws";
+  if (name === "google cloud" || name === "google cloud platform" || name === "gcp") {
+    return "google cloud";
+  }
+  if (name === "microsoft 365" || name === "office 365" || name === "office365") {
+    return "microsoft 365";
+  }
+  if (name === "cloudflare") return "cloudflare";
+  if (name === "tait" || name === "tait communications") return "tait";
+  if (name === "rogers") return "rogers";
+  if (name === "genetec") return "genetec";
   if (name === "mikrotik" || name === "mikro tik") return "mikrotik";
   if (name === "grandstream" || name === "grandstrea") return "grandstream";
   if (name === "fortinet" || name === "fotinet") return "fortinet";
@@ -285,6 +296,20 @@ function fillMissingMedia(
     ) {
       currentData.chips = [...seedChips];
       notes.push("stats chips");
+    } else if (Array.isArray(seedChips) && Array.isArray(currentChips)) {
+      const present = new Set(
+        currentChips.map((chip) => String(chip).trim().toLowerCase()),
+      );
+      for (const chip of seedChips) {
+        const label = String(chip).trim();
+        if (!label || present.has(label.toLowerCase())) continue;
+        if (!["azure", "aws", "google cloud", "microsoft 365"].includes(label.toLowerCase())) {
+          continue;
+        }
+        currentChips.push(label);
+        present.add(label.toLowerCase());
+        notes.push(`stats chip ${label}`);
+      }
     }
   }
 
@@ -303,6 +328,22 @@ function fillMissingMedia(
     ["techHero", "hero"],
     notes,
     "cameras and phones AI",
+  );
+  insertMissingSeedBlock(
+    next,
+    seed,
+    "imageText",
+    ["hero", "techHero"],
+    notes,
+    "missing imageText",
+  );
+  insertMissingSeedBlock(
+    next,
+    seed,
+    "brandGrid",
+    ["imageText", "techHero", "hero"],
+    notes,
+    "missing brandGrid",
   );
   insertMissingSeedBlock(
     next,
@@ -329,6 +370,26 @@ function fillMissingMedia(
         currentData.variant = "split";
       }
       notes.push("hero photo");
+    }
+
+    const seedHighlights = seedData.highlights;
+    const currentHighlights = currentData.highlights;
+    if (Array.isArray(seedHighlights) && Array.isArray(currentHighlights)) {
+      const present = new Set(
+        currentHighlights.map((item) => String(item).trim().toLowerCase()),
+      );
+      for (const item of seedHighlights) {
+        const label = String(item).trim();
+        if (!label || present.has(label.toLowerCase())) continue;
+        if (
+          !/microsoft 365|azure|aws|google cloud/i.test(label)
+        ) {
+          continue;
+        }
+        currentHighlights.push(label);
+        present.add(label.toLowerCase());
+        notes.push(`hero highlight ${label}`);
+      }
     }
   }
 

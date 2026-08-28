@@ -12,6 +12,7 @@ import { hashPassword, validatePasswordStrength } from "../src/lib/passwords";
 import { prisma } from "../src/lib/prisma";
 import { DEFAULT_SETTINGS } from "../src/lib/settings-defaults";
 import { ensureSiteMedia } from "../src/lib/site-media";
+import { vendorLogoUrl } from "../src/lib/vendor-logos";
 import { buildBlocks, SEED_NAV, SEED_PAGES, SEED_REDIRECTS } from "./seed-content";
 
 function log(message: string): void {
@@ -272,7 +273,7 @@ async function seedCatalogue(): Promise<void> {
       relationship: "Authorized Dealer",
       description: "DMR handhelds, mobiles, repeaters and accessories.",
       websiteUrl: "https://hyteraradios.ca",
-      logoUrl: "/brand/logos/hytera.svg",
+      logoUrl: vendorLogoUrl("hytera"),
       featured: true,
       order: 0,
     },
@@ -281,6 +282,7 @@ async function seedCatalogue(): Promise<void> {
       name: "Rogers",
       category: "Connectivity",
       description: "Business internet and cellular services we provision and support.",
+      logoUrl: vendorLogoUrl("rogers"),
       order: 1,
     },
     {
@@ -288,7 +290,7 @@ async function seedCatalogue(): Promise<void> {
       name: "Ubiquiti Networks",
       category: "Networking & Wi-Fi",
       description: "Switching, routing and UniFi wireless we design and support.",
-      logoUrl: "/brand/logos/unifi.svg",
+      logoUrl: vendorLogoUrl("unifi"),
       order: 2,
     },
     {
@@ -303,6 +305,7 @@ async function seedCatalogue(): Promise<void> {
       name: "Genetec",
       category: "Access control",
       description: "Access control platforms we install and maintain.",
+      logoUrl: vendorLogoUrl("genetec"),
       order: 4,
     },
     {
@@ -311,7 +314,7 @@ async function seedCatalogue(): Promise<void> {
       category: "Firewall & email security",
       description:
         "Next-generation firewalls, email and web security we design, install and support.",
-      logoUrl: "/brand/logos/barracuda.svg",
+      logoUrl: vendorLogoUrl("barracuda"),
       order: 5,
     },
     {
@@ -319,7 +322,7 @@ async function seedCatalogue(): Promise<void> {
       name: "Fortinet",
       category: "Next-generation firewall",
       description: "FortiGate firewalls we size, install and support for offices and multi-site networks.",
-      logoUrl: "/brand/logos/fortinet.svg",
+      logoUrl: vendorLogoUrl("fortinet"),
       order: 6,
     },
     {
@@ -327,7 +330,7 @@ async function seedCatalogue(): Promise<void> {
       name: "Juniper",
       category: "Firewall & routing",
       description: "SRX firewalls and related routing we deploy and maintain.",
-      logoUrl: "/brand/logos/juniper.svg",
+      logoUrl: vendorLogoUrl("juniper"),
       order: 7,
     },
     {
@@ -356,7 +359,7 @@ async function seedCatalogue(): Promise<void> {
       name: "Cisco",
       category: "Switching, routing and firewalls",
       description: "Campus switching, routing and firewall platforms we design and support.",
-      logoUrl: "/brand/logos/cisco.svg",
+      logoUrl: vendorLogoUrl("cisco"),
       order: 11,
     },
     {
@@ -364,15 +367,15 @@ async function seedCatalogue(): Promise<void> {
       name: "MikroTik",
       category: "Routing and wireless",
       description: "Routers and wireless links we deploy and support.",
-      logoUrl: "/brand/logos/mikrotik.svg",
+      logoUrl: vendorLogoUrl("mikrotik"),
       order: 12,
     },
     {
       slug: "microsoft",
       name: "Microsoft",
-      category: "Windows and Microsoft 365",
+      category: "Windows and identity",
       description: "Windows, Microsoft 365 and related identity we administer for business.",
-      logoUrl: "/brand/logos/microsoft.svg",
+      logoUrl: vendorLogoUrl("microsoft"),
       order: 13,
     },
     {
@@ -380,39 +383,85 @@ async function seedCatalogue(): Promise<void> {
       name: "Azure",
       category: "Cloud and identity",
       description: "Microsoft Azure services we design and support alongside on-prem networks.",
-      logoUrl: "/brand/logos/azure.svg",
+      logoUrl: vendorLogoUrl("azure"),
       order: 14,
+    },
+    {
+      slug: "microsoft-365",
+      name: "Microsoft 365",
+      category: "Office apps, email and Teams",
+      description:
+        "Microsoft 365 (Office apps, Exchange, Teams and SharePoint) we set up, connect to your users and administer.",
+      logoUrl: vendorLogoUrl("microsoft-365"),
+      order: 15,
+    },
+    {
+      slug: "aws",
+      name: "AWS",
+      category: "Cloud infrastructure",
+      description: "Amazon Web Services compute, storage and the network path we design and support.",
+      logoUrl: vendorLogoUrl("aws"),
+      order: 16,
+    },
+    {
+      slug: "google-cloud",
+      name: "Google Cloud",
+      category: "Cloud infrastructure",
+      description: "Google Cloud projects we connect to the office network and support.",
+      logoUrl: vendorLogoUrl("google-cloud"),
+      order: 17,
+    },
+    {
+      slug: "cloudflare",
+      name: "Cloudflare",
+      category: "CDN and edge security",
+      description: "CDN and edge filtering we put in front of sites that need it.",
+      logoUrl: vendorLogoUrl("cloudflare"),
+      order: 18,
     },
     {
       slug: "paradox",
       name: "Paradox",
       category: "Intrusion and alarm panels",
       description: "Alarm and intrusion panels we install and connect to monitoring.",
-      logoUrl: "/brand/logos/paradox.png",
-      order: 15,
+      logoUrl: vendorLogoUrl("paradox"),
+      order: 19,
     },
     {
       slug: "grandstream",
       name: "Grandstream",
       category: "VoIP phones and PBX",
       description: "Desk phones and on-prem / cloud PBX endpoints we provision.",
-      logoUrl: "/brand/logos/grandstream.png",
-      order: 16,
+      logoUrl: vendorLogoUrl("grandstream"),
+      order: 20,
     },
     {
       slug: "fanvil",
       name: "Fanvil",
       category: "VoIP desk phones",
       description: "Business desk phones we supply with hosted and on-prem telephone systems.",
-      logoUrl: "/brand/logos/fanvil.png",
-      order: 17,
+      logoUrl: vendorLogoUrl("fanvil"),
+      order: 21,
+    },
+    {
+      slug: "tait",
+      name: "Tait Communications",
+      category: "Critical communications",
+      description: "Two-way radio platforms we deploy and support alongside Hytera.",
+      logoUrl: vendorLogoUrl("tait"),
+      order: 22,
     },
   ];
 
   for (const brand of brands) {
     const existing = await prisma.brand.findUnique({ where: { slug: brand.slug } });
     if (existing) {
-      if (!existing.logoUrl && "logoUrl" in brand && brand.logoUrl) {
+      if (
+        "logoUrl" in brand &&
+        brand.logoUrl &&
+        existing.logoUrl !== brand.logoUrl &&
+        (!existing.logoUrl || existing.logoUrl.startsWith("/brand/logos/"))
+      ) {
         await prisma.brand.update({
           where: { slug: brand.slug },
           data: { logoUrl: brand.logoUrl },

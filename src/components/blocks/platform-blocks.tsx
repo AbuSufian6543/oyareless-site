@@ -397,7 +397,7 @@ function BrandLogo({
   dark: boolean;
 }) {
   const className = cn(
-    "h-7 w-auto max-w-[9.5rem] object-contain",
+    "max-h-10 w-auto max-w-[10.5rem] object-contain",
   );
 
   const mark = /\.svg(?:$|\?)/i.test(url) || url.startsWith("/brand/") ? (
@@ -416,7 +416,7 @@ function BrandLogo({
   );
 
   return (
-    <span className="flex h-12 w-full items-center justify-center rounded-md bg-white px-3 py-1.5">
+    <span className="flex h-16 w-full items-center justify-center rounded-md bg-white px-3 py-2">
       {mark}
     </span>
   );

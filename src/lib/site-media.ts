@@ -2,6 +2,7 @@ import { stat } from "node:fs/promises";
 import path from "node:path";
 
 import { prisma } from "@/lib/prisma";
+import { vendorLogoUrl } from "@/lib/vendor-logos";
 
 /**
  * Photographs and marks that ship with the site. They live under `public/`
@@ -42,12 +43,19 @@ export const SITE_PICTURES: SitePicture[] = [
   logo("fortinet", "Fortinet"),
   logo("barracuda", "Barracuda"),
   logo("microsoft", "Microsoft"),
+  logo("microsoft-365", "Microsoft 365"),
   logo("azure", "Azure"),
+  logo("aws", "Amazon Web Services"),
+  logo("google-cloud", "Google Cloud"),
+  logo("cloudflare", "Cloudflare"),
   logo("paradox", "Paradox"),
   logo("grandstream", "Grandstream"),
   logo("hytera", "Hytera"),
   logo("fanvil", "Fanvil"),
   logo("juniper", "Juniper"),
+  logo("genetec", "Genetec"),
+  logo("tait", "Tait Communications"),
+  logo("rogers", "Rogers"),
   {
     url: "/brand/logo.png",
     name: "Primary logo",
@@ -102,9 +110,8 @@ function photo(stem: string, name: string, alt: string): SitePicture {
 }
 
 function logo(slug: string, name: string): SitePicture {
-  const raster = slug === "grandstream" || slug === "fanvil" || slug === "paradox";
   return {
-    url: `/brand/logos/${slug}.${raster ? "png" : "svg"}`,
+    url: vendorLogoUrl(slug),
     name: `${name} logo`,
     alt: name,
     folder: "logos",

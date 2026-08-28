@@ -56,6 +56,11 @@ const nextConfig: NextConfig = {
       { source: "/brand/logos/grandstream.svg", destination: "/brand/logos/grandstream.png" },
       { source: "/brand/logos/fanvil.svg", destination: "/brand/logos/fanvil.png" },
       { source: "/brand/logos/paradox.svg", destination: "/brand/logos/paradox.png" },
+      { source: "/brand/logos/cisco.svg", destination: "/brand/logos/cisco.png" },
+      { source: "/brand/logos/azure.svg", destination: "/brand/logos/azure.png" },
+      { source: "/brand/logos/unifi.svg", destination: "/brand/logos/unifi.png" },
+      { source: "/brand/logos/mikrotik.svg", destination: "/brand/logos/mikrotik.png" },
+      { source: "/brand/logos/juniper.svg", destination: "/brand/logos/juniper.png" },
     ];
   },
   async headers() {

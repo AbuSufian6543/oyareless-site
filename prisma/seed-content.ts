@@ -4,6 +4,7 @@
  */
 
 import { blocksSchema, type Block } from "../src/lib/blocks";
+import { vendorLogoUrl } from "../src/lib/vendor-logos";
 
 type BlockInput = {
   type: Block["type"];
@@ -28,8 +29,7 @@ const PHONE = "1-800-705-3189";
 const YEARS_SINCE_2005 = new Date().getFullYear() - 2005;
 
 function vendorLogo(slug: string) {
-  const raster = new Set(["grandstream", "fanvil", "paradox"]);
-  return `/brand/logos/${slug}.${raster.has(slug) ? "png" : "svg"}`;
+  return vendorLogoUrl(slug);
 }
 
 function photo(name: string, alt: string) {
@@ -247,8 +247,8 @@ const home: SeedPage = {
             description: "Wired and wireless networks that hold up under load.",
             points: [
               "Switching, routing and VLAN segmentation",
-              "Wi-Fi design and site surveys",
-              "Structured cabling and fiber",
+              "Wi-Fi, cabling and the path to your cloud",
+              "Azure, AWS, Google Cloud and Microsoft 365",
             ],
             href: "/it-services",
           },
@@ -298,6 +298,10 @@ const home: SeedPage = {
           "VLAN",
           "VPN",
           "Wi-Fi",
+          "Azure",
+          "AWS",
+          "Google Cloud",
+          "Microsoft 365",
           "Analytics",
           "AI attendant",
           "EDR",
@@ -498,7 +502,7 @@ const home: SeedPage = {
       data: {
         eyebrow: "Why WirelessCom",
         heading: "Local expertise, standards-based work",
-        html: "<p>We have been providing internet and wireless services since 2005, and today we cover the whole technology stack for business: the network, the servers, the phones, the cameras and the doors. Practical AI sits on two of those systems — analytics on the cameras, an attendant on the phones — when it earns its keep. Because one team designs and maintains all of it, security controls work together instead of fighting each other.</p><p>Everything is installed to industry standards, documented, and supported by people you can reach in Sault Ste. Marie.</p>",
+        html: "<p>We have been providing internet and wireless services since 2005, and today we cover the whole technology stack for business: the network, the servers, the phones, the cameras and the doors. That includes cloud work on <strong>Microsoft Azure</strong>, <strong>Amazon Web Services</strong> and <strong>Google Cloud</strong>, and <strong>Microsoft 365</strong> on the desktop — Office apps, Exchange, Teams and SharePoint. Practical AI sits on two of those systems — analytics on the cameras, an attendant on the phones — when it earns its keep. Because one team designs and maintains all of it, security controls work together instead of fighting each other.</p><p>Everything is installed to industry standards, documented, and supported by people you can reach in Sault Ste. Marie.</p>",
         image: {
           url: "/images/cabling-install-1400.webp",
           alt: "Technician's hands terminating blue and white network cables into a rack-mounted patch panel",
@@ -628,30 +632,34 @@ const home: SeedPage = {
       type: "brandGrid",
       settings: { background: "light", paddingY: "lg" },
       data: {
-        eyebrow: "Networking, cybersecurity, voice and physical security",
+        eyebrow: "Networking, cloud, cybersecurity, voice and physical security",
         heading: "Technologies we deploy and support",
         description:
-          "Switching, firewalls, Wi-Fi, phones, radios, cameras and cloud — equipment we are trained on and can support long term.",
+          "Switching, firewalls, Wi-Fi, cloud, Microsoft 365, phones, radios and cameras — platforms we are trained on and can support long term.",
         layout: "grid",
         disclaimer:
-          "Vendor names describe the equipment we install and support. WirelessCom.Ca Inc. is an authorized Hytera dealer; other names are listed as supported technologies and do not imply a formal partnership.",
+          "Vendor names describe the equipment and cloud platforms we install and support. WirelessCom.Ca Inc. is an authorized Hytera dealer; other names are listed as supported technologies and do not imply a formal partnership.",
         items: [
           { name: "Cisco", category: "Switching, routing and firewalls", logoUrl: vendorLogo("cisco"), href: "/it-services" },
           { name: "UniFi", category: "Networking and Wi-Fi", logoUrl: vendorLogo("unifi"), href: "/it-services" },
           { name: "MikroTik", category: "Routing and wireless", logoUrl: vendorLogo("mikrotik"), href: "/it-services" },
           { name: "Fortinet", category: "Next-generation firewall", logoUrl: vendorLogo("fortinet"), href: "/firewalls" },
           { name: "Barracuda", category: "Firewall and email security", logoUrl: vendorLogo("barracuda"), href: "/firewalls" },
-          { name: "Microsoft", category: "Windows and Microsoft 365", logoUrl: vendorLogo("microsoft"), href: "/it-services" },
+          { name: "Microsoft", category: "Windows and identity", logoUrl: vendorLogo("microsoft"), href: "/it-services" },
+          { name: "Microsoft 365", category: "Office apps, email and Teams", logoUrl: vendorLogo("microsoft-365"), href: "/it-services" },
           { name: "Azure", category: "Cloud and identity", logoUrl: vendorLogo("azure"), href: "/it-services" },
+          { name: "AWS", category: "Cloud infrastructure", logoUrl: vendorLogo("aws"), href: "/it-services" },
+          { name: "Google Cloud", category: "Cloud infrastructure", logoUrl: vendorLogo("google-cloud"), href: "/it-services" },
+          { name: "Cloudflare", category: "CDN and edge security", logoUrl: vendorLogo("cloudflare"), href: "/it-services" },
           { name: "Paradox", category: "Intrusion and alarm panels", logoUrl: vendorLogo("paradox"), href: "/security-services" },
           { name: "Grandstream", category: "VoIP phones and PBX", logoUrl: vendorLogo("grandstream"), href: "/telephone-services" },
           { name: "Hytera", category: "Two-way radio · authorized dealer", logoUrl: vendorLogo("hytera"), href: "/two-way-radios" },
           { name: "Fanvil", category: "VoIP desk phones", logoUrl: vendorLogo("fanvil"), href: "/telephone-services" },
           { name: "Juniper", category: "Firewall and routing", logoUrl: vendorLogo("juniper"), href: "/firewalls" },
-          { name: "Rogers", category: "Connectivity", logoUrl: "", href: "" },
-          { name: "Tait Communications", category: "Critical communications", logoUrl: "", href: "" },
+          { name: "Rogers", category: "Connectivity", logoUrl: vendorLogo("rogers"), href: "/internet-services" },
+          { name: "Tait Communications", category: "Critical communications", logoUrl: vendorLogo("tait"), href: "/two-way-radios" },
           { name: "SureCall", category: "Cellular boosters", logoUrl: "", href: "" },
-          { name: "Genetec", category: "Access control", logoUrl: "", href: "" },
+          { name: "Genetec", category: "Access control", logoUrl: vendorLogo("genetec"), href: "/access-control" },
         ],
       },
     },
@@ -697,17 +705,61 @@ const itServices: SeedPage = {
   slug: "it-services",
   title: "IT Services",
   metaDescription:
-    "Professional IT infrastructure, network management, server administration and cybersecurity for Windows and macOS business environments.",
+    "Professional IT infrastructure, Microsoft 365, Azure, AWS and Google Cloud, network management and cybersecurity for Windows and macOS business environments.",
   showInHeaderNav: true,
   navOrder: 10,
   blocks: [
     serviceHero(
       "IT Services",
       "IT infrastructure built for uptime",
-      "WirelessCom provides professional IT infrastructure, network management, server administration, and cybersecurity services for business environments running Windows and macOS. We design, implement, and maintain secure, high-availability systems aligned with industry best practices.",
-      ["Network design", "Endpoint support", "Server administration", "Security"],
+      "WirelessCom provides professional IT infrastructure, Microsoft 365, Azure, AWS and Google Cloud, network management, server administration, and cybersecurity services for business environments running Windows and macOS. We design, implement, and maintain secure, high-availability systems aligned with industry best practices.",
+      ["Network design", "Microsoft 365", "Azure, AWS and Google Cloud", "Security"],
       photos.it,
     ),
+    {
+      type: "imageText",
+      settings: { background: "light", paddingY: "xl" },
+      data: {
+        eyebrow: "Cloud and Microsoft 365",
+        heading: "Azure, AWS, Google Cloud and Microsoft 365",
+        html: "<p>We design, connect and support cloud services on <strong>Microsoft Azure</strong>, <strong>Amazon Web Services</strong> and <strong>Google Cloud</strong> — identity, virtual machines, backup, and the network path from your office to the region you choose. These are platforms we work with, not a claim of partnership.</p><p><strong>Microsoft 365</strong> — the Office apps, Exchange email, Teams and SharePoint — is the same story on the desktop: we set it up, connect it to your users and devices, and stay on it. Cloudflare sits in front of sites that need a CDN or edge filter. Nothing is moved to a cloud we cannot name, and we will write down which tenant and region you are in.</p>",
+        image: {
+          url: "/images/server-rack-1400.webp",
+          alt: "Row of rack-mounted enterprise servers in a dark data center aisle lit by blue status indicators",
+          caption: "",
+        },
+        imagePosition: "right",
+        bullets: [
+          "Microsoft Azure — identity, VMs, backup and hybrid with your LAN",
+          "Amazon Web Services — compute, storage and the circuit to them",
+          "Google Cloud — cloud projects we connect and support",
+          "Microsoft 365 — Outlook, Teams, SharePoint and the Office apps",
+        ],
+        buttons: [
+          { label: "Request a quote", href: "/request-quote", style: "secondary", openInNewTab: false },
+        ],
+      },
+    },
+    {
+      type: "brandGrid",
+      settings: { background: "white", paddingY: "lg" },
+      data: {
+        eyebrow: "Cloud platforms",
+        heading: "Cloud and Microsoft 365 we deploy and support",
+        description:
+          "Tenants, subscriptions and the network in front of them. Names below are supported technologies.",
+        layout: "grid",
+        disclaimer:
+          "Vendor names describe platforms we install and support. They do not imply a formal partnership unless we say so.",
+        items: [
+          { name: "Microsoft 365", category: "Office apps, email and Teams", logoUrl: vendorLogo("microsoft-365"), href: "" },
+          { name: "Azure", category: "Microsoft cloud", logoUrl: vendorLogo("azure"), href: "" },
+          { name: "AWS", category: "Amazon Web Services", logoUrl: vendorLogo("aws"), href: "" },
+          { name: "Google Cloud", category: "Google Cloud Platform", logoUrl: vendorLogo("google-cloud"), href: "" },
+          { name: "Cloudflare", category: "CDN and edge security", logoUrl: vendorLogo("cloudflare"), href: "" },
+        ],
+      },
+    },
     {
       type: "featureGrid",
       settings: { background: "white", paddingY: "xl" },
@@ -741,6 +793,7 @@ const itServices: SeedPage = {
           { icon: "shield", title: "Endpoint security and policy enforcement", description: "" },
           { icon: "key", title: "User account and access control management", description: "" },
           { icon: "headset", title: "Application support and compatibility management", description: "" },
+          { icon: "cloud", title: "Microsoft 365 — Office apps, Exchange, Teams and SharePoint", description: "" },
         ],
       },
     },
@@ -758,7 +811,7 @@ const itServices: SeedPage = {
           { icon: "database", title: "Active Directory, DNS, DHCP and Group Policy", description: "" },
           { icon: "hard-drive", title: "Virtualization and resource optimization", description: "" },
           { icon: "cloud", title: "Backup, recovery and redundancy planning", description: "" },
-          { icon: "globe", title: "On-premises and cloud-based server solutions", description: "" },
+          { icon: "globe", title: "Azure, AWS, Google Cloud and on-premises servers", description: "" },
         ],
       },
     },
