@@ -187,6 +187,9 @@ export async function searchSite(query: string): Promise<SearchHit[]> {
     { title: "Cybersecurity tools", href: "/cybersecurity-tools", kind: "Tool", snippet: "TLS, headers, SPF/DKIM/DMARC, DNSBL." },
     { title: "Firewalls", href: "/firewalls", kind: "Service", snippet: "Barracuda, Fortinet, Juniper and similar next-generation firewalls." },
     { title: "AI for cameras and phones", href: "/ai-services", kind: "Service", snippet: "Camera analytics, AI attendants and call transcription." },
+    { title: "Alarm systems", href: "/alarm-systems", kind: "Service", snippet: "Intrusion panels, sensors, and contracted 24/7 monitoring." },
+    { title: "Door intercom", href: "/door-intercom", kind: "Service", snippet: "Video door stations and telephone entry." },
+    { title: "Panic buttons", href: "/panic-buttons", kind: "Service", snippet: "Wall and wireless duress buttons on the alarm panel." },
   ].filter(
     (tool) =>
       tool.title.toLowerCase().includes(q.toLowerCase()) ||

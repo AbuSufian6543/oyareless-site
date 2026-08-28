@@ -90,7 +90,7 @@ export const FOOTER_PRODUCTS: FooterProduct[] = [
     slug: "paradox",
     name: "Paradox",
     plate: "dark",
-    href: "/security-services",
+    href: "/alarm-systems",
   },
   {
     slug: "genetec",

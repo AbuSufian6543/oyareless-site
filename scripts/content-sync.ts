@@ -418,6 +418,14 @@ function fillMissingMedia(
   insertMissingSeedBlock(
     next,
     seed,
+    "serviceGrid",
+    ["steps", "hero", "techHero"],
+    notes,
+    "related services",
+  );
+  insertMissingSeedBlock(
+    next,
+    seed,
     "imageText",
     ["hero", "techHero"],
     notes,
@@ -654,8 +662,28 @@ async function main(): Promise<void> {
     );
   }
 
-  // Redirects and nav are additive only: an admin may have added their own.
+  // Redirects are additive. One exception: /alarm used to point at the
+  // combined security page; retarget it when that destination was never changed.
   let redirectsAdded = 0;
+  let redirectsUpdated = 0;
+  const RETARGET_REDIRECTS = [
+    { source: "/alarm", from: "/security-services", to: "/alarm-systems" },
+  ];
+  for (const entry of RETARGET_REDIRECTS) {
+    const existing = await prisma.redirect.findUnique({
+      where: { source: entry.source },
+      select: { id: true, destination: true },
+    });
+    if (!existing || existing.destination === entry.to) continue;
+    if (existing.destination !== entry.from) continue;
+    redirectsUpdated += 1;
+    if (apply) {
+      await prisma.redirect.update({
+        where: { source: entry.source },
+        data: { destination: entry.to },
+      });
+    }
+  }
   for (const entry of SEED_REDIRECTS) {
     const exists = await prisma.redirect.findUnique({
       where: { source: entry.source },
@@ -736,7 +764,7 @@ async function main(): Promise<void> {
     [
       "",
       `  ${counts.create} to create, ${counts.update} to update, ${counts["skip-edited"]} skipped (admin-edited), ${counts.identical} unchanged`,
-      `  ${redirectsAdded} redirects and ${navAdded} menu entries to add`,
+      `  ${redirectsAdded} redirects to add, ${redirectsUpdated} redirects to retarget, ${navAdded} menu entries to add`,
       "",
       apply
         ? "  Applied. Previous page content is recoverable from Revisions in the admin.\n"

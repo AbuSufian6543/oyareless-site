@@ -102,6 +102,18 @@ const photos = {
     "web-development",
     "Ultrawide monitor on a dark desk showing a navy and cyan business website layout",
   ),
+  alarm: photo(
+    "alarm-system",
+    "Commercial alarm keypad and control panel on a dark corridor wall with a cyan status LED",
+  ),
+  intercom: photo(
+    "door-intercom",
+    "Video door intercom station on a dark wall beside a glass commercial entrance at dusk",
+  ),
+  panic: photo(
+    "panic-button",
+    "Red wall-mounted panic button under a clear cover in a quiet commercial corridor",
+  ),
   support: photo(
     "remote-support",
     "Support technician wearing a headset at a desk with two monitors showing dashboards, seen from behind",
@@ -384,10 +396,40 @@ const home: SeedPage = {
             icon: "camera",
             title: "Security Systems",
             description:
-              "IP CCTV, network video recorders, intrusion detection and 24/7 monitored alarm systems.",
+              "IP CCTV, network video recorders and site video, designed with the network they sit on.",
             href: "/security-services",
             imageUrl: photos.security.url,
             imageAlt: photos.security.alt,
+            badge: "",
+          },
+          {
+            icon: "siren",
+            title: "Alarm Systems",
+            description:
+              "Intrusion panels, sensors, and 24/7 monitoring where you contract it. Paradox and similar platforms we install and support.",
+            href: "/alarm-systems",
+            imageUrl: photos.alarm.url,
+            imageAlt: photos.alarm.alt,
+            badge: "",
+          },
+          {
+            icon: "door",
+            title: "Door Intercom",
+            description:
+              "Video and audio door stations, telephone entry, and gate intercoms that ring the office phones.",
+            href: "/door-intercom",
+            imageUrl: photos.intercom.url,
+            imageAlt: photos.intercom.alt,
+            badge: "",
+          },
+          {
+            icon: "alert",
+            title: "Panic Buttons",
+            description:
+              "Wall stations and wireless duress buttons tied into the alarm panel and the monitoring you contract.",
+            href: "/panic-buttons",
+            imageUrl: photos.panic.url,
+            imageAlt: photos.panic.alt,
             badge: "",
           },
           {
@@ -658,7 +700,7 @@ const home: SeedPage = {
           { name: "AWS", category: "Cloud infrastructure", logoUrl: vendorLogo("aws"), href: "/it-services" },
           { name: "Google Cloud", category: "Cloud infrastructure", logoUrl: vendorLogo("google-cloud"), href: "/it-services" },
           { name: "Cloudflare", category: "CDN and edge security", logoUrl: vendorLogo("cloudflare"), href: "/it-services" },
-          { name: "Paradox", category: "Intrusion and alarm panels", logoUrl: vendorLogo("paradox"), href: "/security-services" },
+          { name: "Paradox", category: "Intrusion and alarm panels", logoUrl: vendorLogo("paradox"), href: "/alarm-systems" },
           { name: "Grandstream", category: "VoIP phones and PBX", logoUrl: vendorLogo("grandstream"), href: "/telephone-services" },
           { name: "Hytera", category: "Two-way radio · authorized dealer", logoUrl: vendorLogo("hytera"), href: "/two-way-radios" },
           { name: "Fanvil", category: "VoIP desk phones", logoUrl: vendorLogo("fanvil"), href: "/telephone-services" },
@@ -1152,7 +1194,7 @@ const securityServices: SeedPage = {
   title: "Security Services",
   navLabel: "Security Systems",
   metaDescription:
-    "IP CCTV surveillance with optional AI analytics, access control, intrusion detection and 24/7 monitored alarm systems for businesses in Sault Ste. Marie and Northern Ontario.",
+    "IP CCTV surveillance with optional AI analytics, plus the cameras and recorders we design with the rest of your site security in Sault Ste. Marie and Northern Ontario.",
   showInHeaderNav: true,
   navOrder: 30,
   blocks: [
@@ -1160,7 +1202,7 @@ const securityServices: SeedPage = {
       "Security Services",
       "Comprehensive security for your business, assets and people",
       "WirelessCom.Ca Inc. is committed to providing security services that safeguard your business, assets and personnel. Based in Sault Ste. Marie, Ontario, we specialize in tailored solutions designed around the real risks at your site.",
-      ["IP CCTV & NVRs", "Access control", "24/7 monitoring"],
+      ["IP CCTV & NVRs", "Remote viewing", "Local support"],
       photos.security,
     ),
     {
@@ -1183,7 +1225,7 @@ const securityServices: SeedPage = {
           {
             title: "Intrusion detection and alarm systems",
             description:
-              "Protect your property against unauthorized access with 24/7 monitoring, instant alerts and rapid response to potential breaches to minimize risk and loss.",
+              "Protect your property against unauthorized access with 24/7 monitoring, instant alerts and rapid response. Alarm panels, door intercom, and panic buttons are specified as their own systems.",
           },
           {
             title: "Security consultation and assessment",
@@ -1199,8 +1241,50 @@ const securityServices: SeedPage = {
       },
     },
     {
-      type: "featureGrid",
+      type: "serviceGrid",
       settings: { background: "light", paddingY: "xl" },
+      data: {
+        heading: "Specified as their own systems",
+        description:
+          "Alarms, door intercom, and panic buttons are installed by the same team as the cameras. They have their own pages because they are quoted and supported that way.",
+        columns: "3",
+        items: [
+          {
+            icon: "siren",
+            title: "Alarm Systems",
+            description:
+              "Intrusion panels, sensors, and 24/7 monitoring where you contract it.",
+            href: "/alarm-systems",
+            imageUrl: photos.alarm.url,
+            imageAlt: photos.alarm.alt,
+            badge: "",
+          },
+          {
+            icon: "door",
+            title: "Door Intercom",
+            description:
+              "Video and audio door stations and telephone entry that ring the office phones.",
+            href: "/door-intercom",
+            imageUrl: photos.intercom.url,
+            imageAlt: photos.intercom.alt,
+            badge: "",
+          },
+          {
+            icon: "alert",
+            title: "Panic Buttons",
+            description:
+              "Wall stations and wireless duress buttons on the alarm system you already run.",
+            href: "/panic-buttons",
+            imageUrl: photos.panic.url,
+            imageAlt: photos.panic.alt,
+            badge: "",
+          },
+        ],
+      },
+    },
+    {
+      type: "featureGrid",
+      settings: { background: "white", paddingY: "xl" },
       data: {
         heading: "What we install and service",
         description: "",
@@ -1223,7 +1307,7 @@ const securityServices: SeedPage = {
             icon: "phone",
             title: "VoIP telephone entry systems",
             description:
-              "Door and gate entry that rings your phones and mobiles, with video verification where required.",
+              "Door and gate entry that rings your phones and mobiles, with video verification where required. See Door Intercom for the full station.",
           },
         ],
       },
@@ -1658,7 +1742,7 @@ const accessControl: SeedPage = {
         style: "bordered",
         items: [
           { icon: "camera", title: "Door events linked to camera footage", description: "" },
-          { icon: "phone", title: "VoIP telephone entry and intercom integration", description: "" },
+          { icon: "phone", title: "VoIP telephone entry — see Door Intercom", description: "" },
           { icon: "network", title: "Controllers on a segmented, monitored network", description: "" },
           { icon: "check", title: "Credential and schedule management support", description: "" },
         ],
@@ -1667,6 +1751,216 @@ const accessControl: SeedPage = {
     closingCta(
       "Control who gets in, and when",
       "We will walk your site and design an access plan around your doors, gates and shift patterns.",
+    ),
+  ],
+};
+
+const alarmSystems: SeedPage = {
+  slug: "alarm-systems",
+  title: "Alarm Systems",
+  navLabel: "Alarm Systems",
+  metaDescription:
+    "Intrusion alarm systems for business in Sault Ste. Marie and Northern Ontario. Panels, sensors, and 24/7 monitoring where you contract it, installed by the same team as your cameras and network.",
+  showInHeaderNav: true,
+  navOrder: 64,
+  blocks: [
+    serviceHero(
+      "Alarm Systems",
+      "Intrusion alarms that the same team stays on",
+      "Keypads, sensors, sirens, and the panel they report to — specified for your building, installed to industry practice, and monitored when you contract it. Paradox and similar platforms we are trained on.",
+      ["Intrusion panels", "Contracted 24/7 monitoring", "Local service"],
+      photos.alarm,
+    ),
+    {
+      type: "featureGrid",
+      settings: { background: "white", paddingY: "xl" },
+      data: {
+        heading: "What we install and service",
+        description: "",
+        columns: "3",
+        style: "card",
+        items: [
+          {
+            icon: "siren",
+            title: "Control panels and keypads",
+            description:
+              "Intrusion panels we size to the building, with keypads where staff actually arm and disarm.",
+          },
+          {
+            icon: "eye",
+            title: "Sensors and sirens",
+            description:
+              "Door and window contacts, motion, glass-break, and audible notification — laid out for the rooms you need covered.",
+          },
+          {
+            icon: "headset",
+            title: "Monitoring you contract",
+            description:
+              "24/7 monitoring is available where you buy it. We connect the panel and document who answers when it trips.",
+          },
+        ],
+      },
+    },
+    {
+      type: "featureGrid",
+      settings: { background: "light", paddingY: "lg" },
+      data: {
+        heading: "Built with the rest of the site",
+        description:
+          "Alarms sit on the same network plan as the cameras and the doors. One team owns the cable, the panel, and the call when something is wrong.",
+        columns: "2",
+        style: "bordered",
+        items: [
+          { icon: "camera", title: "Alarm events you can pair with camera footage", description: "" },
+          { icon: "alert", title: "Panic buttons on the same panel", description: "" },
+          { icon: "network", title: "Communicators on a segmented path", description: "" },
+          { icon: "check", title: "Industry-standard install and local service", description: "" },
+        ],
+      },
+    },
+    closingCta(
+      "Talk through the building",
+      "Tell us the rooms, the hours, and whether you need monitoring. We will put a panel list and a fixed quote together.",
+    ),
+  ],
+};
+
+const doorIntercom: SeedPage = {
+  slug: "door-intercom",
+  title: "Door Intercom",
+  navLabel: "Door Intercom",
+  metaDescription:
+    "Video and audio door intercom and telephone entry for offices, apartments and gates in Sault Ste. Marie and Northern Ontario. Stations that ring the phones we already support.",
+  showInHeaderNav: true,
+  navOrder: 65,
+  blocks: [
+    serviceHero(
+      "Door Intercom",
+      "See who is at the door before you open it",
+      "Wall stations, video door phones, and telephone entry that ring the office, a mobile, or a named person. Specified with the lock, the camera, and the phone system — not as a leftover box on the frame.",
+      ["Video door stations", "Telephone entry", "Gate intercoms"],
+      photos.intercom,
+    ),
+    {
+      type: "featureGrid",
+      settings: { background: "white", paddingY: "xl" },
+      data: {
+        heading: "What we install and service",
+        description: "",
+        columns: "3",
+        style: "card",
+        items: [
+          {
+            icon: "door",
+            title: "Video and audio door stations",
+            description:
+              "A call button, a speaker, and a camera where the visitor actually stands — weather-rated for the entrance you have.",
+          },
+          {
+            icon: "phone",
+            title: "Telephone entry",
+            description:
+              "The station rings your VoIP phones, a mobile app, or a named extension so whoever is on duty can answer.",
+          },
+          {
+            icon: "key",
+            title: "Tied to the lock",
+            description:
+              "Answer, talk, and release the door or gate from the same call. Access control stays the credential system; the intercom is how visitors get through.",
+          },
+        ],
+      },
+    },
+    {
+      type: "featureGrid",
+      settings: { background: "light", paddingY: "lg" },
+      data: {
+        heading: "The door, the phone, and the camera",
+        description:
+          "A station that cannot talk to the lock, or a call that dies on a bad cable, is what we are hired to unwind. We plan the path with the rest of the site.",
+        columns: "2",
+        style: "bordered",
+        items: [
+          { icon: "lock", title: "Works with the access control we install", description: "" },
+          { icon: "camera", title: "Video you can keep on the recorder", description: "" },
+          { icon: "phone", title: "Rings the telephone system we support", description: "" },
+          { icon: "network", title: "Power and data on a documented run", description: "" },
+        ],
+      },
+    },
+    closingCta(
+      "Walk the entrance with us",
+      "Tell us how visitors arrive and who should answer. We will specify the station, the lock release, and a fixed quote.",
+    ),
+  ],
+};
+
+const panicButtons: SeedPage = {
+  slug: "panic-buttons",
+  title: "Panic Buttons",
+  navLabel: "Panic Buttons",
+  metaDescription:
+    "Panic and duress buttons for offices, reception, and staff areas in Sault Ste. Marie and Northern Ontario. Wall stations and wireless buttons on the alarm system, with monitoring where you contract it.",
+  showInHeaderNav: true,
+  navOrder: 66,
+  blocks: [
+    serviceHero(
+      "Panic Buttons",
+      "A silent call for help from the desk",
+      "Wall-mounted stations and wireless duress buttons placed where staff can reach them. They report through the alarm panel — and to monitoring when you contract it — instead of living as a sticker nobody tests.",
+      ["Wall stations", "Wireless duress", "Tied to the alarm panel"],
+      photos.panic,
+    ),
+    {
+      type: "featureGrid",
+      settings: { background: "white", paddingY: "xl" },
+      data: {
+        heading: "What we install and service",
+        description: "",
+        columns: "3",
+        style: "card",
+        items: [
+          {
+            icon: "alert",
+            title: "Fixed wall stations",
+            description:
+              "Covered or latching buttons at reception, cash, or a back office — labelled and placed with the people who will use them.",
+          },
+          {
+            icon: "wifi",
+            title: "Wireless pendants and fobs",
+            description:
+              "Where a desk button is not enough, a wireless duress device the panel can hear, with range we check on site.",
+          },
+          {
+            icon: "siren",
+            title: "On the alarm you already run",
+            description:
+              "Panic is a zone on the intrusion system, not a separate gadget. Monitoring, if you buy it, is documented on that same account.",
+          },
+        ],
+      },
+    },
+    {
+      type: "featureGrid",
+      settings: { background: "light", paddingY: "lg" },
+      data: {
+        heading: "Placed with the rest of the security",
+        description:
+          "A button that does not report, or that staff cannot reach, is worse than none. We set the zone, test it, and write down who is notified.",
+        columns: "2",
+        style: "bordered",
+        items: [
+          { icon: "siren", title: "Reports through the alarm panel", description: "" },
+          { icon: "headset", title: "Monitoring when you contract it", description: "" },
+          { icon: "camera", title: "Can sit next to a camera coverage plan", description: "" },
+          { icon: "check", title: "Tested at hand-over, not left as a sticker", description: "" },
+        ],
+      },
+    },
+    closingCta(
+      "Place the buttons with your staff",
+      "Walk us through who needs a station and whether it should be silent. We will quote the devices, the panel work, and monitoring if you want it.",
     ),
   ],
 };
@@ -2699,6 +2993,9 @@ export const SEED_PAGES: SeedPage[] = [
   videoServices,
   liveBroadcasting,
   accessControl,
+  alarmSystems,
+  doorIntercom,
+  panicButtons,
   dataCabling,
   evCharging,
   twoWayRadios,
@@ -2739,7 +3036,13 @@ export const SEED_REDIRECTS: Array<{ source: string; destination: string }> = [
   { source: "/fortinet", destination: "/firewalls" },
   { source: "/barracuda", destination: "/firewalls" },
   { source: "/juniper", destination: "/firewalls" },
-  { source: "/alarm", destination: "/security-services" },
+  { source: "/alarm", destination: "/alarm-systems" },
+  { source: "/alarms", destination: "/alarm-systems" },
+  { source: "/alarm-system", destination: "/alarm-systems" },
+  { source: "/intercom", destination: "/door-intercom" },
+  { source: "/door-intercoms", destination: "/door-intercom" },
+  { source: "/panic", destination: "/panic-buttons" },
+  { source: "/panic-button", destination: "/panic-buttons" },
   { source: "/speedtest", destination: "/support" },
   { source: "/e911", destination: "/e-911" },
   { source: "/e-911-information", destination: "/e-911" },
@@ -2779,6 +3082,9 @@ export const SEED_NAV: Array<{
       { label: "Firewalls", href: "/firewalls" },
       { label: "AI cameras & phones", href: "/ai-services" },
       { label: "Security Systems", href: "/security-services" },
+      { label: "Alarm Systems", href: "/alarm-systems" },
+      { label: "Door Intercom", href: "/door-intercom" },
+      { label: "Panic Buttons", href: "/panic-buttons" },
       { label: "Access Control", href: "/access-control" },
       { label: "Telephone (VoIP)", href: "/telephone-services" },
       { label: "Internet Services", href: "/internet-services" },
@@ -2843,6 +3149,9 @@ export const SEED_NAV: Array<{
       { label: "Firewalls", href: "/firewalls" },
       { label: "AI cameras & phones", href: "/ai-services" },
       { label: "Security Systems", href: "/security-services" },
+      { label: "Alarm Systems", href: "/alarm-systems" },
+      { label: "Door Intercom", href: "/door-intercom" },
+      { label: "Panic Buttons", href: "/panic-buttons" },
       { label: "Access Control", href: "/access-control" },
       { label: "Telephone (VoIP)", href: "/telephone-services" },
       { label: "Internet Services", href: "/internet-services" },

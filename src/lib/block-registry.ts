@@ -119,7 +119,9 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
       items: [
         { icon: "server", title: "IT Services", description: "Infrastructure, servers, and endpoints.", href: "/it-services" },
         { icon: "lock", title: "Cybersecurity", description: "Firewalls, EDR, and assessments.", href: "/cybersecurity" },
-        { icon: "camera", title: "Security Systems", description: "CCTV, alarms, and access control.", href: "/security-services" },
+        { icon: "camera", title: "Security Systems", description: "CCTV and site video.", href: "/security-services" },
+        { icon: "siren", title: "Alarm Systems", description: "Intrusion panels and contracted monitoring.", href: "/alarm-systems" },
+        { icon: "door", title: "Door Intercom", description: "Video door stations and telephone entry.", href: "/door-intercom" },
       ],
     },
   },

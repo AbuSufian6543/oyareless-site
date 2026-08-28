@@ -95,6 +95,21 @@ prompt is recorded so a replacement can be produced in the same style.
 - **Alt text:** Ultrawide monitor on a dark desk showing a navy and cyan business website layout
 - **Prompt:** Premium B2B photography of a dark modern office desk: a large ultrawide monitor showing a clean abstract navy-and-cyan business website layout with no readable words or logos, a laptop beside it, cool cyan rim lighting, shallow depth of field, cinematic, no people, no brand names.
 
+### `alarm-system`
+
+- **Alt text:** Commercial alarm keypad and control panel on a dark corridor wall with a cyan status LED
+- **Prompt:** Premium B2B architectural photography, 16:9 landscape. A commercial intrusion alarm keypad and control panel mounted on a dark charcoal wall in a quiet office corridor at dusk. Slim black keypad with a small cool cyan status LED, no logos, no brand names, no readable text or numbers. Neat low-voltage cable disappearing into the wall. Deep navy color grading, cinematic, shallow depth of field, no people.
+
+### `door-intercom`
+
+- **Alt text:** Video door intercom station on a dark wall beside a glass commercial entrance at dusk
+- **Prompt:** Premium B2B architectural photography, 16:9 landscape. A commercial video door intercom station on a dark charcoal wall beside a glass office entrance at dusk. Slim black wall-mounted intercom with a small camera lens, speaker grille, call button, and a cool cyan LED. Frosted glass door and blurred lobby behind. No logos, no brand names, no readable text, no people, navy color grading, cinematic.
+
+### `panic-button`
+
+- **Alt text:** Red wall-mounted panic button under a clear cover in a quiet commercial corridor
+- **Prompt:** Premium B2B architectural photography, 16:9 landscape. A commercial panic / duress button on a dark charcoal wall in a quiet office or reception corridor. Large round red emergency push-button under a clear flip-up cover, small cool cyan status LED beside it, no logos, no brand names, no readable text, no people. Deep navy color grading, cinematic, shallow depth of field.
+
 ## CC0 photography
 
 Sourced via the Openverse API filtered to CC0. CC0 places the work in the
