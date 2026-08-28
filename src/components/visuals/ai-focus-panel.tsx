@@ -43,7 +43,7 @@ export function AiFocusPanel() {
           </p>
           <span className="inline-flex items-center gap-1.5 text-[0.6875rem] font-semibold text-accent-300">
             <span className="size-1.5 rounded-full bg-accent-400 animate-live-dot" />
-            On equipment you own
+            We implement
           </span>
         </div>
 

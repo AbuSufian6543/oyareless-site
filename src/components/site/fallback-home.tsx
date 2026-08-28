@@ -21,14 +21,15 @@ export function FallbackHome() {
               Practical AI · Sault Ste. Marie, Ontario
             </p>
             <h1 className="text-balance-tight text-4xl leading-[1.08] font-bold text-white sm:text-5xl lg:text-[3.5rem]">
-              <span className="text-accent-300">AI</span> on the cameras and
-              phones you already run
+              <span className="text-accent-300">AI</span> we implement on
+              cameras and phones
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-relaxed text-navy-200">
               Find a person in last night&apos;s recording. Route a caller
-              without a maze of menus. We turn those features on in the camera
-              and telephone systems we design — on equipment you own — then the
-              same Sault Ste. Marie team stays on them.
+              without a maze of menus. We implement those features in camera
+              and telephone systems we design and install — then the same Sault
+              Ste. Marie team stays on them. Firewalls, Wi-Fi, cabling and
+              support are still ours.
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
               <Link

@@ -164,13 +164,27 @@ function insertMissingSeedBlock(
 }
 
 /**
- * Home used to open on a generic networks-and-security headline. When that
- * exact seed copy is still on the page, replace it with the AI-focused hero.
- * A headline an admin wrote themselves is left alone.
+ * Home used to open on a generic networks-and-security headline, then on a
+ * retrofit claim we no longer make. When that exact seed copy is still on the
+ * page, replace it with the current AI-focused hero. A headline an admin wrote
+ * themselves is left alone.
  */
 const PREVIOUS_TECH_HERO_HEADLINES = new Set([
   "IT, networks and security that keep your business running",
   "Networks and security built to stay up",
+  "AI on the cameras and phones you already run",
+]);
+
+const PREVIOUS_CAPABILITY_HEADINGS = new Set([
+  "Two systems every site already runs",
+]);
+
+const PREVIOUS_SERVICE_HERO_HEADLINES = new Set([
+  "AI on the cameras and phones you already need",
+]);
+
+const PREVIOUS_CTA_HEADINGS = new Set([
+  "Add AI to the cameras or the phones you already have",
 ]);
 
 function upgradeTechHeroCopy(
@@ -197,6 +211,65 @@ function upgradeTechHeroCopy(
     currentData.buttons = structuredClone(seedData.buttons);
   }
   notes.push("home AI hero copy");
+}
+
+function upgradeCapabilityCopy(
+  next: JsonBlock[],
+  seed: ReturnType<typeof buildBlocks>,
+  notes: string[],
+): void {
+  const seedBlock = seed.find((block) => block.type === "capabilityGrid");
+  const currentBlock = next.find((block) => block.type === "capabilityGrid");
+  if (!seedBlock || !currentBlock) return;
+
+  const currentData = (currentBlock.data ??= {});
+  if (!PREVIOUS_CAPABILITY_HEADINGS.has(String(currentData.heading ?? ""))) return;
+
+  const seedData = seedBlock.data as unknown as Record<string, unknown>;
+  currentData.heading = seedData.heading;
+  currentData.description = seedData.description;
+  notes.push("AI capability copy");
+}
+
+function upgradeServiceHeroCopy(
+  next: JsonBlock[],
+  seed: ReturnType<typeof buildBlocks>,
+  notes: string[],
+): void {
+  const seedHero = seed.find((block) => block.type === "hero");
+  const currentHero = next.find((block) => block.type === "hero");
+  if (!seedHero || !currentHero) return;
+
+  const currentData = (currentHero.data ??= {});
+  if (!PREVIOUS_SERVICE_HERO_HEADLINES.has(String(currentData.headline ?? ""))) {
+    return;
+  }
+
+  const seedData = seedHero.data as unknown as Record<string, unknown>;
+  currentData.headline = seedData.headline;
+  currentData.subheadline = seedData.subheadline;
+  notes.push("AI services hero copy");
+}
+
+function upgradeCtaCopy(
+  next: JsonBlock[],
+  seed: ReturnType<typeof buildBlocks>,
+  notes: string[],
+): void {
+  const currentCtas = next.filter((block) => block.type === "cta");
+  const seedCtas = seed.filter((block) => block.type === "cta");
+  for (const current of currentCtas) {
+    const currentData = (current.data ??= {});
+    if (!PREVIOUS_CTA_HEADINGS.has(String(currentData.heading ?? ""))) continue;
+    const seedMatch = seedCtas[seedCtas.length - 1];
+    if (!seedMatch) continue;
+    const seedData = seedMatch.data as unknown as Record<string, unknown>;
+    currentData.heading = seedData.heading;
+    if (seedData.description !== undefined) {
+      currentData.description = seedData.description;
+    }
+    notes.push("AI services CTA copy");
+  }
 }
 
 /**
@@ -355,6 +428,9 @@ function fillMissingMedia(
   );
 
   upgradeTechHeroCopy(next, seed, notes);
+  upgradeCapabilityCopy(next, seed, notes);
+  upgradeServiceHeroCopy(next, seed, notes);
+  upgradeCtaCopy(next, seed, notes);
 
   const seedHeroes = seed.filter((block) => block.type === "hero");
   const currentHeroes = next.filter((block) => block.type === "hero");

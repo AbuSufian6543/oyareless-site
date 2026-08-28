@@ -41,14 +41,14 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
     type: "techHero",
     label: "Tech hero (animated)",
     description:
-      "Hero with an animated mesh, AI viewfinder chrome, buttons and proof points.",
+      "Hero with an animated mesh, buttons and proof points.",
     category: "Layout",
     icon: "Radar",
     seed: {
       eyebrow: "Practical AI · Sault Ste. Marie, Ontario",
-      headline: "AI on the cameras and phones you already run",
+      headline: "AI we implement on cameras and phones",
       subheadline:
-        "Find a person in last night's recording. Route a caller without a maze of menus. We turn those features on in the camera and telephone systems we design — on equipment you own.",
+        "Find a person in last night's recording. Route a caller without a maze of menus. We implement those features in camera and telephone systems we design and install.",
       buttons: [
         { label: "Request a quote", href: "/request-quote", style: "primary" },
         { label: "AI on cameras & phones", href: "/ai-services", style: "outline" },
@@ -56,7 +56,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
       highlights: [
         "Person and vehicle analytics",
         "AI attendants and transcription",
-        "On the equipment you own",
+        "Systems we implement",
         "Serving businesses since 2005",
       ],
     },

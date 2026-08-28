@@ -181,9 +181,9 @@ const home: SeedPage = {
       settings: {},
       data: {
         eyebrow: "Practical AI · Sault Ste. Marie, Ontario",
-        headline: "AI on the cameras and phones you already run",
+        headline: "AI we implement on cameras and phones",
         subheadline:
-          "Find a person in last night's recording. Route a caller without a maze of menus. We turn those features on in the camera and telephone systems we design — on equipment you own — then the same Sault Ste. Marie team stays on them. Firewalls, Wi-Fi, cabling and support are still ours.",
+          "Find a person in last night's recording. Route a caller without a maze of menus. We implement those features in camera and telephone systems we design and install — then the same Sault Ste. Marie team stays on them. Firewalls, Wi-Fi, cabling and support are still ours.",
         backgroundImageUrl: "",
         overlayOpacity: 78,
         networkDensity: 100,
@@ -195,7 +195,7 @@ const home: SeedPage = {
         highlights: [
           "Person and vehicle analytics",
           "AI attendants and transcription",
-          "On the equipment you own",
+          "Systems we implement",
           "Serving businesses since 2005",
         ],
       },
@@ -205,9 +205,9 @@ const home: SeedPage = {
       settings: { background: "navy", paddingY: "xl" },
       data: {
         eyebrow: "Cameras and phones",
-        heading: "Two systems every site already runs",
+        heading: "Two systems we implement with AI",
         description:
-          "We add analytics to the cameras and an attendant to the phones. Neither replaces a lock, a firewall, or a person who answers. Both are configured on equipment we install and support.",
+          "We design and install analytics on the cameras and an attendant on the phones. Neither replaces a lock, a firewall, or a person who answers. We do not convert an old system that cannot run these features.",
         columns: "2",
         showImages: true,
         items: [
@@ -224,7 +224,7 @@ const home: SeedPage = {
             icon: "phone",
             title: "An attendant that hears the first sentence",
             description:
-              "Callers say what they need. The attendant routes to sales, support, a named person or voicemail, and can transcribe the message into email. Same desk phones, DECT and mobile app we already put in.",
+              "Callers say what they need. The attendant routes to sales, support, a named person or voicemail, and can transcribe the message into email. Desk phones, DECT and the mobile app are specified with that system.",
             href: "/ai-services",
             imageUrl: photos.aiPhone.url,
             imageAlt: photos.aiPhone.alt,
@@ -502,7 +502,7 @@ const home: SeedPage = {
       data: {
         eyebrow: "Why WirelessCom",
         heading: "Local expertise, standards-based work",
-        html: "<p>We have been providing internet and wireless services since 2005, and today we cover the whole technology stack for business: the network, the servers, the phones, the cameras and the doors. That includes cloud work on <strong>Microsoft Azure</strong>, <strong>Amazon Web Services</strong> and <strong>Google Cloud</strong>, and <strong>Microsoft 365</strong> on the desktop — Office apps, Exchange, Teams and SharePoint. Practical AI sits on two of those systems — analytics on the cameras, an attendant on the phones — when it earns its keep. Because one team designs and maintains all of it, security controls work together instead of fighting each other.</p><p>Everything is installed to industry standards, documented, and supported by people you can reach in Sault Ste. Marie.</p>",
+        html: "<p>We have been providing internet and wireless services since 2005, and today we cover the whole technology stack for business: the network, the servers, the phones, the cameras and the doors. That includes cloud work on <strong>Microsoft Azure</strong>, <strong>Amazon Web Services</strong> and <strong>Google Cloud</strong>, and <strong>Microsoft 365</strong> on the desktop — Office apps, Exchange, Teams and SharePoint. Practical AI is something we implement on two of those systems — analytics on the cameras, an attendant on the phones — when it earns its keep. Because one team designs and maintains all of it, security controls work together instead of fighting each other.</p><p>Everything is installed to industry standards, documented, and supported by people you can reach in Sault Ste. Marie.</p>",
         image: {
           url: "/images/cabling-install-1400.webp",
           alt: "Technician's hands terminating blue and white network cables into a rack-mounted patch panel",
@@ -1376,7 +1376,7 @@ const telephoneServices: SeedPage = {
       data: {
         eyebrow: "AI on your phones",
         heading: "A receptionist that never misses the first ring",
-        html: "<p>Business telephone systems now include practical AI: an attendant that understands what the caller is asking, routes to the right queue, transcribes voicemail, and summarizes a long call so staff are not starting from a blank note.</p><p>We install and support those features on the VoIP platforms we already put in — desk phones, DECT, and the mobile app — with the same local team that handles the rest of the PBX. Nothing is sent to a mystery cloud unless you choose that option and we document it.</p>",
+        html: "<p>Business telephone systems now include practical AI: an attendant that understands what the caller is asking, routes to the right queue, transcribes voicemail, and summarizes a long call so staff are not starting from a blank note.</p><p>We implement those features in the VoIP platforms we install — desk phones, DECT, and the mobile app — with the same local team that handles the rest of the PBX. Nothing is sent to a mystery cloud unless you choose that option and we document it.</p>",
         image: {
           url: "/images/ai-phone-1400.webp",
           alt: "Black executive VoIP desk phone whose display shows an abstract cyan assistant waveform",
@@ -1387,7 +1387,7 @@ const telephoneServices: SeedPage = {
           "Natural-language auto-attendant instead of a deep DTMF tree",
           "Voicemail and call transcription into email",
           "After-hours coverage without adding a night receptionist",
-          "Works with the handsets and softphones we already supply",
+          "Specified with the handsets and softphones we install",
         ],
         buttons: [
           { label: "AI for cameras & phones", href: "/ai-services", style: "secondary", openInNewTab: false },
@@ -2370,8 +2370,8 @@ const aiServices: SeedPage = {
   blocks: [
     serviceHero(
       "AI services",
-      "AI on the cameras and phones you already need",
-      "We install and support practical AI on two systems every site already runs: video surveillance and the telephone system. You get analytics that find a person in last night's recording, and an attendant that routes a caller without a maze of menus — designed, installed, and supported by the same local team.",
+      "AI we implement on cameras and phones",
+      "We design, install and support practical AI on video surveillance and the telephone system. You get analytics that find a person in last night's recording, and an attendant that routes a caller without a maze of menus. We do not convert old cameras or phones that cannot run these features.",
       ["Camera analytics", "AI attendants", "Local support"],
       photos.ai,
     ),
@@ -2381,7 +2381,7 @@ const aiServices: SeedPage = {
       data: {
         eyebrow: "Cameras",
         heading: "AI that watches with you, not instead of you",
-        html: "<p>A recorder full of video is only useful if you can find the incident. We add <strong>AI analytics</strong> to the IP camera systems we design: person and vehicle detection, line crossing, loitering, license-plate capture where it is lawful, and search across recorded footage so staff are not scrubbing hours by hand.</p><p>Rules run on the camera, the network video recorder, or a service you choose. We will tell you which, and we will not send video off-site unless you ask us to and we document it.</p>",
+        html: "<p>A recorder full of video is only useful if you can find the incident. We implement <strong>AI analytics</strong> in the IP camera systems we design: person and vehicle detection, line crossing, loitering, license-plate capture where it is lawful, and search across recorded footage so staff are not scrubbing hours by hand.</p><p>Rules run on the camera, the network video recorder, or a service you choose. We will tell you which, and we will not send video off-site unless you ask us to and we document it.</p>",
         image: {
           url: "/images/ai-camera-1400.webp",
           alt: "IP dome camera in the foreground with a security monitor showing cyan AI detection overlays on a night-time scene",
@@ -2405,7 +2405,7 @@ const aiServices: SeedPage = {
       data: {
         heading: "What AI on the cameras actually does",
         description:
-          "These are features we turn on and support. They are not a replacement for a guard, and they are not a marketing score.",
+          "These are features we implement and support. They are not a replacement for a guard, and they are not a marketing score.",
         columns: "3",
         style: "card",
         items: [
@@ -2441,9 +2441,9 @@ const aiServices: SeedPage = {
           },
           {
             icon: "lock",
-            title: "On the equipment you own",
+            title: "On systems we implement",
             description:
-              "Prefer the analytics on the camera or NVR. Cloud processing is optional and only if you choose it.",
+              "Analytics run on the camera or NVR we specify. Cloud processing is optional and only if you choose it.",
           },
         ],
       },
@@ -2454,7 +2454,7 @@ const aiServices: SeedPage = {
       data: {
         eyebrow: "Phones",
         heading: "An attendant that understands the first sentence",
-        html: "<p>The same idea on the telephone system: <strong>AI attendants</strong> that understand what the caller is asking, route to the right queue, transcribe voicemail, and summarize a long call so staff are not starting from a blank note.</p><p>We turn those features on in the VoIP platforms we already install — desk phones, DECT cordless, video phones and the mobile app — with training for your receptionist and a documented after-hours plan. E-911 behavior does not change; read the notice if you are moving to VoIP.</p>",
+        html: "<p>The same idea on the telephone system: <strong>AI attendants</strong> that understand what the caller is asking, route to the right queue, transcribe voicemail, and summarize a long call so staff are not starting from a blank note.</p><p>We implement those features in the VoIP platforms we install — desk phones, DECT cordless, video phones and the mobile app — with training for your receptionist and a documented after-hours plan. E-911 behavior does not change; read the notice if you are moving to VoIP.</p>",
         image: {
           url: "/images/ai-phone-1400.webp",
           alt: "Black executive VoIP desk phone whose display shows an abstract cyan assistant waveform",
@@ -2465,7 +2465,7 @@ const aiServices: SeedPage = {
           "Natural-language auto-attendant instead of a deep keypad tree",
           "Voicemail and call transcription into email",
           "After-hours coverage without adding a night receptionist",
-          "Works with the handsets we already supply",
+          "Specified with the handsets we install",
         ],
         buttons: [
           { label: "Telephone services", href: "/telephone-services", style: "secondary", openInNewTab: false },
@@ -2507,9 +2507,9 @@ const aiServices: SeedPage = {
           },
           {
             icon: "phone",
-            title: "Same phones, extra features",
+            title: "Handsets we install",
             description:
-              "Desk sets, DECT, video phones and the softphone app — we do not make you replace working handsets to add AI.",
+              "Desk sets, DECT, video phones and the softphone app specified with the AI platform — not a bolt-on to an old telephone system that cannot run it.",
           },
           {
             icon: "map",
@@ -2524,13 +2524,13 @@ const aiServices: SeedPage = {
       type: "richText",
       settings: { background: "white", paddingY: "lg", width: "narrow" },
       data: {
-        html: "<p><strong>How we treat the data.</strong> Camera analytics and phone AI can run on equipment at your site, or on a vendor service you choose. We will write down which it is before anything is switched on. We do not sell recordings or transcripts, and we do not use your video to train a model of our own.</p><p>AI does not replace a lock, a firewall or a person who answers the phone. It is a layer on systems we already design. If a feature is not a good fit for a clinic, a school or a shop floor, we will say so.</p>",
+        html: "<p><strong>How we treat the data.</strong> Camera analytics and phone AI can run on equipment at your site, or on a vendor service you choose. We will write down which it is before anything is switched on. We do not sell recordings or transcripts, and we do not use your video to train a model of our own.</p><p>AI does not replace a lock, a firewall or a person who answers the phone. It is a layer on systems we design and install. If a feature is not a good fit for a clinic, a school or a shop floor, we will say so.</p>",
         columns: "1",
       },
     },
     closingCta(
-      "Add AI to the cameras or the phones you already have",
-      "Tell us the site, the number of cameras or extensions, and whether you want analytics, an attendant, or both. We will quote the hardware, licenses and the work to turn it on.",
+      "Implement AI on cameras or phones",
+      "Tell us the site, how many cameras or extensions you need, and whether you want analytics, an attendant, or both. We will quote the hardware, licenses and the work to implement it.",
     ),
   ],
 };
