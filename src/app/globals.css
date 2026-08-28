@@ -352,23 +352,14 @@
   }
 }
 
-/* Slow vertical scan used only on the home tech hero. Opacity stays low so
-   body copy on top of it remains readable. `top` travels the parent, not
-   the band's own height. */
-@keyframes wc-scan {
-  0% {
-    top: -8%;
-    opacity: 0;
+/* Slow opacity breathe for the extra home-hero glow. No translation — a
+   travelling band read as a scanner. */
+@keyframes wc-ambient {
+  0%, 100% {
+    opacity: 0.18;
   }
-  12% {
-    opacity: 0.7;
-  }
-  88% {
-    opacity: 0.7;
-  }
-  100% {
-    top: 100%;
-    opacity: 0;
+  50% {
+    opacity: 0.4;
   }
 }
 
@@ -383,9 +374,10 @@
   }
 }
 
-@utility animate-scan-line {
+@utility animate-ambient-glow {
+  opacity: 0.28;
   @media (prefers-reduced-motion: no-preference) {
-    animation: wc-scan 14s ease-in-out infinite;
+    animation: wc-ambient 18s ease-in-out infinite;
   }
 }
 

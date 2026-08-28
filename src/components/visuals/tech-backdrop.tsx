@@ -1,4 +1,3 @@
-import { DetectionCorners } from "@/components/visuals/detection-corners";
 import { NetworkCanvas } from "@/components/visuals/network-canvas";
 import { cn } from "@/lib/utils";
 
@@ -20,8 +19,9 @@ export function TechBackdrop({
   density?: number;
   glow?: "right" | "left" | "center" | "none";
   /**
-   * `ai` adds a second glow, viewfinder corners and a slow scan line. Used on
-   * the home hero only so inner pages stay quieter.
+   * `ai` warms the navy and adds a second, slow-breathing glow. Used on the
+   * home hero only. No scan line, no viewfinder on the full field — that
+   * chrome belongs on the camera photograph, not the page background.
    */
   mood?: "network" | "ai";
   className?: string;
@@ -54,9 +54,13 @@ export function TechBackdrop({
       )}
 
       {ai && (
-        <div
-          className="absolute -bottom-32 -left-24 size-[36rem] rounded-full opacity-30 blur-3xl bg-[radial-gradient(circle,var(--color-brand-500)_0%,transparent_70%)]"
-        />
+        <>
+          <div
+            className="animate-ambient-glow absolute -bottom-32 -left-24 size-[36rem] rounded-full blur-3xl bg-[radial-gradient(circle,var(--color-brand-500)_0%,transparent_70%)]"
+          />
+          {/* Static depth, not a travelling band. */}
+          <div className="absolute inset-x-0 top-0 h-1/2 bg-[radial-gradient(ellipse_at_top,rgb(52_197_228_/_0.08),transparent_58%)]" />
+        </>
       )}
 
       {network && (
@@ -65,15 +69,6 @@ export function TechBackdrop({
           mood={mood}
           className="absolute inset-0 size-full"
         />
-      )}
-
-      {ai && (
-        <>
-          <DetectionCorners className="inset-5 opacity-40 sm:inset-8 lg:inset-10" />
-          <div className="absolute inset-0 overflow-hidden">
-            <div className="animate-scan-line absolute inset-x-[12%] h-28 opacity-0 bg-gradient-to-b from-transparent via-accent-400/25 to-transparent" />
-          </div>
-        </>
       )}
 
       {/* Keeps text legible where the mesh is densest. */}

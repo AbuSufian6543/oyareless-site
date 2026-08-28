@@ -32,19 +32,11 @@ type Pulse = {
   speed: number;
 };
 
-type Focus = {
-  x: number;
-  y: number;
-  age: number;
-};
-
 const LINK_DISTANCE = 148;
 const MAX_NODES = 68;
 const MIN_NODES = 18;
 const NODE_AREA = 17000; // one node per this many CSS pixels²
 const MAX_PULSES = 5;
-const MAX_FOCUSES = 4;
-const FOCUS_LIFE = 52;
 
 export function NetworkCanvas({
   className,
@@ -55,8 +47,8 @@ export function NetworkCanvas({
   /** Multiplier on the computed node count, for calmer or busier sections. */
   density?: number;
   /**
-   * `ai` draws a short-lived viewfinder around a node when a pulse arrives.
-   * Abstract geometry only — not a camera feed or a detection score.
+   * `ai` uses a few slightly larger nodes so the mesh reads a little closer.
+   * No detection boxes — those read as a scanner on the page background.
    */
   mood?: "network" | "ai";
 }) {
@@ -81,7 +73,6 @@ export function NetworkCanvas({
 
     let nodes: Node[] = [];
     let pulses: Pulse[] = [];
-    let focuses: Focus[] = [];
     let width = 0;
     let height = 0;
     let frame = 0;
@@ -112,7 +103,6 @@ export function NetworkCanvas({
             : 1 + Math.random() * 1.5,
       }));
       pulses = [];
-      focuses = [];
     };
 
     const spawnPulse = () => {
@@ -180,24 +170,12 @@ export function NetworkCanvas({
         context.fill();
       }
 
-      // Data pulses, and on the AI mood a brief viewfinder when one arrives.
+      // Data pulses travelling along links.
       if (animate) {
-        const arrived: Pulse[] = [];
         for (const pulse of pulses) {
           pulse.progress += pulse.speed;
-          if (pulse.progress >= 1) arrived.push(pulse);
         }
         pulses = pulses.filter((pulse) => pulse.progress < 1);
-
-        if (mood === "ai") {
-          for (const pulse of arrived) {
-            const target = nodes[pulse.to];
-            if (!target || focuses.length >= MAX_FOCUSES) continue;
-            focuses.push({ x: target.x, y: target.y, age: 0 });
-          }
-          for (const focus of focuses) focus.age += 1;
-          focuses = focuses.filter((focus) => focus.age < FOCUS_LIFE);
-        }
 
         for (const pulse of pulses) {
           const a = nodes[pulse.from];
@@ -214,18 +192,7 @@ export function NetworkCanvas({
           context.fill();
         }
 
-        if (mood === "ai") {
-          for (const focus of focuses) {
-            const t = focus.age / FOCUS_LIFE;
-            const size = 10 + t * 10;
-            context.globalAlpha = (1 - t) * 0.55;
-            context.strokeStyle = nodeColor;
-            context.lineWidth = 1.25;
-            context.strokeRect(focus.x - size / 2, focus.y - size / 2, size, size);
-          }
-        }
-
-        if (Math.random() < (mood === "ai" ? 0.02 : 0.014)) spawnPulse();
+        if (Math.random() < 0.014) spawnPulse();
       }
 
       context.globalAlpha = 1;

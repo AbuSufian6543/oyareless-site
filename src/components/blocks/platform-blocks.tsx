@@ -23,9 +23,9 @@ const HEIGHTS: Record<string, string> = {
 
 /**
  * Primary hero for the platform pages. The background is the animated node
- * mesh, optionally over a photograph. On Home the mesh is the AI mood: a
- * slower scan and viewfinder chrome, with camera and phone photography in
- * the side panel instead of the generic site-stack card.
+ * mesh, optionally over a photograph. On Home the mesh uses the quieter AI
+ * mood (extra glow, no scan line), with camera and phone photography in the
+ * side panel instead of the generic site-stack card.
  */
 export async function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
   const { data } = block;
