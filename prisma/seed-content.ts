@@ -58,6 +58,10 @@ const photos = {
     "ai-camera",
     "IP dome camera in the foreground with a security monitor showing cyan AI detection overlays on a night-time scene",
   ),
+  aiPhone: photo(
+    "ai-phone",
+    "Black executive VoIP desk phone whose display shows an abstract cyan assistant waveform",
+  ),
   telephone: photo(
     "voip",
     "Black executive VoIP desk phone with a color display on a dark office desk",
@@ -165,9 +169,9 @@ const home: SeedPage = {
   slug: "home",
   title: "Home",
   navLabel: "Home",
-  metaTitle: "IT, Networking, Cybersecurity & Security Systems in Northern Ontario",
+  metaTitle: "AI on Cameras and Phones, IT and Security in Northern Ontario",
   metaDescription:
-    "WirelessCom.Ca Inc. delivers managed IT, cybersecurity, Barracuda, Fortinet, and Juniper firewalls, AI camera analytics, VoIP with AI attendants, video surveillance, and alarm security to businesses across Northern Ontario. Serving Sault Ste. Marie since 2005.",
+    "WirelessCom.Ca Inc. installs practical AI on business cameras and VoIP phones — person and vehicle analytics, smarter search, AI attendants and call transcription — plus IT, firewalls, networking and security systems across Northern Ontario. Serving Sault Ste. Marie since 2005.",
   showInHeaderNav: true,
   navOrder: 0,
   isSystem: true,
@@ -176,23 +180,55 @@ const home: SeedPage = {
       type: "techHero",
       settings: {},
       data: {
-        eyebrow: "Technology Service Provider · Sault Ste. Marie, Ontario",
-        headline: "IT, networks and security that keep your business running",
+        eyebrow: "Practical AI · Sault Ste. Marie, Ontario",
+        headline: "AI on the cameras and phones you already run",
         subheadline:
-          "WirelessCom.Ca Inc. designs, installs and manages the technology Northern Ontario businesses depend on — from firewalls and servers to cameras, access control and VoIP telephone systems.",
+          "Find a person in last night's recording. Route a caller without a maze of menus. We turn those features on in the camera and telephone systems we design — on equipment you own — then the same Sault Ste. Marie team stays on them. Firewalls, Wi-Fi, cabling and support are still ours.",
         backgroundImageUrl: "",
         overlayOpacity: 78,
         networkDensity: 100,
         height: "lg",
         buttons: [
           { label: "Request a quote", href: "/request-quote", style: "primary", openInNewTab: false },
-          { label: "Talk to support", href: "/support", style: "outline", openInNewTab: false },
+          { label: "AI on cameras & phones", href: "/ai-services", style: "outline", openInNewTab: false },
         ],
         highlights: [
+          "Person and vehicle analytics",
+          "AI attendants and transcription",
+          "On the equipment you own",
           "Serving businesses since 2005",
-          "Firewalls, VLANs, VPN and Wi-Fi",
-          "24/7 monitored alarm & video",
-          "Endpoint protection and backups",
+        ],
+      },
+    },
+    {
+      type: "capabilityGrid",
+      settings: { background: "navy", paddingY: "xl" },
+      data: {
+        eyebrow: "Cameras and phones",
+        heading: "Two systems every site already runs",
+        description:
+          "We add analytics to the cameras and an attendant to the phones. Neither replaces a lock, a firewall, or a person who answers. Both are configured on equipment we install and support.",
+        columns: "2",
+        showImages: true,
+        items: [
+          {
+            icon: "cctv",
+            title: "AI that finds the incident",
+            description:
+              "Person and vehicle detection, line crossing, loitering, and search across recorded video so staff are not scrubbing hours by hand. Rules stay on the camera or recorder unless you ask for a cloud option — and we write that down first.",
+            href: "/ai-services",
+            imageUrl: photos.ai.url,
+            imageAlt: photos.ai.alt,
+          },
+          {
+            icon: "phone",
+            title: "An attendant that hears the first sentence",
+            description:
+              "Callers say what they need. The attendant routes to sales, support, a named person or voicemail, and can transcribe the message into email. Same desk phones, DECT and mobile app we already put in.",
+            href: "/ai-services",
+            imageUrl: photos.aiPhone.url,
+            imageAlt: photos.aiPhone.alt,
+          },
         ],
       },
     },
@@ -262,6 +298,8 @@ const home: SeedPage = {
           "VLAN",
           "VPN",
           "Wi-Fi",
+          "Analytics",
+          "AI attendant",
           "EDR",
           "Email security",
           "CCTV",
@@ -345,7 +383,7 @@ const home: SeedPage = {
             icon: "sparkles",
             title: "AI for cameras & phones",
             description:
-              "Analytics on your cameras and intelligent features on your telephone system — installed and supported by the same local team.",
+              "Person and vehicle analytics on your recorders. An attendant that routes a caller without a maze of menus. Installed and supported by the same local team.",
             href: "/ai-services",
             imageUrl: photos.ai.url,
             imageAlt: photos.ai.alt,
@@ -460,7 +498,7 @@ const home: SeedPage = {
       data: {
         eyebrow: "Why WirelessCom",
         heading: "Local expertise, standards-based work",
-        html: "<p>We have been providing internet and wireless services since 2005, and today we cover the whole technology stack for business: the network, the servers, the phones, the cameras and the doors. Because one team designs and maintains all of it, security controls work together instead of fighting each other.</p><p>Everything is installed to industry standards, documented, and supported by people you can reach in Sault Ste. Marie.</p>",
+        html: "<p>We have been providing internet and wireless services since 2005, and today we cover the whole technology stack for business: the network, the servers, the phones, the cameras and the doors. Practical AI sits on two of those systems — analytics on the cameras, an attendant on the phones — when it earns its keep. Because one team designs and maintains all of it, security controls work together instead of fighting each other.</p><p>Everything is installed to industry standards, documented, and supported by people you can reach in Sault Ste. Marie.</p>",
         image: {
           url: "/images/cabling-install-1400.webp",
           alt: "Technician's hands terminating blue and white network cables into a rack-mounted patch panel",

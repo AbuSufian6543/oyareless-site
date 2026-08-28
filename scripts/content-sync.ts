@@ -11,9 +11,11 @@
  *   - pages an admin has edited since seeding keep their copy unless named
  *     with --force; empty photos and logos are still filled, shipped vendor
  *     logo files under /brand/logos/ are refreshed in place, missing service
- *     cards and brand tiles are still appended, and a missing home stats
- *     cards and brand tiles are still appended, and a missing home stats
- *     strip or defense-in-depth section is still inserted;
+ *     cards and brand tiles are still appended, a missing home stats strip
+ *     or defense-in-depth section is still inserted, a missing cameras-and-
+ *     phones AI section is still inserted, and the home tech hero is upgraded
+ *     when it still has the previous seed headline;
+
 
  *   - nothing is ever deleted, and redirects/navigation are only ever added to.
  *
@@ -151,10 +153,48 @@ function insertMissingSeedBlock(
 }
 
 /**
+ * Home used to open on a generic networks-and-security headline. When that
+ * exact seed copy is still on the page, replace it with the AI-focused hero.
+ * A headline an admin wrote themselves is left alone.
+ */
+const PREVIOUS_TECH_HERO_HEADLINES = new Set([
+  "IT, networks and security that keep your business running",
+  "Networks and security built to stay up",
+]);
+
+function upgradeTechHeroCopy(
+  next: JsonBlock[],
+  seed: ReturnType<typeof buildBlocks>,
+  notes: string[],
+): void {
+  const seedHero = seed.find((block) => block.type === "techHero");
+  const currentHero = next.find((block) => block.type === "techHero");
+  if (!seedHero || !currentHero) return;
+
+  const currentData = (currentHero.data ??= {});
+  const headline = String(currentData.headline ?? "");
+  if (!PREVIOUS_TECH_HERO_HEADLINES.has(headline)) return;
+
+  const seedData = seedHero.data as unknown as Record<string, unknown>;
+  currentData.eyebrow = seedData.eyebrow;
+  currentData.headline = seedData.headline;
+  currentData.subheadline = seedData.subheadline;
+  if (Array.isArray(seedData.highlights)) {
+    currentData.highlights = [...seedData.highlights];
+  }
+  if (Array.isArray(seedData.buttons)) {
+    currentData.buttons = structuredClone(seedData.buttons);
+  }
+  notes.push("home AI hero copy");
+}
+
+/**
  * On pages an admin has already edited, still fill empty photos and logos,
- * append missing service cards and brand tiles, and insert a stats strip
- * or defense-in-depth section when the seed has one and the live page does
- * not. Copy, headlines, and photos the admin set are left alone.
+ * append missing service cards and brand tiles, insert a stats strip,
+ * defense-in-depth section, or cameras-and-phones AI section when the seed
+ * has one and the live page does not, and upgrade the home tech hero when it
+ * still carries the previous seed headline. Copy, headlines, and photos the
+ * admin set are left alone.
  */
 function fillMissingMedia(
   current: unknown,
@@ -259,11 +299,21 @@ function fillMissingMedia(
   insertMissingSeedBlock(
     next,
     seed,
+    "capabilityGrid",
+    ["techHero", "hero"],
+    notes,
+    "cameras and phones AI",
+  );
+  insertMissingSeedBlock(
+    next,
+    seed,
     "defenseInDepth",
     ["imageText", "stats", "statusStrip", "pillars"],
     notes,
     "defense in depth",
   );
+
+  upgradeTechHeroCopy(next, seed, notes);
 
   const seedHeroes = seed.filter((block) => block.type === "hero");
   const currentHeroes = next.filter((block) => block.type === "hero");

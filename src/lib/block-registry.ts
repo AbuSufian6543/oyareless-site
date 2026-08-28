@@ -41,22 +41,23 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
     type: "techHero",
     label: "Tech hero (animated)",
     description:
-      "Hero with an animated network mesh, optional photo, buttons and proof points.",
+      "Hero with an animated mesh, AI viewfinder chrome, buttons and proof points.",
     category: "Layout",
     icon: "Radar",
     seed: {
-      eyebrow: "WirelessCom.Ca Inc.",
-      headline: "Networks and security built to stay up",
+      eyebrow: "Practical AI · Sault Ste. Marie, Ontario",
+      headline: "AI on the cameras and phones you already run",
       subheadline:
-        "Design, installation and ongoing support for business networking, cybersecurity, telecom and security systems across Northern Ontario.",
+        "Find a person in last night's recording. Route a caller without a maze of menus. We turn those features on in the camera and telephone systems we design — on equipment you own.",
       buttons: [
         { label: "Request a quote", href: "/request-quote", style: "primary" },
-        { label: "Talk to an engineer", href: "/contact", style: "outline" },
+        { label: "AI on cameras & phones", href: "/ai-services", style: "outline" },
       ],
       highlights: [
-        "Serving business since 2005",
-        "Sault Ste. Marie based technicians",
-        "24/7 monitoring available",
+        "Person and vehicle analytics",
+        "AI attendants and transcription",
+        "On the equipment you own",
+        "Serving businesses since 2005",
       ],
     },
   },

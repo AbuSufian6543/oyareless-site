@@ -10,7 +10,7 @@ import { ButtonLink, type ButtonVariant } from "@/components/ui/button";
 import { BlockIcon } from "@/components/ui/icon";
 import { SectionImage } from "@/components/visuals/section-image";
 import { TechBackdrop } from "@/components/visuals/tech-backdrop";
-import { SiteStackPanel } from "@/components/visuals/site-stack-panel";
+import { AiFocusPanel } from "@/components/visuals/ai-focus-panel";
 import type { BlockOf } from "@/lib/blocks";
 import { getSettings } from "@/lib/settings";
 import { cn } from "@/lib/utils";
@@ -23,7 +23,9 @@ const HEIGHTS: Record<string, string> = {
 
 /**
  * Primary hero for the platform pages. The background is the animated node
- * mesh, optionally over a photograph.
+ * mesh, optionally over a photograph. On Home the mesh is the AI mood: a
+ * slower scan and viewfinder chrome, with camera and phone photography in
+ * the side panel instead of the generic site-stack card.
  */
 export async function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
   const { data } = block;
@@ -58,6 +60,7 @@ export async function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
         network={data.networkDensity > 0}
         density={data.networkDensity / 100}
         glow="right"
+        mood="ai"
         // The photo layer already supplies the base color when present.
         className={photo ? "bg-transparent" : undefined}
       />
@@ -78,7 +81,7 @@ export async function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
           )}
 
           <h1 className="text-balance-tight text-4xl leading-[1.08] font-bold lg:text-[3.5rem]">
-            {data.headline}
+            <HeroHeadline text={data.headline} />
           </h1>
 
           {data.subheadline && (
@@ -122,10 +125,22 @@ export async function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
             </ul>
           )}
         </div>
-          {!photo && <SiteStackPanel />}
+          {!photo && <AiFocusPanel />}
         </div>
       </div>
     </section>
+  );
+}
+
+function HeroHeadline({ text }: { text: string }) {
+  const match = /^(AI)(\b[\s\S]*)$/.exec(text);
+  if (!match) return text;
+
+  return (
+    <>
+      <span className="text-accent-300">{match[1]}</span>
+      {match[2]}
+    </>
   );
 }
 

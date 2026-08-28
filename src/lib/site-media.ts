@@ -28,7 +28,7 @@ export const SITE_PICTURES: SitePicture[] = [
   photo("cabling", "Network cabling", "Dense bundles of blue and gray network patch cables terminated into a switch"),
   photo("firewall", "Firewalls", "Rack-mounted next-generation firewall appliances in a dark cabinet with cyan status lights and dressed ethernet"),
   photo("ai-camera", "AI camera analytics", "IP dome camera in the foreground with a security monitor showing cyan AI detection overlays on a night-time scene"),
-  photo("ai-phone", "AI phone attendant", "Black executive VoIP desk phone with a color display on a dark office desk"),
+  photo("ai-phone", "AI phone attendant", "Black executive VoIP desk phone whose display shows an abstract cyan assistant waveform"),
   photo("access-control", "Access control", "Slim black card reader with a cyan LED beside a glass commercial entrance at dusk"),
   photo("video-broadcast", "Video broadcast", "Professional video cameras on tripods in a dark studio with cyan rim lighting"),
   photo("ev-charging", "EV charging", "Wall-mounted Level 2 EV charging station with a cyan status light on a dark commercial wall"),

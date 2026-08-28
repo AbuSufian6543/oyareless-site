@@ -351,3 +351,46 @@
     animation: wc-marquee 42s linear infinite;
   }
 }
+
+/* Slow vertical scan used only on the home tech hero. Opacity stays low so
+   body copy on top of it remains readable. `top` travels the parent, not
+   the band's own height. */
+@keyframes wc-scan {
+  0% {
+    top: -8%;
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.7;
+  }
+  88% {
+    opacity: 0.7;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+@keyframes wc-ai-bar {
+  0%, 100% {
+    transform: scaleY(0.55);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+@utility animate-scan-line {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: wc-scan 14s ease-in-out infinite;
+  }
+}
+
+@utility animate-ai-bar {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: wc-ai-bar 1.6s ease-in-out infinite;
+  }
+}

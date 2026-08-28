@@ -32,19 +32,33 @@ type Pulse = {
   speed: number;
 };
 
+type Focus = {
+  x: number;
+  y: number;
+  age: number;
+};
+
 const LINK_DISTANCE = 148;
 const MAX_NODES = 68;
 const MIN_NODES = 18;
 const NODE_AREA = 17000; // one node per this many CSS pixels²
 const MAX_PULSES = 5;
+const MAX_FOCUSES = 4;
+const FOCUS_LIFE = 52;
 
 export function NetworkCanvas({
   className,
   density = 1,
+  mood = "network",
 }: {
   className?: string;
   /** Multiplier on the computed node count, for calmer or busier sections. */
   density?: number;
+  /**
+   * `ai` draws a short-lived viewfinder around a node when a pulse arrives.
+   * Abstract geometry only — not a camera feed or a detection score.
+   */
+  mood?: "network" | "ai";
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -67,6 +81,7 @@ export function NetworkCanvas({
 
     let nodes: Node[] = [];
     let pulses: Pulse[] = [];
+    let focuses: Focus[] = [];
     let width = 0;
     let height = 0;
     let frame = 0;
@@ -86,14 +101,18 @@ export function NetworkCanvas({
       const target = Math.round(((width * height) / NODE_AREA) * density);
       const count = Math.max(MIN_NODES, Math.min(MAX_NODES, target));
 
-      nodes = Array.from({ length: count }, () => ({
+      nodes = Array.from({ length: count }, (_, index) => ({
         x: Math.random() * width,
         y: Math.random() * height,
         vx: (Math.random() - 0.5) * 0.19,
         vy: (Math.random() - 0.5) * 0.19,
-        r: 1 + Math.random() * 1.5,
+        r:
+          mood === "ai" && index % 7 === 0
+            ? 2.2 + Math.random() * 0.8
+            : 1 + Math.random() * 1.5,
       }));
       pulses = [];
+      focuses = [];
     };
 
     const spawnPulse = () => {
@@ -161,12 +180,24 @@ export function NetworkCanvas({
         context.fill();
       }
 
-      // Data pulses.
+      // Data pulses, and on the AI mood a brief viewfinder when one arrives.
       if (animate) {
+        const arrived: Pulse[] = [];
         for (const pulse of pulses) {
           pulse.progress += pulse.speed;
+          if (pulse.progress >= 1) arrived.push(pulse);
         }
         pulses = pulses.filter((pulse) => pulse.progress < 1);
+
+        if (mood === "ai") {
+          for (const pulse of arrived) {
+            const target = nodes[pulse.to];
+            if (!target || focuses.length >= MAX_FOCUSES) continue;
+            focuses.push({ x: target.x, y: target.y, age: 0 });
+          }
+          for (const focus of focuses) focus.age += 1;
+          focuses = focuses.filter((focus) => focus.age < FOCUS_LIFE);
+        }
 
         for (const pulse of pulses) {
           const a = nodes[pulse.from];
@@ -183,7 +214,18 @@ export function NetworkCanvas({
           context.fill();
         }
 
-        if (Math.random() < 0.014) spawnPulse();
+        if (mood === "ai") {
+          for (const focus of focuses) {
+            const t = focus.age / FOCUS_LIFE;
+            const size = 10 + t * 10;
+            context.globalAlpha = (1 - t) * 0.55;
+            context.strokeStyle = nodeColor;
+            context.lineWidth = 1.25;
+            context.strokeRect(focus.x - size / 2, focus.y - size / 2, size, size);
+          }
+        }
+
+        if (Math.random() < (mood === "ai" ? 0.02 : 0.014)) spawnPulse();
       }
 
       context.globalAlpha = 1;
@@ -246,7 +288,7 @@ export function NetworkCanvas({
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("resize", onResize);
     };
-  }, [density]);
+  }, [density, mood]);
 
   return (
     <canvas

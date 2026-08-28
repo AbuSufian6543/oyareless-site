@@ -1,3 +1,4 @@
+import { DetectionCorners } from "@/components/visuals/detection-corners";
 import { NetworkCanvas } from "@/components/visuals/network-canvas";
 import { cn } from "@/lib/utils";
 
@@ -12,19 +13,32 @@ export function TechBackdrop({
   network = true,
   density = 1,
   glow = "right",
+  mood = "network",
   className,
 }: {
   network?: boolean;
   density?: number;
   glow?: "right" | "left" | "center" | "none";
+  /**
+   * `ai` adds a second glow, viewfinder corners and a slow scan line. Used on
+   * the home hero only so inner pages stay quieter.
+   */
+  mood?: "network" | "ai";
   className?: string;
 }) {
+  const ai = mood === "ai";
+
   return (
     <div
       className={cn("pointer-events-none absolute inset-0 -z-10", className)}
       aria-hidden="true"
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-navy-950 via-navy-900 to-navy-950" />
+      <div
+        className={cn(
+          "absolute inset-0 bg-gradient-to-br from-navy-950 via-navy-900 to-navy-950",
+          ai && "via-[#062033]",
+        )}
+      />
       <div className="bg-tech-grid absolute inset-0" />
 
       {glow !== "none" && (
@@ -39,11 +53,27 @@ export function TechBackdrop({
         />
       )}
 
+      {ai && (
+        <div
+          className="absolute -bottom-32 -left-24 size-[36rem] rounded-full opacity-30 blur-3xl bg-[radial-gradient(circle,var(--color-brand-500)_0%,transparent_70%)]"
+        />
+      )}
+
       {network && (
         <NetworkCanvas
           density={density}
+          mood={mood}
           className="absolute inset-0 size-full"
         />
+      )}
+
+      {ai && (
+        <>
+          <DetectionCorners className="inset-5 opacity-40 sm:inset-8 lg:inset-10" />
+          <div className="absolute inset-0 overflow-hidden">
+            <div className="animate-scan-line absolute inset-x-[12%] h-28 opacity-0 bg-gradient-to-b from-transparent via-accent-400/25 to-transparent" />
+          </div>
+        </>
       )}
 
       {/* Keeps text legible where the mesh is densest. */}
