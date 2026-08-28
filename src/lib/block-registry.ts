@@ -45,19 +45,18 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
     category: "Layout",
     icon: "Radar",
     seed: {
-      eyebrow: "Practical AI · Sault Ste. Marie, Ontario",
-      headline: "AI we implement on cameras and phones",
+      eyebrow: "Technology service provider · Northern Ontario",
+      headline: "Networks, security, and communications for Northern Ontario",
       subheadline:
-        "Find a person in last night's recording. Route a caller without a maze of menus. We implement those features in camera and telephone systems we design and install.",
+        "Since 2005 in Sault Ste. Marie we design, install, and support the systems businesses here actually run — IT and Wi-Fi, firewalls, cameras and alarms, VoIP, and two-way radio.",
       buttons: [
-        { label: "Request a quote", href: "/request-quote", style: "primary" },
-        { label: "AI on cameras & phones", href: "/ai-services", style: "outline" },
+        { label: "Explore our work", href: "#work", style: "primary" },
+        { label: "Request a quote", href: "/request-quote", style: "outline" },
       ],
       highlights: [
-        "Person and vehicle analytics",
-        "AI attendants and transcription",
-        "Systems we implement",
-        "Serving businesses since 2005",
+        "Serving since 2005",
+        "Sault Ste. Marie office",
+        "Authorized Hytera dealer",
       ],
     },
   },

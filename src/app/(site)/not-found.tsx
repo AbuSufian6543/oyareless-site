@@ -25,16 +25,16 @@ export default function SiteNotFound() {
             Search
           </Link>
           <Link
-            href="/ai-services"
+            href="/it-services"
             className="rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-semibold text-navy-800 hover:bg-slate-50"
           >
-            AI cameras & phones
+            IT Services
           </Link>
           <Link
-            href="/firewalls"
+            href="/security-services"
             className="rounded-lg border border-slate-300 px-5 py-2.5 text-sm font-semibold text-navy-800 hover:bg-slate-50"
           >
-            Firewalls
+            Security Systems
           </Link>
           <Link
             href="/contact"

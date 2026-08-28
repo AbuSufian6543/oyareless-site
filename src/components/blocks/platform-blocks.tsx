@@ -10,7 +10,7 @@ import { ButtonLink, type ButtonVariant } from "@/components/ui/button";
 import { BlockIcon } from "@/components/ui/icon";
 import { SectionImage } from "@/components/visuals/section-image";
 import { TechBackdrop } from "@/components/visuals/tech-backdrop";
-import { AiFocusPanel } from "@/components/visuals/ai-focus-panel";
+import { HomeStackPanel } from "@/components/site/home-stack-panel";
 import type { BlockOf } from "@/lib/blocks";
 import { getSettings } from "@/lib/settings";
 import { cn } from "@/lib/utils";
@@ -23,9 +23,9 @@ const HEIGHTS: Record<string, string> = {
 
 /**
  * Primary hero for the platform pages. The background is the animated node
- * mesh, optionally over a photograph. On Home the mesh uses the quieter AI
- * mood (extra glow, no scan line), with camera and phone photography in the
- * side panel instead of the generic site-stack card.
+ * mesh, optionally over a photograph. On Home the mesh uses the network mood
+ * and a scope-of-work panel so the company reads as a technology firm, not a
+ * single product.
  */
 export async function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
   const { data } = block;
@@ -60,7 +60,7 @@ export async function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
         network={data.networkDensity > 0}
         density={data.networkDensity / 100}
         glow="right"
-        mood="ai"
+        mood="network"
         // The photo layer already supplies the base color when present.
         className={photo ? "bg-transparent" : undefined}
       />
@@ -120,7 +120,7 @@ export async function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
             </ul>
           )}
         </div>
-          {!photo && <AiFocusPanel />}
+          {!photo && <HomeStackPanel />}
         </div>
       </div>
     </section>
