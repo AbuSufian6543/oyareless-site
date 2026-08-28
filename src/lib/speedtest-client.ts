@@ -227,7 +227,6 @@ export async function runSpeedTest(
       setPhase("complete");
       onProgress(1);
       finish(() => resolve(outcome));
-      onSample(outcome.downloadMbps);
     };
 
     engine.play();

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { type ReactNode, useEffect, useId, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -17,8 +17,10 @@ const SWEEP = 270;
 const RADIUS = 88;
 const CENTRE = 100;
 
-/** How quickly the needle and readout catch the live figure, in seconds. */
+/** How quickly the needle catches a live figure, in seconds. */
 const NEEDLE_TAU_SECONDS = 0.28;
+/** A slightly longer settle so the return-to-zero sweep is visible. */
+const HOME_TAU_SECONDS = 0.42;
 
 /** Maps Mbps onto 0–1 of the arc by interpolating between the tick stops. */
 export function gaugeFraction(mbps: number): number {
@@ -44,9 +46,10 @@ export function SpeedGauge({
   caption,
   samples,
   active,
+  children,
   className,
 }: {
-  /** Live value, or null before a reading exists. */
+  /** Live value, or null before a reading exists and after the needle goes home. */
   mbps: number | null;
   label: string;
   unit?: string;
@@ -54,134 +57,145 @@ export function SpeedGauge({
   /** Recent readings for the sparkline, oldest first. */
   samples: number[];
   active: boolean;
+  /** Idle / complete control rendered in the hollow of the dial. */
+  children?: ReactNode;
   className?: string;
 }) {
+  const gradientId = useId().replace(/:/g, "");
   const target = mbps === null ? 0 : Math.max(0, mbps);
   const displayed = useSmoothedValue(target, active);
   const fraction = gaugeFraction(displayed);
   const angle = START_ANGLE + fraction * SWEEP;
-  const showReadout = mbps !== null || displayed > 0.08;
+  const showReadout = active && (mbps !== null || displayed > 0.08);
 
   return (
     <div className={cn("relative mx-auto w-full max-w-sm", className)}>
-      <svg
-        viewBox="0 0 200 200"
-        className="w-full"
-        role="img"
-        aria-label={
-          mbps === null && !showReadout
-            ? `${label}: waiting to start`
-            : `${label}: ${formatValue(displayed)} ${unit}`
-        }
-      >
-        <defs>
-          <linearGradient id="gauge-arc" x1="0" y1="1" x2="1" y2="0">
-            <stop offset="0%" stopColor="var(--color-brand-500)" />
-            <stop offset="60%" stopColor="var(--color-accent-400)" />
-            <stop offset="100%" stopColor="var(--color-accent-300)" />
-          </linearGradient>
-        </defs>
+      <div className="relative">
+        <svg
+          viewBox="0 0 200 200"
+          className="w-full"
+          role="img"
+          aria-label={
+            showReadout
+              ? `${label}: ${formatValue(displayed)} ${unit}`
+              : `${label}: at rest`
+          }
+        >
+          <defs>
+            <linearGradient id={gradientId} x1="0" y1="1" x2="1" y2="0">
+              <stop offset="0%" stopColor="var(--color-brand-500)" />
+              <stop offset="60%" stopColor="var(--color-accent-400)" />
+              <stop offset="100%" stopColor="var(--color-accent-300)" />
+            </linearGradient>
+          </defs>
 
-        <path
-          d={arcPath(0, 1)}
-          fill="none"
-          stroke="currentColor"
-          className="text-navy-700/60"
-          strokeWidth={10}
-          strokeLinecap="round"
-        />
-
-        {fraction > 0.005 && (
           <path
-            d={arcPath(0, fraction)}
+            d={arcPath(0, 1)}
             fill="none"
-            stroke="url(#gauge-arc)"
+            stroke="currentColor"
+            className="text-navy-700/70"
             strokeWidth={10}
             strokeLinecap="round"
           />
-        )}
 
-        {STOPS.map((stop, index) => {
-          const tickFraction = index / (STOPS.length - 1);
-          const outer = pointAt(tickFraction, RADIUS - 9);
-          const inner = pointAt(tickFraction, RADIUS - 16);
-          const text = pointAt(tickFraction, RADIUS - 28);
-          return (
-            <g key={stop}>
-              <line
-                x1={outer.x}
-                y1={outer.y}
-                x2={inner.x}
-                y2={inner.y}
-                stroke="currentColor"
-                className="text-navy-600"
-                strokeWidth={1.5}
-              />
-              <text
-                x={text.x}
-                y={text.y}
-                textAnchor="middle"
-                dominantBaseline="middle"
-                className="fill-navy-400 text-[0.5rem] font-semibold"
-              >
-                {stop}
-              </text>
-            </g>
-          );
-        })}
+          {fraction > 0.005 && (
+            <path
+              d={arcPath(0, fraction)}
+              fill="none"
+              stroke={`url(#${gradientId})`}
+              strokeWidth={10}
+              strokeLinecap="round"
+            />
+          )}
 
-        {/* Rotated from the dial origin every frame. CSS transitions on SVG
-            transforms restart from the last target and make the needle bounce. */}
-        <g
-          style={{
-            transformOrigin: `${CENTRE}px ${CENTRE}px`,
-            transform: `rotate(${angle - START_ANGLE}deg)`,
-          }}
-        >
-          <line
-            x1={CENTRE}
-            y1={CENTRE}
-            x2={pointAt(0, RADIUS - 22).x}
-            y2={pointAt(0, RADIUS - 22).y}
-            stroke="currentColor"
-            className="text-accent-400"
-            strokeWidth={3}
-            strokeLinecap="round"
+          {STOPS.map((stop, index) => {
+            const tickFraction = index / (STOPS.length - 1);
+            const outer = pointAt(tickFraction, RADIUS - 9);
+            const inner = pointAt(tickFraction, RADIUS - 16);
+            const text = pointAt(tickFraction, RADIUS - 28);
+            return (
+              <g key={stop}>
+                <line
+                  x1={outer.x}
+                  y1={outer.y}
+                  x2={inner.x}
+                  y2={inner.y}
+                  stroke="currentColor"
+                  className="text-navy-600"
+                  strokeWidth={1.5}
+                />
+                <text
+                  x={text.x}
+                  y={text.y}
+                  textAnchor="middle"
+                  dominantBaseline="middle"
+                  className="fill-navy-400 text-[0.5rem] font-semibold"
+                >
+                  {stop}
+                </text>
+              </g>
+            );
+          })}
+
+          {/* Rotated from the dial origin every frame. CSS transitions on SVG
+              transforms restart from the last target and make the needle bounce. */}
+          <g
+            style={{
+              transformOrigin: `${CENTRE}px ${CENTRE}px`,
+              transform: `rotate(${angle - START_ANGLE}deg)`,
+            }}
+          >
+            <line
+              x1={CENTRE}
+              y1={CENTRE}
+              x2={pointAt(0, RADIUS - 20).x}
+              y2={pointAt(0, RADIUS - 20).y}
+              stroke="currentColor"
+              className="text-accent-400"
+              strokeWidth={2.75}
+              strokeLinecap="round"
+            />
+          </g>
+          <circle
+            cx={CENTRE}
+            cy={CENTRE}
+            r={6}
+            className="fill-navy-800 stroke-accent-400"
+            strokeWidth={2}
           />
-        </g>
-        <circle
-          cx={CENTRE}
-          cy={CENTRE}
-          r={6}
-          className="fill-navy-800 stroke-accent-400"
-          strokeWidth={2}
-        />
-      </svg>
+        </svg>
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-8 text-center">
-        <p className="text-xs font-bold uppercase tracking-widest text-navy-400">
-          {label}
-        </p>
-        <p className="mt-0.5 flex items-baseline justify-center gap-1.5">
-          <span className="text-4xl font-extrabold tabular-nums text-white">
-            {showReadout ? formatValue(displayed) : "—"}
-          </span>
-          <span className="text-sm font-semibold text-navy-300">{unit}</span>
-        </p>
-        {caption && (
-          <p className="mt-1 text-[0.6875rem] text-navy-400">{caption}</p>
-        )}
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          {children ? (
+            <div className="pointer-events-auto">{children}</div>
+          ) : showReadout ? (
+            <div className="px-4 text-center">
+              <p className="text-[0.65rem] font-bold uppercase tracking-[0.18em] text-navy-400">
+                {label}
+              </p>
+              <p className="mt-0.5 flex items-baseline justify-center gap-1.5">
+                <span className="text-4xl font-extrabold tabular-nums leading-none text-white sm:text-[2.75rem]">
+                  {formatValue(displayed)}
+                </span>
+                <span className="text-sm font-semibold text-navy-300">{unit}</span>
+              </p>
+              {caption && (
+                <p className="mt-1.5 text-[0.6875rem] text-navy-400">{caption}</p>
+              )}
+            </div>
+          ) : null}
+        </div>
       </div>
 
-      <Sparkline samples={samples} />
+      {active ? <Sparkline samples={samples} /> : <div className="mt-2 h-10" aria-hidden="true" />}
     </div>
   );
 }
 
 /**
  * Eases the dial toward each new reading so a single noisy sample cannot yank
- * the needle. One animation loop runs for the life of the test; restarting it
- * on every sample is what used to make the transform hitch.
+ * the needle. The loop keeps running after the test so the return-to-zero
+ * sweep can finish.
  */
 function useSmoothedValue(target: number, active: boolean): number {
   const [displayed, setDisplayed] = useState(0);
@@ -200,6 +214,11 @@ function useSmoothedValue(target: number, active: boolean): number {
 
     const tick = (now: number) => {
       const goal = targetRef.current;
+      const tau =
+        goal === 0 && !activeRef.current
+          ? HOME_TAU_SECONDS
+          : NEEDLE_TAU_SECONDS;
+
       if (reduceMotion) {
         if (displayedRef.current !== goal) {
           displayedRef.current = goal;
@@ -212,8 +231,7 @@ function useSmoothedValue(target: number, active: boolean): number {
       const dt = Math.min((now - last) / 1000, 0.05);
       last = now;
       const current = displayedRef.current;
-      const next =
-        current + (goal - current) * (1 - Math.exp(-dt / NEEDLE_TAU_SECONDS));
+      const next = current + (goal - current) * (1 - Math.exp(-dt / tau));
       const settled = Math.abs(next - goal) < 0.04;
       const value = settled ? goal : next;
       const previous = displayedRef.current;
@@ -228,6 +246,9 @@ function useSmoothedValue(target: number, active: boolean): number {
 
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
+    // Target is read from a ref so a new sample does not restart the loop.
+    // Restarting on `active` is what kicks the return-to-zero sweep.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- target is a ref
   }, [active]);
 
   return displayed;
