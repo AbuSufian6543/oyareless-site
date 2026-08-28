@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
+
 import { cn } from "@/lib/utils";
 
 /**
@@ -14,6 +16,9 @@ const START_ANGLE = 135;
 const SWEEP = 270;
 const RADIUS = 88;
 const CENTRE = 100;
+
+/** How quickly the needle and readout catch the live figure, in seconds. */
+const NEEDLE_TAU_SECONDS = 0.28;
 
 /** Maps Mbps onto 0–1 of the arc by interpolating between the tick stops. */
 export function gaugeFraction(mbps: number): number {
@@ -51,8 +56,11 @@ export function SpeedGauge({
   active: boolean;
   className?: string;
 }) {
-  const fraction = mbps === null ? 0 : gaugeFraction(mbps);
+  const target = mbps === null ? 0 : Math.max(0, mbps);
+  const displayed = useSmoothedValue(target, active);
+  const fraction = gaugeFraction(displayed);
   const angle = START_ANGLE + fraction * SWEEP;
+  const showReadout = mbps !== null || displayed > 0.08;
 
   return (
     <div className={cn("relative mx-auto w-full max-w-sm", className)}>
@@ -61,9 +69,9 @@ export function SpeedGauge({
         className="w-full"
         role="img"
         aria-label={
-          mbps === null
+          mbps === null && !showReadout
             ? `${label}: waiting to start`
-            : `${label}: ${formatValue(mbps)} ${unit}`
+            : `${label}: ${formatValue(displayed)} ${unit}`
         }
       >
         <defs>
@@ -122,11 +130,9 @@ export function SpeedGauge({
           );
         })}
 
-        {/* The needle is drawn at the dial's zero position and rotated about
-            the face center; a percentage origin would use the line's own
-            bounding box instead. */}
+        {/* Rotated from the dial origin every frame. CSS transitions on SVG
+            transforms restart from the last target and make the needle bounce. */}
         <g
-          className={active ? "transition-transform duration-200 ease-out" : ""}
           style={{
             transformOrigin: `${CENTRE}px ${CENTRE}px`,
             transform: `rotate(${angle - START_ANGLE}deg)`,
@@ -158,7 +164,7 @@ export function SpeedGauge({
         </p>
         <p className="mt-0.5 flex items-baseline justify-center gap-1.5">
           <span className="text-4xl font-extrabold tabular-nums text-white">
-            {mbps === null ? "—" : formatValue(mbps)}
+            {showReadout ? formatValue(displayed) : "—"}
           </span>
           <span className="text-sm font-semibold text-navy-300">{unit}</span>
         </p>
@@ -173,6 +179,61 @@ export function SpeedGauge({
 }
 
 /**
+ * Eases the dial toward each new reading so a single noisy sample cannot yank
+ * the needle. One animation loop runs for the life of the test; restarting it
+ * on every sample is what used to make the transform hitch.
+ */
+function useSmoothedValue(target: number, active: boolean): number {
+  const [displayed, setDisplayed] = useState(0);
+  const displayedRef = useRef(0);
+  const targetRef = useRef(target);
+  const activeRef = useRef(active);
+  targetRef.current = target;
+  activeRef.current = active;
+
+  useEffect(() => {
+    const reduceMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    let frame = 0;
+    let last = performance.now();
+
+    const tick = (now: number) => {
+      const goal = targetRef.current;
+      if (reduceMotion) {
+        if (displayedRef.current !== goal) {
+          displayedRef.current = goal;
+          setDisplayed(goal);
+        }
+        if (activeRef.current) frame = requestAnimationFrame(tick);
+        return;
+      }
+
+      const dt = Math.min((now - last) / 1000, 0.05);
+      last = now;
+      const current = displayedRef.current;
+      const next =
+        current + (goal - current) * (1 - Math.exp(-dt / NEEDLE_TAU_SECONDS));
+      const settled = Math.abs(next - goal) < 0.04;
+      const value = settled ? goal : next;
+      const previous = displayedRef.current;
+      displayedRef.current = value;
+      if (Math.abs(previous - value) >= 0.005) {
+        setDisplayed(value);
+      }
+      if (!settled || activeRef.current) {
+        frame = requestAnimationFrame(tick);
+      }
+    };
+
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [active]);
+
+  return displayed;
+}
+
+/**
  * Shows how steady the connection was during the phase. Scaled to its own peak
  * rather than the dial, so variation is visible even on a slow link.
  */
@@ -181,7 +242,7 @@ function Sparkline({ samples }: { samples: number[] }) {
     return <div className="mt-2 h-10" aria-hidden="true" />;
   }
 
-  const recent = samples.slice(-60);
+  const recent = smoothSeries(samples.slice(-60));
   const peak = Math.max(...recent, 0.001);
   const step = 100 / Math.max(recent.length - 1, 1);
   const points = recent
@@ -209,12 +270,24 @@ function Sparkline({ samples }: { samples: number[] }) {
         fill="none"
         stroke="currentColor"
         className="text-accent-400"
-        strokeWidth={1.2}
+        strokeWidth={1.4}
+        strokeLinecap="round"
         strokeLinejoin="round"
         vectorEffect="non-scaling-stroke"
       />
     </svg>
   );
+}
+
+/** Light pass so the trace is a curve, not a seismograph of every request. */
+function smoothSeries(values: number[]): number[] {
+  if (values.length === 0) return values;
+  const alpha = 0.35;
+  const out: number[] = [values[0]];
+  for (let index = 1; index < values.length; index += 1) {
+    out.push(out[index - 1] + (values[index] - out[index - 1]) * alpha);
+  }
+  return out;
 }
 
 function arcPath(from: number, to: number): string {

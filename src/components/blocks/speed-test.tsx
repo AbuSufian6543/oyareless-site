@@ -63,6 +63,7 @@ export function SpeedTest({
   const [shareUrl, setShareUrl] = useState("");
   const [copied, setCopied] = useState(false);
   const abortRef = useRef<AbortController | null>(null);
+  const phaseRef = useRef<SpeedTestPhase>("idle");
 
   useEffect(() => {
     return () => abortRef.current?.abort();
@@ -80,6 +81,7 @@ export function SpeedTest({
     setError("");
     setShareUrl("");
     setCopied(false);
+    phaseRef.current = "idle";
 
     // Connection details are informational, so a failure here must not stop
     // the measurement itself.
@@ -93,9 +95,13 @@ export function SpeedTest({
       outcome = await runSpeedTest({
         signal: controller.signal,
         onPhase: (next) => {
+          const previous = phaseRef.current;
+          phaseRef.current = next;
           setPhase(next);
-          // Each phase measures something different, so the dial and the trace
-          // start fresh rather than carrying the previous phase's shape.
+          // The dial belongs to one kind of reading at a time. Resetting on
+          // every Cloudflare round — including the ping bursts between
+          // download sizes — is what made the needle bounce.
+          if (next === previous || next === "complete") return;
           setSamples([]);
           setLive(null);
         },
@@ -109,6 +115,7 @@ export function SpeedTest({
       });
     } catch (caught) {
       if ((caught as Error)?.name === "AbortError") {
+        phaseRef.current = "idle";
         setPhase("idle");
         setLive(null);
         return;
@@ -118,6 +125,7 @@ export function SpeedTest({
           ? caught.message
           : "The test could not complete. Please check your connection and try again.",
       );
+      phaseRef.current = "idle";
       setPhase("idle");
       return;
     }
@@ -174,6 +182,7 @@ export function SpeedTest({
             )}
           >
             <SpeedGauge
+              key={showingLatency ? "latency" : gaugeLabel}
               mbps={showingLatency ? null : live}
               label={showingLatency ? "Latency" : gaugeLabel}
               unit={showingLatency ? "ms" : "Mbps"}
@@ -220,7 +229,7 @@ export function SpeedTest({
               aria-valuemax={100}
             >
               <div
-                className="h-full rounded-full bg-accent-500 transition-all duration-300"
+                className="h-full rounded-full bg-accent-500 transition-[width] duration-500 ease-out"
                 style={{ width: `${Math.round(progress * 100)}%` }}
               />
             </div>

@@ -37,30 +37,22 @@ export type SpeedTestHandlers = {
 };
 
 /**
- * Cloudflare's default sequence minus the WebRTC packet-loss step. TURN is
- * often blocked on business networks, and we already tell visitors packet
- * loss cannot be measured reliably from a browser.
+ * Ping, then download, then upload. Cloudflare's library default interleaves
+ * the three, which made our dial jump back and forth between download and
+ * upload. Sizes still grow the same way theirs do.
  */
 const MEASUREMENTS = [
   { type: "latency" as const, numPackets: 2 },
-  { type: "download" as const, bytes: 1e5, count: 1, bypassMinDuration: true },
   { type: "latency" as const, numPackets: 20 },
+  { type: "download" as const, bytes: 1e5, count: 1, bypassMinDuration: true },
   { type: "download" as const, bytes: 1e5, count: 9 },
-  { type: "latency" as const, numPackets: 2 },
   { type: "download" as const, bytes: 1e6, count: 8 },
-  { type: "latency" as const, numPackets: 2 },
-  { type: "upload" as const, bytes: 1e5, count: 8 },
-  { type: "latency" as const, numPackets: 2 },
   { type: "download" as const, bytes: 1e7, count: 6 },
-  { type: "latency" as const, numPackets: 2 },
-  { type: "upload" as const, bytes: 1e7, count: 4 },
-  { type: "latency" as const, numPackets: 2 },
   { type: "download" as const, bytes: 25e6, count: 4 },
-  { type: "latency" as const, numPackets: 2 },
-  { type: "upload" as const, bytes: 25e6, count: 4 },
-  { type: "latency" as const, numPackets: 2 },
   { type: "download" as const, bytes: 1e8, count: 3 },
-  { type: "latency" as const, numPackets: 2 },
+  { type: "upload" as const, bytes: 1e5, count: 8 },
+  { type: "upload" as const, bytes: 1e7, count: 4 },
+  { type: "upload" as const, bytes: 25e6, count: 4 },
   { type: "upload" as const, bytes: 5e7, count: 3 },
 ];
 
@@ -84,10 +76,42 @@ export async function runSpeedTest(
 
   return new Promise((resolve, reject) => {
     let settled = false;
+    let phase: SpeedTestPhase = "connecting";
+    let seenThroughput = false;
+    let sampleFrame = 0;
+    let pendingSample: number | null = null;
+
+    const PHASE_ORDER: SpeedTestPhase[] = [
+      "connecting",
+      "ping",
+      "download",
+      "upload",
+      "complete",
+    ];
+
+    const setPhase = (next: SpeedTestPhase) => {
+      if (phase === next) return;
+      if (PHASE_ORDER.indexOf(next) < PHASE_ORDER.indexOf(phase)) return;
+      phase = next;
+      onPhase(next);
+    };
+
+    const emitSample = (mbps: number) => {
+      pendingSample = mbps;
+      if (sampleFrame) return;
+      sampleFrame = requestAnimationFrame(() => {
+        sampleFrame = 0;
+        if (pendingSample === null) return;
+        onSample(pendingSample);
+        pendingSample = null;
+      });
+    };
 
     const finish = (action: () => void) => {
       if (settled) return;
       settled = true;
+      if (sampleFrame) cancelAnimationFrame(sampleFrame);
+      pendingSample = null;
       signal.removeEventListener("abort", onAbort);
       action();
     };
@@ -116,11 +140,16 @@ export async function runSpeedTest(
 
     engine.onPhaseChange = ({ measurement, measurementId }) => {
       if (settled) return;
-      if (measurement.type === "download") onPhase("download");
-      else if (measurement.type === "upload") onPhase("upload");
-      else if (measurement.type === "latency") {
-        // Opening latency rounds, before any real transfer has started.
-        if (measurementId <= 2) onPhase("ping");
+      if (measurement.type === "download") {
+        seenThroughput = true;
+        setPhase("download");
+      } else if (measurement.type === "upload") {
+        seenThroughput = true;
+        setPhase("upload");
+      } else if (measurement.type === "latency" && !seenThroughput) {
+        // Opening latency only. Later ping rounds sit between download and
+        // upload; sending those back to "ping" would zero the needle.
+        setPhase("ping");
       }
       onProgress(Math.min((measurementId + 1) / MEASUREMENTS.length, 0.98));
     };
@@ -138,27 +167,30 @@ export async function runSpeedTest(
       }
 
       if (type === "latency") {
+        if (phase !== "ping") return;
         const pings = results.getUnloadedLatencyPoints();
         const latest = pings[pings.length - 1];
-        if (typeof latest === "number") onSample(latest);
+        if (typeof latest === "number") emitSample(latest);
         return;
       }
 
       if (type === "download") {
-        const points = results.getDownloadBandwidthPoints();
-        const latest = points[points.length - 1];
-        if (latest) onSample(bpsToMbps(latest.bps));
         const download = results.getDownloadBandwidth();
-        if (download) onPartial({ downloadMbps: bpsToMbps(download) });
+        if (download) {
+          const mbps = bpsToMbps(download);
+          emitSample(mbps);
+          onPartial({ downloadMbps: mbps });
+        }
         return;
       }
 
       if (type === "upload") {
-        const points = results.getUploadBandwidthPoints();
-        const latest = points[points.length - 1];
-        if (latest) onSample(bpsToMbps(latest.bps));
         const upload = results.getUploadBandwidth();
-        if (upload) onPartial({ uploadMbps: bpsToMbps(upload) });
+        if (upload) {
+          const mbps = bpsToMbps(upload);
+          emitSample(mbps);
+          onPartial({ uploadMbps: mbps });
+        }
       }
     };
 
@@ -192,9 +224,10 @@ export async function runSpeedTest(
         jitterMs,
       };
       onPartial(outcome);
-      onPhase("complete");
+      setPhase("complete");
       onProgress(1);
       finish(() => resolve(outcome));
+      onSample(outcome.downloadMbps);
     };
 
     engine.play();
