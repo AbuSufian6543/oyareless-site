@@ -2404,7 +2404,7 @@ const support: SeedPage = {
     ),
     {
       type: "speedTest",
-      settings: { background: "white", paddingY: "xl" },
+      settings: { background: "dark", paddingY: "lg" },
       data: {
         heading: "Internet speed test",
         description:

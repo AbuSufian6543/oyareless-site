@@ -169,12 +169,7 @@ export function SpeedTest({
   const status = error || PHASE_COPY[phase];
 
   return (
-    <div
-      className={cn(
-        !dark &&
-          "overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 p-4 shadow-card sm:p-6",
-      )}
-    >
+    <div>
       <div
         className={cn(
           "relative mx-auto max-w-3xl rounded-[1.75rem] border border-white/10 bg-navy-950/75",

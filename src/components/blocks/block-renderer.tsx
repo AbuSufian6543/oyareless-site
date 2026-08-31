@@ -42,6 +42,7 @@ import {
 } from "@/components/blocks/service-blocks";
 import { SpeedTest } from "@/components/blocks/speed-test";
 import { StatusStripBlock } from "@/components/blocks/status-strip-block";
+import { TechBackdrop } from "@/components/visuals/tech-backdrop";
 import {
   LiveStreamBlock,
   StreamGridBlock,
@@ -130,17 +131,27 @@ export function BlockRenderer({
       return <KbHighlightsBlock block={block} />;
     case "speedTest":
       return (
-        <Section settings={block.settings}>
-          <SectionHeading
-            heading={block.data.heading}
-            description={block.data.description}
-            dark={isDarkBackground(block.settings)}
-          />
-          <SpeedTest
-            note={block.data.note}
-            dark={isDarkBackground(block.settings)}
-          />
-        </Section>
+        <section
+          id={block.settings?.anchor || undefined}
+          className="relative isolate overflow-hidden bg-navy-950"
+          style={
+            block.settings?.anchor
+              ? { scrollMarginTop: "6rem" }
+              : undefined
+          }
+        >
+          <TechBackdrop network density={0.7} glow="center" mood="network" />
+          <div className="container-page py-14 lg:py-20">
+            <SectionHeading
+              heading={block.data.heading}
+              description={block.data.description}
+              dark
+              align="center"
+              className="mb-8 lg:mb-10"
+            />
+            <SpeedTest note={block.data.note} dark />
+          </div>
+        </section>
       );
     case "contactForm":
       return (
