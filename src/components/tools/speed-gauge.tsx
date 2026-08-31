@@ -47,44 +47,33 @@ export function formatGaugeValue(value: number): string {
 
 export function SpeedGauge({
   mbps,
-  progress,
   label,
   unit = "Mbps",
   samples,
   active,
-  hold = false,
   children,
   className,
 }: {
-  /** Live throughput, or null when the arc is at rest / showing phase progress. */
+  /** Live throughput, or null when the arc should home to rest. */
   mbps: number | null;
-  /** 0–1 fill used while latency is running, so the arc is not stuck at zero. */
-  progress?: number;
   label: string;
   unit?: string;
   samples: number[];
   active: boolean;
-  /** Keep the last reading on the face after the test, instead of homing to zero. */
-  hold?: boolean;
   children?: ReactNode;
   className?: string;
 }) {
   const gradientId = useId().replace(/:/g, "");
   const glowId = `${gradientId}-glow`;
-  const usingProgress = mbps === null && typeof progress === "number";
-  const arcTarget = usingProgress
-    ? clamp01(progress)
-    : mbps === null
-      ? 0
-      : gaugeFraction(mbps);
+  const arcTarget = mbps === null ? 0 : gaugeFraction(mbps);
   const numberTarget = mbps === null ? 0 : Math.max(0, mbps);
-  const displayedArc = useSmoothedValue(arcTarget, active || hold);
-  const displayedMbps = useSmoothedValue(numberTarget, active || hold);
+  const displayedArc = useSmoothedValue(arcTarget, active);
+  const displayedMbps = useSmoothedValue(numberTarget, active);
   const fraction = displayedArc;
   const showReadout =
     !children &&
-    ((active && !usingProgress && (mbps !== null || displayedMbps > 0.08)) ||
-      (hold && mbps !== null));
+    active &&
+    (mbps !== null || displayedMbps > 0.08);
   const tip = pointAt(fraction, RADIUS);
 
   return (
@@ -97,9 +86,7 @@ export function SpeedGauge({
           aria-label={
             showReadout
               ? `${label}: ${formatGaugeValue(displayedMbps)} ${unit}`
-              : usingProgress
-                ? `${label}: in progress`
-                : `${label}: at rest`
+              : `${label}: at rest`
           }
         >
           <defs>
@@ -232,6 +219,9 @@ function useSmoothedValue(target: number, running: boolean): number {
   const runningRef = useRef(running);
   targetRef.current = target;
   runningRef.current = running;
+  // Restart the loop when the test stops so the arc can home to zero even
+  // though `target` lives in a ref and would not otherwise retrigger it.
+  const home = !running && target === 0;
 
   useEffect(() => {
     const reduceMotion = window.matchMedia(
@@ -264,7 +254,7 @@ function useSmoothedValue(target: number, running: boolean): number {
       const value = settled ? goal : next;
       const previous = displayedRef.current;
       displayedRef.current = value;
-      if (Math.abs(previous - value) >= 0.002) {
+      if (Math.abs(previous - value) >= 0.002 || (settled && previous !== value)) {
         setDisplayed(value);
       }
       if (!settled || runningRef.current) {
@@ -275,7 +265,7 @@ function useSmoothedValue(target: number, running: boolean): number {
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- target is a ref
-  }, [running]);
+  }, [running, home]);
 
   return displayed;
 }
@@ -343,6 +333,3 @@ function pointAt(fraction: number, radius: number): { x: number; y: number } {
   };
 }
 
-function clamp01(value: number): number {
-  return Math.min(1, Math.max(0, value));
-}

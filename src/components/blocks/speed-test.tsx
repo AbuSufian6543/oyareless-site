@@ -58,7 +58,6 @@ export function SpeedTest({
   const [live, setLive] = useState<number | null>(null);
   const [samples, setSamples] = useState<number[]>([]);
   const [results, setResults] = useState<Partial4>({});
-  const [progress, setProgress] = useState(0);
   const [error, setError] = useState("");
   const [info, setInfo] = useState<Info | null>(null);
   const [shareUrl, setShareUrl] = useState("");
@@ -78,7 +77,6 @@ export function SpeedTest({
     setResults({});
     setSamples([]);
     setLive(null);
-    setProgress(0);
     setError("");
     setShareUrl("");
     setCopied(false);
@@ -110,7 +108,7 @@ export function SpeedTest({
           setLive(value);
           setSamples((current) => [...current.slice(-119), value]);
         },
-        onProgress: setProgress,
+        onProgress: () => undefined,
         onPartial: (partial) =>
           setResults((current) => ({ ...current, ...partial })),
       });
@@ -120,7 +118,6 @@ export function SpeedTest({
         setPhase("idle");
         setLive(null);
         setSamples([]);
-        setProgress(0);
         return;
       }
       setError(
@@ -161,11 +158,7 @@ export function SpeedTest({
   const throughput = phase === "download" || phase === "upload";
   const complete = phase === "complete";
 
-  const gaugeMbps = throughput
-    ? live
-    : complete
-      ? (results.downloadMbps ?? null)
-      : null;
+  const gaugeMbps = throughput ? live : null;
 
   async function copyShare() {
     await navigator.clipboard.writeText(shareUrl).catch(() => undefined);
@@ -196,23 +189,15 @@ export function SpeedTest({
         <div className="relative px-4 py-8 sm:px-10 sm:py-10">
           <SpeedGauge
             mbps={gaugeMbps}
-            progress={showingLatency ? Math.max(progress, 0.04) : undefined}
-            label={
-              complete
-                ? "Download"
-                : phase === "upload"
-                  ? "Upload"
-                  : "Download"
-            }
+            label={phase === "upload" ? "Upload" : "Download"}
             unit="Mbps"
             samples={throughput ? samples : []}
             active={throughput}
-            hold={complete}
           >
-            {phase === "idle" ? (
+            {phase === "idle" || phase === "complete" ? (
               <GoControl
-                pulse
-                hint="Start speed test"
+                pulse={phase === "idle"}
+                hint={phase === "complete" ? "Test again" : "Start speed test"}
                 onClick={() => void run()}
               />
             ) : showingLatency ? (
@@ -242,16 +227,6 @@ export function SpeedTest({
                 className="mt-2 text-sm font-semibold text-navy-400 underline-offset-4 transition-colors hover:text-white hover:underline"
               >
                 Stop test
-              </button>
-            )}
-
-            {complete && (
-              <button
-                type="button"
-                onClick={() => void run()}
-                className="mt-4 inline-flex rounded-full border border-white/20 px-5 py-2 text-sm font-semibold text-white transition-colors hover:border-accent-400 hover:text-accent-300"
-              >
-                Test again
               </button>
             )}
           </div>

@@ -38,22 +38,23 @@ export type SpeedTestHandlers = {
 
 /**
  * Ping, then download, then upload. Cloudflare's library default interleaves
- * the three, which made the live figure jump back and forth between download
- * and upload. Sizes still grow the same way theirs do.
+ * the three and ramps through 100 MB+ files plus a 20-packet ping — that is
+ * what made a run feel like it would not end.
+ *
+ * This sequence is built for a customer tool, not a lab: enough samples for a
+ * stable figure, short enough that the dial is done in a few seconds.
+ * Packet-loss is omitted (it waits on a TURN path and we do not display it).
  */
 const MEASUREMENTS = [
-  { type: "latency" as const, numPackets: 2 },
-  { type: "latency" as const, numPackets: 20 },
+  { type: "latency" as const, numPackets: 8 },
   { type: "download" as const, bytes: 1e5, count: 1, bypassMinDuration: true },
-  { type: "download" as const, bytes: 1e5, count: 9 },
-  { type: "download" as const, bytes: 1e6, count: 8 },
-  { type: "download" as const, bytes: 1e7, count: 6 },
-  { type: "download" as const, bytes: 25e6, count: 4 },
-  { type: "download" as const, bytes: 1e8, count: 3 },
-  { type: "upload" as const, bytes: 1e5, count: 8 },
-  { type: "upload" as const, bytes: 1e7, count: 4 },
-  { type: "upload" as const, bytes: 25e6, count: 4 },
-  { type: "upload" as const, bytes: 5e7, count: 3 },
+  { type: "download" as const, bytes: 1e6, count: 3 },
+  { type: "download" as const, bytes: 1e7, count: 2 },
+  { type: "download" as const, bytes: 2.5e7, count: 2 },
+  { type: "upload" as const, bytes: 1e5, count: 1, bypassMinDuration: true },
+  { type: "upload" as const, bytes: 1e6, count: 2 },
+  { type: "upload" as const, bytes: 1e7, count: 2 },
+  { type: "upload" as const, bytes: 2.5e7, count: 2 },
 ];
 
 export class SpeedTestError extends Error {}
@@ -72,6 +73,14 @@ export async function runSpeedTest(
     logAimApiUrl: null,
     logMeasurementApiUrl: null,
     measurements: MEASUREMENTS,
+    // Idle ping is what we show. Measuring ping while a transfer is running
+    // lengthens download and upload for a figure we never display.
+    measureDownloadLoadedLatency: false,
+    measureUploadLoadedLatency: false,
+    // Stop ramping to a larger file once a request in this direction has
+    // already taken this long. Default is 1000 ms; 800 ms is enough to size
+    // the connection without a 100 MB follow-up.
+    bandwidthFinishRequestDuration: 800,
   });
 
   return new Promise((resolve, reject) => {
@@ -147,8 +156,6 @@ export async function runSpeedTest(
         seenThroughput = true;
         setPhase("upload");
       } else if (measurement.type === "latency" && !seenThroughput) {
-        // Opening latency only. Later ping rounds sit between download and
-        // upload; sending those back to "ping" would zero the live figure.
         setPhase("ping");
       }
       onProgress(Math.min((measurementId + 1) / MEASUREMENTS.length, 0.98));
