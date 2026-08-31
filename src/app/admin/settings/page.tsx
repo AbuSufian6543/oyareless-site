@@ -1,6 +1,9 @@
 import { CircleCheck, TriangleAlert } from "lucide-react";
 
-import { saveSettingsAction } from "@/app/admin/settings/actions";
+import {
+  saveSettingsAction,
+  testSmtpAction,
+} from "@/app/admin/settings/actions";
 import {
   Alert,
   Card,
@@ -11,7 +14,7 @@ import {
   TextField,
 } from "@/components/admin/ui";
 import { requireAdminRole } from "@/lib/admin-guard";
-import { env } from "@/lib/env";
+import { getMailSettings, getResolvedMail } from "@/lib/mail-settings";
 import { getSettings } from "@/lib/settings";
 
 export const metadata = { title: "Site settings" };
@@ -19,18 +22,22 @@ export const metadata = { title: "Site settings" };
 export default async function SettingsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ saved?: string }>;
+  searchParams: Promise<{ saved?: string; tested?: string; mailerror?: string }>;
 }) {
   await requireAdminRole("ADMIN");
 
   const params = await searchParams;
-  const settings = await getSettings();
+  const [settings, mail, resolved] = await Promise.all([
+    getSettings(),
+    getMailSettings(),
+    getResolvedMail(),
+  ]);
 
   return (
     <div className="max-w-3xl">
       <PageHeader
         title="Site settings"
-        description="Company details used across the header, footer, contact blocks and structured data."
+        description="Company details, outbound email, and the office inboxes that receive quotes and support requests."
       />
 
       {params.saved && (
@@ -44,30 +51,53 @@ export default async function SettingsPage({
         </div>
       )}
 
+      {params.tested && (
+        <div className="mb-5">
+          <Alert tone="success">
+            <span className="flex items-center gap-2">
+              <CircleCheck className="size-4" aria-hidden="true" />
+              Test email sent to your staff address. Check that inbox.
+            </span>
+          </Alert>
+        </div>
+      )}
+
+      {params.mailerror && (
+        <div className="mb-5">
+          <Alert tone="warning">
+            <span className="flex items-start gap-2">
+              <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+              The SMTP server could not be reached. Check the host, port,
+              username and password, then save and try again.
+            </span>
+          </Alert>
+        </div>
+      )}
+
       <div className="mb-6">
-        <Alert tone={env.smtp.isConfigured ? "success" : "warning"}>
+        <Alert tone={resolved.isConfigured ? "success" : "warning"}>
           <span className="flex items-start gap-2">
-            {env.smtp.isConfigured ? (
+            {resolved.isConfigured ? (
               <CircleCheck className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
             ) : (
               <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
             )}
             <span>
-              {env.smtp.isConfigured ? (
+              {resolved.isConfigured ? (
                 <>
-                  Email is configured. Notifications go to{" "}
-                  <strong>{env.smtp.to}</strong> via{" "}
+                  Email is configured. Quote requests, support forms and
+                  password-reset messages go through{" "}
                   <strong>
-                    {env.smtp.host}:{env.smtp.port}
+                    {resolved.host}:{resolved.port}
                   </strong>
-                  .
+                  . Office copies are sent to{" "}
+                  <strong>{resolved.notifyEmails.join(", ")}</strong>.
                 </>
               ) : (
                 <>
-                  SMTP is not configured yet, so form submissions are saved to
-                  the inbox but no email is sent. Add <code>SMTP_HOST</code>,{" "}
-                  <code>SMTP_USER</code> and <code>SMTP_PASSWORD</code> to the
-                  server’s <code>.env</code> file and restart.
+                  SMTP is not configured yet, so the site saves form submissions
+                  but cannot send mail. Fill in the Email section below — no
+                  server restart is required.
                 </>
               )}
             </span>
@@ -82,6 +112,77 @@ export default async function SettingsPage({
         <input type="hidden" name="present:announcementEnabled" value="1" />
         <input type="hidden" name="present:cookieBannerEnabled" value="1" />
         <input type="hidden" name="present:showLiveChatCta" value="1" />
+
+        <Card>
+          <CardTitle description="Used for password resets, quote requests, and other mail the site sends. The password is stored encrypted and is never shown again.">
+            Email (SMTP)
+          </CardTitle>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <TextField
+              label="SMTP server"
+              name="smtpHost"
+              defaultValue={mail.smtpHost}
+              placeholder="smtp.office365.com"
+              autoComplete="off"
+              className="sm:col-span-2"
+            />
+            <TextField
+              label="Port"
+              name="smtpPort"
+              type="number"
+              inputMode="numeric"
+              defaultValue={mail.smtpPort}
+              placeholder="587"
+            />
+            <TextField
+              label="Username"
+              name="smtpUser"
+              defaultValue={mail.smtpUser}
+              placeholder="service@wirelesscom.ca"
+              autoComplete="off"
+            />
+            <TextField
+              label="Password"
+              name="smtpPassword"
+              type="password"
+              autoComplete="new-password"
+              placeholder={
+                mail.smtpPassword ? "Leave blank to keep the current password" : ""
+              }
+              hint={
+                mail.smtpPassword
+                  ? "A password is already saved."
+                  : "Required if the server asks for authentication."
+              }
+              className="sm:col-span-2"
+            />
+            <TextField
+              label="From address"
+              name="smtpFrom"
+              defaultValue={mail.smtpFrom}
+              placeholder="WirelessCom.Ca Inc. <no-reply@wirelesscom.ca>"
+              className="sm:col-span-2"
+              hint="What visitors see in the From field."
+            />
+            <TextAreaField
+              label="Office email addresses"
+              name="notifyEmails"
+              rows={3}
+              defaultValue={mail.notifyEmails}
+              placeholder={"service@wirelesscom.ca\nquotes@wirelesscom.ca"}
+              className="sm:col-span-2"
+              hint="One address per line. Quote requests and support forms are delivered here."
+            />
+          </div>
+          <div className="mt-4">
+            <CheckboxField
+              label="Use SSL on connect"
+              name="smtpSecure"
+              defaultChecked={mail.smtpSecure}
+              description="Turn this on for port 465. Leave it off for port 587 (STARTTLS), which most Office 365 and Google Workspace accounts use."
+            />
+          </div>
+        </Card>
 
         <Card>
           <CardTitle>Company</CardTitle>
@@ -262,13 +363,29 @@ export default async function SettingsPage({
           </div>
         </Card>
 
-        <button
-          type="submit"
-          className="rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
-        >
-          Save settings
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            type="submit"
+            className="rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+          >
+            Save settings
+          </button>
+        </div>
       </form>
+
+      {resolved.isConfigured && (
+        <form action={testSmtpAction} className="mt-4">
+          <button
+            type="submit"
+            className="rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-navy-800 transition-colors hover:border-brand-400 hover:text-brand-700"
+          >
+            Send a test email to me
+          </button>
+          <p className="mt-2 text-xs text-slate-500">
+            Uses the saved SMTP settings. Save first if you just changed them.
+          </p>
+        </form>
+      )}
     </div>
   );
 }

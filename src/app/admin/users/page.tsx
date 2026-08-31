@@ -302,7 +302,7 @@ export default async function UsersPage({
                 label="Email them the sign-in details"
                 name="sendInvite"
                 defaultChecked
-                description="Requires SMTP to be configured."
+                description="Requires Email (SMTP) under Site Settings."
               />
 
               <button

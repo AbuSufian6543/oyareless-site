@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { Eye, EyeOff, LoaderCircle, LogIn, ShieldCheck, TriangleAlert } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 
 import { loginAction, verifyTwoFactorAction, type LoginState } from "@/app/login/actions";
@@ -88,6 +89,15 @@ export function LoginForm() {
       </div>
 
       <PasswordField />
+
+      <p className="text-right">
+        <Link
+          href="/login/forgot"
+          className="text-sm font-semibold text-brand-600 hover:text-brand-700"
+        >
+          Forgot password?
+        </Link>
+      </p>
 
       {credentialState.error && <ErrorNotice message={credentialState.error} />}
 

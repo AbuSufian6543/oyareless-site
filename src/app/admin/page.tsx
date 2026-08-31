@@ -14,6 +14,7 @@ import {
 
 import { Alert, Badge, Card, CardTitle, EmptyState, PageHeader } from "@/components/admin/ui";
 import { env } from "@/lib/env";
+import { getResolvedMail } from "@/lib/mail-settings";
 import { prisma } from "@/lib/prisma";
 import { formatDateTime } from "@/lib/utils";
 
@@ -29,6 +30,7 @@ export default async function AdminDashboard() {
     newSubmissions,
     subscribers,
     recentSubmissions,
+    mail,
   ] = await Promise.all([
     prisma.page.count({ where: { status: "PUBLISHED" } }).catch(() => 0),
     prisma.page.count({ where: { status: "DRAFT" } }).catch(() => 0),
@@ -40,6 +42,9 @@ export default async function AdminDashboard() {
     prisma.formSubmission
       .findMany({ orderBy: { createdAt: "desc" }, take: 6 })
       .catch(() => []),
+    getResolvedMail().catch((): { isConfigured: boolean } => ({
+      isConfigured: false,
+    })),
   ]);
 
   const stats = [
@@ -73,13 +78,16 @@ export default async function AdminDashboard() {
         }
       />
 
-      {!env.smtp.isConfigured && (
+      {!mail.isConfigured && (
         <div className="mb-6">
           <Alert tone="warning">
             <strong>SMTP is not configured.</strong> Form submissions are being
             saved to the inbox, but no notification emails are being sent. Add
-            your SMTP credentials to the <code>.env</code> file and restart the
-            app, then verify the connection under Site Settings.
+            the mail server under{" "}
+            <Link href="/admin/settings" className="font-semibold underline">
+              Site Settings
+            </Link>
+            .
           </Alert>
         </div>
       )}
@@ -207,7 +215,7 @@ export default async function AdminDashboard() {
               <div className="flex items-center justify-between">
                 <dt className="text-slate-600">Email delivery</dt>
                 <dd>
-                  {env.smtp.isConfigured ? (
+                  {mail.isConfigured ? (
                     <Badge tone="success">Configured</Badge>
                   ) : (
                     <Badge tone="warning">Not set up</Badge>

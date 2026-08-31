@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 
 import { recordAudit } from "@/lib/audit";
 import { requireRole } from "@/lib/auth";
+import { sendMail, verifySmtp } from "@/lib/mail";
+import { updateMailSettings } from "@/lib/mail-settings";
 import { DEFAULT_SETTINGS, updateSettings } from "@/lib/settings";
 
 const BOOLEAN_KEYS = new Set([
@@ -47,6 +49,24 @@ export async function saveSettingsAction(formData: FormData): Promise<void> {
 
   await updateSettings(values as never);
 
+  if (formData.has("smtpHost")) {
+    const portRaw = String(formData.get("smtpPort") ?? "587").trim();
+    const port = Number.parseInt(portRaw, 10);
+    const mail: Parameters<typeof updateMailSettings>[0] = {
+      smtpHost: String(formData.get("smtpHost") ?? "").trim(),
+      smtpPort: Number.isFinite(port) && port > 0 ? String(port) : "587",
+      smtpSecure: formData.get("smtpSecure") === "on",
+      smtpUser: String(formData.get("smtpUser") ?? "").trim(),
+      smtpFrom: String(formData.get("smtpFrom") ?? "").trim(),
+      notifyEmails: String(formData.get("notifyEmails") ?? "").trim(),
+    };
+    const nextPassword = String(formData.get("smtpPassword") ?? "");
+    if (nextPassword.trim()) {
+      mail.smtpPassword = nextPassword.trim();
+    }
+    await updateMailSettings(mail);
+  }
+
   await recordAudit({
     action: "settings.updated",
     userId: user.id,
@@ -56,4 +76,33 @@ export async function saveSettingsAction(formData: FormData): Promise<void> {
 
   revalidatePath("/", "layout");
   redirect(`${returnTo}?saved=1`);
+}
+
+export async function testSmtpAction(): Promise<void> {
+  const user = await requireRole("ADMIN");
+
+  const verified = await verifySmtp();
+  if (!verified.ok) {
+    redirect("/admin/settings?mailerror=1");
+  }
+
+  const sent = await sendMail({
+    to: user.email,
+    subject: "SMTP test — WirelessCom.Ca Inc.",
+    html: `<p>This is a test from the WirelessCom.Ca website. If you received it, SMTP is working.</p>
+           <p>Office notifications will also use the addresses listed under Site Settings → Email.</p>`,
+  });
+
+  if (!sent.ok) {
+    redirect("/admin/settings?mailerror=1");
+  }
+
+  await recordAudit({
+    action: "settings.smtp_tested",
+    userId: user.id,
+    entityType: "SiteSetting",
+    summary: `SMTP test sent to ${user.email}`,
+  });
+
+  redirect("/admin/settings?tested=1");
 }

@@ -2,26 +2,38 @@ import "server-only";
 
 import nodemailer, { type Transporter } from "nodemailer";
 import { env } from "@/lib/env";
+import { getResolvedMail, type ResolvedMail } from "@/lib/mail-settings";
 
-let transporter: Transporter | null = null;
+let cached: { key: string; transporter: Transporter; config: ResolvedMail } | null = null;
 
-function getTransporter(): Transporter | null {
-  if (!env.smtp.isConfigured) return null;
-  if (transporter) return transporter;
+function transporterKey(config: ResolvedMail): string {
+  return [config.host, config.port, config.user, config.password, config.secure].join("|");
+}
 
-  transporter = nodemailer.createTransport({
-    host: env.smtp.host,
-    port: env.smtp.port,
+async function getClient(): Promise<{
+  transporter: Transporter;
+  config: ResolvedMail;
+} | null> {
+  const config = await getResolvedMail();
+  if (!config.isConfigured) return null;
+
+  const key = transporterKey(config);
+  if (cached?.key === key) return cached;
+
+  const transporter = nodemailer.createTransport({
+    host: config.host,
+    port: config.port,
     // Port 465 is implicit TLS; 587 upgrades via STARTTLS.
-    secure: env.smtp.secure || env.smtp.port === 465,
-    auth: env.smtp.user
-      ? { user: env.smtp.user, pass: env.smtp.password }
+    secure: config.secure || config.port === 465,
+    auth: config.user
+      ? { user: config.user, pass: config.password }
       : undefined,
     pool: true,
     maxConnections: 3,
   });
 
-  return transporter;
+  cached = { key, transporter, config };
+  return cached;
 }
 
 export type MailResult =
@@ -35,7 +47,7 @@ export async function sendMail(input: {
   text?: string;
   replyTo?: string;
 }): Promise<MailResult> {
-  const client = getTransporter();
+  const client = await getClient();
   if (!client) {
     console.warn(
       `[mail] SMTP not configured — skipped sending "${input.subject}".`,
@@ -44,9 +56,9 @@ export async function sendMail(input: {
   }
 
   try {
-    await client.sendMail({
-      from: env.smtp.from,
-      to: input.to ?? env.smtp.to,
+    await client.transporter.sendMail({
+      from: client.config.from,
+      to: input.to ?? client.config.notifyEmails.join(", "),
       subject: input.subject,
       html: input.html,
       text: input.text ?? htmlToText(input.html),
@@ -66,10 +78,10 @@ export async function sendMail(input: {
 export async function verifySmtp(): Promise<
   { ok: true } | { ok: false; error: string }
 > {
-  const client = getTransporter();
+  const client = await getClient();
   if (!client) return { ok: false, error: "SMTP is not configured." };
   try {
-    await client.verify();
+    await client.transporter.verify();
     return { ok: true };
   } catch (error) {
     return {
@@ -293,5 +305,34 @@ export function newUserInviteEmail(input: {
   return {
     subject: "Your WirelessCom.Ca admin account",
     html: layout(`Welcome, ${input.name}`, body),
+  };
+}
+
+export function passwordResetEmail(input: {
+  name: string;
+  resetUrl: string;
+}): { subject: string; html: string } {
+  const body = `
+    <p style="margin:0 0 16px;font-size:15px;color:#3c4e63;line-height:1.65;">
+      Hello ${escapeHtml(input.name.split(" ")[0] || input.name)},
+    </p>
+    <p style="margin:0 0 16px;font-size:15px;color:#3c4e63;line-height:1.65;">
+      We received a request to reset the password on your WirelessCom.Ca staff
+      account. This link expires in one hour and can only be used once.
+    </p>
+    <p style="margin:0 0 20px;">
+      <a href="${escapeHtml(input.resetUrl)}"
+         style="display:inline-block;background:#0a5fae;color:#ffffff;padding:12px 22px;border-radius:6px;text-decoration:none;font-size:15px;font-weight:700;">
+        Choose a new password
+      </a>
+    </p>
+    <p style="margin:0;font-size:12px;color:#8194ab;">
+      If you did not request this, you can ignore this email. Your current
+      password will stay the same.
+    </p>`;
+
+  return {
+    subject: "Reset your WirelessCom.Ca staff password",
+    html: layout("Reset your password", body),
   };
 }
