@@ -26,9 +26,9 @@ export type SpeedTestOutcome = {
 
 export type SpeedTestHandlers = {
   signal: AbortSignal;
-  /** Phase changed. The gauge resets its needle on each transition. */
+  /** Phase changed. The gauge resets its arc on each transition. */
   onPhase: (phase: SpeedTestPhase) => void;
-  /** Live throughput for the needle and sparkline, in Mbps. */
+  /** Live throughput for the arc and sparkline, in Mbps. */
   onSample: (mbps: number) => void;
   /** Overall progress, 0 to 1. */
   onProgress: (fraction: number) => void;
@@ -38,8 +38,8 @@ export type SpeedTestHandlers = {
 
 /**
  * Ping, then download, then upload. Cloudflare's library default interleaves
- * the three, which made our dial jump back and forth between download and
- * upload. Sizes still grow the same way theirs do.
+ * the three, which made the live figure jump back and forth between download
+ * and upload. Sizes still grow the same way theirs do.
  */
 const MEASUREMENTS = [
   { type: "latency" as const, numPackets: 2 },
@@ -148,7 +148,7 @@ export async function runSpeedTest(
         setPhase("upload");
       } else if (measurement.type === "latency" && !seenThroughput) {
         // Opening latency only. Later ping rounds sit between download and
-        // upload; sending those back to "ping" would zero the needle.
+        // upload; sending those back to "ping" would zero the live figure.
         setPhase("ping");
       }
       onProgress(Math.min((measurementId + 1) / MEASUREMENTS.length, 0.98));

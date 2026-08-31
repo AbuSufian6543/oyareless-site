@@ -43,24 +43,23 @@ export default async function SpeedTestPage() {
   return (
     <>
       <section className="relative isolate overflow-hidden">
-        <TechBackdrop density={0.8} glow="center" />
-        <div className="container-page py-14 lg:py-20">
-          <div className="mx-auto max-w-3xl text-center">
+        <TechBackdrop network density={0.7} glow="center" mood="network" />
+        <div className="container-page py-10 lg:py-16">
+          <div className="mx-auto max-w-2xl text-center">
             <p className="eyebrow-pill">
               <Gauge className="size-3.5" aria-hidden="true" />
-              Network tool
+              Network Tool
             </p>
             <h1 className="mt-5 text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
               Internet Speed Test
             </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-lg leading-relaxed text-navy-200">
-              Measured against Cloudflare's public edge network — the same
-              servers behind speed.cloudflare.com — not our website. Press GO
-              and the test will check latency, then download, then upload.
+            <p className="mx-auto mt-4 max-w-xl text-base leading-relaxed text-navy-200 sm:text-lg">
+              Latency, then download, then upload — measured at Cloudflare&rsquo;s
+              nearest edge, not this website.
             </p>
           </div>
 
-          <div className="mt-10">
+          <div className="mt-8 lg:mt-10">
             <SpeedTest dark />
           </div>
         </div>
