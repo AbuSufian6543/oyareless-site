@@ -46,7 +46,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
     icon: "Radar",
     seed: {
       eyebrow: "Technology service provider · Northern Ontario",
-      headline: "Networks, security, and communications for Northern Ontario",
+      headline: "Networks, Security, And Communications For Northern Ontario",
       subheadline:
         "Since 2005 in Sault Ste. Marie we design, install, and support the systems businesses here actually run — IT and Wi-Fi, firewalls, cameras and alarms, VoIP, and two-way radio.",
       buttons: [

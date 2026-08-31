@@ -6,7 +6,7 @@ import { env } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
-  title: "System status",
+  title: "System Status",
   description: "Whether this website and its supporting services are reachable.",
   alternates: { canonical: `${env.siteUrl}/system-status` },
 };
@@ -29,7 +29,7 @@ export default async function SystemStatusPage() {
     <>
       <PageHero
         eyebrow="Operations"
-        title="System status"
+        title="System Status"
         description="Health of this website — not your office network. For monitored customer services see Network status."
       />
       <section className="bg-white py-12">

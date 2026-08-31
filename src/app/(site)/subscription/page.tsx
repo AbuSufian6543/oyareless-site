@@ -32,7 +32,7 @@ export default async function SubscriptionPage({
           )}
 
           <h1 className="mt-5 text-2xl font-bold text-navy-900">
-            {confirmed ? "Subscription confirmed" : "Link not valid"}
+            {confirmed ? "Subscription Confirmed" : "Link Not Valid"}
           </h1>
 
           <p className="mt-3 leading-relaxed text-slate-600">

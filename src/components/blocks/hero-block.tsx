@@ -2,6 +2,7 @@ import { Check, ChevronRight } from "lucide-react";
 
 import { ButtonLink, type ButtonVariant } from "@/components/ui/button";
 import { SectionImage } from "@/components/visuals/section-image";
+import { TechBackdrop } from "@/components/visuals/tech-backdrop";
 import type { BlockOf, LinkItem } from "@/lib/blocks";
 import { cn } from "@/lib/utils";
 
@@ -27,8 +28,8 @@ export function HeroBlock({ block }: { block: BlockOf<"hero"> }) {
 
   if (isSplit) {
     return (
-      <section className="relative overflow-hidden bg-navy-900">
-        <div className="bg-tech-grid absolute inset-0" aria-hidden="true" />
+      <section className="relative isolate overflow-hidden bg-navy-950">
+        <TechBackdrop network density={0.75} glow="right" mood="network" />
         <div className="container-page relative">
           <div className="grid items-center gap-12 py-20 lg:grid-cols-2 lg:gap-16 lg:py-28">
             <div>
@@ -96,21 +97,7 @@ export function HeroBlock({ block }: { block: BlockOf<"hero"> }) {
       )}
 
       {!hasMedia && !isLight && (
-        <>
-          <div
-            className="absolute inset-0 -z-10 bg-gradient-to-br from-navy-950 via-navy-900 to-brand-900"
-            aria-hidden="true"
-          />
-          <div className="bg-tech-grid absolute inset-0 -z-10" aria-hidden="true" />
-          <div
-            className="absolute -right-32 -top-32 -z-10 size-[28rem] rounded-full bg-accent-500/10 blur-3xl"
-            aria-hidden="true"
-          />
-          <div
-            className="absolute -bottom-40 -left-24 -z-10 size-[26rem] rounded-full bg-brand-500/15 blur-3xl"
-            aria-hidden="true"
-          />
-        </>
+        <TechBackdrop network density={0.7} glow="right" mood="network" />
       )}
 
       <div className="container-page relative">

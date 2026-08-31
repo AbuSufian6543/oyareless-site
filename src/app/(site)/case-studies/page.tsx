@@ -7,7 +7,7 @@ import { env } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
-  title: "Case studies",
+  title: "Case Studies",
   description:
     "How WirelessCom.Ca Inc. has designed, installed, and supported networks, security, and communications for Northern Ontario organizations.",
   alternates: { canonical: `${env.siteUrl}/case-studies` },
@@ -25,7 +25,7 @@ export default async function CaseStudiesPage() {
     <>
       <PageHero
         eyebrow="Work"
-        title="Case studies"
+        title="Case Studies"
         description="Real projects, written without invented metrics. If a number is not here, we did not measure it."
       />
       <section className="bg-white py-14">

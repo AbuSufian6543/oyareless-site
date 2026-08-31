@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
  * search results — the token is the only thing protecting them.
  */
 export const metadata: Metadata = {
-  title: "Shared speed test result",
+  title: "Shared Speed Test Result",
   robots: { index: false, follow: false },
 };
 
@@ -55,7 +55,7 @@ export default async function SharedResultPage({
             Shared result
           </p>
           <h1 className="mt-5 text-3xl font-bold tracking-tight text-white sm:text-4xl">
-            Speed test result
+            Speed Test Result
           </h1>
           <p className="mt-3 text-navy-300">
             Measured {measured} (Eastern Time)

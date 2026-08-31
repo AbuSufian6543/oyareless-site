@@ -7,7 +7,7 @@ import { env } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
-  title: "Network status",
+  title: "Network Status",
   description:
     "Live probes WirelessCom.Ca Inc. runs against services we monitor, plus public incidents. Figures are real checks — never placeholders.",
   alternates: { canonical: `${env.siteUrl}/network-status` },
@@ -36,7 +36,7 @@ export default async function NetworkStatusPage() {
     <>
       <PageHero
         eyebrow="Operations"
-        title="Network status"
+        title="Network Status"
         description="Every figure on this page comes from probes this application runs, or from incidents an administrator published. If nothing is configured, we say so."
       />
       <section className="bg-white py-12">

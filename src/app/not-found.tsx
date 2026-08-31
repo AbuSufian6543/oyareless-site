@@ -19,7 +19,7 @@ export default function NotFound() {
               404
             </p>
             <h1 className="mt-4 text-3xl font-bold text-white lg:text-4xl">
-              We could not find that page
+              We Could Not Find That Page
             </h1>
             <p className="mt-4 text-lg leading-relaxed text-navy-200">
               The page may have been moved or renamed. Our site was recently

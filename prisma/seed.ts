@@ -14,6 +14,8 @@ import { DEFAULT_SETTINGS } from "../src/lib/settings-defaults";
 import { ensureSiteMedia } from "../src/lib/site-media";
 import { vendorLogoUrl } from "../src/lib/vendor-logos";
 import { buildBlocks, SEED_NAV, SEED_PAGES, SEED_REDIRECTS } from "./seed-content";
+import { SEED_CASE_STUDIES } from "./seed-case-studies";
+import { ADDITIONAL_FAQS } from "./seed-faqs";
 
 function log(message: string): void {
   process.stdout.write(`  ${message}\n`);
@@ -517,6 +519,7 @@ async function seedCatalogue(): Promise<void> {
       category: "Security & telephone",
       order: 5,
     },
+    ...ADDITIONAL_FAQS,
   ];
 
   await prisma.faqItem.updateMany({
@@ -547,7 +550,22 @@ async function seedCatalogue(): Promise<void> {
     if (existing) continue;
     await prisma.faqItem.create({ data: { ...item, status: "PUBLISHED" } });
   }
-  log("FAQ: ensured starter questions");
+  log(`FAQ: ensured ${faqs.length} questions`);
+
+  for (const study of SEED_CASE_STUDIES) {
+    const existing = await prisma.caseStudy.findUnique({
+      where: { slug: study.slug },
+    });
+    if (existing) continue;
+    await prisma.caseStudy.create({
+      data: {
+        ...study,
+        status: "PUBLISHED",
+        publishedAt: new Date(),
+      },
+    });
+  }
+  log(`Case studies: ensured ${SEED_CASE_STUDIES.length} sample stories`);
 }
 
 async function main(): Promise<void> {

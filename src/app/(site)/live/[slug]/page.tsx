@@ -20,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     })
     .catch(() => null);
 
-  if (!stream) return { title: "Stream not found" };
+  if (!stream) return { title: "Stream Not Found" };
 
   return {
     title: stream.title,

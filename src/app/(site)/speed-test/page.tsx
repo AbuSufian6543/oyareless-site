@@ -14,7 +14,7 @@ import { TechBackdrop } from "@/components/visuals/tech-backdrop";
 import { env } from "@/lib/env";
 
 export const metadata: Metadata = {
-  title: "Internet speed test",
+  title: "Internet Speed Test",
   description:
     "Measure your download speed, upload speed, latency and jitter against Cloudflare's public edge network. No account required.",
   alternates: { canonical: `${env.siteUrl}/speed-test` },
@@ -51,7 +51,7 @@ export default async function SpeedTestPage() {
               Network tool
             </p>
             <h1 className="mt-5 text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
-              Internet speed test
+              Internet Speed Test
             </h1>
             <p className="mx-auto mt-4 max-w-2xl text-lg leading-relaxed text-navy-200">
               Measured against Cloudflare's public edge network — the same

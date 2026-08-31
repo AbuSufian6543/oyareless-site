@@ -175,6 +175,10 @@ const PREVIOUS_TECH_HERO_HEADLINES = new Set([
   "AI we implement on cameras and phones",
 ]);
 
+const TITLE_CASE_TECH_HERO_HEADLINES = new Set([
+  "Networks, security, and communications for Northern Ontario",
+]);
+
 const PREVIOUS_CAPABILITY_HEADINGS = new Set([
   "Two systems every site already runs",
   "Two systems we implement with AI",
@@ -182,6 +186,31 @@ const PREVIOUS_CAPABILITY_HEADINGS = new Set([
 
 const PREVIOUS_SERVICE_HERO_HEADLINES = new Set([
   "AI on the cameras and phones you already need",
+]);
+
+const TITLE_CASE_SERVICE_HERO_HEADLINES = new Set([
+  "IT infrastructure built for uptime",
+  "Protect your business with enterprise-grade cybersecurity",
+  "Comprehensive security for your business, assets and people",
+  "Cloud-hosted IP VoIP telephone service",
+  "Looking for affordable, reliable internet?",
+  "Video broadcasting service",
+  "Client and private broadcasts",
+  "Access control and parking gate systems",
+  "Intrusion alarms that the same team stays on",
+  "See who is at the door before you open it",
+  "A silent call for help from the desk",
+  "Structured cabling and fiber optic splicing",
+  "Level 2 EV charging, installed and certified",
+  "Your Hytera communications dealer",
+  "Know where your fleet is, in real time",
+  "Digital marketing & graphic design",
+  "Websites we build and stand behind",
+  "Technical support",
+  "Talk to WirelessCom",
+  "AI we implement on cameras and phones",
+  "Next-generation firewalls we actually support",
+  "VoIP 9-1-1 (E-911) notice",
 ]);
 
 const PREVIOUS_CTA_HEADINGS = new Set([
@@ -199,9 +228,16 @@ function upgradeTechHeroCopy(
 
   const currentData = (currentHero.data ??= {});
   const headline = String(currentData.headline ?? "");
+  const seedData = seedHero.data as unknown as Record<string, unknown>;
+
+  if (TITLE_CASE_TECH_HERO_HEADLINES.has(headline)) {
+    currentData.headline = seedData.headline;
+    notes.push("home hero title case");
+    return;
+  }
+
   if (!PREVIOUS_TECH_HERO_HEADLINES.has(headline)) return;
 
-  const seedData = seedHero.data as unknown as Record<string, unknown>;
   currentData.eyebrow = seedData.eyebrow;
   currentData.headline = seedData.headline;
   currentData.subheadline = seedData.subheadline;
@@ -254,11 +290,19 @@ function upgradeServiceHeroCopy(
   if (!seedHero || !currentHero) return;
 
   const currentData = (currentHero.data ??= {});
-  if (!PREVIOUS_SERVICE_HERO_HEADLINES.has(String(currentData.headline ?? ""))) {
+  const headline = String(currentData.headline ?? "");
+  const seedData = seedHero.data as unknown as Record<string, unknown>;
+
+  if (TITLE_CASE_SERVICE_HERO_HEADLINES.has(headline)) {
+    currentData.headline = seedData.headline;
+    notes.push("hero title case");
     return;
   }
 
-  const seedData = seedHero.data as unknown as Record<string, unknown>;
+  if (!PREVIOUS_SERVICE_HERO_HEADLINES.has(headline)) {
+    return;
+  }
+
   currentData.headline = seedData.headline;
   currentData.subheadline = seedData.subheadline;
   notes.push("AI services hero copy");

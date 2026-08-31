@@ -65,7 +65,7 @@ export function FallbackHome() {
                 Technology service provider · Northern Ontario
               </p>
               <h1 className="text-balance-tight text-4xl leading-[1.08] font-bold text-white sm:text-5xl lg:text-[3.25rem]">
-                Networks, security, and communications for Northern Ontario
+                Networks, Security, And Communications For Northern Ontario
               </h1>
               <p className="mt-6 max-w-2xl text-lg leading-relaxed text-navy-200">
                 Since 2005 in Sault Ste. Marie we design, install, and support

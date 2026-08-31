@@ -7,7 +7,7 @@ import { env } from "@/lib/env";
 import { getSettings } from "@/lib/settings";
 
 export const metadata: Metadata = {
-  title: "Remote support",
+  title: "Remote Support",
   description:
     "Download the RustDesk client we use for remote support, then read us the ID and one-time password on your screen.",
   alternates: { canonical: `${env.siteUrl}/remote-support` },
@@ -28,7 +28,7 @@ export default async function RemoteSupportPage() {
       <>
         <PageHero
           eyebrow="Support"
-          title="Remote support"
+          title="Remote Support"
           description="Remote support is not being offered through this site at the moment. Call 1-800-705-3189 and we will arrange another way to help."
         />
       </>
@@ -44,7 +44,7 @@ export default async function RemoteSupportPage() {
     <>
       <PageHero
         eyebrow="Support"
-        title="Remote support"
+        title="Remote Support"
         description="A session only starts when you read us the ID and one-time password shown in the client. You can end it at any time by closing the window."
       />
       <section className="bg-white py-12">

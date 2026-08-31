@@ -8,7 +8,7 @@ import { ToolCard, ToolForm } from "@/components/tools/tool-panel";
 import { env } from "@/lib/env";
 
 export const metadata: Metadata = {
-  title: "Cybersecurity tools",
+  title: "Cybersecurity Tools",
   description:
     "TLS certificate inspection, security-header checks, SPF/DKIM/DMARC lookups, and DNSBL reputation — all self-hosted.",
   alternates: { canonical: `${env.siteUrl}/cybersecurity-tools` },
@@ -24,7 +24,7 @@ export default function CybersecurityToolsPage() {
             Self-hosted tools
           </>
         }
-        title="Cybersecurity tools"
+        title="Cybersecurity Tools"
         description="Certificate and header checks run from our server. Password tools never leave your browser. IP reputation is DNSBL-based and labeled as such — it is not a commercial threat feed."
       >
         <Link

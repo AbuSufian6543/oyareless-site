@@ -68,7 +68,7 @@ export default async function CareersPage() {
     <>
       <PageHero
         eyebrow="Careers"
-        title="Build networks that keep the North connected"
+        title="Build Networks That Keep The North Connected"
         description="We are a team of technicians, engineers and support specialists delivering IT, networking, surveillance and alarm systems to businesses across Northern Ontario."
       />
 

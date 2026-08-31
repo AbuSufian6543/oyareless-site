@@ -27,7 +27,7 @@ async function loadPost(slug: string) {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = await loadPost(slug);
-  if (!post) return { title: "Article not found" };
+  if (!post) return { title: "Article Not Found" };
 
   return {
     title: post.metaTitle || post.title,

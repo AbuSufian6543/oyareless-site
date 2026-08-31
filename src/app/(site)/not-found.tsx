@@ -7,7 +7,7 @@ export default function SiteNotFound() {
     <>
       <PageHero
         eyebrow="404"
-        title="We could not find that page"
+        title="We Could Not Find That Page"
         description="The page may have been moved or renamed. Try search, or start from the home page."
       />
       <section className="bg-white py-12">

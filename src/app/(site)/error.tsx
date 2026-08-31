@@ -13,7 +13,7 @@ export default function SiteError({
       <div className="container-page max-w-xl text-center">
         <p className="eyebrow-pill mx-auto">Error</p>
         <h1 className="mt-3 text-3xl font-bold text-white">
-          This page could not be shown
+          This Page Could Not Be Shown
         </h1>
         <p className="mt-3 text-navy-200">
           Something failed while loading this screen. Try again, or go back to

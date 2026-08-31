@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const study = await prisma.caseStudy
     .findFirst({ where: { slug, status: "PUBLISHED" } })
     .catch(() => null);
-  if (!study) return { title: "Case study" };
+  if (!study) return { title: "Case Study" };
   return {
     title: study.metaTitle || study.title,
     description: study.metaDescription || study.problem,

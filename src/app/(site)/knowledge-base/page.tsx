@@ -6,7 +6,7 @@ import { env } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
-  title: "Knowledge base",
+  title: "Knowledge Base",
   description: "Guides from WirelessCom.Ca Inc. on networks, security, VoIP and workplace technology.",
   alternates: { canonical: `${env.siteUrl}/knowledge-base` },
 };
@@ -27,7 +27,7 @@ export default async function KnowledgeBasePage() {
     <>
       <PageHero
         eyebrow="Help"
-        title="Knowledge base"
+        title="Knowledge Base"
         description="Practical notes we share with customers. Articles are written by our technicians, not generated filler."
       />
       <section className="bg-white py-14">

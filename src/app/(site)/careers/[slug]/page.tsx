@@ -22,7 +22,7 @@ async function loadJob(slug: string) {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const job = await loadJob(slug);
-  if (!job) return { title: "Position not found" };
+  if (!job) return { title: "Position Not Found" };
 
   return {
     title: `${job.title} — Careers`,

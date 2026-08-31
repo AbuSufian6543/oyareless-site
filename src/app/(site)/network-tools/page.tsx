@@ -13,7 +13,7 @@ import { PageHero } from "@/components/site/page-hero";
 import { env } from "@/lib/env";
 
 export const metadata: Metadata = {
-  title: "Network tools",
+  title: "Network Tools",
   description:
     "DNS lookups, TCP latency, port checks, WHOIS, subnet and cable calculators — run against our own servers with no third-party APIs.",
   alternates: { canonical: `${env.siteUrl}/network-tools` },
@@ -29,7 +29,7 @@ export default function NetworkToolsPage() {
             Self-hosted tools
           </>
         }
-        title="Network tools"
+        title="Network Tools"
         description="Lookups run from our own server in Sault Ste. Marie. Private, loopback and cloud-metadata targets are refused. Latency figures are TCP connect times, not ICMP ping."
       >
         <div className="mt-6 flex flex-wrap gap-3 text-sm">

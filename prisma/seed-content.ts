@@ -181,7 +181,7 @@ const home: SeedPage = {
   slug: "home",
   title: "Home",
   navLabel: "Home",
-  metaTitle: "IT, Security, and Communications in Northern Ontario",
+  metaTitle: "IT, Security, And Communications In Northern Ontario",
   metaDescription:
     "WirelessCom.Ca Inc. designs, installs, and supports networks, firewalls, cameras and alarms, VoIP, and two-way radio for businesses in Northern Ontario. Local team in Sault Ste. Marie since 2005.",
   showInHeaderNav: true,
@@ -193,7 +193,7 @@ const home: SeedPage = {
       settings: {},
       data: {
         eyebrow: "Technology service provider · Northern Ontario",
-        headline: "Networks, security, and communications for Northern Ontario",
+        headline: "Networks, Security, And Communications For Northern Ontario",
         subheadline:
           "Since 2005 in Sault Ste. Marie we design, install, and support the systems businesses here actually run — IT and Wi-Fi, firewalls, cameras and alarms, VoIP, and two-way radio. The same local team stays on them.",
         backgroundImageUrl: "",
@@ -760,7 +760,7 @@ const itServices: SeedPage = {
   blocks: [
     serviceHero(
       "IT Services",
-      "IT infrastructure built for uptime",
+      "IT Infrastructure Built For Uptime",
       "WirelessCom provides professional IT infrastructure, Microsoft 365, Azure, AWS and Google Cloud, network management, server administration, and cybersecurity services for business environments running Windows and macOS. We design, implement, and maintain secure, high-availability systems aligned with industry best practices.",
       ["Network design", "Microsoft 365", "Azure, AWS and Google Cloud", "Security"],
       photos.it,
@@ -924,7 +924,7 @@ const itServices: SeedPage = {
 const cybersecurity: SeedPage = {
   slug: "cybersecurity",
   title: "Cybersecurity",
-  metaTitle: "Cybersecurity Services for Business",
+  metaTitle: "Cybersecurity Services For Business",
   metaDescription:
     "Enterprise-grade cybersecurity for Ontario businesses: Barracuda, Fortinet, and Juniper firewalls, endpoint protection, vulnerability assessments, ransomware defense, backup, and disaster recovery.",
   showInHeaderNav: true,
@@ -932,7 +932,7 @@ const cybersecurity: SeedPage = {
   blocks: [
     serviceHero(
       "Cybersecurity",
-      "Protect your business with enterprise-grade cybersecurity",
+      "Protect Your Business With Enterprise-Grade Cybersecurity",
       "Cyber threats continue to evolve, placing businesses of every size at risk of data breaches, ransomware, phishing attacks and network compromise. WirelessCom.Ca Inc. delivers practical, business-focused security that protects your systems, data, employees and reputation.",
       ["Layered defense", "Managed monitoring", "Incident response"],
       photos.cybersecurity,
@@ -1200,7 +1200,7 @@ const securityServices: SeedPage = {
   blocks: [
     serviceHero(
       "Security Services",
-      "Comprehensive security for your business, assets and people",
+      "Comprehensive Security For Your Business, Assets And People",
       "WirelessCom.Ca Inc. is committed to providing security services that safeguard your business, assets and personnel. Based in Sault Ste. Marie, Ontario, we specialize in tailored solutions designed around the real risks at your site.",
       ["IP CCTV & NVRs", "Remote viewing", "Local support"],
       photos.security,
@@ -1384,7 +1384,7 @@ const telephoneServices: SeedPage = {
   blocks: [
     serviceHero(
       "Telephone Services",
-      "Cloud-hosted IP VoIP telephone service",
+      "Cloud-Hosted IP VoIP Telephone Service",
       "WirelessCom.Ca Inc. offers advanced cloud-hosted IP VoIP telephone service designed to modernize your communications with flexibility, reliability, and cost-effectiveness — with local support from Sault Ste. Marie.",
       ["Scalable", "Mobile-friendly", "Locally supported"],
       photos.telephone,
@@ -1547,7 +1547,7 @@ const internetServices: SeedPage = {
   blocks: [
     serviceHero(
       "Internet Services",
-      "Looking for affordable, reliable internet?",
+      "Looking For Affordable, Reliable Internet?",
       "WirelessCom.Ca Inc. offers fixed access to wireless, cable, fiber, satellite, LTE and DSL internet. Call us today to discuss the options available at your location.",
       ["Fixed wireless", "Fiber & cable", "Satellite & LTE"],
       photos.internet,
@@ -1593,7 +1593,7 @@ const videoServices: SeedPage = {
   blocks: [
     serviceHero(
       "Video Services",
-      "Video broadcasting service",
+      "Video Broadcasting Service",
       "At WirelessCom we offer various types of video streaming, from live events and press conferences to job site and fixed weather cameras. If you would like to broadcast your event or conference, give us a call to discuss your video streaming needs.",
       ["Live events", "Job site cameras", "Weather cameras"],
       photos.video,
@@ -1662,7 +1662,7 @@ const liveBroadcasting: SeedPage = {
   blocks: [
     serviceHero(
       "Live Video Broadcasting",
-      "Client and private broadcasts",
+      "Client And Private Broadcasts",
       "Private feeds are protected by a password supplied by WirelessCom. Enter it on the stream you have been given access to.",
       [],
       photos.video,
@@ -1696,7 +1696,7 @@ const accessControl: SeedPage = {
   blocks: [
     serviceHero(
       "Access Control",
-      "Access control and parking gate systems",
+      "Access Control And Parking Gate Systems",
       "Card readers, biometrics, smart locks and vehicle gates — specified, installed and serviced by one team.",
       ["Honeywell", "Paradox", "Kantech", "Schlage"],
       photos.access,
@@ -1766,7 +1766,7 @@ const alarmSystems: SeedPage = {
   blocks: [
     serviceHero(
       "Alarm Systems",
-      "Intrusion alarms that the same team stays on",
+      "Intrusion Alarms That The Same Team Stays On",
       "Keypads, sensors, sirens, and the panel they report to — specified for your building, installed to industry practice, and monitored when you contract it. Paradox and similar platforms we are trained on.",
       ["Intrusion panels", "Contracted 24/7 monitoring", "Local service"],
       photos.alarm,
@@ -1836,7 +1836,7 @@ const doorIntercom: SeedPage = {
   blocks: [
     serviceHero(
       "Door Intercom",
-      "See who is at the door before you open it",
+      "See Who Is At The Door Before You Open It",
       "Wall stations, video door phones, and telephone entry that ring the office, a mobile, or a named person. Specified with the lock, the camera, and the phone system — not as a leftover box on the frame.",
       ["Video door stations", "Telephone entry", "Gate intercoms"],
       photos.intercom,
@@ -1906,7 +1906,7 @@ const panicButtons: SeedPage = {
   blocks: [
     serviceHero(
       "Panic Buttons",
-      "A silent call for help from the desk",
+      "A Silent Call For Help From The Desk",
       "Wall-mounted stations and wireless duress buttons placed where staff can reach them. They report through the alarm panel — and to monitoring when you contract it — instead of living as a sticker nobody tests.",
       ["Wall stations", "Wireless duress", "Tied to the alarm panel"],
       photos.panic,
@@ -1976,7 +1976,7 @@ const dataCabling: SeedPage = {
   blocks: [
     serviceHero(
       "Data Cabling & Fiber Optic Services",
-      "Structured cabling and fiber optic splicing",
+      "Structured Cabling And Fiber Optic Splicing",
       "The physical layer decides how well everything above it performs. We install and certify structured cabling, network racks and fiber for commercial and residential buildings.",
       ["Cat5e & Cat6", "Network racks", "Fiber fusion splicing"],
       photos.cabling,
@@ -2029,7 +2029,7 @@ const evCharging: SeedPage = {
   blocks: [
     serviceHero(
       "EV Charging Solutions",
-      "Level 2 EV charging, installed and certified",
+      "Level 2 EV Charging, Installed And Certified",
       "Compatible with every EV and PHEV sold in North America. All installations are ESA-certified with electrical permits and inspection provided, and all chargers are in stock.",
       ["ESA certified", "Permits & inspection", "In stock"],
       photos.ev,
@@ -2131,7 +2131,7 @@ const twoWayRadios: SeedPage = {
   blocks: [
     serviceHero(
       "Two-Way Radios",
-      "Your Hytera communications dealer",
+      "Your Hytera Communications Dealer",
       "Digital and analog two-way radios from leading brands, suitable for many industries and applications, with clear and dependable communication indoors and outdoors.",
       ["Authorized Hytera dealer", "Sales & rentals", "Service & training"],
       photos.radio,
@@ -2212,7 +2212,7 @@ const fleetTracking: SeedPage = {
   blocks: [
     serviceHero(
       "Fleet Vehicle Tracking",
-      "Know where your fleet is, in real time",
+      "Know Where Your Fleet Is, In Real Time",
       "Real-time, accurate GPS tracking for vehicles, trailers and equipment. The Tracki GPS tracker is the world's smallest and lightest, at only 1.26 ounces.",
       ["Real-time location", "History & reports", "Asset tracking"],
       photos.fleet,
@@ -2268,7 +2268,7 @@ const digitalMarketing: SeedPage = {
   blocks: [
     serviceHero(
       "Digital Marketing",
-      "Digital marketing & graphic design",
+      "Digital Marketing & Graphic Design",
       "We help businesses capture attention and communicate their message through powerful visual solutions — dynamic digital screens backed by professional design.",
       ["Digital signage", "Graphic design", "Brand consistency"],
       photos.signage,
@@ -2292,7 +2292,7 @@ const webDevelopment: SeedPage = {
   slug: "web-development",
   title: "Web Development",
   navLabel: "Web Development",
-  metaTitle: "Web Development for Business",
+  metaTitle: "Web Development For Business",
   metaDescription:
     "WirelessCom.Ca Inc. designs and builds business websites in Sault Ste. Marie and Northern Ontario — clear, fast, and easy to update, with local support until you are satisfied.",
   showInHeaderNav: true,
@@ -2300,7 +2300,7 @@ const webDevelopment: SeedPage = {
   blocks: [
     serviceHero(
       "Web Development",
-      "Websites we build and stand behind",
+      "Websites We Build And Stand Behind",
       "A business site should look like you, load quickly, and be easy to change when something needs updating. We design and develop websites for customers across Northern Ontario, and we stay with the work until you are satisfied.",
       ["Custom design", "Local support", "Customer satisfaction"],
       photos.web,
@@ -2397,7 +2397,7 @@ const support: SeedPage = {
   blocks: [
     serviceHero(
       "Support",
-      "Technical support",
+      "Technical Support",
       `Run a speed test, send us the details, or call ${PHONE}. Contracted clients also have 24/7 emergency access.`,
       [],
       photos.support,
@@ -2472,7 +2472,7 @@ const contact: SeedPage = {
   blocks: [
     serviceHero(
       "Contact",
-      "Talk to WirelessCom",
+      "Talk To WirelessCom",
       "Tell us what you need and the right person will get back to you. For urgent service, call us directly.",
       [],
       photos.contact,
@@ -2605,7 +2605,7 @@ const e911: SeedPage = {
       settings: {},
       data: {
         eyebrow: "Important safety information",
-        headline: "VoIP 9-1-1 (E-911) notice",
+        headline: "VoIP 9-1-1 (E-911) Notice",
         subheadline:
           "Emergency calling with an internet telephone service does not work the same way as a traditional landline. Please read this carefully and make sure everyone at your location understands it.",
         variant: "minimal",
@@ -2663,7 +2663,7 @@ const aiServices: SeedPage = {
   slug: "ai-services",
   title: "AI for cameras & phones",
   navLabel: "AI cameras & phones",
-  metaTitle: "AI Camera Analytics and AI Telephone Systems",
+  metaTitle: "AI Camera Analytics And AI Telephone Systems",
   metaDescription:
     "WirelessCom.Ca Inc. installs and supports AI analytics on business cameras and intelligent features on VoIP phones — person and vehicle detection, smarter search, AI attendants and call transcription in Sault Ste. Marie and Northern Ontario.",
   showInHeaderNav: true,
@@ -2671,7 +2671,7 @@ const aiServices: SeedPage = {
   blocks: [
     serviceHero(
       "AI services",
-      "AI we implement on cameras and phones",
+      "AI We Implement On Cameras And Phones",
       "We design, install and support practical AI on video surveillance and the telephone system. You get analytics that find a person in last night's recording, and an attendant that routes a caller without a maze of menus. We do not convert old cameras or phones that cannot run these features.",
       ["Camera analytics", "AI attendants", "Local support"],
       photos.ai,
@@ -2840,7 +2840,7 @@ const firewalls: SeedPage = {
   slug: "firewalls",
   title: "Firewalls",
   navLabel: "Firewalls",
-  metaTitle: "Barracuda, Fortinet, and Juniper Firewalls",
+  metaTitle: "Barracuda, Fortinet, And Juniper Firewalls",
   metaDescription:
     "Next-generation firewall design, installation and support in Northern Ontario. Barracuda, Fortinet, Juniper and similar platforms WirelessCom.Ca Inc. is trained on — sized for your circuit, VPN users and applications.",
   showInHeaderNav: true,
@@ -2848,7 +2848,7 @@ const firewalls: SeedPage = {
   blocks: [
     serviceHero(
       "Firewalls",
-      "Next-generation firewalls we actually support",
+      "Next-Generation Firewalls We Actually Support",
       "A firewall that is sized, documented and still answerable six months later. WirelessCom.Ca Inc. designs, installs and supports Barracuda, Fortinet, Juniper and other next-generation platforms we are trained on — for offices, shops, plants and multi-site networks across Northern Ontario.",
       ["Barracuda", "Fortinet", "Juniper", "And similar NGFWs"],
       photos.firewall,

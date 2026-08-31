@@ -12,7 +12,7 @@ type Props = { params: Promise<{ slug: string }> };
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const page = await getPublishedPage(slug);
-  if (!page) return { title: "Page not found" };
+  if (!page) return { title: "Page Not Found" };
   return pageMetadata(page);
 }
 

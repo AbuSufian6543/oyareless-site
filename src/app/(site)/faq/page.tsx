@@ -6,7 +6,7 @@ import { env } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
-  title: "Frequently asked questions",
+  title: "Frequently Asked Questions",
   description:
     "Answers about managed IT, cybersecurity, networking, VoIP, alarms and two-way radios from WirelessCom.Ca Inc.",
   alternates: { canonical: `${env.siteUrl}/faq` },
@@ -45,7 +45,7 @@ export default async function FaqPage() {
       />
       <PageHero
         eyebrow="Help"
-        title="Frequently asked questions"
+        title="Frequently Asked Questions"
         description="Short answers we give most often. If yours is not here, call 1-800-705-3189 or open a ticket."
       />
       <section className="bg-white py-14 lg:py-16">

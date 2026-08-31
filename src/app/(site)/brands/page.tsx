@@ -7,7 +7,7 @@ import { env } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
-  title: "Brands we deploy and support",
+  title: "Brands We Deploy And Support",
   description:
     "Technologies WirelessCom.Ca Inc. installs and supports. Vendor names describe equipment we work with; a formal partnership is stated only where one exists.",
   alternates: { canonical: `${env.siteUrl}/brands` },
@@ -25,7 +25,7 @@ export default async function BrandsPage() {
     <>
       <PageHero
         eyebrow="Catalogue"
-        title="Technologies we deploy and support"
+        title="Technologies We Deploy And Support"
         description="We design around equipment we are trained on and can support long term. Names below describe what we install, unless a formal relationship is stated."
       />
       <section className="bg-white py-14">
