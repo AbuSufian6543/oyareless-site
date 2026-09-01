@@ -88,19 +88,25 @@ export const SITE_PICTURES: SitePicture[] = [
   {
     url: "/favicon.svg",
     name: "Favicon",
-    alt: "Site icon",
+    alt: "WirelessCom.Ca 3D globe mark",
+    folder: "branding",
+  },
+  {
+    url: "/favicon.png",
+    name: "Favicon (PNG)",
+    alt: "WirelessCom.Ca 3D globe mark",
     folder: "branding",
   },
   {
     url: "/icon.png",
     name: "App icon",
-    alt: "Site icon",
+    alt: "WirelessCom.Ca 3D globe mark",
     folder: "branding",
   },
   {
     url: "/apple-icon.png",
     name: "Apple touch icon",
-    alt: "Apple touch icon",
+    alt: "WirelessCom.Ca 3D globe mark",
     folder: "branding",
   },
 ];

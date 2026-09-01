@@ -71,7 +71,7 @@ export default async function BrandingPage({
               label="Favicon"
               name="faviconUrl"
               defaultValue={settings.faviconUrl}
-              hint="SVG recommended"
+              hint="browser tab icon — the 3D globe mark"
             />
             <ImageUrlField
               label="Social share image"
@@ -83,13 +83,13 @@ export default async function BrandingPage({
               label="App icon"
               name="iconPngUrl"
               defaultValue={settings.iconPngUrl}
-              hint="PNG, used in browser tabs that do not support SVG"
+              hint="512 × 512 PNG — the 3D globe mark"
             />
             <ImageUrlField
               label="Apple touch icon"
               name="appleIconUrl"
               defaultValue={settings.appleIconUrl}
-              hint="shown when someone saves the site to their home screen"
+              hint="180 × 180 PNG for iOS home screen — the 3D globe mark"
             />
           </div>
         </Card>

@@ -10,9 +10,10 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
 
+import { writeAppIcons } from "./build-app-icons.mjs";
+
 const ROOT = process.cwd();
 const BRAND = path.join(ROOT, "public", "brand");
-const PUBLIC = path.join(ROOT, "public");
 const SOURCE = path.join(BRAND, "logo.jpg");
 
 const NAVY_DEEP = "#041325";
@@ -73,17 +74,6 @@ async function toTransparent(forDarkBackground) {
   });
 }
 
-/**
- * Square app icon. Rendered from public/favicon.svg rather than cropped out of
- * the raster lockup: the globe emblem is dark navy artwork that disappears
- * against a navy tile, whereas the vector signal mark stays legible at 16px.
- */
-async function buildMark(size) {
-  return sharp(path.join(PUBLIC, "favicon.svg"), { density: 384 })
-    .resize(size, size, { fit: "cover" })
-    .png({ compressionLevel: 9 });
-}
-
 /** 1200x630 social card: deep navy, faint grid, logo, tagline. */
 async function buildOpenGraph() {
   const W = 1200;
@@ -142,9 +132,7 @@ async function main() {
   const inverse = await (await toTransparent(true)).resize({ width: 800 }).png({ compressionLevel: 9 }).toBuffer();
   await writeFile(path.join(BRAND, "logo-inverse.png"), inverse);
 
-  await writeFile(path.join(BRAND, "logo-mark.png"), await (await buildMark(512)).toBuffer());
-  await writeFile(path.join(PUBLIC, "apple-icon.png"), await (await buildMark(180)).toBuffer());
-  await writeFile(path.join(PUBLIC, "icon.png"), await (await buildMark(512)).toBuffer());
+  await writeAppIcons();
   await writeFile(path.join(BRAND, "og-default.png"), await (await buildOpenGraph()).toBuffer());
 
   process.stdout.write(
@@ -152,9 +140,11 @@ async function main() {
       "Brand assets written:",
       "  public/brand/logo.png          transparent, original colours",
       "  public/brand/logo-inverse.png  transparent, white wordmark for dark sections",
-      "  public/brand/logo-mark.png     512 square emblem on navy",
-      "  public/icon.png                512 favicon source",
+      "  public/brand/logo-mark.png     512 square 3D globe mark",
+      "  public/icon.png                512 app icon",
       "  public/apple-icon.png          180 apple touch icon",
+      "  public/favicon.png             32 tab icon",
+      "  public/favicon.svg             64 globe wrapped as SVG for existing URLs",
       "  public/brand/og-default.png    1200x630 social card",
       `  backdrop base colour ${NAVY_DEEP}`,
       "",
