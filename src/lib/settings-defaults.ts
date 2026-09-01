@@ -1,3 +1,5 @@
+import { OFFICIAL_AGENT_DOWNLOADS } from "./remote-support-downloads";
+
 /**
  * Editable site-wide configuration. Values live in the SiteSetting table so an
  * admin can change contact details without a redeploy; these are the
@@ -54,7 +56,9 @@ export const DEFAULT_SETTINGS = {
   verificationGoogle: "",
   verificationBing: "",
 
-  // Remote support. RustDesk is self-hosted, so the relay details are the
+  // Remote support. Download URLs default to the official vendor installers
+  // so the public page works before anyone fills the admin form. Admins can
+  // replace any URL with a copy they host. RustDesk relay details are the
   // customer's own servers. The key below is the *public* part of the server
   // key pair — it is meant to be distributed to clients, unlike the private
   // key, which never belongs in this table.
@@ -63,12 +67,15 @@ export const DEFAULT_SETTINGS = {
   rustdeskRelayServer: "",
   rustdeskApiServer: "",
   rustdeskPublicKey: "",
-  rustdeskDownloadWindows: "",
-  rustdeskDownloadMacOS: "",
-  rustdeskDownloadLinux: "",
+  rustdeskDownloadWindows: OFFICIAL_AGENT_DOWNLOADS.rustdesk.windows,
+  rustdeskDownloadMacOS: OFFICIAL_AGENT_DOWNLOADS.rustdesk.macos,
+  rustdeskDownloadLinux: OFFICIAL_AGENT_DOWNLOADS.rustdesk.debian,
   rustdeskDownloadAndroid: "",
+  anydeskDownloadWindows: OFFICIAL_AGENT_DOWNLOADS.anydesk.windows,
+  anydeskDownloadMacOS: OFFICIAL_AGENT_DOWNLOADS.anydesk.macos,
+  anydeskDownloadDebian: OFFICIAL_AGENT_DOWNLOADS.anydesk.debian,
   remoteSupportInstructions:
-    "Download and run the client, then read us the nine-digit ID and one-time password shown on your screen. Nothing happens until you share them, and you can end the session at any time by closing the window.",
+    "You do not need an account. Read us the ID (RustDesk) or AnyDesk address on the screen, and the password if one is shown. Nothing happens until you share those. Close the window to end the session.",
 
   announcementEnabled: false,
   announcementText: "",

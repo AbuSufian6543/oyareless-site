@@ -501,7 +501,7 @@ async function seedCatalogue(): Promise<void> {
     {
       question: "How do I get remote support?",
       answer:
-        "Open /remote-support, download the client we host, and read us the ID and one-time password. Nothing happens until you share those, and you can end the session by closing the window.",
+        "Open /remote-support, download RustDesk or AnyDesk for Windows, macOS, or Debian, and read us the ID on the screen. Nothing happens until you share that, and you can end the session by closing the window.",
       category: "Support",
       order: 3,
     },

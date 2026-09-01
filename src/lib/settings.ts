@@ -70,7 +70,11 @@ function groupFor(key: SettingKey): string {
     return "branding";
   }
   if (key === "headEmbedCode" || key === "bodyEndEmbedCode") return "embed";
-  if (key.startsWith("rustdesk") || key.startsWith("remoteSupport")) {
+  if (
+    key.startsWith("rustdesk") ||
+    key.startsWith("anydesk") ||
+    key.startsWith("remoteSupport")
+  ) {
     return "remote-support";
   }
   if (key.startsWith("verification")) return "seo";

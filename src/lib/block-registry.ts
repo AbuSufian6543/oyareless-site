@@ -399,7 +399,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
         {
           icon: "endpoint",
           title: "Remote support",
-          description: "Screen-sharing support sessions over RustDesk.",
+          description: "Screen-sharing support sessions with RustDesk or AnyDesk.",
           href: "/remote-support",
         },
       ],
@@ -597,7 +597,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
           icon: "support",
           category: "Support",
           title: "How to start a remote support session",
-          description: "Downloading RustDesk and sharing your Support ID safely.",
+          description: "Downloading RustDesk or AnyDesk and sharing the ID safely.",
           href: "/remote-support",
         },
       ],

@@ -11,6 +11,7 @@ import {
   TextField,
 } from "@/components/admin/ui";
 import { requireAdminRole } from "@/lib/admin-guard";
+import { OFFICIAL_AGENT_DOWNLOADS } from "@/lib/remote-support-downloads";
 import { getSettings } from "@/lib/settings";
 
 export const metadata = { title: "Remote support" };
@@ -29,7 +30,7 @@ export default async function RemoteSupportSettingsPage({
     <div className="max-w-3xl">
       <PageHeader
         title="Remote support"
-        description="Configures the /remote-support page: which RustDesk servers clients connect through, and where they download the client from."
+        description="Configures the /remote-support page: RustDesk relay details, and download links for RustDesk and AnyDesk on Windows, macOS, and Debian."
       />
 
       {params.saved && (
@@ -55,7 +56,7 @@ export default async function RemoteSupportSettingsPage({
             label="Offer remote support to visitors"
             name="remoteSupportEnabled"
             defaultChecked={settings.remoteSupportEnabled}
-            description="The page explains the process and offers the client downloads. A session only ever starts when the customer reads out their ID and one-time password."
+            description="The page explains the process and offers the agent downloads. A session only ever starts when the customer reads out the ID on their screen."
           />
         </Card>
 
@@ -109,33 +110,60 @@ export default async function RemoteSupportSettingsPage({
         </Card>
 
         <Card>
-          <CardTitle description="Where the Download button points for each platform. The page detects the visitor's operating system and offers the right one first.">
-            Client downloads
+          <CardTitle description="Leave a field blank to use the official vendor installer. Paste your own URL to host a specific copy.">
+            RustDesk downloads
           </CardTitle>
           <div className="grid gap-4 sm:grid-cols-2">
             <TextField
               label="Windows"
               name="rustdeskDownloadWindows"
               defaultValue={settings.rustdeskDownloadWindows}
-              placeholder="https://…/rustdesk.exe"
+              placeholder={OFFICIAL_AGENT_DOWNLOADS.rustdesk.windows}
             />
             <TextField
-              label="macOS"
+              label="macOS (Apple silicon)"
               name="rustdeskDownloadMacOS"
               defaultValue={settings.rustdeskDownloadMacOS}
-              placeholder="https://…/rustdesk.dmg"
+              placeholder={OFFICIAL_AGENT_DOWNLOADS.rustdesk.macos}
             />
             <TextField
-              label="Linux"
+              label="Debian (.deb)"
               name="rustdeskDownloadLinux"
               defaultValue={settings.rustdeskDownloadLinux}
-              placeholder="https://…/rustdesk.deb"
+              placeholder={OFFICIAL_AGENT_DOWNLOADS.rustdesk.debian}
             />
             <TextField
               label="Android"
               name="rustdeskDownloadAndroid"
               defaultValue={settings.rustdeskDownloadAndroid}
               placeholder="https://…/rustdesk.apk"
+              hint="optional — shown only when filled"
+            />
+          </div>
+        </Card>
+
+        <Card>
+          <CardTitle description="Leave a field blank to use the official vendor installer. Paste your own URL to host a specific copy.">
+            AnyDesk downloads
+          </CardTitle>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <TextField
+              label="Windows"
+              name="anydeskDownloadWindows"
+              defaultValue={settings.anydeskDownloadWindows}
+              placeholder={OFFICIAL_AGENT_DOWNLOADS.anydesk.windows}
+            />
+            <TextField
+              label="macOS"
+              name="anydeskDownloadMacOS"
+              defaultValue={settings.anydeskDownloadMacOS}
+              placeholder={OFFICIAL_AGENT_DOWNLOADS.anydesk.macos}
+            />
+            <TextField
+              label="Debian (.deb)"
+              name="anydeskDownloadDebian"
+              defaultValue={settings.anydeskDownloadDebian}
+              placeholder={OFFICIAL_AGENT_DOWNLOADS.anydesk.debian}
             />
           </div>
           <div className="mt-4">
@@ -143,9 +171,12 @@ export default async function RemoteSupportSettingsPage({
               <span className="flex items-start gap-2">
                 <Info className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
                 <span>
-                  Hosting your own signed copy of the client is preferable to
-                  linking a third-party mirror: the visitor stays on a domain
-                  they already trust, and you control which version they get.
+                  Hosting your own signed copy is preferable to a third-party
+                  mirror: the visitor stays on a domain they already trust, and
+                  you control which version they get. Blank fields fall back to
+                  the official RustDesk and AnyDesk downloads. RustDesk and
+                  AnyDesk are tools we use to help; listing them is not a
+                  partnership claim.
                 </span>
               </span>
             </Alert>
@@ -153,7 +184,7 @@ export default async function RemoteSupportSettingsPage({
         </Card>
 
         <Card>
-          <CardTitle description="Shown to the visitor above the Support ID walkthrough.">
+          <CardTitle description="Shown to the visitor in the walkthrough on /remote-support.">
             Instructions
           </CardTitle>
           <TextAreaField
