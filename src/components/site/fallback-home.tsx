@@ -2,7 +2,6 @@ import { Phone } from "lucide-react";
 import Link from "next/link";
 
 import { HomeOfficePhoto } from "@/components/site/home-office-photo";
-import { HomeStackPanel } from "@/components/site/home-stack-panel";
 import { ButtonLink } from "@/components/ui/button";
 import { BlockIcon } from "@/components/ui/icon";
 import { TechBackdrop } from "@/components/visuals/tech-backdrop";
@@ -60,7 +59,7 @@ export function FallbackHome() {
         <TechBackdrop network density={0.85} glow="right" mood="network" />
 
         <div className="container-page relative">
-          <div className="grid items-center gap-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,22rem)] lg:gap-16">
+          <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(20rem,32rem)] lg:items-stretch lg:gap-16">
             <div className="max-w-3xl">
               <p className="eyebrow-pill mb-4">
                 Technology service provider · Northern Ontario
@@ -88,9 +87,8 @@ export function FallbackHome() {
                 <li>Authorized Hytera dealer</li>
               </ul>
             </div>
-            <HomeStackPanel />
+            <HomeOfficePhoto />
           </div>
-          <HomeOfficePhoto />
         </div>
       </section>
 

@@ -11,7 +11,6 @@ import { BlockIcon } from "@/components/ui/icon";
 import { SectionImage } from "@/components/visuals/section-image";
 import { TechBackdrop } from "@/components/visuals/tech-backdrop";
 import { HomeOfficePhoto } from "@/components/site/home-office-photo";
-import { HomeStackPanel } from "@/components/site/home-stack-panel";
 import type { BlockOf } from "@/lib/blocks";
 import { getSettings } from "@/lib/settings";
 import { cn } from "@/lib/utils";
@@ -24,14 +23,14 @@ const HEIGHTS: Record<string, string> = {
 
 /**
  * Primary hero for the platform pages. The background is the animated node
- * mesh, optionally over a photograph. On Home the mesh uses the network mood
- * and a scope-of-work panel so the company reads as a technology firm, not a
- * single product.
+ * mesh, optionally over a photograph. On Home the right-hand column is the
+ * Sault Ste. Marie office so the page still reads as a local technology firm.
  */
 export async function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
   const { data } = block;
   const settings = await getSettings();
   const photo = data.backgroundImageUrl || settings.homeHeroImageUrl;
+  const office = data.officeImageUrl.trim();
 
   return (
     <section
@@ -69,66 +68,62 @@ export async function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
       <div className="container-page relative">
         <div
           className={cn(
-            "grid items-center gap-12",
-            !photo &&
-              "lg:grid-cols-[minmax(0,1.15fr)_minmax(18rem,22rem)] lg:gap-16",
+            "grid items-center gap-10 lg:gap-16",
+            office &&
+              "lg:grid-cols-[minmax(0,1.1fr)_minmax(20rem,32rem)] lg:items-stretch",
           )}
         >
-        <div className="max-w-3xl">
-          {data.eyebrow && (
-            <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-accent-500/30 bg-accent-500/10 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-accent-300">
-              {data.eyebrow}
-            </p>
-          )}
+          <div className="max-w-3xl">
+            {data.eyebrow && (
+              <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-accent-500/30 bg-accent-500/10 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-accent-300">
+                {data.eyebrow}
+              </p>
+            )}
 
-          <h1 className="text-balance-tight text-4xl leading-[1.08] font-bold lg:text-[3.5rem]">
-            <HeroHeadline text={data.headline} />
-          </h1>
+            <h1 className="text-balance-tight text-4xl leading-[1.08] font-bold lg:text-[3.5rem]">
+              <HeroHeadline text={data.headline} />
+            </h1>
 
-          {data.subheadline && (
-            <p className="mt-5 max-w-2xl text-lg leading-relaxed text-navy-200 lg:text-xl">
-              {data.subheadline}
-            </p>
-          )}
+            {data.subheadline && (
+              <p className="mt-5 max-w-2xl text-lg leading-relaxed text-navy-200 lg:text-xl">
+                {data.subheadline}
+              </p>
+            )}
 
-          {data.buttons.length > 0 && (
-            <div className="mt-8 flex flex-wrap gap-3">
-              {data.buttons.map((button, index) => (
-                <ButtonLink
-                  key={index}
-                  href={button.href}
-                  openInNewTab={button.openInNewTab}
-                  size="lg"
-                  variant={heroButtonVariant(button.style, index)}
-                >
-                  {button.label}
-                </ButtonLink>
-              ))}
-            </div>
-          )}
+            {data.buttons.length > 0 && (
+              <div className="mt-8 flex flex-wrap gap-3">
+                {data.buttons.map((button, index) => (
+                  <ButtonLink
+                    key={index}
+                    href={button.href}
+                    openInNewTab={button.openInNewTab}
+                    size="lg"
+                    variant={heroButtonVariant(button.style, index)}
+                  >
+                    {button.label}
+                  </ButtonLink>
+                ))}
+              </div>
+            )}
 
-          {data.highlights.length > 0 && (
-            <ul className="mt-10 flex flex-wrap gap-x-7 gap-y-3 border-t border-white/10 pt-6 text-sm text-navy-200">
-              {data.highlights.map((highlight) => (
-                <li key={highlight} className="flex items-center gap-2">
-                  <span
-                    className="size-1.5 rounded-full bg-accent-400"
-                    aria-hidden="true"
-                  />
-                  {highlight}
-                </li>
-              ))}
-            </ul>
-          )}
+            {data.highlights.length > 0 && (
+              <ul className="mt-10 flex flex-wrap gap-x-7 gap-y-3 border-t border-white/10 pt-6 text-sm text-navy-200">
+                {data.highlights.map((highlight) => (
+                  <li key={highlight} className="flex items-center gap-2">
+                    <span
+                      className="size-1.5 rounded-full bg-accent-400"
+                      aria-hidden="true"
+                    />
+                    {highlight}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          {office ? (
+            <HomeOfficePhoto src={data.officeImageUrl} alt={data.officeImageAlt} />
+          ) : null}
         </div>
-          {!photo && <HomeStackPanel />}
-        </div>
-        {data.officeImageUrl.trim() ? (
-          <HomeOfficePhoto
-            src={data.officeImageUrl}
-            alt={data.officeImageAlt}
-          />
-        ) : null}
       </div>
     </section>
   );

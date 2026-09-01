@@ -536,7 +536,7 @@ export const BLOCK_FIELDS: Record<BlockType, FieldDef[]> = {
       kind: "image",
       key: "officeImageUrl",
       label: "Office photograph",
-      hint: "Shown under the headline and Scope of work panel. Clear the field to hide it.",
+      hint: "Shown beside the headline in the hero. Clear the field to hide it.",
     },
     {
       kind: "text",
