@@ -535,8 +535,8 @@ export const BLOCK_FIELDS: Record<BlockType, FieldDef[]> = {
     {
       kind: "image",
       key: "officeImageUrl",
-      label: "Office photograph",
-      hint: "Shown beside the headline in the hero. Clear the field to hide it.",
+      label: "Hero photograph",
+      hint: "Full-bleed background. Leave this and the background photo empty to use the mesh on its own.",
     },
     {
       kind: "text",

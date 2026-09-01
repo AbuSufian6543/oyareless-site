@@ -10,8 +10,12 @@ import { ButtonLink, type ButtonVariant } from "@/components/ui/button";
 import { BlockIcon } from "@/components/ui/icon";
 import { SectionImage } from "@/components/visuals/section-image";
 import { TechBackdrop } from "@/components/visuals/tech-backdrop";
-import { HomeOfficePhoto } from "@/components/site/home-office-photo";
+import {
+  PhotographicHero,
+  photoHeroCopy,
+} from "@/components/site/photographic-hero";
 import type { BlockOf } from "@/lib/blocks";
+import { HOME_OFFICE_ALT } from "@/lib/home-office";
 import { getSettings } from "@/lib/settings";
 import { cn } from "@/lib/utils";
 
@@ -22,15 +26,131 @@ const HEIGHTS: Record<string, string> = {
 };
 
 /**
- * Primary hero for the platform pages. The background is the animated node
- * mesh, optionally over a photograph. On Home the right-hand column is the
- * Sault Ste. Marie office so the page still reads as a local technology firm.
+ * Primary hero for the platform pages. Home uses the office photograph as a
+ * full-bleed background with a left-weighted scrim so the headline stays
+ * readable and the building stays visible. Without a photo the animated mesh
+ * is the field.
  */
 export async function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
   const { data } = block;
   const settings = await getSettings();
-  const photo = data.backgroundImageUrl || settings.homeHeroImageUrl;
-  const office = data.officeImageUrl.trim();
+  const heroImage =
+    data.officeImageUrl.trim() ||
+    data.backgroundImageUrl.trim() ||
+    settings.homeHeroImageUrl.trim();
+  const heroAlt =
+    data.officeImageAlt.trim() ||
+    data.backgroundImageAlt.trim() ||
+    HOME_OFFICE_ALT;
+
+  const copy = (
+    <div className={heroImage ? photoHeroCopy.wrap : "max-w-3xl"}>
+      {data.eyebrow && (
+        <p
+          className={
+            heroImage
+              ? photoHeroCopy.eyebrow
+              : "mb-4 inline-flex items-center gap-2 rounded-full border border-accent-500/30 bg-accent-500/10 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-accent-300"
+          }
+        >
+          {heroImage ? (
+            <span
+              className="size-1.5 rounded-full bg-accent-400"
+              aria-hidden="true"
+            />
+          ) : null}
+          {data.eyebrow}
+        </p>
+      )}
+
+      <h1
+        className={
+          heroImage
+            ? photoHeroCopy.heading
+            : "text-balance-tight text-4xl leading-[1.08] font-bold lg:text-[3.5rem]"
+        }
+      >
+        <HeroHeadline text={data.headline} />
+      </h1>
+
+      {data.subheadline && (
+        <p
+          className={
+            heroImage
+              ? photoHeroCopy.sub
+              : "mt-5 max-w-2xl text-lg leading-relaxed text-navy-200 lg:text-xl"
+          }
+        >
+          {data.subheadline}
+        </p>
+      )}
+
+      {data.buttons.length > 0 && (
+        <div className={heroImage ? photoHeroCopy.actions : "mt-8 flex flex-wrap gap-3"}>
+          {data.buttons.map((button, index) => {
+            const variant = heroButtonVariant(button.style, index);
+            return (
+              <ButtonLink
+                key={index}
+                href={button.href}
+                openInNewTab={button.openInNewTab}
+                size="lg"
+                variant={variant}
+                className={
+                  heroImage && variant === "onDark"
+                    ? photoHeroCopy.outlineButton
+                    : undefined
+                }
+              >
+                {button.label}
+              </ButtonLink>
+            );
+          })}
+        </div>
+      )}
+
+      {!heroImage && data.highlights.length > 0 && (
+        <ul className="mt-10 flex flex-wrap gap-x-7 gap-y-3 border-t border-white/10 pt-6 text-sm text-navy-200">
+          {data.highlights.map((highlight) => (
+            <li key={highlight} className="flex items-center gap-2">
+              <span
+                className="size-1.5 rounded-full bg-accent-400"
+                aria-hidden="true"
+              />
+              {highlight}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+
+  if (heroImage) {
+    return (
+      <PhotographicHero
+        src={heroImage}
+        alt={heroAlt}
+        id={block.settings?.anchor || undefined}
+        footer={
+          data.highlights.length > 0 ? (
+            <ul className="container-page flex flex-wrap gap-x-8 gap-y-3 py-6 text-sm text-white/80">
+              {data.highlights.map((highlight) => (
+                <li key={highlight} className="flex items-center gap-2">
+                  <span
+                    className="size-1.5 rounded-full bg-accent-400"
+                    aria-hidden="true"
+                  />
+                  {highlight}
+                </li>
+              ))}
+            </ul>
+          ) : undefined
+        }
+      >
+        {copy}
+      </PhotographicHero>
+    );
+  }
 
   return (
     <section
@@ -40,91 +160,13 @@ export async function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
         HEIGHTS[data.height] ?? HEIGHTS.lg,
       )}
     >
-      {photo && (
-        <div className="absolute inset-0 -z-20" aria-hidden="true">
-          <SectionImage
-            src={photo}
-            alt={data.backgroundImageAlt || ""}
-            priority
-            sizes="100vw"
-            className="size-full object-cover"
-          />
-          <div
-            className="absolute inset-0 bg-navy-950"
-            style={{ opacity: data.overlayOpacity / 100 }}
-          />
-        </div>
-      )}
-
       <TechBackdrop
         network={data.networkDensity > 0}
         density={data.networkDensity / 100}
         glow="right"
         mood="network"
-        // The photo layer already supplies the base color when present.
-        className={photo ? "bg-transparent" : undefined}
       />
-
-      <div className="container-page relative">
-        <div
-          className={cn(
-            "grid items-center gap-10 lg:gap-16",
-            office &&
-              "lg:grid-cols-[minmax(0,1.1fr)_minmax(20rem,32rem)] lg:items-stretch",
-          )}
-        >
-          <div className="max-w-3xl">
-            {data.eyebrow && (
-              <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-accent-500/30 bg-accent-500/10 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-accent-300">
-                {data.eyebrow}
-              </p>
-            )}
-
-            <h1 className="text-balance-tight text-4xl leading-[1.08] font-bold lg:text-[3.5rem]">
-              <HeroHeadline text={data.headline} />
-            </h1>
-
-            {data.subheadline && (
-              <p className="mt-5 max-w-2xl text-lg leading-relaxed text-navy-200 lg:text-xl">
-                {data.subheadline}
-              </p>
-            )}
-
-            {data.buttons.length > 0 && (
-              <div className="mt-8 flex flex-wrap gap-3">
-                {data.buttons.map((button, index) => (
-                  <ButtonLink
-                    key={index}
-                    href={button.href}
-                    openInNewTab={button.openInNewTab}
-                    size="lg"
-                    variant={heroButtonVariant(button.style, index)}
-                  >
-                    {button.label}
-                  </ButtonLink>
-                ))}
-              </div>
-            )}
-
-            {data.highlights.length > 0 && (
-              <ul className="mt-10 flex flex-wrap gap-x-7 gap-y-3 border-t border-white/10 pt-6 text-sm text-navy-200">
-                {data.highlights.map((highlight) => (
-                  <li key={highlight} className="flex items-center gap-2">
-                    <span
-                      className="size-1.5 rounded-full bg-accent-400"
-                      aria-hidden="true"
-                    />
-                    {highlight}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-          {office ? (
-            <HomeOfficePhoto src={data.officeImageUrl} alt={data.officeImageAlt} />
-          ) : null}
-        </div>
-      </div>
+      <div className="container-page relative">{copy}</div>
     </section>
   );
 }

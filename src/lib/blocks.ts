@@ -383,9 +383,9 @@ const techHeroData = z.object({
   /** Short proof points rendered as a row beneath the buttons. */
   highlights: z.array(z.string()).default([]),
   /**
-   * Photograph beside the headline in the hero. Empty hides it. The default
-   * is the Sault Ste. Marie office so existing home pages pick it up without
-   * a CMS edit.
+   * Photograph used as the full-bleed hero background. Empty falls back to
+   * the mesh-only hero. The default is the Sault Ste. Marie office so
+   * existing home pages pick it up without a CMS edit.
    */
   officeImageUrl: z.string().default(HOME_OFFICE_IMAGE),
   officeImageAlt: z.string().default(HOME_OFFICE_ALT),

@@ -17,6 +17,7 @@ export function TechBackdrop({
   glow = "right",
   mood = "network",
   scrim = "hero",
+  wash = "solid",
   className,
 }: {
   network?: boolean;
@@ -33,25 +34,38 @@ export function TechBackdrop({
    * a footer or band still shows the particles. `none` leaves the mesh raw.
    */
   scrim?: "hero" | "section" | "none";
+  /**
+   * `solid` is the usual navy field. `photo` sits over a photograph: no fill,
+   * no cyan bloom, a quieter grid and mesh so the picture stays visible.
+   */
+  wash?: "solid" | "photo";
   className?: string;
 }) {
   const ai = mood === "ai";
   const ops = mood === "ops";
+  const overPhoto = wash === "photo";
 
   return (
     <div
       className={cn("pointer-events-none absolute inset-0 -z-10", className)}
       aria-hidden="true"
     >
+      {!overPhoto && (
+        <div
+          className={cn(
+            "absolute inset-0 bg-gradient-to-br from-navy-950 via-navy-900 to-navy-950",
+            ai && "via-[#062033]",
+          )}
+        />
+      )}
       <div
         className={cn(
-          "absolute inset-0 bg-gradient-to-br from-navy-950 via-navy-900 to-navy-950",
-          ai && "via-[#062033]",
+          "bg-tech-grid absolute inset-0",
+          overPhoto && "opacity-[0.16]",
         )}
       />
-      <div className="bg-tech-grid absolute inset-0" />
 
-      {glow !== "none" && (
+      {glow !== "none" && !overPhoto && (
         <div
           className={cn(
             "absolute size-[46rem] max-w-none rounded-full opacity-45 blur-3xl",
@@ -85,11 +99,14 @@ export function TechBackdrop({
         <NetworkCanvas
           density={density}
           mood={mood}
-          className="absolute inset-0 size-full"
+          className={cn(
+            "absolute inset-0 size-full",
+            overPhoto && "opacity-20",
+          )}
         />
       )}
 
-      {scrim === "hero" && (
+      {scrim === "hero" && !overPhoto && (
         <div className="absolute inset-0 bg-gradient-to-t from-navy-950/85 via-navy-950/35 to-transparent" />
       )}
       {scrim === "section" && (

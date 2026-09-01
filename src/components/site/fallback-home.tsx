@@ -1,10 +1,12 @@
 import { Phone } from "lucide-react";
 import Link from "next/link";
 
-import { HomeOfficePhoto } from "@/components/site/home-office-photo";
+import {
+  PhotographicHero,
+  photoHeroCopy,
+} from "@/components/site/photographic-hero";
 import { ButtonLink } from "@/components/ui/button";
 import { BlockIcon } from "@/components/ui/icon";
-import { TechBackdrop } from "@/components/visuals/tech-backdrop";
 
 const FACTS = [
   { value: "2005", label: "Serving Northern Ontario since" },
@@ -55,57 +57,58 @@ const INDUSTRIES = [
 export function FallbackHome() {
   return (
     <>
-      <section className="relative isolate overflow-hidden bg-navy-950 py-24 text-white lg:py-32">
-        <TechBackdrop network density={0.85} glow="right" mood="network" />
-
-        <div className="container-page relative">
-          <div className="grid items-center gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(20rem,32rem)] lg:items-stretch lg:gap-16">
-            <div className="max-w-3xl">
-              <p className="eyebrow-pill mb-4">
-                Technology service provider · Northern Ontario
-              </p>
-              <h1 className="text-balance-tight text-4xl leading-[1.08] font-bold text-white sm:text-5xl lg:text-[3.25rem]">
-                Networks, Security, And Communications For Northern Ontario
-              </h1>
-              <p className="mt-6 max-w-2xl text-lg leading-relaxed text-navy-200">
-                Since 2005 in Sault Ste. Marie we design, install, and support
-                the systems businesses here actually run — IT and Wi-Fi,
-                firewalls, cameras and alarms, VoIP, and two-way radio. The
-                same local team stays on them.
-              </p>
-              <div className="mt-9 flex flex-wrap gap-3">
-                <ButtonLink href="#work" variant="accent" size="lg">
-                  Explore our work
-                </ButtonLink>
-                <ButtonLink href="/request-quote" variant="onDark" size="lg">
-                  Request a quote
-                </ButtonLink>
+      <PhotographicHero
+        src="/images/office-1400.webp"
+        footer={
+          <div className="container-page grid gap-7 py-7 sm:grid-cols-2 lg:grid-cols-4 lg:gap-0 lg:divide-x lg:divide-white/10">
+            {FACTS.map((fact) => (
+              <div
+                key={fact.label}
+                className="lg:px-8 first:lg:pl-0 last:lg:pr-0"
+              >
+                <p className="text-xl font-bold tracking-tight text-white sm:text-2xl">
+                  {fact.value}
+                </p>
+                <p className="mt-1.5 text-[0.6875rem] font-bold uppercase tracking-[0.14em] text-white/55">
+                  {fact.label}
+                </p>
               </div>
-              <ul className="mt-10 flex flex-wrap gap-x-7 gap-y-3 border-t border-white/10 pt-6 text-sm text-navy-200">
-                <li>Serving since 2005</li>
-                <li>Sault Ste. Marie office</li>
-                <li>Authorized Hytera dealer</li>
-              </ul>
-            </div>
-            <HomeOfficePhoto />
+            ))}
+          </div>
+        }
+      >
+        <div className={photoHeroCopy.wrap}>
+          <p className={photoHeroCopy.eyebrow}>
+            <span
+              className="size-1.5 rounded-full bg-accent-400"
+              aria-hidden="true"
+            />
+            Technology service provider · Northern Ontario
+          </p>
+          <h1 className={photoHeroCopy.heading}>
+            Networks, Security, And Communications For Northern Ontario
+          </h1>
+          <p className={photoHeroCopy.sub}>
+            Since 2005 in Sault Ste. Marie we design, install, and support
+            the systems businesses here actually run — IT and Wi-Fi,
+            firewalls, cameras and alarms, VoIP, and two-way radio. The
+            same local team stays on them.
+          </p>
+          <div className={photoHeroCopy.actions}>
+            <ButtonLink href="#work" variant="accent" size="lg">
+              Explore our work
+            </ButtonLink>
+            <ButtonLink
+              href="/request-quote"
+              variant="onDark"
+              size="lg"
+              className={photoHeroCopy.outlineButton}
+            >
+              Request a quote
+            </ButtonLink>
           </div>
         </div>
-      </section>
-
-      <section className="border-y border-navy-800 bg-navy-950">
-        <div className="container-page grid gap-8 py-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-0 lg:divide-x lg:divide-white/10">
-          {FACTS.map((fact) => (
-            <div key={fact.label} className="lg:px-8 first:lg:pl-0 last:lg:pr-0">
-              <p className="text-xl font-bold tracking-tight text-white sm:text-2xl">
-                {fact.value}
-              </p>
-              <p className="mt-1.5 text-[0.6875rem] font-bold uppercase tracking-[0.14em] text-navy-400">
-                {fact.label}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
+      </PhotographicHero>
 
       <section id="work" className="scroll-mt-24 bg-white py-20 lg:py-28">
         <div className="container-page">
