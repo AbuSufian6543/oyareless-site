@@ -1,6 +1,7 @@
 import { Phone } from "lucide-react";
 import Link from "next/link";
 
+import { HomeOfficePhoto } from "@/components/site/home-office-photo";
 import { HomeStackPanel } from "@/components/site/home-stack-panel";
 import { ButtonLink } from "@/components/ui/button";
 import { BlockIcon } from "@/components/ui/icon";
@@ -89,6 +90,7 @@ export function FallbackHome() {
             </div>
             <HomeStackPanel />
           </div>
+          <HomeOfficePhoto />
         </div>
       </section>
 

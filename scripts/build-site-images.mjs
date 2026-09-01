@@ -203,6 +203,14 @@ const IMAGES = [
     prompt:
       "Premium B2B architectural photography, 16:9 landscape. A commercial panic / duress button on a dark charcoal wall in a quiet office or reception corridor. Large round red emergency push-button under a clear flip-up cover, small cool cyan status LED beside it, no logos, no brand names, no readable text, no people. Deep navy color grading, cinematic, shallow depth of field.",
   },
+  {
+    name: "office",
+    master: "office-white-oak.png",
+    alt: "The WirelessCom.Ca Inc. office at 97 White Oak Drive East in Sault Ste. Marie, photographed at dusk",
+    origin: "owned",
+    cover: false,
+    source: "WirelessCom.Ca Inc. field photography of 97 White Oak Drive East",
+  },
 ];
 
 async function main() {
@@ -230,14 +238,21 @@ async function main() {
     }
 
     const input = await readFile(path.join(INBOX, image.master));
+    const cover = image.cover !== false;
 
     for (const width of WIDTHS) {
-      const resized = sharp(input).resize({
-        width,
-        height: Math.round(width * ASPECT),
-        fit: "cover",
-        position: "attention",
-      });
+      const resized = cover
+        ? sharp(input).resize({
+            width,
+            height: Math.round(width * ASPECT),
+            fit: "cover",
+            position: "attention",
+          })
+        : sharp(input).resize({
+            width,
+            withoutEnlargement: true,
+            fit: "inside",
+          });
 
       await writeFile(
         path.join(OUT, `${image.name}-${width}.avif`),
@@ -300,10 +315,12 @@ async function main() {
     "",
     "## Photographs owned by WirelessCom.Ca Inc.",
     "",
-    "These live in `public/brand/` and are the company's own field photography:",
-    "`home-hero.png` (the Sault Ste. Marie office at dusk), `internet-1.jpg`",
-    "through `internet-5.jpg` (wireless relay and antenna installations) and",
-    "`marketing-1.png` / `marketing-2.png` (digital signage installations).",
+    "`office-*` is the Sault Ste. Marie office at 97 White Oak Drive East,",
+    "photographed at dusk. It keeps its native aspect instead of the 16:10",
+    "card crop. Other company photography in `public/brand/` includes",
+    "`internet-1.jpg` through `internet-5.jpg` (wireless relay and antenna",
+    "installations) and `marketing-1.png` / `marketing-2.png` where those",
+    "files are present.",
     "",
     "## Full-bleed backgrounds",
     "",

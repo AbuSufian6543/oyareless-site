@@ -10,6 +10,7 @@ import { ButtonLink, type ButtonVariant } from "@/components/ui/button";
 import { BlockIcon } from "@/components/ui/icon";
 import { SectionImage } from "@/components/visuals/section-image";
 import { TechBackdrop } from "@/components/visuals/tech-backdrop";
+import { HomeOfficePhoto } from "@/components/site/home-office-photo";
 import { HomeStackPanel } from "@/components/site/home-stack-panel";
 import type { BlockOf } from "@/lib/blocks";
 import { getSettings } from "@/lib/settings";
@@ -122,6 +123,12 @@ export async function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
         </div>
           {!photo && <HomeStackPanel />}
         </div>
+        {data.officeImageUrl.trim() ? (
+          <HomeOfficePhoto
+            src={data.officeImageUrl}
+            alt={data.officeImageAlt}
+          />
+        ) : null}
       </div>
     </section>
   );

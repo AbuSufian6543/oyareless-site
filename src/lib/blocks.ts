@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { HOME_OFFICE_ALT, HOME_OFFICE_IMAGE } from "./home-office";
+
 /**
  * Page content is stored as an ordered array of blocks (Postgres JSON).
  * These schemas are the single source of truth: the admin API validates
@@ -380,6 +382,13 @@ const techHeroData = z.object({
   buttons: z.array(linkSchema).default([]),
   /** Short proof points rendered as a row beneath the buttons. */
   highlights: z.array(z.string()).default([]),
+  /**
+   * Photograph under the headline and Scope of work panel. Empty hides it.
+   * The default is the Sault Ste. Marie office so existing home pages pick
+   * it up without a CMS edit.
+   */
+  officeImageUrl: z.string().default(HOME_OFFICE_IMAGE),
+  officeImageAlt: z.string().default(HOME_OFFICE_ALT),
 });
 
 const pillarItem = z.object({

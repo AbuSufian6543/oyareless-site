@@ -209,6 +209,9 @@ const home: SeedPage = {
           "Sault Ste. Marie office",
           "Authorized Hytera dealer",
         ],
+        officeImageUrl: "/images/office-1400.webp",
+        officeImageAlt:
+          "The WirelessCom.Ca Inc. office at 97 White Oak Drive East in Sault Ste. Marie, photographed at dusk",
       },
     },
     {

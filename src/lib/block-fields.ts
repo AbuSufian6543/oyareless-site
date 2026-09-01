@@ -532,6 +532,18 @@ export const BLOCK_FIELDS: Record<BlockType, FieldDef[]> = {
     },
     { kind: "stringList", key: "highlights", label: "Proof points", itemLabel: "Point" },
     { kind: "links", key: "buttons", label: "Buttons", hint: LINK_STYLE_HINT },
+    {
+      kind: "image",
+      key: "officeImageUrl",
+      label: "Office photograph",
+      hint: "Shown under the headline and Scope of work panel. Clear the field to hide it.",
+    },
+    {
+      kind: "text",
+      key: "officeImageAlt",
+      label: "Office photograph description",
+      hint: "Describe the photo for screen readers.",
+    },
   ],
 
   pillars: [

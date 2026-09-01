@@ -123,10 +123,12 @@ provenance stays auditable.
 
 ## Photographs owned by WirelessCom.Ca Inc.
 
-These live in `public/brand/` and are the company's own field photography:
-`home-hero.png` (the Sault Ste. Marie office at dusk), `internet-1.jpg`
-through `internet-5.jpg` (wireless relay and antenna installations) and
-`marketing-1.png` / `marketing-2.png` (digital signage installations).
+`office-*` is the Sault Ste. Marie office at 97 White Oak Drive East,
+photographed at dusk. It keeps its native aspect instead of the 16:10
+card crop. Other company photography in `public/brand/` includes
+`internet-1.jpg` through `internet-5.jpg` (wireless relay and antenna
+installations) and `marketing-1.png` / `marketing-2.png` where those
+files are present.
 
 ## Full-bleed backgrounds
 
