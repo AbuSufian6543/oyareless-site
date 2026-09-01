@@ -124,8 +124,11 @@ provenance stays auditable.
 ## Photographs owned by WirelessCom.Ca Inc.
 
 `office-*` is the Sault Ste. Marie office at 97 White Oak Drive East,
-photographed at dusk. It keeps its native aspect instead of the 16:10
-card crop. Other company photography in `public/brand/` includes
+photographed at dusk. The Weebly original is 1100px wide; the committed
+hero derivatives are from a 4400px Real-ESRGAN x4plus restoration of
+that photograph, encoded at higher quality than the card set. It keeps
+its native aspect instead of the 16:10 card crop. Other company
+photography in `public/brand/` includes
 `internet-1.jpg` through `internet-5.jpg` (wireless relay and antenna
 installations) and `marketing-1.png` / `marketing-2.png` where those
 files are present.

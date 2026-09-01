@@ -6,27 +6,36 @@ import { cn } from "@/lib/utils";
  * Renders section photography.
  *
  * Images built by `scripts/build-site-images.mjs` already exist as AVIF and
- * WebP at three widths, so those are served through a plain `<picture>`: the
+ * WebP at several widths, so those are served through a plain `<picture>`: the
  * browser negotiates the format, no server-side optimization runs, and the
- * files are cacheable static assets.
+ * files are cacheable static assets. The office hero uses extra, larger
+ * widths because it is full-bleed.
  *
  * Anything else — most importantly images an admin uploads or pastes through
  * the media library — falls through to `next/image`.
  */
 
 const WIDTHS = [560, 900, 1400] as const;
+const OFFICE_WIDTHS = [960, 1400, 2000, 2800, 3600] as const;
+const ALL_WIDTHS = Array.from(new Set([...WIDTHS, ...OFFICE_WIDTHS]));
 
 /** e.g. /images/server-rack-1400.webp → "server-rack" */
-const BUILT_PATTERN = /^\/images\/([a-z0-9-]+)-(?:560|900|1400)\.(?:avif|webp)$/;
+const BUILT_PATTERN = new RegExp(
+  `^/images/([a-z0-9-]+)-(?:${ALL_WIDTHS.join("|")})\\.(?:avif|webp)$`,
+);
 
 function builtName(src: string): string | null {
   return BUILT_PATTERN.exec(src)?.[1] ?? null;
 }
 
+function widthsFor(name: string): readonly number[] {
+  return name === "office" ? OFFICE_WIDTHS : WIDTHS;
+}
+
 function srcSet(name: string, extension: "avif" | "webp"): string {
-  return WIDTHS.map(
-    (width) => `/images/${name}-${width}.${extension} ${width}w`,
-  ).join(", ");
+  return widthsFor(name)
+    .map((width) => `/images/${name}-${width}.${extension} ${width}w`)
+    .join(", ");
 }
 
 export function SectionImage({
@@ -90,7 +99,7 @@ export function SectionImage({
       {/* Pre-optimized static derivatives; the optimizer would only re-encode
           what the build already produced. */}
       <img
-        src={`/images/${name}-900.webp`}
+        src={`/images/${name}-${name === "office" ? 1400 : 900}.webp`}
         alt={alt}
         width={fill ? undefined : 1400}
         height={fill ? undefined : 875}

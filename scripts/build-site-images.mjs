@@ -24,6 +24,13 @@ const OUT = path.join(ROOT, "public", "images");
 const WIDTHS = [1400, 900, 560];
 const ASPECT = 0.625; // 16:10
 
+/**
+ * The home hero is full-bleed. 1100px Weebly originals look soft on a 1440px
+ * or retina display, so the office photograph is restored to 4400px and these
+ * extra widths are served through the picture srcset.
+ */
+const OFFICE_WIDTHS = [3600, 2800, 2000, 1400, 960];
+
 const IMAGES = [
   {
     name: "networking",
@@ -205,11 +212,15 @@ const IMAGES = [
   },
   {
     name: "office",
-    master: "office-white-oak.png",
+    master: "office-white-oak-hero.png",
     alt: "The WirelessCom.Ca Inc. office at 97 White Oak Drive East in Sault Ste. Marie, photographed at dusk",
     origin: "owned",
     cover: false,
-    source: "WirelessCom.Ca Inc. field photography of 97 White Oak Drive East",
+    widths: OFFICE_WIDTHS,
+    avifQuality: 74,
+    webpQuality: 90,
+    sharpen: true,
+    source: "WirelessCom.Ca Inc. field photography of 97 White Oak Drive East, restored to 4400px with Real-ESRGAN x4plus",
   },
 ];
 
@@ -232,16 +243,24 @@ async function main() {
   const missing = [];
 
   for (const image of IMAGES) {
-    if (!available.has(image.master)) {
-      missing.push(image);
-      continue;
+    let master = image.master;
+    if (!available.has(master)) {
+      if (image.name === "office" && available.has("office-white-oak.png")) {
+        master = "office-white-oak.png";
+      } else {
+        missing.push(image);
+        continue;
+      }
     }
 
-    const input = await readFile(path.join(INBOX, image.master));
+    const input = await readFile(path.join(INBOX, master));
     const cover = image.cover !== false;
+    const widths = image.widths ?? WIDTHS;
+    const avifQuality = image.avifQuality ?? 55;
+    const webpQuality = image.webpQuality ?? 78;
 
-    for (const width of WIDTHS) {
-      const resized = cover
+    for (const width of widths) {
+      let resized = cover
         ? sharp(input).resize({
             width,
             height: Math.round(width * ASPECT),
@@ -252,20 +271,25 @@ async function main() {
             width,
             withoutEnlargement: true,
             fit: "inside",
+            kernel: "lanczos3",
           });
+
+      if (image.sharpen) {
+        resized = resized.sharpen({ sigma: 0.7, m1: 0.6, m2: 0.3 });
+      }
 
       await writeFile(
         path.join(OUT, `${image.name}-${width}.avif`),
-        await resized.clone().avif({ quality: 55, effort: 6 }).toBuffer(),
+        await resized.clone().avif({ quality: avifQuality, effort: 6 }).toBuffer(),
       );
       await writeFile(
         path.join(OUT, `${image.name}-${width}.webp`),
-        await resized.clone().webp({ quality: 78 }).toBuffer(),
+        await resized.clone().webp({ quality: webpQuality }).toBuffer(),
       );
     }
 
     built.push(image);
-    process.stdout.write(`  ${image.name}: ${WIDTHS.length * 2} files\n`);
+    process.stdout.write(`  ${image.name}: ${widths.length * 2} files\n`);
   }
 
   for (const image of missing) {
@@ -316,8 +340,11 @@ async function main() {
     "## Photographs owned by WirelessCom.Ca Inc.",
     "",
     "`office-*` is the Sault Ste. Marie office at 97 White Oak Drive East,",
-    "photographed at dusk. It keeps its native aspect instead of the 16:10",
-    "card crop. Other company photography in `public/brand/` includes",
+    "photographed at dusk. The Weebly original is 1100px wide; the committed",
+    "hero derivatives are from a 4400px Real-ESRGAN x4plus restoration of",
+    "that photograph, encoded at higher quality than the card set. It keeps",
+    "its native aspect instead of the 16:10 card crop. Other company",
+    "photography in `public/brand/` includes",
     "`internet-1.jpg` through `internet-5.jpg` (wireless relay and antenna",
     "installations) and `marketing-1.png` / `marketing-2.png` where those",
     "files are present.",
