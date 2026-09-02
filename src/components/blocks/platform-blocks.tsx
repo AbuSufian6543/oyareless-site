@@ -922,7 +922,7 @@ export function DefenseInDepthBlock({
   block: BlockOf<"defenseInDepth">;
 }) {
   const { data } = block;
-  const dark = isDarkBackground(block.settings);
+  const dark = isDarkBackground(block.settings, "dark");
   const layers = data.layers;
 
   return (

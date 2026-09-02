@@ -13,6 +13,29 @@ export type ButtonVariant =
   | "accent"
   | "danger";
 
+const STYLE_TO_VARIANT: Record<string, ButtonVariant> = {
+  primary: "primary",
+  secondary: "secondary",
+  ghost: "ghost",
+  outline: "outline",
+  onDark: "onDark",
+  accent: "accent",
+  danger: "danger",
+};
+
+/** Map a CMS button style onto a dark or light surface so labels stay readable. */
+export function buttonVariantOnSurface(
+  style: string | undefined,
+  dark: boolean,
+): ButtonVariant {
+  const key = style || "primary";
+  if (dark) {
+    if (key === "outline" || key === "ghost") return "onDark";
+    if (key === "primary") return "accent";
+  }
+  return STYLE_TO_VARIANT[key] ?? "primary";
+}
+
 export type ButtonSize = "sm" | "md" | "lg";
 
 const BASE =

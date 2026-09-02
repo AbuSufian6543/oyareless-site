@@ -460,7 +460,7 @@ export function PricingBlock({ block }: { block: BlockOf<"pricing"> }) {
 }
 
 export function StatsBlock({ block }: { block: BlockOf<"stats"> }) {
-  const dark = isDarkBackground(block.settings);
+  const dark = isDarkBackground(block.settings, "grid");
   const chips = block.data.chips ?? [];
 
   return (

@@ -13,8 +13,10 @@
  *     logo files under /brand/logos/ are refreshed in place, missing service
  *     cards and brand tiles are still appended, a missing home stats strip
  *     or defense-in-depth section is still inserted, a missing core-capabilities
- *     section is still inserted, and the home tech hero is upgraded when it
- *     still has a previous seed headline;
+ *     section is still inserted, the home tech hero is upgraded when it
+ *     still has a previous seed headline, banner CTAs on a light background
+ *     are restored to a readable dark band, and a Hytera catalog callout is
+ *     added on Home and Two-way Radios when missing;
 
 
  *   - nothing is ever deleted, and redirects/navigation are only ever added to.
@@ -27,6 +29,8 @@
  */
 import {
   buildBlocks,
+  HYTERA_CATALOG_HEADING,
+  HYTERA_CATALOG_URL,
   SEED_NAV,
   SEED_PAGES,
   SEED_REDIRECTS,
@@ -329,6 +333,95 @@ function upgradeCtaCopy(
   }
 }
 
+function fixBannerCtaSurfaces(next: JsonBlock[], notes: string[]): void {
+  for (const block of next) {
+    if (block.type !== "cta") continue;
+    const variant = String(block.data?.variant ?? "banner");
+    if (variant !== "banner") continue;
+    const settings = (block.settings ??= {});
+    const background = String(settings.background ?? "white");
+    if (
+      background === "white" ||
+      background === "light" ||
+      background === "accent"
+    ) {
+      settings.background = "gradient";
+      notes.push("CTA banner contrast");
+    }
+  }
+}
+
+function upgradeHyteraCtaCopy(next: JsonBlock[], notes: string[]): void {
+  for (const block of next) {
+    if (block.type !== "cta") continue;
+    const data = (block.data ??= {});
+    const description = String(data.description ?? "");
+    if (!/contact us to learn more about hytera products/i.test(description)) {
+      continue;
+    }
+    data.description =
+      "Check current Hytera prices and request a quote at hyteraradios.ca for the radios you need. For rentals, programming, or a custom fleet, call 1-800-705-3189.";
+    const buttons = Array.isArray(data.buttons)
+      ? (data.buttons as Array<Record<string, unknown>>)
+      : [];
+    if (!buttons.some((button) => String(button.href ?? "").includes("hyteraradios.ca"))) {
+      buttons.push({
+        label: "Open hyteraradios.ca",
+        href: HYTERA_CATALOG_URL,
+        style: "outline",
+        openInNewTab: true,
+      });
+      data.buttons = buttons;
+    }
+    notes.push("Hytera CTA copy");
+  }
+}
+
+function ensureHyteraCatalog(
+  next: JsonBlock[],
+  seed: ReturnType<typeof buildBlocks>,
+  slug: string,
+  notes: string[],
+): void {
+  if (slug !== "home" && slug !== "two-way-radios") return;
+
+  const hasCatalogCta = next.some((block) => {
+    if (block.type !== "cta") return false;
+    const heading = String(block.data?.heading ?? "");
+    return (
+      heading === HYTERA_CATALOG_HEADING ||
+      /hytera prices/i.test(heading)
+    );
+  });
+  if (hasCatalogCta) return;
+
+  const seedBlock = seed.find((block) => {
+    if (block.type !== "cta") return false;
+    return String((block.data as { heading?: string }).heading ?? "") === HYTERA_CATALOG_HEADING;
+  });
+  if (!seedBlock) return;
+
+  const afterTypes =
+    slug === "home"
+      ? ["capabilityGrid", "techHero", "hero"]
+      : ["richText", "hero"];
+  let insertAt = -1;
+  for (const type of afterTypes) {
+    const index = next.findIndex((block) => block.type === type);
+    if (index >= 0) {
+      insertAt = index + 1;
+      break;
+    }
+  }
+  if (insertAt < 0) insertAt = Math.min(next.length, 2);
+
+  next.splice(insertAt, 0, {
+    ...(structuredClone(seedBlock) as JsonBlock),
+    id: newBlockId(),
+  });
+  notes.push("Hytera catalog callout");
+}
+
 /**
  * On pages an admin has already edited, still fill empty photos and logos,
  * append missing service cards and brand tiles, insert a stats strip,
@@ -340,6 +433,7 @@ function upgradeCtaCopy(
 function fillMissingMedia(
   current: unknown,
   seed: ReturnType<typeof buildBlocks>,
+  slug: string,
 ): { blocks: JsonBlock[]; notes: string[] } | null {
   if (!Array.isArray(current)) return null;
 
@@ -496,6 +590,9 @@ function fillMissingMedia(
   upgradeCapabilityCopy(next, seed, notes);
   upgradeServiceHeroCopy(next, seed, notes);
   upgradeCtaCopy(next, seed, notes);
+  fixBannerCtaSurfaces(next, notes);
+  upgradeHyteraCtaCopy(next, notes);
+  ensureHyteraCatalog(next, seed, slug, notes);
 
   const seedHeroes = seed.filter((block) => block.type === "hero");
   const currentHeroes = next.filter((block) => block.type === "hero");
@@ -630,7 +727,7 @@ async function main(): Promise<void> {
     const isForced = forceAll || forced.has(page.slug);
 
     if (edited && !isForced) {
-      const filled = fillMissingMedia(existing.blocks, blocks);
+      const filled = fillMissingMedia(existing.blocks, blocks, page.slug);
       if (!filled) {
         rows.push({
           slug: page.slug,

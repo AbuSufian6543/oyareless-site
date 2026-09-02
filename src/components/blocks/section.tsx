@@ -35,8 +35,11 @@ const ALIGN: Record<string, string> = {
   right: "text-right",
 };
 
-export function isDarkBackground(settings?: BlockSettings): boolean {
-  const background = settings?.background ?? "white";
+export function isDarkBackground(
+  settings?: BlockSettings,
+  defaultBackground = "white",
+): boolean {
+  const background = settings?.background ?? defaultBackground;
   return (
     background === "dark" ||
     background === "navy" ||

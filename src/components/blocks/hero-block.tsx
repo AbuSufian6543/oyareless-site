@@ -1,7 +1,7 @@
 import { Check, ChevronRight } from "lucide-react";
 
 import { MediaSlideshow } from "@/components/blocks/media-slideshow";
-import { ButtonLink, type ButtonVariant } from "@/components/ui/button";
+import { ButtonLink, buttonVariantOnSurface } from "@/components/ui/button";
 import { SectionImage } from "@/components/visuals/section-image";
 import { TechBackdrop } from "@/components/visuals/tech-backdrop";
 import type { BlockOf, LinkItem } from "@/lib/blocks";
@@ -13,13 +13,6 @@ const HEIGHTS: Record<string, string> = {
   md: "py-20 lg:py-28",
   lg: "py-24 lg:py-36",
   full: "py-32 lg:min-h-[38rem] lg:py-40",
-};
-
-const STYLE_TO_VARIANT: Record<string, ButtonVariant> = {
-  primary: "primary",
-  secondary: "secondary",
-  ghost: "ghost",
-  outline: "outline",
 };
 
 export function HeroBlock({
@@ -205,13 +198,7 @@ function HeroCopy({
               href={button.href}
               openInNewTab={button.openInNewTab}
               size="lg"
-              variant={
-                button.style === "outline" && dark
-                  ? "onDark"
-                  : button.style === "primary" && dark
-                    ? "accent"
-                    : (STYLE_TO_VARIANT[button.style] ?? "primary")
-              }
+              variant={buttonVariantOnSurface(button.style, dark)}
             >
               {button.label}
               <ChevronRight className="size-4" aria-hidden="true" />

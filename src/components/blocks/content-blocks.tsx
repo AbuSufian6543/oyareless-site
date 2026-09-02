@@ -9,18 +9,11 @@ import {
 } from "lucide-react";
 
 import { Section, SectionHeading, isDarkBackground } from "@/components/blocks/section";
-import { ButtonLink, type ButtonVariant } from "@/components/ui/button";
+import { ButtonLink, buttonVariantOnSurface } from "@/components/ui/button";
 import { SectionImage } from "@/components/visuals/section-image";
 import type { BlockOf } from "@/lib/blocks";
 import { sanitizeRichText } from "@/lib/sanitize";
 import { cn } from "@/lib/utils";
-
-const STYLE_TO_VARIANT: Record<string, ButtonVariant> = {
-  primary: "primary",
-  secondary: "secondary",
-  ghost: "ghost",
-  outline: "outline",
-};
 
 export function HeadingBlock({ block }: { block: BlockOf<"heading"> }) {
   const dark = isDarkBackground(block.settings);
@@ -134,7 +127,7 @@ export function ImageTextBlock({ block }: { block: BlockOf<"imageText"> }) {
                   key={index}
                   href={button.href}
                   openInNewTab={button.openInNewTab}
-                  variant={STYLE_TO_VARIANT[button.style] ?? "primary"}
+                  variant={buttonVariantOnSurface(button.style, dark)}
                 >
                   {button.label}
                 </ButtonLink>

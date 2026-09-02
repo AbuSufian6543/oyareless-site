@@ -27,6 +27,9 @@ export type SeedPage = {
 };
 
 const PHONE = "1-800-705-3189";
+export const HYTERA_CATALOG_URL = "https://hyteraradios.ca";
+export const HYTERA_CATALOG_HEADING =
+  "Check current Hytera prices and quote the radios you need";
 const YEARS_SINCE_2005 = new Date().getFullYear() - 2005;
 
 function vendorLogo(slug: string) {
@@ -86,8 +89,54 @@ function quoteButtons(label = "Request a quote") {
   ];
 }
 
+function hyteraCatalogCta(page: "home" | "radios"): BlockInput {
+  return {
+    type: "cta",
+    settings: { background: "light", paddingY: "lg" },
+    data: {
+      heading: HYTERA_CATALOG_HEADING,
+      description:
+        page === "home"
+          ? "We are an authorized Hytera dealer. Browse current models and pricing at hyteraradios.ca, then request a quote for the handhelds, mobiles, repeaters, or accessories your crew needs."
+          : "Browse live catalog pricing at hyteraradios.ca and request a quote for the radios you need. Programming, rentals, and service stay here in Sault Ste. Marie.",
+      phone: PHONE,
+      variant: "boxed",
+      buttons: [
+        {
+          label: "Open hyteraradios.ca",
+          href: HYTERA_CATALOG_URL,
+          style: "primary",
+          openInNewTab: true,
+        },
+        page === "home"
+          ? {
+              label: "Two-way radio service",
+              href: "/two-way-radios",
+              style: "outline",
+              openInNewTab: false,
+            }
+          : {
+              label: "Ask us locally",
+              href: "/request-quote",
+              style: "outline",
+              openInNewTab: false,
+            },
+      ],
+    },
+  };
+}
+
 /** Standard closing call-to-action reused across the service pages. */
-function closingCta(heading: string, description: string): BlockInput {
+function closingCta(
+  heading: string,
+  description: string,
+  extraButtons: Array<{
+    label: string;
+    href: string;
+    style: string;
+    openInNewTab: boolean;
+  }> = [],
+): BlockInput {
   return {
     type: "cta",
     settings: { background: "gradient", paddingY: "lg" },
@@ -98,6 +147,7 @@ function closingCta(heading: string, description: string): BlockInput {
       variant: "banner",
       buttons: [
         { label: "Request a quote", href: "/request-quote", style: "primary", openInNewTab: false },
+        ...extraButtons,
       ],
     },
   };
@@ -109,6 +159,12 @@ function serviceHero(
   subheadline: string,
   highlights: string[] = [],
   image?: { url: string; alt: string },
+  extraButtons: Array<{
+    label: string;
+    href: string;
+    style: string;
+    openInNewTab: boolean;
+  }> = [],
 ): BlockInput {
   return {
     type: "hero",
@@ -122,7 +178,7 @@ function serviceHero(
       overlayOpacity: 78,
       backgroundImageUrl: image?.url ?? "",
       backgroundImageAlt: image?.alt ?? "",
-      buttons: quoteButtons(),
+      buttons: [...quoteButtons(), ...extraButtons],
       highlights,
     },
   };
@@ -210,6 +266,7 @@ const home: SeedPage = {
         ],
       },
     },
+    hyteraCatalogCta("home"),
     {
       type: "pillars",
       settings: { background: "white", paddingY: "xl" },
@@ -2093,15 +2150,24 @@ const twoWayRadios: SeedPage = {
       "Digital and analog two-way radios from leading brands, suitable for many industries and applications, with clear and dependable communication indoors and outdoors.",
       ["Authorized Hytera dealer", "Sales & rentals", "Service & training"],
       photos.radio,
+      [
+        {
+          label: "hyteraradios.ca",
+          href: HYTERA_CATALOG_URL,
+          style: "outline",
+          openInNewTab: true,
+        },
+      ],
     ),
     {
       type: "richText",
       settings: { background: "white", paddingY: "lg", width: "narrow" },
       data: {
-        html: "<p>WirelessCom.Ca Inc. is an authorized dealer of Hytera Communications, a global leader in professional mobile radio (DMR) solutions and radio communication systems. Hytera is known for its commitment to excellence and cutting-edge technology, whether you need robust radios for public safety, efficient communication for an enterprise, or versatile devices for personal use.</p>",
+        html: "<p>WirelessCom.Ca Inc. is an authorized dealer of Hytera Communications, a global leader in professional mobile radio (DMR) solutions and radio communication systems. Hytera is known for its commitment to excellence and cutting-edge technology, whether you need robust radios for public safety, efficient communication for an enterprise, or versatile devices for personal use.</p><p>For current list prices and a quote on the radios you need, use <a href=\"https://hyteraradios.ca\" target=\"_blank\" rel=\"noopener noreferrer\">hyteraradios.ca</a>. We handle programming, rentals, and service from Sault Ste. Marie.</p>",
         columns: "1",
       },
     },
+    hyteraCatalogCta("radios"),
     {
       type: "steps",
       settings: { background: "light", paddingY: "xl" },
@@ -2154,7 +2220,15 @@ const twoWayRadios: SeedPage = {
     },
     closingCta(
       "Keep your team talking",
-      `Contact us to learn more about Hytera products and custom solutions. Call today ${PHONE}.`,
+      `Check current Hytera prices and request a quote at hyteraradios.ca for the radios you need. For rentals, programming, or a custom fleet, call ${PHONE}.`,
+      [
+        {
+          label: "Open hyteraradios.ca",
+          href: HYTERA_CATALOG_URL,
+          style: "outline",
+          openInNewTab: true,
+        },
+      ],
     ),
   ],
 };

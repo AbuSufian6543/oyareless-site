@@ -1,19 +1,12 @@
 import { ChevronDown, Clock, Mail, MapPin, Phone, Quote, Star } from "lucide-react";
 
 import { Section, SectionHeading, isDarkBackground } from "@/components/blocks/section";
-import { ButtonLink, type ButtonVariant } from "@/components/ui/button";
+import { ButtonLink, buttonVariantOnSurface } from "@/components/ui/button";
 import { SectionImage } from "@/components/visuals/section-image";
 import type { BlockOf } from "@/lib/blocks";
 import { prisma } from "@/lib/prisma";
 import { getSettings } from "@/lib/settings";
 import { cn, telHref } from "@/lib/utils";
-
-const STYLE_TO_VARIANT: Record<string, ButtonVariant> = {
-  primary: "primary",
-  secondary: "secondary",
-  ghost: "ghost",
-  outline: "outline",
-};
 
 export function CtaBlock({ block }: { block: BlockOf<"cta"> }) {
   const { data } = block;
@@ -39,13 +32,25 @@ export function CtaBlock({ block }: { block: BlockOf<"cta"> }) {
     );
   }
 
-  const dark = isDarkBackground(block.settings) || data.variant === "banner";
+  const banner = data.variant === "banner";
+  const stored = block.settings?.background;
+  const bannerOnLight =
+    banner &&
+    (stored === undefined ||
+      stored === "white" ||
+      stored === "light" ||
+      stored === "accent");
+  const settings = bannerOnLight
+    ? { ...block.settings, background: "gradient" as const }
+    : block.settings;
+  const defaultBackground = banner ? "gradient" : "light";
+  const dark = isDarkBackground(settings, defaultBackground);
 
   return (
     <Section
-      settings={block.settings}
-      defaultBackground={data.variant === "banner" ? "gradient" : "light"}
-      className={data.variant === "banner" ? "bg-tech-grid" : undefined}
+      settings={settings}
+      defaultBackground={defaultBackground}
+      className={banner ? "bg-tech-grid" : undefined}
     >
       <div
         className={cn(
@@ -105,13 +110,7 @@ function CtaActions({
           href={button.href}
           openInNewTab={button.openInNewTab}
           size="lg"
-              variant={
-                button.style === "outline" && dark
-                  ? "onDark"
-                  : button.style === "primary" && dark
-                    ? "accent"
-                    : (STYLE_TO_VARIANT[button.style] ?? "primary")
-              }
+          variant={buttonVariantOnSurface(button.style, dark)}
         >
           {button.label}
         </ButtonLink>

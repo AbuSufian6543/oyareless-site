@@ -39,7 +39,7 @@ export async function LiveStreamBlock({
       <SectionHeading
         heading={block.data.heading}
         description={block.data.description}
-        dark={dark || block.settings?.background === undefined}
+        dark={isDarkBackground(block.settings, "dark")}
       />
       <StreamCard access={access} showTitle={block.data.showTitle} />
     </Section>
@@ -57,7 +57,7 @@ export async function StreamGridBlock({
 }: {
   block: BlockOf<"streamGrid">;
 }) {
-  const dark = isDarkBackground(block.settings);
+  const dark = isDarkBackground(block.settings, "dark");
   const streams = await listStreamAccess({
     slugs: block.data.slugs,
     featuredOnly: block.data.featuredOnly,
@@ -68,7 +68,7 @@ export async function StreamGridBlock({
       <SectionHeading
         heading={block.data.heading}
         description={block.data.description}
-        dark={dark || block.settings?.background === undefined}
+        dark={dark}
       />
 
       {streams.length === 0 ? (

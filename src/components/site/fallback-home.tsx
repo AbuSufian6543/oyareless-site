@@ -151,6 +151,40 @@ export function FallbackHome() {
         </div>
       </section>
 
+      <section className="bg-white py-16 lg:py-20">
+        <div className="container-page">
+          <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-navy-900 via-navy-800 to-brand-900 p-8 lg:p-12">
+            <div className="bg-tech-grid absolute inset-0" aria-hidden="true" />
+            <div className="relative flex flex-col items-start gap-6 lg:flex-row lg:items-center lg:justify-between">
+              <div className="max-w-2xl">
+                <p className="eyebrow-pill">Authorized Hytera dealer</p>
+                <h2 className="mt-4 text-balance-tight text-2xl font-bold text-white lg:text-3xl">
+                  Check current Hytera prices and quote the radios you need
+                </h2>
+                <p className="mt-3 text-navy-200">
+                  Browse live models and pricing at hyteraradios.ca, then request
+                  a quote for the handhelds, mobiles, repeaters, or accessories
+                  that fit your crew.
+                </p>
+              </div>
+              <div className="flex shrink-0 flex-wrap items-center gap-3">
+                <ButtonLink
+                  href="https://hyteraradios.ca"
+                  openInNewTab
+                  size="lg"
+                  variant="accent"
+                >
+                  Open hyteraradios.ca
+                </ButtonLink>
+                <ButtonLink href="/two-way-radios" size="lg" variant="onDark">
+                  Two-way radio service
+                </ButtonLink>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section className="bg-slate-50 py-20 lg:py-24">
         <div className="container-page grid gap-12 lg:grid-cols-2 lg:items-center">
           <div>

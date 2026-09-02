@@ -19,7 +19,7 @@ export async function StatusStripBlock({
   block: BlockOf<"statusStrip">;
 }) {
   const { data } = block;
-  const dark = isDarkBackground(block.settings);
+  const dark = isDarkBackground(block.settings, "grid");
   const summary = data.showLiveData ? await getStatusSummary() : null;
 
   const degraded = summary
