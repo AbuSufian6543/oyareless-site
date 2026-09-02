@@ -19,6 +19,7 @@ const STREAM_TYPES = [
   "IFRAME",
   "MJPEG",
   "WEBRTC",
+  "HTML",
 ] as const;
 
 const streamSchema = z.object({
@@ -26,7 +27,7 @@ const streamSchema = z.object({
   slug: z.string().trim().max(160).optional(),
   description: z.string().trim().max(1000).optional(),
   type: z.enum(STREAM_TYPES),
-  source: z.string().trim().min(1, "A source URL or embed ID is required."),
+  source: z.string().trim().min(1, "A source URL or embed is required.").max(50_000),
   posterUrl: z.string().trim().max(500).optional(),
   location: z.string().trim().max(160).optional(),
   status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]),
@@ -108,6 +109,8 @@ export async function createStreamAction(formData: FormData): Promise<void> {
   });
 
   revalidatePath("/live");
+  revalidatePath("/video-services");
+  revalidatePath("/live-video-broadcasting");
   redirect(`/admin/streams/${stream.id}?created=1`);
 }
 
@@ -169,6 +172,8 @@ export async function updateStreamAction(formData: FormData): Promise<void> {
 
   revalidatePath("/live");
   revalidatePath(`/live/${slug}`);
+  revalidatePath("/video-services");
+  revalidatePath("/live-video-broadcasting");
   redirect(`/admin/streams/${id}?saved=1`);
 }
 
@@ -190,5 +195,7 @@ export async function deleteStreamAction(formData: FormData): Promise<void> {
   });
 
   revalidatePath("/live");
+  revalidatePath("/video-services");
+  revalidatePath("/live-video-broadcasting");
   redirect("/admin/streams?deleted=1");
 }

@@ -204,7 +204,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     type: "liveStream",
     label: "Live stream player",
-    description: "Embed one stream managed under Live Streams.",
+    description: "Embed one stream from Live Streams, including HTML/Mist players.",
     category: "Media & Live",
     icon: "Radio",
   },

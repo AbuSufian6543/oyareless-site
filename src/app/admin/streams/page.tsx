@@ -52,7 +52,7 @@ export default async function AdminStreamsPage({
           <EmptyState
             icon={<Radio className="size-8" aria-hidden="true" />}
             title="No streams configured"
-            description="Add an HLS camera feed, a YouTube live event or any embeddable player."
+            description="Add an HLS camera, a YouTube live event, or paste a Mist / VideoStreamCanada player snippet."
             action={
               <Link
                 href="/admin/streams/new"

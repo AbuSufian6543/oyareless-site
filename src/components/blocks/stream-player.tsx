@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { LoaderCircle, TriangleAlert } from "lucide-react";
 
+import { HtmlStreamPlayer } from "@/components/blocks/html-stream-player";
 import type { PublicStream } from "@/lib/streams";
 import { cn } from "@/lib/utils";
 
@@ -30,6 +31,17 @@ export function StreamPlayer({
   const isIframe = ["YOUTUBE", "VIMEO", "TWITCH", "FACEBOOK", "IFRAME"].includes(
     stream.type,
   );
+
+  if (stream.type === "HTML") {
+    return (
+      <HtmlStreamPlayer
+        html={stream.source}
+        title={stream.title}
+        aspectClass={aspect}
+        className={className}
+      />
+    );
+  }
 
   if (isIframe) {
     return (

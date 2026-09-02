@@ -47,6 +47,7 @@ const TYPE_OPTIONS = [
   { value: "FACEBOOK", label: "Facebook Live" },
   { value: "IFRAME", label: "Custom iframe URL" },
   { value: "WEBRTC", label: "WebRTC / WHEP" },
+  { value: "HTML", label: "HTML embed (Mist / VideoStreamCanada)" },
 ];
 
 /** Per-type guidance so admins know exactly what to paste into "source". */
@@ -60,6 +61,7 @@ const SOURCE_HINTS: Record<string, string> = {
   FACEBOOK: "Full URL of the Facebook video or live post.",
   IFRAME: "The exact URL to load in the iframe. Must be https and allow embedding.",
   WEBRTC: "WHEP endpoint URL from your media server.",
+  HTML: "Paste the vendor player snippet (div + script). It runs on the public site, not in this form. Edit this field whenever the camera or player code changes.",
 };
 
 export function StreamForm({
@@ -109,18 +111,35 @@ export function StreamForm({
             options={TYPE_OPTIONS}
           />
 
-          <div>
-            <Label htmlFor="source" required hint={SOURCE_HINTS[type]}>
-              Source
-            </Label>
-            <input
-              id="source"
-              name="source"
-              required
-              defaultValue={values.source}
-              className={cn(inputClass, "font-mono text-xs")}
-            />
-          </div>
+          {type === "HTML" ? (
+            <div key="html-source">
+              <Label htmlFor="source" required hint={SOURCE_HINTS.HTML}>
+                Embed code
+              </Label>
+              <textarea
+                id="source"
+                name="source"
+                required
+                rows={16}
+                defaultValue={values.source}
+                placeholder='<div class="mistvideo" id="camera-name">…</div>'
+                className={cn(inputClass, "min-h-64 resize-y font-mono text-xs")}
+              />
+            </div>
+          ) : (
+            <div key="url-source">
+              <Label htmlFor="source" required hint={SOURCE_HINTS[type]}>
+                Source
+              </Label>
+              <input
+                id="source"
+                name="source"
+                required
+                defaultValue={values.source}
+                className={cn(inputClass, "font-mono text-xs")}
+              />
+            </div>
+          )}
 
           <TextAreaField
             label="Description"
@@ -259,22 +278,40 @@ export function StreamForm({
       <Card>
         <CardTitle>Player behavior</CardTitle>
         <div className="space-y-2.5">
-          <CheckboxField
-            label="Start playing automatically"
-            name="autoplay"
-            defaultChecked={values.autoplay}
-          />
-          <CheckboxField
-            label="Start muted"
-            name="muted"
-            defaultChecked={values.muted}
-            description="Browsers block autoplay with sound, so keep this on when autoplay is enabled."
-          />
-          <CheckboxField
-            label="Show player controls"
-            name="showControls"
-            defaultChecked={values.showControls}
-          />
+          {type === "HTML" ? (
+            <>
+              <p className="text-sm leading-relaxed text-slate-600">
+                Playback (loop, poster, autoplay) is controlled by the embed
+                code above. Change those options in the snippet, then save.
+              </p>
+              {values.autoplay ? (
+                <input type="hidden" name="autoplay" value="on" />
+              ) : null}
+              {values.muted ? <input type="hidden" name="muted" value="on" /> : null}
+              {values.showControls ? (
+                <input type="hidden" name="showControls" value="on" />
+              ) : null}
+            </>
+          ) : (
+            <>
+              <CheckboxField
+                label="Start playing automatically"
+                name="autoplay"
+                defaultChecked={values.autoplay}
+              />
+              <CheckboxField
+                label="Start muted"
+                name="muted"
+                defaultChecked={values.muted}
+                description="Browsers block autoplay with sound, so keep this on when autoplay is enabled."
+              />
+              <CheckboxField
+                label="Show player controls"
+                name="showControls"
+                defaultChecked={values.showControls}
+              />
+            </>
+          )}
         </div>
       </Card>
 

@@ -223,6 +223,8 @@ enum StreamType {
   IFRAME
   MJPEG
   WEBRTC
+  /// Vendor player snippet (Mist / VideoStreamCanada). `source` holds the HTML.
+  HTML
 }
 
 model Stream {
@@ -232,7 +234,7 @@ model Stream {
   description   String?
   type          StreamType    @default(HLS)
 
-  /// URL, embed id, or raw iframe src depending on `type`.
+  /// URL, embed id, iframe src, or the full HTML snippet when `type` is HTML.
   source        String
   posterUrl     String?
   location      String?

@@ -1660,15 +1660,26 @@ const videoServices: SeedPage = {
       },
     },
     {
+      type: "liveStream",
+      settings: { background: "dark", paddingY: "xl" },
+      data: {
+        heading: "Live demo",
+        description:
+          "Downtown Sault Ste. Marie, looking north — a sample of the live video we host.",
+        streamSlug: "downtown-north-ptz",
+        showTitle: true,
+      },
+    },
+    {
       type: "streamGrid",
       settings: { background: "light", paddingY: "xl" },
       data: {
         heading: "Live streams",
         description:
-          "Public cameras and broadcasts currently available. Private feeds require a password.",
+          "Featured public cameras and broadcasts. Private feeds require a password.",
         columns: "2",
         slugs: [],
-        featuredOnly: false,
+        featuredOnly: true,
       },
     },
     closingCta(

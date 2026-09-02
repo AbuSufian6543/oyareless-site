@@ -8,6 +8,10 @@
 import "dotenv/config";
 
 import { env } from "../src/lib/env";
+import {
+  DOWNTOWN_NORTH_PTZ_EMBED,
+  DOWNTOWN_NORTH_PTZ_SLUG,
+} from "../src/lib/html-stream-embed";
 import { hashPassword, validatePasswordStrength } from "../src/lib/passwords";
 import { prisma } from "../src/lib/prisma";
 import { DEFAULT_SETTINGS } from "../src/lib/settings-defaults";
@@ -290,6 +294,40 @@ async function seedLaunchPost(): Promise<void> {
   });
 
   log("Created launch article");
+}
+
+async function seedDowntownNorthPtz(): Promise<void> {
+  const existing = await prisma.stream.findUnique({
+    where: { slug: DOWNTOWN_NORTH_PTZ_SLUG },
+  });
+  if (existing) {
+    log("Downtown north PTZ stream already present");
+    return;
+  }
+
+  await prisma.stream.create({
+    data: {
+      slug: DOWNTOWN_NORTH_PTZ_SLUG,
+      title: "Downtown North PTZ",
+      description:
+        "Live PTZ camera looking north over downtown Sault Ste. Marie.",
+      type: "HTML",
+      source: DOWNTOWN_NORTH_PTZ_EMBED,
+      posterUrl:
+        "https://www.wirelesscom.org/uploads/4/6/3/6/46366157/416823.jpg",
+      location: "Downtown Sault Ste. Marie, ON",
+      status: "PUBLISHED",
+      isLive: true,
+      featured: false,
+      isPublic: true,
+      autoplay: true,
+      muted: true,
+      showControls: true,
+      order: 0,
+    },
+  });
+
+  log("Created downtown north PTZ live demo stream");
 }
 
 async function seedExampleStream(): Promise<void> {
@@ -634,6 +672,7 @@ async function main(): Promise<void> {
   await seedNavigation();
   await seedRedirects();
   await seedLaunchPost();
+  await seedDowntownNorthPtz();
   await seedExampleStream();
   await seedCatalogue();
   const mediaAdded = await ensureSiteMedia();
