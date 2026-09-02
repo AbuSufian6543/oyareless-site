@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, ImageIcon, LoaderCircle, Search, Upload, X } from "lucide-react";
 
+import { UPLOAD_ACCEPT } from "@/lib/upload-accept";
 import { cn, formatBytes } from "@/lib/utils";
 
 export type MediaItem = {
@@ -25,10 +26,13 @@ export function MediaPicker({
   open,
   onClose,
   onSelect,
+  onSelectMany,
 }: {
   open: boolean;
   onClose: () => void;
   onSelect: (item: MediaItem) => void;
+  /** When set, every file chosen in one upload is passed through together. */
+  onSelectMany?: (items: MediaItem[]) => void;
 }) {
   const [items, setItems] = useState<MediaItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -73,6 +77,8 @@ export function MediaPicker({
     setUploading(true);
     setError("");
 
+    const uploaded: MediaItem[] = [];
+
     try {
       for (const file of Array.from(files)) {
         const formData = new FormData();
@@ -81,14 +87,23 @@ export function MediaPicker({
           method: "POST",
           body: formData,
         });
+        const data = (await response.json().catch(() => ({}))) as {
+          message?: string;
+          item?: MediaItem;
+        };
         if (!response.ok) {
-          const data = (await response.json().catch(() => ({}))) as {
-            message?: string;
-          };
           throw new Error(data.message ?? "Upload failed");
         }
+        if (data.item) uploaded.push(data.item);
       }
       await load();
+      if (uploaded.length === 0) return;
+      if (onSelectMany) {
+        onSelectMany(uploaded);
+      } else {
+        onSelect(uploaded[uploaded.length - 1]);
+      }
+      onClose();
     } catch (caught) {
       setError((caught as Error).message);
     } finally {
@@ -147,7 +162,7 @@ export function MediaPicker({
           <input
             ref={fileInput}
             type="file"
-            accept="image/*,application/pdf"
+            accept={UPLOAD_ACCEPT}
             multiple
             onChange={(event) => void upload(event.target.files)}
             className="hidden"

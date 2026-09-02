@@ -40,5 +40,5 @@ export default async function CmsPage({ params }: Props) {
     notFound();
   }
 
-  return <BlockList blocks={page.blocks} sourcePage={`/${slug}`} />;
+  return <BlockList blocks={page.blocks} slideshow={page.slideshow} sourcePage={`/${slug}`} />;
 }

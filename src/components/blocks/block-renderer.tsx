@@ -47,6 +47,8 @@ import {
   LiveStreamBlock,
   StreamGridBlock,
 } from "@/components/blocks/stream-blocks";
+import { MediaSlideshow } from "@/components/blocks/media-slideshow";
+import { visibleSlideshow, type SlideshowItem } from "@/lib/slideshow";
 import type { Block } from "@/lib/blocks";
 
 /**
@@ -182,15 +184,45 @@ export function BlockRenderer({
 export function BlockList({
   blocks,
   sourcePage,
+  slideshow = [],
 }: {
   blocks: Block[];
   sourcePage: string;
+  slideshow?: SlideshowItem[];
 }) {
+  const slides = visibleSlideshow(slideshow);
+  const heroIndex = blocks.findIndex(
+    (block) => block.type === "hero" || block.type === "techHero",
+  );
+
+  const nodes = blocks.map((block) => (
+    <BlockRenderer key={block.id} block={block} sourcePage={sourcePage} />
+  ));
+
+  if (slides.length === 0) return <>{nodes}</>;
+
+  const carousel = (
+    <section key="page-slideshow" className="bg-slate-50 py-12 lg:py-16">
+      <div className="container-page">
+        <MediaSlideshow items={slides} />
+      </div>
+    </section>
+  );
+
+  if (heroIndex === -1) {
+    return (
+      <>
+        {carousel}
+        {nodes}
+      </>
+    );
+  }
+
   return (
     <>
-      {blocks.map((block) => (
-        <BlockRenderer key={block.id} block={block} sourcePage={sourcePage} />
-      ))}
+      {nodes.slice(0, heroIndex + 1)}
+      {carousel}
+      {nodes.slice(heroIndex + 1)}
     </>
   );
 }

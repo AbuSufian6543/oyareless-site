@@ -22,5 +22,5 @@ export default async function HomePage() {
     return <FallbackHome />;
   }
 
-  return <BlockList blocks={page.blocks} sourcePage="/" />;
+  return <BlockList blocks={page.blocks} slideshow={page.slideshow} sourcePage="/" />;
 }

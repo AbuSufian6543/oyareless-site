@@ -15,6 +15,7 @@ import {
 
 import type { MediaItem } from "@/components/admin/media-picker";
 import { inputClass } from "@/components/admin/ui";
+import { UPLOAD_ACCEPT } from "@/lib/upload-accept";
 import { cn, formatBytes } from "@/lib/utils";
 
 type Item = MediaItem & { folder: string; createdAt: string };
@@ -254,7 +255,7 @@ export function MediaManager({
         <input
           ref={fileInput}
           type="file"
-          accept="image/*,application/pdf"
+          accept={UPLOAD_ACCEPT}
           multiple
           onChange={(event) => void upload(event.target.files)}
           className="hidden"
@@ -495,7 +496,7 @@ export function MediaManager({
                 <input
                   ref={replaceInput}
                   type="file"
-                  accept="image/*,application/pdf"
+                  accept={UPLOAD_ACCEPT}
                   onChange={(event) => void replace(selected, event.target.files)}
                   className="hidden"
                 />

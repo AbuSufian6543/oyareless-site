@@ -5,8 +5,8 @@ import path from "node:path";
 import { env } from "@/lib/env";
 
 /**
- * Accepted upload types. Anything outside this list is rejected so the media
- * library can never be used to host executable or active content.
+ * Canonical MIME → stored extension. Anything outside this list is rejected so
+ * the media library can never be used to host executable or active content.
  */
 const ALLOWED_MIME: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -17,6 +17,40 @@ const ALLOWED_MIME: Record<string, string> = {
   "image/svg+xml": "svg",
   "application/pdf": "pdf",
 };
+
+/** Browser aliases that should be treated as a canonical type above. */
+const MIME_ALIASES: Record<string, string> = {
+  "image/jpg": "image/jpeg",
+  "image/pjpeg": "image/jpeg",
+  "image/x-png": "image/png",
+  "image/x-webp": "image/webp",
+};
+
+/** Used when the browser sends an empty `file.type` (common on Windows). */
+const EXTENSION_MIME: Record<string, string> = {
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  webp: "image/webp",
+  avif: "image/avif",
+  gif: "image/gif",
+  svg: "image/svg+xml",
+  pdf: "application/pdf",
+};
+
+const UNSUPPORTED_TYPE_MESSAGE =
+  "Unsupported file type. Upload a JPG, PNG, WebP, AVIF, GIF, SVG or PDF. iPhone HEIC photos and video files are not accepted — add promo videos as a YouTube or Vimeo link.";
+
+function resolveMimeType(file: File): string | null {
+  const declared = file.type.toLowerCase().trim();
+  if (declared) {
+    const canonical = MIME_ALIASES[declared] ?? declared;
+    if (ALLOWED_MIME[canonical]) return canonical;
+  }
+
+  const extension = path.extname(file.name).toLowerCase().replace(".", "");
+  return EXTENSION_MIME[extension] ?? null;
+}
 
 /** Longest edge for stored raster images; keeps the disk footprint sane. */
 const MAX_DIMENSION = 2560;
@@ -69,12 +103,10 @@ async function prepareUpload(file: File): Promise<PreparedUpload> {
     throw new UploadError(`Files must be smaller than ${limit} MB.`);
   }
 
-  const declared = file.type.toLowerCase();
-  const extension = ALLOWED_MIME[declared];
-  if (!extension) {
-    throw new UploadError(
-      "Unsupported file type. Upload a JPG, PNG, WebP, AVIF, GIF, SVG or PDF.",
-    );
+  const declared = resolveMimeType(file);
+  const extension = declared ? ALLOWED_MIME[declared] : undefined;
+  if (!declared || !extension) {
+    throw new UploadError(UNSUPPORTED_TYPE_MESSAGE);
   }
 
   let buffer = Buffer.from(await file.arrayBuffer());

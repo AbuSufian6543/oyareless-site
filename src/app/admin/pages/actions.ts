@@ -8,6 +8,7 @@ import { recordAudit } from "@/lib/audit";
 import { requireRole } from "@/lib/auth";
 import { blocksSchema } from "@/lib/blocks";
 import { prisma } from "@/lib/prisma";
+import { normaliseSlideshow } from "@/lib/slideshow";
 import { slugify } from "@/lib/utils";
 
 const RESERVED_SLUGS = new Set([
@@ -38,6 +39,7 @@ const pagePayload = z.object({
   showInFooterNav: z.boolean(),
   navOrder: z.number().int().min(0).max(999),
   blocks: z.unknown(),
+  slideshow: z.unknown().optional(),
 });
 
 export type SaveResult = { ok: true; slug: string } | { ok: false; error: string };
@@ -68,6 +70,9 @@ export async function savePageAction(
     };
   }
 
+  const slideshow = normaliseSlideshow(data.slideshow);
+  if (!slideshow.ok) return { ok: false, error: slideshow.error };
+
   const existing = await prisma.page.findUnique({ where: { id: pageId } });
   if (!existing) return { ok: false, error: "This page no longer exists." };
 
@@ -89,6 +94,7 @@ export async function savePageAction(
         pageId,
         title: existing.title,
         blocks: existing.blocks as never,
+        slideshow: existing.slideshow as never,
         authorId: user.id,
         note: "Auto-saved before update",
       },
@@ -113,6 +119,7 @@ export async function savePageAction(
       showInFooterNav: data.showInFooterNav,
       navOrder: data.navOrder,
       blocks: blocks.data as never,
+      slideshow: slideshow.items as never,
       publishedAt:
         becomingPublished && !existing.publishedAt
           ? new Date()
@@ -220,6 +227,7 @@ export async function duplicatePageAction(formData: FormData): Promise<void> {
       slug,
       status: "DRAFT",
       blocks: page.blocks as never,
+      slideshow: page.slideshow as never,
       metaTitle: page.metaTitle,
       metaDescription: page.metaDescription,
       ogImageUrl: page.ogImageUrl,
@@ -253,6 +261,7 @@ export async function restoreRevisionAction(formData: FormData): Promise<void> {
       pageId: revision.pageId,
       title: revision.page.title,
       blocks: revision.page.blocks as never,
+      slideshow: revision.page.slideshow as never,
       authorId: user.id,
       note: "Auto-saved before restore",
     },
@@ -260,7 +269,11 @@ export async function restoreRevisionAction(formData: FormData): Promise<void> {
 
   await prisma.page.update({
     where: { id: revision.pageId },
-    data: { blocks: revision.blocks as never, title: revision.title },
+    data: {
+      blocks: revision.blocks as never,
+      slideshow: revision.slideshow as never,
+      title: revision.title,
+    },
   });
 
   await recordAudit({

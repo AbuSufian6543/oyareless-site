@@ -9,6 +9,7 @@ import { PageEditor, type PageEditorData } from "@/components/admin/page-editor"
 import { Alert, Card, CardTitle } from "@/components/admin/ui";
 import { getCurrentUser, hasRole } from "@/lib/auth";
 import { parseBlocks } from "@/lib/blocks";
+import { parseSlideshow } from "@/lib/slideshow";
 import { prisma } from "@/lib/prisma";
 import { formatDateTime } from "@/lib/utils";
 
@@ -58,6 +59,7 @@ export default async function EditPagePage({
     showInFooterNav: page.showInFooterNav,
     navOrder: page.navOrder,
     blocks: parseBlocks(page.blocks),
+    slideshow: parseSlideshow(page.slideshow),
     isSystem: page.isSystem,
   };
 

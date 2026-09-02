@@ -50,16 +50,18 @@ export async function rewriteMediaUrl(fromUrl: string, toUrl: string): Promise<n
   let touched = 0;
 
   const pages = await prisma.page.findMany({
-    select: { id: true, blocks: true, ogImageUrl: true },
+    select: { id: true, blocks: true, ogImageUrl: true, slideshow: true },
   });
   for (const page of pages) {
     const blocks = rewriteJson(page.blocks, from, toUrl);
+    const slideshow = rewriteJson(page.slideshow, from, toUrl);
     const og = rewriteText(page.ogImageUrl, from, toUrl);
-    if (!blocks.changed && og === page.ogImageUrl) continue;
+    if (!blocks.changed && !slideshow.changed && og === page.ogImageUrl) continue;
     await prisma.page.update({
       where: { id: page.id },
       data: {
         ...(blocks.changed ? { blocks: blocks.next as never } : {}),
+        ...(slideshow.changed ? { slideshow: slideshow.next as never } : {}),
         ...(og !== page.ogImageUrl ? { ogImageUrl: og ?? null } : {}),
       },
     });

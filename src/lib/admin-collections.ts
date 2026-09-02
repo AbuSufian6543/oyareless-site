@@ -165,7 +165,7 @@ export const COLLECTIONS: CollectionDefinition[] = [
     label: "Service",
     plural: "Services",
     description:
-      "The service catalog. Each entry gets its own page built with the same section editor as any other page.",
+      "Internal catalog cards only. Photos and promo videos that visitors see are edited on Admin → Pages for each live service URL (for example /it-services).",
     icon: "Wrench",
     group: "Catalogue",
     titleField: "name",
@@ -199,7 +199,13 @@ export const COLLECTIONS: CollectionDefinition[] = [
         column: "side",
       },
       { kind: "icon", name: "icon", label: "Icon", column: "side" },
-      { kind: "image", name: "imageUrl", label: "Card image", column: "side" },
+      {
+        kind: "image",
+        name: "imageUrl",
+        label: "Card image",
+        hint: "Catalog thumbnail only. The public slideshow is on Admin → Pages.",
+        column: "side",
+      },
       {
         kind: "text",
         name: "imageAlt",

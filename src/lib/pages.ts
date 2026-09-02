@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 
 import { env } from "@/lib/env";
 import { parseBlocks, type Block } from "@/lib/blocks";
+import { parseSlideshow, type SlideshowItem } from "@/lib/slideshow";
 import { prisma, withTimeout } from "@/lib/prisma";
 import { stripHtml, truncate } from "@/lib/utils";
 
@@ -13,6 +14,7 @@ export type RenderablePage = {
   slug: string;
   title: string;
   blocks: Block[];
+  slideshow: SlideshowItem[];
   metaTitle: string | null;
   metaDescription: string | null;
   ogImageUrl: string | null;
@@ -33,6 +35,7 @@ export const getPublishedPage = cache(
       slug: page.slug,
       title: page.title,
       blocks: parseBlocks(page.blocks),
+      slideshow: parseSlideshow(page.slideshow),
       metaTitle: page.metaTitle,
       metaDescription: page.metaDescription,
       ogImageUrl: page.ogImageUrl,

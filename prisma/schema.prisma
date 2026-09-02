@@ -127,6 +127,10 @@ model Page {
   /// Ordered array of block objects. Shape is validated in src/lib/blocks.ts.
   blocks          Json          @default("[]")
 
+  /// Ordered photos and promo-video links shown as a slideshow on the public
+  /// page. Shape is validated in src/lib/slideshow.ts.
+  slideshow       Json          @default("[]")
+
   metaTitle       String?
   metaDescription String?
   ogImageUrl      String?
@@ -164,6 +168,7 @@ model PageRevision {
   page      Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
   title     String
   blocks    Json
+  slideshow Json     @default("[]")
   note      String?
   createdAt DateTime @default(now())
   authorId  String?

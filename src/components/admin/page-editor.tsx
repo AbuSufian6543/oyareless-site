@@ -15,8 +15,10 @@ import {
 import { savePageAction } from "@/app/admin/pages/actions";
 import { BlockCanvas } from "@/components/admin/block-canvas";
 import { FieldEditor, type EditorContext } from "@/components/admin/field-editor";
+import { SlideshowEditor } from "@/components/admin/slideshow-editor";
 import { Alert, inputClass, Label } from "@/components/admin/ui";
 import type { Block } from "@/lib/blocks";
+import type { SlideshowItem } from "@/lib/slideshow";
 import { cn, slugify } from "@/lib/utils";
 
 export type PageEditorData = {
@@ -33,6 +35,7 @@ export type PageEditorData = {
   showInFooterNav: boolean;
   navOrder: number;
   blocks: Block[];
+  slideshow: SlideshowItem[];
   isSystem: boolean;
 };
 
@@ -87,6 +90,7 @@ export function PageEditor({
       showInFooterNav: form.showInFooterNav,
       navOrder: form.navOrder,
       blocks: form.blocks,
+      slideshow: form.slideshow,
     });
 
     setSaving(false);
@@ -225,11 +229,17 @@ export function PageEditor({
       {tab === "settings" ? (
         <PageSettings form={form} update={update} context={context} />
       ) : (
-        <BlockCanvas
-          blocks={form.blocks}
-          onChange={(blocks) => update("blocks", blocks)}
-          context={context}
-        />
+        <>
+          <SlideshowEditor
+            items={form.slideshow}
+            onChange={(slideshow) => update("slideshow", slideshow)}
+          />
+          <BlockCanvas
+            blocks={form.blocks}
+            onChange={(blocks) => update("blocks", blocks)}
+            context={context}
+          />
+        </>
       )}
     </div>
   );
