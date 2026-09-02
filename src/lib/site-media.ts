@@ -2,6 +2,7 @@ import { stat } from "node:fs/promises";
 import path from "node:path";
 
 import { prisma } from "@/lib/prisma";
+import { catalogServicePictures } from "@/lib/service-photos";
 import { vendorLogoUrl } from "@/lib/vendor-logos";
 
 /**
@@ -19,6 +20,7 @@ export type SitePicture = {
 
 export const SITE_PICTURES: SitePicture[] = [
   photo("office", "Sault Ste. Marie office", "The WirelessCom.Ca Inc. office at 97 White Oak Drive East in Sault Ste. Marie, photographed at dusk"),
+  ...catalogServicePictures(),
   photo("server-rack", "IT services — server rack", "Row of rack-mounted enterprise servers in a dark data center aisle lit by blue status indicators"),
   photo("wifi", "Wi-Fi access point", "White enterprise Wi-Fi access point mounted on a dark office ceiling with a blue status ring"),
   photo("surveillance", "Security cameras", "Dome and bullet security cameras mounted under the soffit of a modern commercial building at dusk"),

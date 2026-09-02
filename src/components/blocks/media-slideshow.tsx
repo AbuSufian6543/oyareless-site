@@ -69,7 +69,7 @@ export function MediaSlideshow({
                     alt={item.alt}
                     fill
                     sizes="(max-width: 1024px) 100vw, 70vw"
-                    className="object-cover"
+                    className="object-contain p-2"
                     priority={itemIndex === 0}
                   />
                   {item.caption && (

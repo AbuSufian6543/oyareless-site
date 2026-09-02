@@ -4,6 +4,7 @@
  */
 
 import { blocksSchema, type Block } from "../src/lib/blocks";
+import { serviceHeroPhoto } from "../src/lib/service-photos";
 import { vendorLogoUrl } from "../src/lib/vendor-logos";
 
 type BlockInput = {
@@ -36,84 +37,38 @@ function photo(name: string, alt: string) {
   return { url: `/images/${name}-1400.webp`, alt };
 }
 
+function owned(slug: string) {
+  const picture = serviceHeroPhoto(slug);
+  if (!picture) {
+    throw new Error(`Missing owned service photos for ${slug}`);
+  }
+  return { url: picture.url, alt: picture.alt };
+}
+
 /** Section photography used on the home Services grid and each service page. */
 const photos = {
-  it: photo(
-    "server-rack",
-    "Row of rack-mounted enterprise servers in a dark data center aisle lit by blue status indicators",
-  ),
-  cybersecurity: photo(
-    "cybersecurity",
-    "Abstract shield formed from connected cyan nodes and lines over a dark navy grid",
-  ),
-  firewall: photo(
-    "firewall",
-    "Rack-mounted next-generation firewall appliances in a dark cabinet with cyan status lights and dressed ethernet",
-  ),
-  security: photo(
-    "surveillance",
-    "Dome and bullet security cameras mounted under the soffit of a modern commercial building at dusk",
-  ),
-  ai: photo(
-    "ai-camera",
-    "IP dome camera in the foreground with a security monitor showing cyan AI detection overlays on a night-time scene",
-  ),
-  aiPhone: photo(
-    "ai-phone",
-    "Black executive VoIP desk phone whose display shows an abstract cyan assistant waveform",
-  ),
-  telephone: photo(
-    "voip",
-    "Black executive VoIP desk phone with a color display on a dark office desk",
-  ),
-  internet: photo(
-    "wifi",
-    "White enterprise Wi-Fi access point mounted on a dark office ceiling with a blue status ring",
-  ),
-  access: photo(
-    "access-control",
-    "Slim black card reader with a cyan LED beside a glass commercial entrance at dusk",
-  ),
-  cabling: photo(
-    "cabling-install",
-    "Technician's hands terminating blue and white network cables into a rack-mounted patch panel",
-  ),
+  it: owned("it-services"),
+  cybersecurity: owned("cybersecurity"),
+  firewall: owned("firewalls"),
+  security: owned("security-services"),
+  ai: owned("ai-services"),
+  aiPhone: owned("telephone-services"),
+  telephone: owned("telephone-services"),
+  internet: owned("internet-services"),
+  access: owned("access-control"),
+  cabling: owned("data-cabling-fiber-optic"),
   video: photo(
     "video-broadcast",
     "Professional video cameras on tripods in a dark studio with cyan rim lighting",
   ),
-  ev: photo(
-    "ev-charging",
-    "Wall-mounted Level 2 EV charging station with a cyan status light on a dark commercial wall",
-  ),
-  radio: photo(
-    "two-way-radio",
-    "Three rugged professional handheld two-way radios on a dark surface with blue rim lighting",
-  ),
-  fleet: photo(
-    "fleet-tracking",
-    "GPS tracker unit in the foreground with a commercial pickup truck in a dusk lot behind",
-  ),
-  signage: photo(
-    "digital-signage",
-    "Large digital signage display in a dark modern lobby showing an abstract navy and cyan graphic",
-  ),
-  web: photo(
-    "web-development",
-    "Ultrawide monitor on a dark desk showing a navy and cyan business website layout",
-  ),
-  alarm: photo(
-    "alarm-system",
-    "Commercial alarm keypad and control panel on a dark corridor wall with a cyan status LED",
-  ),
-  intercom: photo(
-    "door-intercom",
-    "Video door intercom station on a dark wall beside a glass commercial entrance at dusk",
-  ),
-  panic: photo(
-    "panic-button",
-    "Red wall-mounted panic button under a clear cover in a quiet commercial corridor",
-  ),
+  ev: owned("ev-charging-solutions"),
+  radio: owned("two-way-radios"),
+  fleet: owned("fleet-vehicle-tracking"),
+  signage: owned("digital-marketing"),
+  web: owned("web-development"),
+  alarm: owned("alarm-systems"),
+  intercom: owned("door-intercom"),
+  panic: owned("panic-buttons"),
   support: photo(
     "remote-support",
     "Support technician wearing a headset at a desk with two monitors showing dashboards, seen from behind",
@@ -556,8 +511,8 @@ const home: SeedPage = {
         heading: "Local expertise, standards-based work",
         html: "<p>We have been providing internet and wireless services since 2005, and today we cover the whole technology stack for business: the network, the servers, the phones, the cameras and the doors. That includes cloud work on <strong>Microsoft Azure</strong>, <strong>Amazon Web Services</strong> and <strong>Google Cloud</strong>, and <strong>Microsoft 365</strong> on the desktop — Office apps, Exchange, Teams and SharePoint. Practical AI is something we implement on two of those systems — analytics on the cameras, an attendant on the phones — when it earns its keep. Because one team designs and maintains all of it, security controls work together instead of fighting each other.</p><p>Everything is installed to industry standards, documented, and supported by people you can reach in Sault Ste. Marie.</p>",
         image: {
-          url: "/images/cabling-install-1400.webp",
-          alt: "Technician's hands terminating blue and white network cables into a rack-mounted patch panel",
+          url: photos.cabling.url,
+          alt: photos.cabling.alt,
           caption: "",
         },
         imagePosition: "right",
@@ -776,8 +731,8 @@ const itServices: SeedPage = {
         heading: "Azure, AWS, Google Cloud and Microsoft 365",
         html: "<p>We design, connect and support cloud services on <strong>Microsoft Azure</strong>, <strong>Amazon Web Services</strong> and <strong>Google Cloud</strong> — identity, virtual machines, backup, and the network path from your office to the region you choose. These are platforms we work with, not a claim of partnership.</p><p><strong>Microsoft 365</strong> — the Office apps, Exchange email, Teams and SharePoint — is the same story on the desktop: we set it up, connect it to your users and devices, and stay on it. Cloudflare sits in front of sites that need a CDN or edge filter. Nothing is moved to a cloud we cannot name, and we will write down which tenant and region you are in.</p>",
         image: {
-          url: "/images/server-rack-1400.webp",
-          alt: "Row of rack-mounted enterprise servers in a dark data center aisle lit by blue status indicators",
+          url: photos.it.url,
+          alt: photos.it.alt,
           caption: "",
         },
         imagePosition: "right",
@@ -1013,8 +968,8 @@ const cybersecurity: SeedPage = {
         heading: "The right appliance for the site, then ongoing support",
         html: "<p>Most businesses do not need a data-center chassis. They need a firewall that is sized for their internet circuit, their VPN users and the applications they actually run — then someone who will still answer the phone when a rule change is required.</p><p>WirelessCom.Ca Inc. designs, installs and supports next-generation firewalls including <strong>Barracuda</strong>, <strong>Fortinet</strong> and <strong>Juniper</strong>, along with other platforms we are trained on such as SonicWall, WatchGuard, Palo Alto and Cisco. These are technologies we deploy and support; listing them does not imply a formal partnership unless we say so.</p>",
         image: {
-          url: "/images/firewall-1400.webp",
-          alt: "Rack-mounted next-generation firewall appliances in a dark cabinet with cyan status lights and dressed ethernet",
+          url: photos.firewall.url,
+          alt: photos.firewall.alt,
           caption: "",
         },
         imagePosition: "left",
@@ -1113,8 +1068,8 @@ const cybersecurity: SeedPage = {
         heading: "Networking experience plus practical security expertise",
         html: "<p>Businesses throughout Ontario trust WirelessCom because we combine decades of networking experience with practical cybersecurity expertise. Our team understands both information technology and communications infrastructure, so we build security solutions that work together instead of creating unnecessary complexity.</p>",
         image: {
-          url: "/images/cybersecurity-1400.webp",
-          alt: "Abstract shield formed from connected cyan nodes and lines over a dark navy grid",
+          url: photos.cybersecurity.url,
+          alt: photos.cybersecurity.alt,
           caption: "",
         },
         imagePosition: "left",
@@ -1323,8 +1278,8 @@ const securityServices: SeedPage = {
         heading: "See what matters, not every leaf in the wind",
         html: "<p>A camera that records everything is only useful if you can find the event afterwards. We install and support IP camera systems with optional <strong>AI analytics</strong>: person and vehicle detection, line crossing, loitering, and search across recorded video so a technician is not scrubbing hours of footage by hand.</p><p>Analytics run on the camera, the recorder, or a service you choose — we will say which, and we will not send your video to a third party unless you ask us to. The same team that pulls the cable also sets the rules.</p>",
         image: {
-          url: "/images/ai-camera-1400.webp",
-          alt: "IP dome camera in the foreground with a security monitor showing cyan AI detection overlays on a night-time scene",
+          url: photos.ai.url,
+          alt: photos.ai.alt,
           caption: "",
         },
         imagePosition: "right",
@@ -1472,8 +1427,8 @@ const telephoneServices: SeedPage = {
         heading: "A receptionist that never misses the first ring",
         html: "<p>Business telephone systems now include practical AI: an attendant that understands what the caller is asking, routes to the right queue, transcribes voicemail, and summarizes a long call so staff are not starting from a blank note.</p><p>We implement those features in the VoIP platforms we install — desk phones, DECT, and the mobile app — with the same local team that handles the rest of the PBX. Nothing is sent to a mystery cloud unless you choose that option and we document it.</p>",
         image: {
-          url: "/images/ai-phone-1400.webp",
-          alt: "Black executive VoIP desk phone whose display shows an abstract cyan assistant waveform",
+          url: photos.aiPhone.url,
+          alt: photos.aiPhone.alt,
           caption: "",
         },
         imagePosition: "left",
@@ -2687,8 +2642,8 @@ const aiServices: SeedPage = {
         heading: "AI that watches with you, not instead of you",
         html: "<p>A recorder full of video is only useful if you can find the incident. We implement <strong>AI analytics</strong> in the IP camera systems we design: person and vehicle detection, line crossing, loitering, license-plate capture where it is lawful, and search across recorded footage so staff are not scrubbing hours by hand.</p><p>Rules run on the camera, the network video recorder, or a service you choose. We will tell you which, and we will not send video off-site unless you ask us to and we document it.</p>",
         image: {
-          url: "/images/ai-camera-1400.webp",
-          alt: "IP dome camera in the foreground with a security monitor showing cyan AI detection overlays on a night-time scene",
+          url: photos.ai.url,
+          alt: photos.ai.alt,
           caption: "",
         },
         imagePosition: "right",
@@ -2760,8 +2715,8 @@ const aiServices: SeedPage = {
         heading: "An attendant that understands the first sentence",
         html: "<p>The same idea on the telephone system: <strong>AI attendants</strong> that understand what the caller is asking, route to the right queue, transcribe voicemail, and summarize a long call so staff are not starting from a blank note.</p><p>We implement those features in the VoIP platforms we install — desk phones, DECT cordless, video phones and the mobile app — with training for your receptionist and a documented after-hours plan. E-911 behavior does not change; read the notice if you are moving to VoIP.</p>",
         image: {
-          url: "/images/ai-phone-1400.webp",
-          alt: "Black executive VoIP desk phone whose display shows an abstract cyan assistant waveform",
+          url: photos.aiPhone.url,
+          alt: photos.aiPhone.alt,
           caption: "",
         },
         imagePosition: "left",
@@ -2864,8 +2819,8 @@ const firewalls: SeedPage = {
         heading: "The box is the easy part. The rule base is the work.",
         html: "<p>Most sites do not fail because they lack a firewall. They fail because the appliance is undersized, the firmware is a year behind, or nobody owns the rules. We start with the circuit, the applications and the people who need VPN access, then we pick a platform we can support for the life of the box.</p><p><strong>Barracuda</strong>, <strong>Fortinet</strong> and <strong>Juniper</strong> are the names customers ask for most. We also deploy and support SonicWall, WatchGuard, Palo Alto and Cisco where that is the right fit. These are technologies we install and maintain. Listing them does not imply a formal partnership unless we say so — Hytera two-way radio is our authorized dealership; firewall brands are supported platforms.</p>",
         image: {
-          url: "/images/firewall-1400.webp",
-          alt: "Rack-mounted next-generation firewall appliances in a dark cabinet with cyan status lights and dressed ethernet",
+          url: photos.firewall.url,
+          alt: photos.firewall.alt,
           caption: "",
         },
         imagePosition: "right",

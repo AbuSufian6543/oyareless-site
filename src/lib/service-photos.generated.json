@@ -1,0 +1,441 @@
+{
+  "access-control": [
+    {
+      "url": "/images/services/access-control/01.webp",
+      "alt": "Access control from WirelessCom.Ca Inc. Photo 1.",
+      "originalName": "Access Control 1.webp"
+    },
+    {
+      "url": "/images/services/access-control/02.webp",
+      "alt": "Access control from WirelessCom.Ca Inc. Photo 2.",
+      "originalName": "Access Control 2.webp"
+    },
+    {
+      "url": "/images/services/access-control/03.webp",
+      "alt": "Access control from WirelessCom.Ca Inc. Photo 3.",
+      "originalName": "access-control-edited-2.jpg"
+    },
+    {
+      "url": "/images/services/access-control/04.webp",
+      "alt": "Access control from WirelessCom.Ca Inc. Photo 4.",
+      "originalName": "Access Control 3.jpg"
+    },
+    {
+      "url": "/images/services/access-control/05.webp",
+      "alt": "Access control from WirelessCom.Ca Inc. Photo 5.",
+      "originalName": "Access Control 4.webp"
+    }
+  ],
+  "ai-services": [
+    {
+      "url": "/images/services/ai-services/01.webp",
+      "alt": "AI camera systems from WirelessCom.Ca Inc. Photo 1.",
+      "originalName": "Ai Camera 1.png"
+    },
+    {
+      "url": "/images/services/ai-services/02.webp",
+      "alt": "AI camera systems from WirelessCom.Ca Inc. Photo 2.",
+      "originalName": "Ai Camera 2.png"
+    },
+    {
+      "url": "/images/services/ai-services/03.webp",
+      "alt": "AI camera systems from WirelessCom.Ca Inc. Photo 3.",
+      "originalName": "Ai Camera 3.png"
+    }
+  ],
+  "alarm-systems": [
+    {
+      "url": "/images/services/alarm-systems/01.webp",
+      "alt": "Alarm systems from WirelessCom.Ca Inc. Photo 1.",
+      "originalName": "Alarm System 1.webp"
+    },
+    {
+      "url": "/images/services/alarm-systems/02.webp",
+      "alt": "Alarm systems from WirelessCom.Ca Inc. Photo 2.",
+      "originalName": "Alarm System 2.webp"
+    },
+    {
+      "url": "/images/services/alarm-systems/03.webp",
+      "alt": "Alarm systems from WirelessCom.Ca Inc. Photo 3.",
+      "originalName": "Alarm System 3.jpg"
+    },
+    {
+      "url": "/images/services/alarm-systems/04.webp",
+      "alt": "Alarm systems from WirelessCom.Ca Inc. Photo 4.",
+      "originalName": "Alarm System 4.jpg"
+    },
+    {
+      "url": "/images/services/alarm-systems/05.webp",
+      "alt": "Alarm systems from WirelessCom.Ca Inc. Photo 5.",
+      "originalName": "Alarm System 5.png"
+    },
+    {
+      "url": "/images/services/alarm-systems/06.webp",
+      "alt": "Alarm systems from WirelessCom.Ca Inc. Photo 6.",
+      "originalName": "Alarm System 6.jpg"
+    },
+    {
+      "url": "/images/services/alarm-systems/07.webp",
+      "alt": "Alarm systems from WirelessCom.Ca Inc. Photo 7.",
+      "originalName": "Alarm System 7.webp"
+    },
+    {
+      "url": "/images/services/alarm-systems/08.webp",
+      "alt": "Alarm systems from WirelessCom.Ca Inc. Photo 8.",
+      "originalName": "Alarm System 8.webp"
+    },
+    {
+      "url": "/images/services/alarm-systems/09.webp",
+      "alt": "Alarm systems from WirelessCom.Ca Inc. Photo 9.",
+      "originalName": "Alarm System 9.jpg"
+    },
+    {
+      "url": "/images/services/alarm-systems/10.webp",
+      "alt": "Alarm systems from WirelessCom.Ca Inc. Photo 10.",
+      "originalName": "Alarm System 10.webp"
+    }
+  ],
+  "cybersecurity": [
+    {
+      "url": "/images/services/cybersecurity/01.webp",
+      "alt": "Cybersecurity from WirelessCom.Ca Inc. Photo 1.",
+      "originalName": "Cybersecurity 1.png"
+    },
+    {
+      "url": "/images/services/cybersecurity/02.webp",
+      "alt": "Cybersecurity from WirelessCom.Ca Inc. Photo 2.",
+      "originalName": "Cybersecurity 2.png"
+    },
+    {
+      "url": "/images/services/cybersecurity/03.webp",
+      "alt": "Cybersecurity from WirelessCom.Ca Inc. Photo 3.",
+      "originalName": "Cybersecurity 3.avif"
+    },
+    {
+      "url": "/images/services/cybersecurity/04.webp",
+      "alt": "Cybersecurity from WirelessCom.Ca Inc. Photo 4.",
+      "originalName": "Cybersecurity 4.avif"
+    },
+    {
+      "url": "/images/services/cybersecurity/05.webp",
+      "alt": "Cybersecurity from WirelessCom.Ca Inc. Photo 5.",
+      "originalName": "Cybersecurity 5.jpeg"
+    }
+  ],
+  "data-cabling-fiber-optic": [
+    {
+      "url": "/images/services/data-cabling-fiber-optic/01.webp",
+      "alt": "Data cabling and fiber from WirelessCom.Ca Inc. Photo 1.",
+      "originalName": "Data Cabling and Fiber 1.jpg"
+    },
+    {
+      "url": "/images/services/data-cabling-fiber-optic/02.webp",
+      "alt": "Data cabling and fiber from WirelessCom.Ca Inc. Photo 2.",
+      "originalName": "Data Cabling and Fiber 2.jpg"
+    },
+    {
+      "url": "/images/services/data-cabling-fiber-optic/03.webp",
+      "alt": "Data cabling and fiber from WirelessCom.Ca Inc. Photo 3.",
+      "originalName": "Data Cabling and Fiber 3.jpg"
+    },
+    {
+      "url": "/images/services/data-cabling-fiber-optic/04.webp",
+      "alt": "Data cabling and fiber from WirelessCom.Ca Inc. Photo 4.",
+      "originalName": "Data Cabling and Fiber 4.jpg"
+    },
+    {
+      "url": "/images/services/data-cabling-fiber-optic/05.webp",
+      "alt": "Data cabling and fiber from WirelessCom.Ca Inc. Photo 5.",
+      "originalName": "Data Cabling and Fiber 5.jpg"
+    }
+  ],
+  "digital-marketing": [
+    {
+      "url": "/images/services/digital-marketing/01.webp",
+      "alt": "Digital marketing from WirelessCom.Ca Inc. Photo 1.",
+      "originalName": "Digital Marketing 1.png"
+    },
+    {
+      "url": "/images/services/digital-marketing/02.webp",
+      "alt": "Digital marketing from WirelessCom.Ca Inc. Photo 2.",
+      "originalName": "Digital Marketing 2.png"
+    }
+  ],
+  "door-intercom": [
+    {
+      "url": "/images/services/door-intercom/01.webp",
+      "alt": "Door intercom from WirelessCom.Ca Inc. Photo 1.",
+      "originalName": "Intercom 1.png"
+    },
+    {
+      "url": "/images/services/door-intercom/02.webp",
+      "alt": "Door intercom from WirelessCom.Ca Inc. Photo 2.",
+      "originalName": "Intercom 2.png"
+    },
+    {
+      "url": "/images/services/door-intercom/03.webp",
+      "alt": "Door intercom from WirelessCom.Ca Inc. Photo 3.",
+      "originalName": "Intercom 3.webp"
+    }
+  ],
+  "ev-charging-solutions": [
+    {
+      "url": "/images/services/ev-charging-solutions/01.webp",
+      "alt": "EV charging from WirelessCom.Ca Inc. Photo 1.",
+      "originalName": "EV Charging 1.png"
+    },
+    {
+      "url": "/images/services/ev-charging-solutions/02.webp",
+      "alt": "EV charging from WirelessCom.Ca Inc. Photo 2.",
+      "originalName": "EV Charging 2.png"
+    },
+    {
+      "url": "/images/services/ev-charging-solutions/03.webp",
+      "alt": "EV charging from WirelessCom.Ca Inc. Photo 3.",
+      "originalName": "EV Charging 3.png"
+    },
+    {
+      "url": "/images/services/ev-charging-solutions/04.webp",
+      "alt": "EV charging from WirelessCom.Ca Inc. Photo 4.",
+      "originalName": "EV Charging 4.png"
+    }
+  ],
+  "firewalls": [
+    {
+      "url": "/images/services/firewalls/01.webp",
+      "alt": "Firewalls from WirelessCom.Ca Inc. Photo 1.",
+      "originalName": "Firewall 1.jpg"
+    },
+    {
+      "url": "/images/services/firewalls/02.webp",
+      "alt": "Firewalls from WirelessCom.Ca Inc. Photo 2.",
+      "originalName": "Firewall 2.jpg"
+    },
+    {
+      "url": "/images/services/firewalls/03.webp",
+      "alt": "Firewalls from WirelessCom.Ca Inc. Photo 3.",
+      "originalName": "Firewall 3.avif"
+    },
+    {
+      "url": "/images/services/firewalls/04.webp",
+      "alt": "Firewalls from WirelessCom.Ca Inc. Photo 4.",
+      "originalName": "Firewall 4.jpg"
+    },
+    {
+      "url": "/images/services/firewalls/05.webp",
+      "alt": "Firewalls from WirelessCom.Ca Inc. Photo 5.",
+      "originalName": "Firewall 5.avif"
+    },
+    {
+      "url": "/images/services/firewalls/06.webp",
+      "alt": "Firewalls from WirelessCom.Ca Inc. Photo 6.",
+      "originalName": "Firewall 6.jpg"
+    }
+  ],
+  "fleet-vehicle-tracking": [
+    {
+      "url": "/images/services/fleet-vehicle-tracking/01.webp",
+      "alt": "Fleet tracking from WirelessCom.Ca Inc. Photo 1.",
+      "originalName": "Fleet Tracker 1.avif"
+    },
+    {
+      "url": "/images/services/fleet-vehicle-tracking/02.webp",
+      "alt": "Fleet tracking from WirelessCom.Ca Inc. Photo 2.",
+      "originalName": "Fleet Tracker 2.webp"
+    },
+    {
+      "url": "/images/services/fleet-vehicle-tracking/03.webp",
+      "alt": "Fleet tracking from WirelessCom.Ca Inc. Photo 3.",
+      "originalName": "Fleet Tracker 3.webp"
+    }
+  ],
+  "internet-services": [
+    {
+      "url": "/images/services/internet-services/01.webp",
+      "alt": "Internet services from WirelessCom.Ca Inc. Photo 1.",
+      "originalName": "Internet Services 1.jpg"
+    },
+    {
+      "url": "/images/services/internet-services/02.webp",
+      "alt": "Internet services from WirelessCom.Ca Inc. Photo 2.",
+      "originalName": "Internet Services 2.jpg"
+    },
+    {
+      "url": "/images/services/internet-services/03.webp",
+      "alt": "Internet services from WirelessCom.Ca Inc. Photo 3.",
+      "originalName": "Internet Services 3.jpg"
+    },
+    {
+      "url": "/images/services/internet-services/04.webp",
+      "alt": "Internet services from WirelessCom.Ca Inc. Photo 4.",
+      "originalName": "Internet Services 4.jpg"
+    },
+    {
+      "url": "/images/services/internet-services/05.webp",
+      "alt": "Internet services from WirelessCom.Ca Inc. Photo 5.",
+      "originalName": "Internet Services 5.jpg"
+    },
+    {
+      "url": "/images/services/internet-services/06.webp",
+      "alt": "Internet services from WirelessCom.Ca Inc. Photo 6.",
+      "originalName": "Internet Services 6.png"
+    }
+  ],
+  "it-services": [
+    {
+      "url": "/images/services/it-services/01.webp",
+      "alt": "IT services from WirelessCom.Ca Inc. Photo 1.",
+      "originalName": "IT services 1.jpg"
+    },
+    {
+      "url": "/images/services/it-services/02.webp",
+      "alt": "IT services from WirelessCom.Ca Inc. Photo 2.",
+      "originalName": "IT services 2.jpg"
+    },
+    {
+      "url": "/images/services/it-services/03.webp",
+      "alt": "IT services from WirelessCom.Ca Inc. Photo 3.",
+      "originalName": "IT services 3.jpg"
+    },
+    {
+      "url": "/images/services/it-services/04.webp",
+      "alt": "IT services from WirelessCom.Ca Inc. Photo 4.",
+      "originalName": "IT services 4.jpg"
+    },
+    {
+      "url": "/images/services/it-services/05.webp",
+      "alt": "IT services from WirelessCom.Ca Inc. Photo 5.",
+      "originalName": "IT services 5.webp"
+    }
+  ],
+  "panic-buttons": [
+    {
+      "url": "/images/services/panic-buttons/01.webp",
+      "alt": "Panic buttons from WirelessCom.Ca Inc. Photo 1.",
+      "originalName": "Panic Button 1.webp"
+    },
+    {
+      "url": "/images/services/panic-buttons/02.webp",
+      "alt": "Panic buttons from WirelessCom.Ca Inc. Photo 2.",
+      "originalName": "Panic Button 2.jpg"
+    },
+    {
+      "url": "/images/services/panic-buttons/03.webp",
+      "alt": "Panic buttons from WirelessCom.Ca Inc. Photo 3.",
+      "originalName": "Panic Button 3.webp"
+    },
+    {
+      "url": "/images/services/panic-buttons/04.webp",
+      "alt": "Panic buttons from WirelessCom.Ca Inc. Photo 4.",
+      "originalName": "Panic Button 4.jpg"
+    },
+    {
+      "url": "/images/services/panic-buttons/05.webp",
+      "alt": "Panic buttons from WirelessCom.Ca Inc. Photo 5.",
+      "originalName": "Panic Button 5.jpg"
+    },
+    {
+      "url": "/images/services/panic-buttons/06.webp",
+      "alt": "Panic buttons from WirelessCom.Ca Inc. Photo 6.",
+      "originalName": "Panic Button 6.jpg"
+    }
+  ],
+  "security-services": [
+    {
+      "url": "/images/services/security-services/01.webp",
+      "alt": "Security systems from WirelessCom.Ca Inc. Photo 1.",
+      "originalName": "SECURITY SYTEMS 1.webp"
+    },
+    {
+      "url": "/images/services/security-services/02.webp",
+      "alt": "Security systems from WirelessCom.Ca Inc. Photo 2.",
+      "originalName": "SECURITY SYTEMS 2.webp"
+    },
+    {
+      "url": "/images/services/security-services/03.webp",
+      "alt": "Security systems from WirelessCom.Ca Inc. Photo 3.",
+      "originalName": "SECURITY SYTEMS 3.png"
+    },
+    {
+      "url": "/images/services/security-services/04.webp",
+      "alt": "Security systems from WirelessCom.Ca Inc. Photo 4.",
+      "originalName": "SECURITY SYTEMS 4.png"
+    },
+    {
+      "url": "/images/services/security-services/05.webp",
+      "alt": "Security systems from WirelessCom.Ca Inc. Photo 5.",
+      "originalName": "SECURITY SYTEMS 5.webp"
+    },
+    {
+      "url": "/images/services/security-services/06.webp",
+      "alt": "Security systems from WirelessCom.Ca Inc. Photo 6.",
+      "originalName": "SECURITY SYTEMS 6.webp"
+    },
+    {
+      "url": "/images/services/security-services/07.webp",
+      "alt": "Security systems from WirelessCom.Ca Inc. Photo 7.",
+      "originalName": "SECURITY SYTEMS 7.avif"
+    }
+  ],
+  "telephone-services": [
+    {
+      "url": "/images/services/telephone-services/01.webp",
+      "alt": "VoIP telephone systems from WirelessCom.Ca Inc. Photo 1.",
+      "originalName": "VOIP 1.png"
+    },
+    {
+      "url": "/images/services/telephone-services/02.webp",
+      "alt": "VoIP telephone systems from WirelessCom.Ca Inc. Photo 2.",
+      "originalName": "VOIP 2.png"
+    },
+    {
+      "url": "/images/services/telephone-services/03.webp",
+      "alt": "VoIP telephone systems from WirelessCom.Ca Inc. Photo 3.",
+      "originalName": "VOIP 3.png"
+    },
+    {
+      "url": "/images/services/telephone-services/04.webp",
+      "alt": "VoIP telephone systems from WirelessCom.Ca Inc. Photo 4.",
+      "originalName": "VOIP 4.webp"
+    },
+    {
+      "url": "/images/services/telephone-services/05.webp",
+      "alt": "VoIP telephone systems from WirelessCom.Ca Inc. Photo 5.",
+      "originalName": "VOIP 5.webp"
+    }
+  ],
+  "two-way-radios": [
+    {
+      "url": "/images/services/two-way-radios/01.webp",
+      "alt": "Two-way radios from WirelessCom.Ca Inc. Photo 1.",
+      "originalName": "Two Way Radio 1.jpg"
+    },
+    {
+      "url": "/images/services/two-way-radios/02.webp",
+      "alt": "Two-way radios from WirelessCom.Ca Inc. Photo 2.",
+      "originalName": "Two Way Radio 1.webp"
+    },
+    {
+      "url": "/images/services/two-way-radios/03.webp",
+      "alt": "Two-way radios from WirelessCom.Ca Inc. Photo 3.",
+      "originalName": "Two Way Radio 2.webp"
+    },
+    {
+      "url": "/images/services/two-way-radios/04.webp",
+      "alt": "Two-way radios from WirelessCom.Ca Inc. Photo 4.",
+      "originalName": "Two Way Radio 3.jpg"
+    },
+    {
+      "url": "/images/services/two-way-radios/05.webp",
+      "alt": "Two-way radios from WirelessCom.Ca Inc. Photo 5.",
+      "originalName": "Two Way Radio 4.webp"
+    }
+  ],
+  "web-development": [
+    {
+      "url": "/images/services/web-development/01.webp",
+      "alt": "Web development from WirelessCom.Ca Inc. Photo 1.",
+      "originalName": "Web Development 1.png"
+    }
+  ]
+}

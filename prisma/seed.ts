@@ -11,7 +11,14 @@ import { env } from "../src/lib/env";
 import { hashPassword, validatePasswordStrength } from "../src/lib/passwords";
 import { prisma } from "../src/lib/prisma";
 import { DEFAULT_SETTINGS } from "../src/lib/settings-defaults";
+import {
+  SERVICE_PHOTO_COUNT,
+  rewriteOldServiceImages,
+  slideshowForSlug,
+  usesShippedServicePhotos,
+} from "../src/lib/service-photos";
 import { ensureSiteMedia } from "../src/lib/site-media";
+import { parseSlideshow } from "../src/lib/slideshow";
 import { vendorLogoUrl } from "../src/lib/vendor-logos";
 import { buildBlocks, SEED_NAV, SEED_PAGES, SEED_REDIRECTS } from "./seed-content";
 import { SEED_CASE_STUDIES } from "./seed-case-studies";
@@ -112,6 +119,7 @@ async function seedPages(): Promise<void> {
         navLabel: page.navLabel ?? null,
         status: "PUBLISHED",
         blocks: buildBlocks(page.blocks, page.slug) as never,
+        slideshow: slideshowForSlug(page.slug) as never,
         metaTitle: page.metaTitle ?? null,
         metaDescription: page.metaDescription,
         showInHeaderNav: page.showInHeaderNav ?? false,
@@ -126,6 +134,54 @@ async function seedPages(): Promise<void> {
   }
 
   log(`Pages: ${created} created, ${skipped} already present`);
+}
+
+/**
+ * Existing installs skip page creation, so owned service photography has to
+ * be applied in place: fill an empty slideshow and swap generated stock
+ * photos out of heroes and cards. Re-runs leave an admin-edited slideshow
+ * alone once the shipped files are already on it.
+ */
+async function seedServicePhotography(): Promise<void> {
+  const pages = await prisma.page.findMany({
+    select: { id: true, slug: true, blocks: true, slideshow: true },
+  });
+
+  let slideshows = 0;
+  let blocks = 0;
+
+  for (const page of pages) {
+    const current = parseSlideshow(page.slideshow);
+    const shipped = slideshowForSlug(page.slug);
+    const hasShipped = usesShippedServicePhotos(current);
+    const hasUploads = current.some(
+      (item) => item.kind === "image" && item.url.startsWith("/uploads/"),
+    );
+    const imageSlides = current.filter((item) => item.kind === "image");
+    const nextSlideshow =
+      shipped.length > 0 && !hasShipped && !hasUploads && imageSlides.length === 0
+        ? [...shipped, ...current.filter((item) => item.kind === "video")]
+        : null;
+
+    const rewritten = rewriteOldServiceImages(page.blocks);
+
+    if (!nextSlideshow && !rewritten.changed) continue;
+
+    await prisma.page.update({
+      where: { id: page.id },
+      data: {
+        ...(nextSlideshow ? { slideshow: nextSlideshow as never } : {}),
+        ...(rewritten.changed ? { blocks: rewritten.next as never } : {}),
+      },
+    });
+
+    if (nextSlideshow) slideshows += 1;
+    if (rewritten.changed) blocks += 1;
+  }
+
+  log(
+    `Service photos: ${SERVICE_PHOTO_COUNT} files, ${slideshows} slideshows filled, ${blocks} pages updated`,
+  );
 }
 
 async function seedNavigation(): Promise<void> {
@@ -574,6 +630,7 @@ async function main(): Promise<void> {
   await seedSuperAdmin();
   await seedSettings();
   await seedPages();
+  await seedServicePhotography();
   await seedNavigation();
   await seedRedirects();
   await seedLaunchPost();

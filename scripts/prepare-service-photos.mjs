@@ -1,0 +1,206 @@
+/**
+ * Encode the 81 service pictures from the Desktop `logos` folder (or a
+ * previously copied source tree) into committed WebP files, and write the
+ * ordered manifest the seed and media library read.
+ *
+ *   node scripts/prepare-service-photos.mjs
+ *
+ * Source search order:
+ *   1. SERVICE_PHOTOS_DIR
+ *   2. C:\Users\abu\Desktop\logos
+ *   3. assets/source-images/services  (gitignored copy from a previous run)
+ */
+import { copyFile, mkdir, readdir, writeFile } from "node:fs/promises";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
+import sharp from "sharp";
+
+const ROOT = process.cwd();
+const MAX_EDGE = 1600;
+const WEBP_QUALITY = 84;
+const EXPECTED_COUNT = 81;
+
+const DESKTOP_DIR = "C:\\Users\\abu\\Desktop\\logos";
+const SOURCE_COPY = path.join(ROOT, "assets", "source-images", "services");
+const PUBLIC_DIR = path.join(ROOT, "public", "images", "services");
+const MANIFEST = path.join(ROOT, "src", "lib", "service-photos.generated.json");
+
+/** Longest prefix first. Filenames are matched case-insensitively. */
+const PREFIXES = [
+  ["data cabling and fiber", "data-cabling-fiber-optic", "Data cabling and fiber"],
+  ["internet services", "internet-services", "Internet services"],
+  ["digital marketing", "digital-marketing", "Digital marketing"],
+  ["web development", "web-development", "Web development"],
+  ["security sytems", "security-services", "Security systems"],
+  ["security systems", "security-services", "Security systems"],
+  ["two way radio", "two-way-radios", "Two-way radios"],
+  ["panic button", "panic-buttons", "Panic buttons"],
+  ["fleet tracker", "fleet-vehicle-tracking", "Fleet tracking"],
+  ["access control", "access-control", "Access control"],
+  ["alarm system", "alarm-systems", "Alarm systems"],
+  ["cybersecurity", "cybersecurity", "Cybersecurity"],
+  ["ev charging", "ev-charging-solutions", "EV charging"],
+  ["it services", "it-services", "IT services"],
+  ["ai camera", "ai-services", "AI camera systems"],
+  ["firewall", "firewalls", "Firewalls"],
+  ["intercom", "door-intercom", "Door intercom"],
+  ["voip", "telephone-services", "VoIP telephone systems"],
+];
+
+function imageFiles(names) {
+  return names.filter((name) => {
+    if (name.startsWith(".")) return false;
+    return /\.(jpe?g|png|webp|avif)$/i.test(name);
+  });
+}
+
+function matchPrefix(filename) {
+  const stem = filename
+    .replace(/\.[^.]+$/, "")
+    .toLowerCase()
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  for (const [prefix, slug, label] of PREFIXES) {
+    if (stem === prefix || stem.startsWith(`${prefix} `)) {
+      return { slug, label };
+    }
+  }
+  return null;
+}
+
+function sortKey(filename) {
+  const stem = filename.replace(/\.[^.]+$/, "");
+  const edited = /edited/i.test(stem);
+  const numbered = stem.match(/(\d+)\s*$/);
+  const num = numbered ? Number.parseInt(numbered[1], 10) : 999;
+  return { num, edited, filename: filename.toLowerCase() };
+}
+
+function compareFiles(a, b) {
+  const left = sortKey(a);
+  const right = sortKey(b);
+  if (left.num !== right.num) return left.num - right.num;
+  if (left.edited !== right.edited) return left.edited ? 1 : -1;
+  return left.filename.localeCompare(right.filename);
+}
+
+async function resolveSourceDir() {
+  const candidates = [
+    process.env.SERVICE_PHOTOS_DIR,
+    DESKTOP_DIR,
+    SOURCE_COPY,
+  ].filter(Boolean);
+
+  for (const dir of candidates) {
+    const names = await readdir(dir).catch(() => null);
+    if (!names) continue;
+    const files = imageFiles(names);
+    if (files.length > 0) return { dir, files };
+  }
+
+  throw new Error(
+    "No service pictures found. Put them in C:\\Users\\abu\\Desktop\\logos or set SERVICE_PHOTOS_DIR.",
+  );
+}
+
+async function encodeOne(inputPath, outputPath) {
+  const image = sharp(inputPath, { failOn: "none", animated: false }).rotate();
+  const meta = await image.metadata();
+  const width = meta.width ?? 0;
+  const height = meta.height ?? 0;
+  if (!width || !height) {
+    throw new Error(`Could not read dimensions: ${inputPath}`);
+  }
+
+  const pipeline =
+    Math.max(width, height) > MAX_EDGE
+      ? image.resize({
+          width: width >= height ? MAX_EDGE : undefined,
+          height: height > width ? MAX_EDGE : undefined,
+          fit: "inside",
+          withoutEnlargement: true,
+          kernel: sharp.kernel.lanczos3,
+        })
+      : image;
+
+  await pipeline.webp({ quality: WEBP_QUALITY, effort: 4 }).toFile(outputPath);
+}
+
+async function main() {
+  const { dir: sourceDir, files } = await resolveSourceDir();
+  if (files.length !== EXPECTED_COUNT) {
+    throw new Error(
+      `Expected ${EXPECTED_COUNT} pictures in ${sourceDir}, found ${files.length}.`,
+    );
+  }
+
+  await mkdir(SOURCE_COPY, { recursive: true });
+  await mkdir(PUBLIC_DIR, { recursive: true });
+
+  /** @type {Record<string, Array<{ url: string; alt: string; originalName: string }>>} */
+  const bySlug = {};
+  const unmatched = [];
+
+  for (const filename of files) {
+    const mapped = matchPrefix(filename);
+    if (!mapped) {
+      unmatched.push(filename);
+      continue;
+    }
+    (bySlug[mapped.slug] ??= []).push({
+      originalName: filename,
+      slug: mapped.slug,
+      label: mapped.label,
+    });
+    await copyFile(path.join(sourceDir, filename), path.join(SOURCE_COPY, filename));
+  }
+
+  if (unmatched.length > 0) {
+    throw new Error(`Unmapped files:\n  ${unmatched.join("\n  ")}`);
+  }
+
+  const manifest = {};
+  let encoded = 0;
+
+  for (const slug of Object.keys(bySlug).sort()) {
+    const group = bySlug[slug].sort((a, b) => compareFiles(a.originalName, b.originalName));
+    const outDir = path.join(PUBLIC_DIR, slug);
+    await mkdir(outDir, { recursive: true });
+    manifest[slug] = [];
+
+    for (const [index, item] of group.entries()) {
+      const stem = String(index + 1).padStart(2, "0");
+      const filename = `${stem}.webp`;
+      const url = `/images/services/${slug}/${filename}`;
+      await encodeOne(path.join(sourceDir, item.originalName), path.join(outDir, filename));
+      manifest[slug].push({
+        url,
+        alt: `${item.label} from WirelessCom.Ca Inc. Photo ${index + 1}.`,
+        originalName: item.originalName,
+      });
+      encoded += 1;
+    }
+  }
+
+  if (encoded !== EXPECTED_COUNT) {
+    throw new Error(`Encoded ${encoded} files, expected ${EXPECTED_COUNT}.`);
+  }
+
+  await writeFile(MANIFEST, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
+
+  const summary = Object.entries(manifest)
+    .map(([slug, photos]) => `  ${slug}: ${photos.length}`)
+    .join("\n");
+  process.stdout.write(
+    `Encoded ${encoded} service pictures from ${sourceDir}\n${summary}\nWrote ${path.relative(ROOT, MANIFEST)}\n`,
+  );
+}
+
+const invoked = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+if (invoked) {
+  main().catch((error) => {
+    process.stderr.write(`${error instanceof Error ? error.message : error}\n`);
+    process.exit(1);
+  });
+}

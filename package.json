@@ -18,6 +18,7 @@
     "seed": "tsx prisma/seed.ts",
     "content:sync": "tsx scripts/content-sync.ts",
     "brand:build": "node scripts/build-brand-assets.mjs",
+    "photos:services": "node scripts/prepare-service-photos.mjs",
     "postinstall": "prisma generate"
   },
   "prisma": {

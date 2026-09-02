@@ -1,24 +1,28 @@
-import { SectionImage } from "@/components/visuals/section-image";
 import { DetectionCorners } from "@/components/visuals/detection-corners";
+import { SectionImage } from "@/components/visuals/section-image";
+import { serviceHeroPhoto } from "@/lib/service-photos";
 import { cn } from "@/lib/utils";
 
 /**
  * Hero-side illustration of the two places we actually put AI: cameras and
- * phones. Photographs are real install photography; overlays are chrome, not
+ * phones. Photographs are company service pictures; overlays are chrome, not
  * live detections or a recorded call.
  */
 
+const camera = serviceHeroPhoto("ai-services");
+const phone = serviceHeroPhoto("telephone-services");
+
 const CARDS = [
   {
-    src: "/images/ai-camera-1400.webp",
-    alt: "IP dome camera in the foreground with a security monitor showing cyan AI detection overlays on a night-time scene",
+    src: camera?.url ?? "/images/services/ai-services/01.webp",
+    alt: camera?.alt ?? "AI camera systems from WirelessCom.Ca Inc. Photo 1.",
     kicker: "Cameras",
     title: "People, vehicles and search",
     kind: "camera" as const,
   },
   {
-    src: "/images/ai-phone-1400.webp",
-    alt: "Black executive VoIP desk phone whose display shows an abstract cyan assistant waveform",
+    src: phone?.url ?? "/images/services/telephone-services/01.webp",
+    alt: phone?.alt ?? "VoIP telephone systems from WirelessCom.Ca Inc. Photo 1.",
     kicker: "Phones",
     title: "Attendant and transcription",
     kind: "phone" as const,
