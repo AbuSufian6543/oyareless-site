@@ -100,6 +100,18 @@ export const SITE_PICTURES: SitePicture[] = [
     folder: "branding",
   },
   {
+    url: "/favicon.ico",
+    name: "Favicon (ICO)",
+    alt: "WirelessCom.Ca 3D globe mark",
+    folder: "branding",
+  },
+  {
+    url: "/icon-192.png",
+    name: "App icon (192)",
+    alt: "WirelessCom.Ca 3D globe mark",
+    folder: "branding",
+  },
+  {
     url: "/icon.png",
     name: "App icon",
     alt: "WirelessCom.Ca 3D globe mark",
@@ -108,6 +120,12 @@ export const SITE_PICTURES: SitePicture[] = [
   {
     url: "/apple-icon.png",
     name: "Apple touch icon",
+    alt: "WirelessCom.Ca 3D globe mark",
+    folder: "branding",
+  },
+  {
+    url: "/apple-touch-icon.png",
+    name: "Apple touch icon (root)",
     alt: "WirelessCom.Ca 3D globe mark",
     folder: "branding",
   },
@@ -142,6 +160,7 @@ export function catalogFilename(url: string): string {
 function mimeFor(url: string): string {
   if (url.endsWith(".svg")) return "image/svg+xml";
   if (url.endsWith(".png")) return "image/png";
+  if (url.endsWith(".ico")) return "image/x-icon";
   if (url.endsWith(".jpg") || url.endsWith(".jpeg")) return "image/jpeg";
   if (url.endsWith(".avif")) return "image/avif";
   return "image/webp";

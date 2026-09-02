@@ -73,6 +73,6 @@ export function proxy(request: NextRequest) {
 export const config = {
   // Only inspect paths that could be legacy URLs; skip assets and API routes.
   matcher: [
-    "/((?!api|_next/static|_next/image|brand|uploads|favicon|robots.txt|sitemap.xml).*)",
+    "/((?!api|_next/static|_next/image|brand|uploads|favicon|apple-icon|apple-touch-icon|icon\\.png|icon-192|robots.txt|sitemap.xml|manifest).*)",
   ],
 };

@@ -85,11 +85,19 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     icons: {
       icon: [
-        { url: settings.faviconUrl },
+        { url: "/favicon.ico", sizes: "16x16 32x32 48x48" },
+        { url: settings.faviconUrl, type: "image/svg+xml" },
         { url: "/favicon.png", type: "image/png", sizes: "32x32" },
+        { url: "/icon-192.png", type: "image/png", sizes: "192x192" },
         { url: settings.iconPngUrl, type: "image/png", sizes: "512x512" },
       ],
-      apple: [{ url: settings.appleIconUrl, sizes: "180x180" }],
+      apple: [{ url: settings.appleIconUrl, sizes: "180x180", type: "image/png" }],
+      shortcut: "/favicon.ico",
+    },
+    appleWebApp: {
+      capable: true,
+      title: settings.companyName,
+      statusBarStyle: "default",
     },
     alternates: { canonical: "/" },
   };
