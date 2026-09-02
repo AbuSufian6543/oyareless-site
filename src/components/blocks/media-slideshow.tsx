@@ -55,8 +55,8 @@ export function MediaSlideshow({
       className={cn(
         "relative overflow-hidden rounded-xl",
         inHero
-          ? "bg-navy-900 shadow-lift ring-1 ring-white/10"
-          : "bg-navy-950",
+          ? "bg-white shadow-lift ring-1 ring-white/15"
+          : "bg-white",
       )}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
@@ -87,7 +87,7 @@ export function MediaSlideshow({
                         ? "(min-width: 1024px) 42vw, 100vw"
                         : "(max-width: 1024px) 100vw, 70vw"
                     }
-                    className="object-contain p-3 sm:p-4"
+                    className="bg-white object-contain p-3 sm:p-4"
                     priority={itemIndex === 0}
                   />
                   {item.caption && (
@@ -106,7 +106,7 @@ export function MediaSlideshow({
                   referrerPolicy="strict-origin-when-cross-origin"
                 />
               ) : (
-                <div className="size-full bg-navy-900" />
+                <div className="size-full bg-white" />
               )}
             </div>
           );
@@ -155,7 +155,7 @@ export function MediaSlideshow({
                     "h-1.5 rounded-full transition-all",
                     dotIndex === index
                       ? "w-6 bg-accent-400"
-                      : "w-1.5 bg-white/45 hover:bg-white/80",
+                      : "w-1.5 bg-navy-900/35 hover:bg-navy-900/60",
                   )}
                 />
               ))}

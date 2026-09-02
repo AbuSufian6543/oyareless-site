@@ -1,7 +1,8 @@
 /**
  * Encode the 81 service pictures from the Desktop `logos` folder (or a
- * previously copied source tree) into committed WebP files, and write the
- * ordered manifest the seed and media library read.
+ * previously copied source tree) into committed WebP files with a white
+ * backdrop where needed and the WirelessCom lockup watermarked in the
+ * centre, then write the ordered manifest the seed and media library read.
  *
  *   node scripts/prepare-service-photos.mjs
  *
@@ -13,7 +14,8 @@
 import { copyFile, mkdir, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import sharp from "sharp";
+
+import { prepareServiceBitmap } from "./image-backdrop.mjs";
 
 const ROOT = process.cwd();
 const MAX_EDGE = 1600;
@@ -24,6 +26,8 @@ const DESKTOP_DIR = "C:\\Users\\abu\\Desktop\\logos";
 const SOURCE_COPY = path.join(ROOT, "assets", "source-images", "services");
 const PUBLIC_DIR = path.join(ROOT, "public", "images", "services");
 const MANIFEST = path.join(ROOT, "src", "lib", "service-photos.generated.json");
+const LOGO = path.join(ROOT, "public", "brand", "logo.png");
+const LOGO_INVERSE = path.join(ROOT, "public", "brand", "logo-inverse.png");
 
 /** Longest prefix first. Filenames are matched case-insensitively. */
 const PREFIXES = [
@@ -105,26 +109,11 @@ async function resolveSourceDir() {
 }
 
 async function encodeOne(inputPath, outputPath) {
-  const image = sharp(inputPath, { failOn: "none", animated: false }).rotate();
-  const meta = await image.metadata();
-  const width = meta.width ?? 0;
-  const height = meta.height ?? 0;
-  if (!width || !height) {
-    throw new Error(`Could not read dimensions: ${inputPath}`);
-  }
-
-  const pipeline =
-    Math.max(width, height) > MAX_EDGE
-      ? image.resize({
-          width: width >= height ? MAX_EDGE : undefined,
-          height: height > width ? MAX_EDGE : undefined,
-          fit: "inside",
-          withoutEnlargement: true,
-          kernel: sharp.kernel.lanczos3,
-        })
-      : image;
-
-  await pipeline.webp({ quality: WEBP_QUALITY, effort: 4 }).toFile(outputPath);
+  await (
+    await prepareServiceBitmap(inputPath, LOGO, LOGO_INVERSE, { maxEdge: MAX_EDGE })
+  )
+    .webp({ quality: WEBP_QUALITY, effort: 4 })
+    .toFile(outputPath);
 }
 
 async function main() {
