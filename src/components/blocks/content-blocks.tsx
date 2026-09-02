@@ -149,7 +149,7 @@ export function ImageTextBlock({ block }: { block: BlockOf<"imageText"> }) {
               src={data.image.url}
               alt={data.image.alt}
               sizes="(min-width: 1024px) 42vw, 100vw"
-              className="w-full rounded-xl object-cover shadow-card"
+              className="w-full rounded-2xl object-cover shadow-card"
             />
             {data.image.caption && (
               <figcaption

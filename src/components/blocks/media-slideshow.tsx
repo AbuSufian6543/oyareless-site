@@ -1,13 +1,14 @@
 "use client";
 
 import Image from "next/image";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import type { SlideshowItem } from "@/lib/slideshow";
 import { cn, toEmbedUrl } from "@/lib/utils";
 
-const PHOTO_INTERVAL_MS = 5500;
+const PHOTO_INTERVAL_MS = 6500;
+const SWIPE_THRESHOLD_PX = 48;
 const DOT_LIMIT = 8;
 
 /**
@@ -28,6 +29,8 @@ export function MediaSlideshow({
 }) {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const touchStartX = useRef<number | null>(null);
+  const hold = useRef({ hover: false, focus: false });
   const inHero = variant === "hero";
 
   const go = useCallback(
@@ -46,20 +49,59 @@ export function MediaSlideshow({
     return () => clearInterval(timer);
   }, [current?.kind, go, items.length, paused]);
 
+  useEffect(() => {
+    const onVisibility = () => {
+      setPaused(document.hidden || hold.current.hover || hold.current.focus);
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, []);
+
   if (items.length === 0) return null;
 
   const useDots = items.length <= DOT_LIMIT;
 
+  const setHold = (key: "hover" | "focus", value: boolean) => {
+    hold.current[key] = value;
+    setPaused(document.hidden || hold.current.hover || hold.current.focus);
+  };
+
   return (
     <div
       className={cn(
-        "relative overflow-hidden rounded-xl",
+        "group/slideshow relative isolate overflow-hidden",
         inHero
-          ? "bg-white shadow-lift ring-1 ring-white/15"
-          : "bg-white",
+          ? "rounded-2xl bg-white shadow-[0_24px_60px_-28px_rgb(4_19_37_/_0.65)] ring-1 ring-white/25"
+          : "rounded-2xl bg-white shadow-card ring-1 ring-slate-200/80",
       )}
-      onMouseEnter={() => setPaused(true)}
-      onMouseLeave={() => setPaused(false)}
+      onMouseEnter={() => setHold("hover", true)}
+      onMouseLeave={() => setHold("hover", false)}
+      onFocusCapture={() => setHold("focus", true)}
+      onBlurCapture={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+          setHold("focus", false);
+        }
+      }}
+      onTouchStart={(event) => {
+        touchStartX.current = event.touches[0]?.clientX ?? null;
+      }}
+      onTouchEnd={(event) => {
+        const start = touchStartX.current;
+        touchStartX.current = null;
+        if (start == null || items.length < 2) return;
+        const delta = event.changedTouches[0]?.clientX - start;
+        if (Math.abs(delta) < SWIPE_THRESHOLD_PX) return;
+        go(delta > 0 ? -1 : 1);
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "ArrowLeft") {
+          event.preventDefault();
+          go(-1);
+        } else if (event.key === "ArrowRight") {
+          event.preventDefault();
+          go(1);
+        }
+      }}
       role="region"
       aria-roledescription="carousel"
       aria-label={label}
@@ -71,8 +113,13 @@ export function MediaSlideshow({
             <div
               key={`${item.kind}-${item.url}-${itemIndex}`}
               className={cn(
-                "absolute inset-0 transition-opacity duration-700",
-                active ? "opacity-100" : "opacity-0",
+                "slideshow-slide",
+                active
+                  ? "z-[1] scale-100 opacity-100"
+                  : "z-0 scale-[1.02] opacity-0",
+                item.kind === "video" && active
+                  ? "pointer-events-auto"
+                  : "pointer-events-none",
               )}
               aria-hidden={!active}
             >
@@ -87,11 +134,11 @@ export function MediaSlideshow({
                         ? "(min-width: 1024px) 42vw, 100vw"
                         : "(max-width: 1024px) 100vw, 70vw"
                     }
-                    className="bg-white object-contain p-3 sm:p-4"
+                    className="bg-white object-contain"
                     priority={itemIndex === 0}
                   />
                   {item.caption && (
-                    <p className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-navy-950/85 to-transparent p-5 pt-12 text-sm text-white">
+                    <p className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-navy-950/80 to-transparent px-5 pb-9 pt-14 text-sm text-white">
                       {item.caption}
                     </p>
                   )}
@@ -120,10 +167,10 @@ export function MediaSlideshow({
             onClick={() => go(-1)}
             aria-label="Previous slide"
             className={cn(
-              "absolute top-1/2 -translate-y-1/2 rounded-full text-white backdrop-blur transition-colors",
+              "z-20 absolute top-1/2 -translate-y-1/2 rounded-full text-white backdrop-blur-sm transition-[opacity,background-color] duration-300 ease-out opacity-100 [@media(hover:hover)_and_(pointer:fine)]:opacity-0 group-hover/slideshow:opacity-100 group-focus-within/slideshow:opacity-100",
               inHero
-                ? "left-2 bg-navy-950/75 p-1.5 ring-1 ring-white/15 hover:bg-navy-950/90"
-                : "left-3 bg-navy-950/60 p-2.5 hover:bg-navy-950/85",
+                ? "left-2.5 bg-navy-950/55 p-1.5 ring-1 ring-white/20 hover:bg-navy-950/80"
+                : "left-3 bg-navy-950/55 p-2.5 hover:bg-navy-950/80",
             )}
           >
             <ChevronLeft className={inHero ? "size-4" : "size-5"} aria-hidden="true" />
@@ -133,17 +180,17 @@ export function MediaSlideshow({
             onClick={() => go(1)}
             aria-label="Next slide"
             className={cn(
-              "absolute top-1/2 -translate-y-1/2 rounded-full text-white backdrop-blur transition-colors",
+              "z-20 absolute top-1/2 -translate-y-1/2 rounded-full text-white backdrop-blur-sm transition-[opacity,background-color] duration-300 ease-out opacity-100 [@media(hover:hover)_and_(pointer:fine)]:opacity-0 group-hover/slideshow:opacity-100 group-focus-within/slideshow:opacity-100",
               inHero
-                ? "right-2 bg-navy-950/75 p-1.5 ring-1 ring-white/15 hover:bg-navy-950/90"
-                : "right-3 bg-navy-950/60 p-2.5 hover:bg-navy-950/85",
+                ? "right-2.5 bg-navy-950/55 p-1.5 ring-1 ring-white/20 hover:bg-navy-950/80"
+                : "right-3 bg-navy-950/55 p-2.5 hover:bg-navy-950/80",
             )}
           >
             <ChevronRight className={inHero ? "size-4" : "size-5"} aria-hidden="true" />
           </button>
 
           {useDots ? (
-            <div className="absolute inset-x-0 bottom-2.5 flex justify-center gap-1.5">
+            <div className="absolute inset-x-0 bottom-3 z-20 flex justify-center gap-1.5">
               {items.map((_, dotIndex) => (
                 <button
                   key={dotIndex}
@@ -152,16 +199,16 @@ export function MediaSlideshow({
                   aria-label={`Go to slide ${dotIndex + 1}`}
                   aria-current={dotIndex === index ? true : undefined}
                   className={cn(
-                    "h-1.5 rounded-full transition-all",
+                    "h-1.5 rounded-full transition-all duration-500 ease-out",
                     dotIndex === index
                       ? "w-6 bg-accent-400"
-                      : "w-1.5 bg-navy-900/35 hover:bg-navy-900/60",
+                      : "w-1.5 bg-navy-900/30 hover:bg-navy-900/55",
                   )}
                 />
               ))}
             </div>
           ) : (
-            <p className="absolute bottom-2.5 left-1/2 -translate-x-1/2 rounded-full bg-navy-950/70 px-2.5 py-0.5 text-[0.6875rem] font-semibold tabular-nums text-white backdrop-blur">
+            <p className="absolute bottom-3 left-1/2 z-20 -translate-x-1/2 rounded-full bg-navy-950/55 px-2.5 py-0.5 text-[0.6875rem] font-semibold tabular-nums text-white backdrop-blur-sm">
               {index + 1} / {items.length}
             </p>
           )}

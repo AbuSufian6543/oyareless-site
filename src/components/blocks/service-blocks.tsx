@@ -61,7 +61,7 @@ export function FeatureGridBlock({ block }: { block: BlockOf<"featureGrid"> }) {
             ) : (
               <span
                 className={cn(
-                  "mb-4 flex size-11 items-center justify-center rounded-lg transition-colors",
+                  "mb-4 flex size-11 items-center justify-center rounded-lg transition-colors duration-300 ease-out",
                   dark
                     ? "bg-navy-700 text-accent-400 group-hover:bg-accent-500/20"
                     : "bg-brand-50 text-brand-600 group-hover:bg-brand-100",
@@ -114,13 +114,13 @@ export function ServiceGridBlock({ block }: { block: BlockOf<"serviceGrid"> }) {
           const inner = (
             <>
               {item.imageUrl && (
-                <div className="relative mb-5 aspect-[16/10] overflow-hidden rounded-lg">
+                <div className="relative mb-5 aspect-[16/10] overflow-hidden rounded-xl">
                   <SectionImage
                     src={item.imageUrl}
                     alt={item.imageAlt || item.title}
                     fill
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                    className="transition-transform duration-500 group-hover:scale-105"
+                    className="transition-transform duration-700 ease-out group-hover:scale-[1.04]"
                   />
                 </div>
               )}
@@ -128,7 +128,7 @@ export function ServiceGridBlock({ block }: { block: BlockOf<"serviceGrid"> }) {
               <div className="flex items-start justify-between gap-3">
                 <span
                   className={cn(
-                    "flex size-11 shrink-0 items-center justify-center rounded-lg transition-colors",
+                    "flex size-11 shrink-0 items-center justify-center rounded-lg transition-colors duration-300 ease-out",
                     dark
                       ? "bg-navy-700 text-accent-400 group-hover:bg-accent-500/20"
                       : "bg-brand-50 text-brand-600 group-hover:bg-brand-600 group-hover:text-white",
@@ -595,7 +595,7 @@ export function LogoStripBlock({ block }: { block: BlockOf<"logoStrip"> }) {
             className={cn(
               "h-12 w-auto max-w-full object-contain lg:h-14",
               block.data.grayscale &&
-                "grayscale opacity-70 transition hover:grayscale-0 hover:opacity-100",
+                "grayscale opacity-70 transition-[filter,opacity] duration-300 ease-out hover:grayscale-0 hover:opacity-100",
             )}
           />
         ))}

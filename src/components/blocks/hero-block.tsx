@@ -41,15 +41,15 @@ export function HeroBlock({
     return (
       <section className="relative isolate overflow-hidden bg-navy-950">
         <TechBackdrop network density={0.75} glow="right" mood="network" />
-        <div className="container-page relative">
-          <div className="grid items-center gap-10 py-16 sm:gap-12 lg:grid-cols-2 lg:gap-16 lg:py-28">
-            <div>
+        <div className="container-page relative z-10">
+          <div className="grid items-center gap-10 pt-16 pb-20 sm:gap-12 lg:grid-cols-2 lg:gap-16 lg:pt-28 lg:pb-32">
+            <div className="animate-fade-up">
               <HeroCopy data={data} dark />
             </div>
             {picture && (
-              <div className="relative">
+              <div className="relative animate-fade-up-slow">
                 <div
-                  className="absolute -inset-4 rounded-2xl bg-accent-500/10 blur-2xl"
+                  className="absolute -inset-6 rounded-[1.75rem] bg-accent-500/12 blur-3xl animate-ambient-glow"
                   aria-hidden="true"
                 />
                 {slides.length > 0 ? (
@@ -63,7 +63,7 @@ export function HeroBlock({
                     src={data.backgroundImageUrl}
                     alt={data.backgroundImageAlt || data.headline}
                     sizes="(min-width: 1024px) 42vw, 100vw"
-                    className="relative w-full rounded-xl object-cover shadow-lift"
+                    className="relative w-full rounded-2xl object-cover shadow-lift"
                     priority
                   />
                 )}

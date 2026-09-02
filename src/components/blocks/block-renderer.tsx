@@ -197,19 +197,38 @@ export function BlockList({
     (block) => block.type === "hero" || block.type === "techHero",
   );
   const hero = heroIndex >= 0 ? blocks[heroIndex] : undefined;
-  const embedInHero =
-    slides.length > 0 &&
-    hero?.type === "hero" &&
-    hero.data.variant === "split";
+  const splitHero = hero?.type === "hero" && hero.data.variant === "split";
+  const embedInHero = slides.length > 0 && splitHero;
 
-  const nodes = blocks.map((block, index) => (
-    <BlockRenderer
-      key={block.id}
-      block={block}
-      sourcePage={sourcePage}
-      slideshow={embedInHero && index === heroIndex ? slides : undefined}
-    />
-  ));
+  const nodes = blocks.map((block, index) => {
+    const renderer = (
+      <BlockRenderer
+        block={block}
+        sourcePage={sourcePage}
+        slideshow={embedInHero && index === heroIndex ? slides : undefined}
+      />
+    );
+
+    if (splitHero && index === heroIndex + 1) {
+      return (
+        <div
+          key={block.id}
+          className="relative z-10 -mt-8 overflow-hidden rounded-t-[1.75rem] shadow-[0_-18px_48px_-28px_rgb(4_19_37_/_0.45)]"
+        >
+          {renderer}
+        </div>
+      );
+    }
+
+    return (
+      <BlockRenderer
+        key={block.id}
+        block={block}
+        sourcePage={sourcePage}
+        slideshow={embedInHero && index === heroIndex ? slides : undefined}
+      />
+    );
+  });
 
   if (slides.length === 0 || embedInHero) return <>{nodes}</>;
 
