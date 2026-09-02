@@ -15,6 +15,8 @@ import { copyFile, mkdir, readdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
+import sharp from "sharp";
+
 import { prepareServiceBitmap } from "./image-backdrop.mjs";
 
 const ROOT = process.cwd();
@@ -108,7 +110,17 @@ async function resolveSourceDir() {
   );
 }
 
-async function encodeOne(inputPath, outputPath) {
+/** Original photos that must ship as-is — no watermark, fill, or resize. */
+const PASSTHROUGH = new Set(["digital marketing 2.png"]);
+
+async function encodeOne(inputPath, outputPath, originalName) {
+  if (PASSTHROUGH.has(originalName.toLowerCase())) {
+    await sharp(inputPath, { failOn: "none", animated: false })
+      .webp({ lossless: true, effort: 4 })
+      .toFile(outputPath);
+    return;
+  }
+
   await (
     await prepareServiceBitmap(inputPath, LOGO, LOGO_INVERSE, { maxEdge: MAX_EDGE })
   )
@@ -162,7 +174,11 @@ async function main() {
       const stem = String(index + 1).padStart(2, "0");
       const filename = `${stem}.webp`;
       const url = `/images/services/${slug}/${filename}`;
-      await encodeOne(path.join(sourceDir, item.originalName), path.join(outDir, filename));
+      await encodeOne(
+        path.join(sourceDir, item.originalName),
+        path.join(outDir, filename),
+        item.originalName,
+      );
       manifest[slug].push({
         url,
         alt: `${item.label} from WirelessCom.Ca Inc. Photo ${index + 1}.`,
