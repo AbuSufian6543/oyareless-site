@@ -12,6 +12,7 @@ import {
 } from "@/lib/admin-collections.server";
 import { hasRole, requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { toStreamPickerOptions } from "@/lib/stream-picker";
 
 export async function generateMetadata({
   params,
@@ -55,7 +56,15 @@ export default async function CollectionEditPage({
       }),
     ),
     prisma.stream
-      .findMany({ orderBy: { title: "asc" }, select: { slug: true, title: true } })
+      .findMany({
+        orderBy: { title: "asc" },
+        select: {
+          slug: true,
+          title: true,
+          isPublic: true,
+          accessPasswordHash: true,
+        },
+      })
       .catch(() => []),
   ]);
 
@@ -80,7 +89,7 @@ export default async function CollectionEditPage({
         initialValues={initialValues}
         blocks={recordBlocks(record)}
         references={Object.fromEntries(referenceEntries)}
-        streams={streams}
+        streams={toStreamPickerOptions(streams)}
       />
 
       {canDelete && (

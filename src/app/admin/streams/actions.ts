@@ -109,8 +109,10 @@ export async function createStreamAction(formData: FormData): Promise<void> {
   });
 
   revalidatePath("/live");
+  revalidatePath(`/live/${slug}`);
   revalidatePath("/video-services");
   revalidatePath("/live-video-broadcasting");
+  revalidatePath("/", "layout");
   redirect(`/admin/streams/${stream.id}?created=1`);
 }
 
@@ -174,6 +176,7 @@ export async function updateStreamAction(formData: FormData): Promise<void> {
   revalidatePath(`/live/${slug}`);
   revalidatePath("/video-services");
   revalidatePath("/live-video-broadcasting");
+  revalidatePath("/", "layout");
   redirect(`/admin/streams/${id}?saved=1`);
 }
 
@@ -197,5 +200,6 @@ export async function deleteStreamAction(formData: FormData): Promise<void> {
   revalidatePath("/live");
   revalidatePath("/video-services");
   revalidatePath("/live-video-broadcasting");
+  revalidatePath("/", "layout");
   redirect("/admin/streams?deleted=1");
 }

@@ -89,9 +89,10 @@ function toPublicStream(stream: Stream): PublicStream {
 }
 
 /**
- * Resolves a stream for public display. Protected streams return `locked`
- * without the source URL until the visitor supplies the password, so the
- * camera endpoint is never exposed in the HTML.
+ * Resolves a stream for public display. Password-protected streams return
+ * `locked` without the source (including Mist HTML) until the visitor
+ * supplies the password. Unlisted streams without a password remain
+ * watchable by URL; they are only omitted from public directories.
  */
 export async function getStreamAccess(slug: string): Promise<StreamAccess> {
   const stream = await prisma.stream
@@ -100,8 +101,7 @@ export async function getStreamAccess(slug: string): Promise<StreamAccess> {
 
   if (!stream) return { state: "missing" };
 
-  const needsPassword = Boolean(stream.accessPasswordHash) || !stream.isPublic;
-  if (needsPassword && !(await hasStreamUnlock(slug))) {
+  if (await isPasswordLocked(stream.slug, stream.accessPasswordHash)) {
     return {
       state: "locked",
       slug: stream.slug,
@@ -113,19 +113,32 @@ export async function getStreamAccess(slug: string): Promise<StreamAccess> {
   return { state: "ok", stream: toPublicStream(stream) };
 }
 
+async function isPasswordLocked(
+  slug: string,
+  accessPasswordHash: string | null,
+): Promise<boolean> {
+  if (!accessPasswordHash) return false;
+  return !(await hasStreamUnlock(slug));
+}
+
 export async function listStreamAccess(options: {
   slugs?: string[];
   featuredOnly?: boolean;
   limit?: number;
+  /**
+   * When true and no slugs are given, hide unlisted streams from directories
+   * such as /live. Password-protected public streams still appear as a gate.
+   */
+  listedOnly?: boolean;
 }): Promise<StreamAccess[]> {
+  const hasSlugs = Boolean(options.slugs && options.slugs.length > 0);
   const streams = await prisma.stream
     .findMany({
       where: {
         status: "PUBLISHED",
-        ...(options.slugs && options.slugs.length > 0
-          ? { slug: { in: options.slugs } }
-          : {}),
+        ...(hasSlugs ? { slug: { in: options.slugs } } : {}),
         ...(options.featuredOnly ? { featured: true } : {}),
+        ...(options.listedOnly && !hasSlugs ? { isPublic: true } : {}),
       },
       orderBy: [{ featured: "desc" }, { order: "asc" }, { title: "asc" }],
       take: options.limit,
@@ -134,8 +147,7 @@ export async function listStreamAccess(options: {
 
   return Promise.all(
     streams.map(async (stream): Promise<StreamAccess> => {
-      const needsPassword = Boolean(stream.accessPasswordHash) || !stream.isPublic;
-      if (needsPassword && !(await hasStreamUnlock(stream.slug))) {
+      if (await isPasswordLocked(stream.slug, stream.accessPasswordHash)) {
         return {
           state: "locked",
           slug: stream.slug,

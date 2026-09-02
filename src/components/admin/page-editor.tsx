@@ -44,7 +44,7 @@ export function PageEditor({
   streams,
 }: {
   page: PageEditorData;
-  streams: Array<{ slug: string; title: string }>;
+  streams: EditorContext["streams"];
 }) {
   const [form, setForm] = useState(page);
   const [tab, setTab] = useState<"content" | "settings">("content");
@@ -435,7 +435,8 @@ function PageSettings({
                   Hide from search engines
                 </span>
                 <span className="mt-0.5 block text-xs text-slate-500">
-                  Adds a noindex tag and removes the page from the sitemap.
+                  Adds a noindex tag and removes the page from the sitemap. Use
+                  this when the page is only for password-protected live video.
                 </span>
               </span>
             </label>

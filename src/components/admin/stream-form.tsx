@@ -38,6 +38,7 @@ export type StreamFormValues = {
 };
 
 const TYPE_OPTIONS = [
+  { value: "HTML", label: "HTML embed (Mist / VideoStreamCanada)" },
   { value: "HLS", label: "HLS (.m3u8) — IP camera / encoder" },
   { value: "DASH", label: "MPEG-DASH (.mpd)" },
   { value: "MJPEG", label: "MJPEG snapshot stream" },
@@ -47,7 +48,6 @@ const TYPE_OPTIONS = [
   { value: "FACEBOOK", label: "Facebook Live" },
   { value: "IFRAME", label: "Custom iframe URL" },
   { value: "WEBRTC", label: "WebRTC / WHEP" },
-  { value: "HTML", label: "HTML embed (Mist / VideoStreamCanada)" },
 ];
 
 /** Per-type guidance so admins know exactly what to paste into "source". */
@@ -61,7 +61,7 @@ const SOURCE_HINTS: Record<string, string> = {
   FACEBOOK: "Full URL of the Facebook video or live post.",
   IFRAME: "The exact URL to load in the iframe. Must be https and allow embedding.",
   WEBRTC: "WHEP endpoint URL from your media server.",
-  HTML: "Paste the vendor player snippet (div + script). It runs on the public site, not in this form. Edit this field whenever the camera or player code changes.",
+  HTML: "Paste the vendor player snippet exactly as they give it (the div plus the script that calls mistPlay). It runs on the public site, not in this form. Edit this field whenever the camera or player code changes.",
 };
 
 export function StreamForm({
@@ -85,6 +85,22 @@ export function StreamForm({
         <CardTitle description="Where the video comes from and how it is labeled on the site.">
           Stream source
         </CardTitle>
+
+        <div className="mb-4 rounded-lg border border-brand-200 bg-brand-50/70 p-3.5 text-sm leading-relaxed text-navy-800">
+          <p className="font-semibold">How to put this on a page</p>
+          <ol className="mt-1.5 list-decimal space-y-1 pl-4 text-xs text-slate-700">
+            <li>Paste the vendor embed code here and publish the stream.</li>
+            <li>
+              Optional: set a password below. Viewers must enter it before the
+              player loads.
+            </li>
+            <li>
+              Create or edit a page, add a <strong>Live stream player</strong>{" "}
+              section, and pick this stream. It also has a URL at{" "}
+              <span className="font-mono">/live/your-slug</span>.
+            </li>
+          </ol>
+        </div>
 
         <div className="space-y-4">
           <TextField
@@ -224,7 +240,7 @@ export function StreamForm({
               name="isPublic"
               checked={isPublic}
               onChange={(event) => setIsPublic(event.target.checked)}
-              description="Unlisted streams stay reachable by direct link but are hidden from the live page and sitemap."
+              description="Listed streams appear on /live. Turn this off for private events — viewers still watch from a page you add the player to, or from /live/your-slug."
             />
           </div>
 
@@ -233,8 +249,11 @@ export function StreamForm({
               Password protection
             </p>
             <p className="mt-1 text-xs leading-relaxed text-slate-600">
-              With a password set, the source URL is never sent to the browser
-              until the correct password is entered.
+              With a password set, the embed code and stream URL are never sent
+              to the browser until the correct password is entered. After that,
+              the same visitor can watch for 12 hours. If the whole page should
+              stay private, also turn on “Hide from search engines” on that
+              page.
             </p>
 
             {values.hasPassword && !changePassword ? (
@@ -281,8 +300,9 @@ export function StreamForm({
           {type === "HTML" ? (
             <>
               <p className="text-sm leading-relaxed text-slate-600">
-                Playback (loop, poster, autoplay) is controlled by the embed
-                code above. Change those options in the snippet, then save.
+                Playback (loop, poster) is controlled by the embed code above.
+                The poster image field is used when the snippet does not include
+                one.
               </p>
               {values.autoplay ? (
                 <input type="hidden" name="autoplay" value="on" />

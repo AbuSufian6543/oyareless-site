@@ -40,7 +40,7 @@ export default async function AdminPagesPage({
     <div>
       <PageHeader
         title="Pages"
-        description="Build and edit every page on the public website."
+        description="Build and edit every page on the public website. For a live camera, create the stream under Live Streams first, then add a Live stream player section here."
         actions={
           <Link
             href="/admin/pages/new"

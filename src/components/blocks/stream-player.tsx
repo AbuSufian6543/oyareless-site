@@ -39,6 +39,7 @@ export function StreamPlayer({
         title={stream.title}
         aspectClass={aspect}
         className={className}
+        posterUrl={stream.posterUrl}
       />
     );
   }

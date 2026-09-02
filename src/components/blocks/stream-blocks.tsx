@@ -27,7 +27,7 @@ export async function LiveStreamBlock({
           description={block.data.description}
           dark={dark}
         />
-        <EmptyStreamNotice message="Select a stream for this block under Live Streams in the admin." />
+        <EmptyStreamNotice message="Select a stream in the page editor. Create it under Live Streams first if you have not already — that is where the player embed and optional password live." />
       </Section>
     );
   }
@@ -58,9 +58,11 @@ export async function StreamGridBlock({
   block: BlockOf<"streamGrid">;
 }) {
   const dark = isDarkBackground(block.settings, "dark");
+  const hasSlugs = block.data.slugs.length > 0;
   const streams = await listStreamAccess({
-    slugs: block.data.slugs,
+    slugs: hasSlugs ? block.data.slugs : undefined,
     featuredOnly: block.data.featuredOnly,
+    listedOnly: !hasSlugs,
   });
 
   return (

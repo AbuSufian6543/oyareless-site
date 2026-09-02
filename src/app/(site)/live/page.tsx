@@ -4,7 +4,7 @@ import { Radio } from "lucide-react";
 
 import { StreamCard } from "@/components/blocks/stream-blocks";
 import { PageHero } from "@/components/site/page-hero";
-import { listStreamAccess, type StreamAccess } from "@/lib/streams";
+import { listStreamAccess } from "@/lib/streams";
 import { JsonLd } from "@/components/site/json-ld";
 import { collectionPageJsonLd, publicMetadata } from "@/lib/seo";
 
@@ -18,7 +18,7 @@ export const metadata: Metadata = publicMetadata({
 });
 
 export default async function LiveIndexPage() {
-  const streams = await listStreamAccess({});
+  const streams = await listStreamAccess({ listedOnly: true });
 
   return (
     <>
@@ -61,69 +61,26 @@ export default async function LiveIndexPage() {
               </p>
             </div>
           ) : (
-            <LiveStreamList streams={streams} />
+            <div
+              className={`grid gap-8 ${streams.length > 1 ? "lg:grid-cols-2" : ""}`}
+            >
+              {streams.map((access, index) => (
+                <StreamCard
+                  key={
+                    access.state === "ok"
+                      ? access.stream.id
+                      : access.state === "locked"
+                        ? access.slug
+                        : `stream-${index}`
+                  }
+                  access={access}
+                  showTitle
+                />
+              ))}
+            </div>
           )}
         </div>
       </section>
     </>
-  );
-}
-
-function isHtmlStream(access: StreamAccess): boolean {
-  return access.state === "ok" && access.stream.type === "HTML";
-}
-
-function LiveStreamList({ streams }: { streams: StreamAccess[] }) {
-  const demos = streams.filter(isHtmlStream);
-  const others = streams.filter((access) => !isHtmlStream(access));
-
-  return (
-    <div className="space-y-12">
-      {demos.length > 0 ? (
-        <div>
-          <h2 className="text-lg font-bold text-white">Live demo</h2>
-          <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-navy-300">
-            Downtown Sault Ste. Marie, looking north — a sample of the live
-            video we host.
-          </p>
-          <div className={`mt-6 grid gap-8 ${demos.length > 1 ? "lg:grid-cols-2" : ""}`}>
-            {demos.map((access, index) => (
-              <StreamCard
-                key={access.state === "ok" ? access.stream.id : `demo-${index}`}
-                access={access}
-                showTitle
-              />
-            ))}
-          </div>
-        </div>
-      ) : null}
-
-      {others.length > 0 ? (
-        <div>
-          {demos.length > 0 ? (
-            <h2 className="text-lg font-bold text-white">Other broadcasts</h2>
-          ) : null}
-          <div
-            className={`grid gap-8 ${others.length > 1 ? "lg:grid-cols-2" : ""} ${
-              demos.length > 0 ? "mt-6" : ""
-            }`}
-          >
-            {others.map((access, index) => (
-              <StreamCard
-                key={
-                  access.state === "ok"
-                    ? access.stream.id
-                    : access.state === "locked"
-                      ? access.slug
-                      : `stream-${index}`
-                }
-                access={access}
-                showTitle
-              />
-            ))}
-          </div>
-        </div>
-      ) : null}
-    </div>
   );
 }

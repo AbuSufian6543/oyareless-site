@@ -3,6 +3,7 @@ import Image from "next/image";
 import { GalleryCarousel } from "@/components/blocks/gallery-carousel";
 import { Section, SectionHeading, isDarkBackground } from "@/components/blocks/section";
 import type { BlockOf } from "@/lib/blocks";
+import { looksLikeMistEmbed } from "@/lib/html-stream-embed";
 import { sanitizeEmbed } from "@/lib/sanitize";
 import { cn, toEmbedUrl } from "@/lib/utils";
 
@@ -51,6 +52,20 @@ export function VideoEmbedBlock({ block }: { block: BlockOf<"videoEmbed"> }) {
 
 export function EmbedBlock({ block }: { block: BlockOf<"embed"> }) {
   const dark = isDarkBackground(block.settings);
+
+  if (looksLikeMistEmbed(block.data.html)) {
+    return (
+      <Section settings={block.settings}>
+        <SectionHeading
+          heading={block.data.heading}
+          description={block.data.description}
+          dark={dark}
+        />
+        <PlaceholderNotice message="This is a Mist / VideoStreamCanada player. Add it under Live Streams as an HTML embed, then place a Live stream player section on this page so the stream can run — including behind a password." />
+      </Section>
+    );
+  }
+
   const html = sanitizeEmbed(block.data.html);
 
   return (

@@ -36,7 +36,7 @@ export function PostEditor({
   streams,
 }: {
   post: PostEditorData;
-  streams: Array<{ slug: string; title: string }>;
+  streams: EditorContext["streams"];
 }) {
   const [form, setForm] = useState(post);
   const [tab, setTab] = useState<"content" | "details">("content");

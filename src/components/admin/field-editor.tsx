@@ -7,10 +7,12 @@ import { MediaPicker, MediaThumb, type MediaItem } from "@/components/admin/medi
 import { inputClass, Label } from "@/components/admin/ui";
 import { ICON_NAMES, BlockIcon } from "@/components/ui/icon";
 import type { FieldDef } from "@/lib/block-fields";
+import { looksLikeMistEmbed } from "@/lib/html-stream-embed";
+import type { StreamPickerOption } from "@/lib/stream-picker";
 import { cn } from "@/lib/utils";
 
 export type EditorContext = {
-  streams: Array<{ slug: string; title: string }>;
+  streams: StreamPickerOption[];
 };
 
 type Data = Record<string, unknown>;
@@ -85,6 +87,21 @@ export function FieldEditor({
             className={cn(inputClass, "resize-y font-mono text-xs")}
             placeholder='<iframe src="https://player.vimeo.com/video/123456" allowfullscreen></iframe>'
           />
+          {looksLikeMistEmbed(asString(data[field.key])) ? (
+            <p className="mt-2 rounded-md border border-amber-200 bg-amber-50 px-3 py-2 text-xs leading-relaxed text-amber-900">
+              This looks like a Mist / VideoStreamCanada player. Scripts are
+              stripped in this block, so the stream will not play. Create it
+              under{" "}
+              <a
+                href="/admin/streams/new"
+                className="font-semibold underline underline-offset-2"
+              >
+                Live Streams
+              </a>{" "}
+              as an HTML embed, then add a Live stream player section and pick
+              that stream.
+            </p>
+          ) : null}
         </div>
       );
 
@@ -538,13 +555,20 @@ export function FieldEditor({
             <option value="">Select a stream…</option>
             {context.streams.map((stream) => (
               <option key={stream.slug} value={stream.slug}>
-                {stream.title}
+                {streamPickerLabel(stream)}
               </option>
             ))}
           </select>
           {context.streams.length === 0 && (
             <p className="mt-1.5 text-xs text-amber-600">
-              No streams exist yet. Create one under Live Streams first.
+              No streams exist yet.{" "}
+              <a
+                href="/admin/streams/new"
+                className="font-semibold underline underline-offset-2"
+              >
+                Create one under Live Streams
+              </a>{" "}
+              first, then return here to pick it.
             </p>
           )}
         </div>
@@ -579,7 +603,9 @@ export function FieldEditor({
                     }
                     className="size-4 rounded border-slate-300 text-brand-600"
                   />
-                  <span className="truncate text-navy-800">{stream.title}</span>
+                  <span className="truncate text-navy-800">
+                    {streamPickerLabel(stream)}
+                  </span>
                 </label>
               ))
             )}
@@ -918,6 +944,14 @@ function asString(value: unknown): string {
   if (typeof value === "string") return value;
   if (typeof value === "number") return String(value);
   return "";
+}
+
+function streamPickerLabel(stream: StreamPickerOption): string {
+  const tags = [
+    stream.hasPassword ? "password" : null,
+    stream.isPublic === false ? "unlisted" : null,
+  ].filter(Boolean);
+  return tags.length > 0 ? `${stream.title} (${tags.join(", ")})` : stream.title;
 }
 
 function asNumber(value: unknown): number {

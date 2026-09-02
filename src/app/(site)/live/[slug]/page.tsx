@@ -17,19 +17,26 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const stream = await prisma.stream
     .findFirst({
       where: { slug, status: "PUBLISHED" },
-      select: { title: true, description: true, isPublic: true },
+      select: {
+        title: true,
+        description: true,
+        isPublic: true,
+        accessPasswordHash: true,
+      },
     })
     .catch(() => null);
 
   if (!stream) return { title: "Stream Not Found" };
+
+  const listed = stream.isPublic && !stream.accessPasswordHash;
 
   return {
     ...publicMetadata({
       title: stream.title,
       description: stream.description || `${stream.title} live video from WirelessCom.Ca Inc.`,
       path: `/live/${slug}`,
-      index: stream.isPublic,
-      follow: stream.isPublic,
+      index: listed,
+      follow: listed,
     }),
   };
 }

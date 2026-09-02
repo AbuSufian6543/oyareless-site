@@ -37,6 +37,7 @@ export function StreamGate({
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "same-origin",
           body: JSON.stringify({ password }),
         },
       );
@@ -71,7 +72,8 @@ export function StreamGate({
 
       <h3 className="mt-4 font-bold text-white">{title}</h3>
       <p className="mt-1.5 max-w-sm text-sm text-navy-300">
-        {description || "This stream is private. Enter the access password to view it."}
+        {description ||
+          "This stream is password-protected. Enter the access password to watch."}
       </p>
 
       <form onSubmit={onSubmit} className="mt-5 w-full max-w-xs space-y-2.5">

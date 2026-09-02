@@ -384,6 +384,30 @@ function templateBlocks(title: string, template: string): unknown[] {
     ];
   }
 
+  if (template === "broadcast") {
+    return [
+      {
+        ...hero,
+        data: {
+          ...hero.data,
+          subheadline: "Live video from WirelessCom.Ca Inc.",
+        },
+      },
+      {
+        id: blockId(),
+        type: "liveStream",
+        settings: { background: "dark", paddingY: "lg" },
+        data: {
+          heading: "",
+          description: "",
+          streamSlug: "",
+          showTitle: true,
+        },
+      },
+      cta,
+    ];
+  }
+
   if (template === "contact") {
     return [
       hero,

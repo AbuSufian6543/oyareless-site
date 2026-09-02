@@ -27,7 +27,7 @@ export type CollectionEditorProps = {
   blocks: Block[];
   /** Choices for every `reference` field, keyed by field name. */
   references: Record<string, Array<{ value: string; label: string }>>;
-  streams: Array<{ slug: string; title: string }>;
+  streams: EditorContext["streams"];
 };
 
 export function CollectionEditor({

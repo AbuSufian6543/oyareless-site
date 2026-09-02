@@ -241,7 +241,7 @@ const streamGridData = z.object({
   heading: z.string().default("Live streams"),
   description: z.string().default(""),
   columns: z.enum(["1", "2", "3"]).default("2"),
-  /** Empty means "all published streams". */
+  /** Empty means every publicly listed published stream. */
   slugs: z.array(z.string()).default([]),
   featuredOnly: z.boolean().default(false),
 });

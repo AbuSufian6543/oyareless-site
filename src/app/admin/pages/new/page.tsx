@@ -1,4 +1,4 @@
-import { FileText, LayoutTemplate, Mail, Rocket } from "lucide-react";
+import { FileText, LayoutTemplate, Mail, Radio, Rocket } from "lucide-react";
 
 import { createPageAction } from "@/app/admin/pages/actions";
 import {
@@ -31,6 +31,13 @@ const TEMPLATES = [
     icon: Rocket,
   },
   {
+    value: "broadcast",
+    label: "Live stream page",
+    description:
+      "Hero plus a live player. Paste the camera embed under Live Streams first, then pick it in the editor.",
+    icon: Radio,
+  },
+  {
     value: "contact",
     label: "Contact page",
     description: "Contact details with a map plus an inquiry form.",
@@ -56,7 +63,7 @@ export default async function NewPagePage({
     <div className="max-w-3xl">
       <PageHeader
         title="Create a page"
-        description="Pick a starting layout — you can add, remove and reorder sections afterwards."
+        description="Pick a starting layout — you can add, remove and reorder sections afterwards. For a camera embed, create the stream under Live Streams first, then use the Live stream page layout."
         breadcrumb={{ href: "/admin/pages", label: "Pages" }}
       />
 

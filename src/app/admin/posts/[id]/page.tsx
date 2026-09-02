@@ -7,6 +7,7 @@ import { Card, CardTitle } from "@/components/admin/ui";
 import { getCurrentUser, hasRole } from "@/lib/auth";
 import { parseBlocks } from "@/lib/blocks";
 import { prisma } from "@/lib/prisma";
+import { toStreamPickerOptions } from "@/lib/stream-picker";
 
 export const metadata = { title: "Edit article" };
 
@@ -22,7 +23,12 @@ export default async function EditPostPage({
     prisma.post.findUnique({ where: { id } }),
     prisma.stream.findMany({
       orderBy: { title: "asc" },
-      select: { slug: true, title: true },
+      select: {
+        slug: true,
+        title: true,
+        isPublic: true,
+        accessPasswordHash: true,
+      },
     }),
   ]);
 
@@ -43,7 +49,7 @@ export default async function EditPostPage({
 
   return (
     <div>
-      <PostEditor post={data} streams={streams} />
+      <PostEditor post={data} streams={toStreamPickerOptions(streams)} />
 
       {hasRole(user, "ADMIN") && (
         <Card className="mt-10 max-w-xl border-red-200">

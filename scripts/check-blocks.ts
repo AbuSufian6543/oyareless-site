@@ -6,6 +6,13 @@
 import { buildBlocks, SEED_PAGES } from "../prisma/seed-content";
 import { BLOCK_DEFINITIONS, createBlock } from "../src/lib/block-registry";
 import { blocksSchema, parseBlocks } from "../src/lib/blocks";
+import {
+  DOWNTOWN_NORTH_PTZ_EMBED,
+  looksLikeMistEmbed,
+  parseMistEmbed,
+  rewriteInsecureMistPlayer,
+  uniquifyEmbedIds,
+} from "../src/lib/html-stream-embed";
 
 let failures = 0;
 
@@ -66,3 +73,35 @@ if (failures === 0) {
 } else {
   process.exit(1);
 }
+
+const parsedMist = parseMistEmbed(DOWNTOWN_NORTH_PTZ_EMBED);
+if (
+  !parsedMist ||
+  parsedMist.streamName !== "downtown-north-ptz" ||
+  !parsedMist.loop ||
+  !parsedMist.poster?.includes("416823.jpg") ||
+  !looksLikeMistEmbed(DOWNTOWN_NORTH_PTZ_EMBED)
+) {
+  console.error("FAIL Mist embed parse");
+  process.exit(1);
+}
+
+const unique = uniquifyEmbedIds(DOWNTOWN_NORTH_PTZ_EMBED, "abc");
+if (
+  !unique.includes("downtown-north-ptz_XOj7i42joT3I-abc") ||
+  !unique.includes('mistPlay("downtown-north-ptz"')
+) {
+  console.error("FAIL Mist embed id uniquify must not rewrite mistPlay stream names");
+  process.exit(1);
+}
+
+if (
+  rewriteInsecureMistPlayer("http://videostreamcanada.ca/player.js") !==
+  "https://videostreamcanada.ca/player.js"
+) {
+  console.error("FAIL Mist player.js must be rewritten to HTTPS");
+  process.exit(1);
+}
+
+console.log("OK  Mist / VideoStreamCanada embed parse and id handling.");
+

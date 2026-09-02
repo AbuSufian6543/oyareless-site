@@ -204,9 +204,15 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     type: "liveStream",
     label: "Live stream player",
-    description: "Embed one stream from Live Streams, including HTML/Mist players.",
+    description: "One camera or broadcast from Live Streams. Use this for Mist / VideoStreamCanada embeds, including password-protected ones.",
     category: "Media & Live",
     icon: "Radio",
+    seed: {
+      heading: "",
+      description: "",
+      streamSlug: "",
+      showTitle: true,
+    },
   },
   {
     type: "streamGrid",
@@ -218,7 +224,7 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
   {
     type: "embed",
     label: "Custom embed / iframe",
-    description: "Paste any third-party player, map, or dashboard markup.",
+    description: "Iframe, map, or dashboard markup. Scripts are stripped — do not paste Mist player code here.",
     category: "Media & Live",
     icon: "Code",
   },

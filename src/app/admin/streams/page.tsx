@@ -29,7 +29,7 @@ export default async function AdminStreamsPage({
     <div>
       <PageHeader
         title="Live streams"
-        description="Cameras and live video that can be embedded on any page."
+        description="Cameras and live video that can be embedded on any page. Paste vendor player code here, optionally set a password, then add a Live stream player section on a page."
         actions={
           <Link
             href="/admin/streams/new"
@@ -52,7 +52,7 @@ export default async function AdminStreamsPage({
           <EmptyState
             icon={<Radio className="size-8" aria-hidden="true" />}
             title="No streams configured"
-            description="Add an HLS camera, a YouTube live event, or paste a Mist / VideoStreamCanada player snippet."
+            description="Add an HLS camera, a YouTube live event, or paste a Mist / VideoStreamCanada player snippet. You can password-protect it and place it on any page."
             action={
               <Link
                 href="/admin/streams/new"

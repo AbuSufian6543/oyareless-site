@@ -11,6 +11,7 @@ import { getCurrentUser, hasRole } from "@/lib/auth";
 import { parseBlocks } from "@/lib/blocks";
 import { parseSlideshow } from "@/lib/slideshow";
 import { prisma } from "@/lib/prisma";
+import { toStreamPickerOptions } from "@/lib/stream-picker";
 import { formatDateTime } from "@/lib/utils";
 
 export const metadata = { title: "Edit page" };
@@ -39,7 +40,12 @@ export default async function EditPagePage({
     }),
     prisma.stream.findMany({
       orderBy: { title: "asc" },
-      select: { slug: true, title: true },
+      select: {
+        slug: true,
+        title: true,
+        isPublic: true,
+        accessPasswordHash: true,
+      },
     }),
   ]);
 
@@ -75,7 +81,7 @@ export default async function EditPagePage({
         </div>
       )}
 
-      <PageEditor page={data} streams={streams} />
+      <PageEditor page={data} streams={toStreamPickerOptions(streams)} />
 
       <div className="mt-10 grid gap-5 lg:grid-cols-2">
         <Card>
