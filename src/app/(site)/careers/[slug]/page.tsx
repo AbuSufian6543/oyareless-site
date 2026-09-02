@@ -4,8 +4,17 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, Briefcase, Clock, Download, MapPin } from "lucide-react";
 
 import { ContactFormBlock } from "@/components/blocks/contact-form";
-import { env } from "@/lib/env";
+import { JsonLd } from "@/components/site/json-ld";
+import { PageBreadcrumbs } from "@/components/site/page-breadcrumbs";
 import { prisma } from "@/lib/prisma";
+import {
+  absoluteUrl,
+  BUSINESS_ID,
+  crumbs,
+  jobEmploymentType,
+  postalAddressJsonLd,
+  publicMetadata,
+} from "@/lib/seo";
 import { getSettings } from "@/lib/settings";
 import { formatDate } from "@/lib/utils";
 
@@ -24,11 +33,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const job = await loadJob(slug);
   if (!job) return { title: "Position Not Found" };
 
-  return {
+  return publicMetadata({
     title: `${job.title} — Careers`,
-    description: job.summary ?? `${job.title} at WirelessCom.Ca Inc.`,
-    alternates: { canonical: `/careers/${job.slug}` },
-  };
+    description: job.summary ?? `${job.title} at WirelessCom.Ca Inc. in Sault Ste. Marie.`,
+    path: `/careers/${job.slug}`,
+  });
 }
 
 export default async function JobPage({ params }: Props) {
@@ -44,33 +53,30 @@ export default async function JobPage({ params }: Props) {
     title: job.title,
     description: job.description || job.summary || job.title,
     datePosted: job.postedAt.toISOString(),
-    validThrough: job.closesAt?.toISOString(),
-    employmentType: job.employmentType.toUpperCase().replace(/[^A-Z]/g, "_"),
+    url: absoluteUrl(`/careers/${job.slug}`),
+    ...(job.closesAt ? { validThrough: job.closesAt.toISOString() } : {}),
+    employmentType: jobEmploymentType(job.employmentType),
     hiringOrganization: {
+      "@id": BUSINESS_ID,
       "@type": "Organization",
       name: settings.companyName,
-      sameAs: env.siteUrl,
-      logo: `${env.siteUrl}${settings.logoUrl}`,
+      sameAs: absoluteUrl("/"),
+      logo: absoluteUrl(settings.logoUrl),
     },
     jobLocation: {
       "@type": "Place",
-      address: {
-        "@type": "PostalAddress",
-        streetAddress: "97 White Oak Drive East",
-        addressLocality: "Sault Ste. Marie",
-        addressRegion: "ON",
-        postalCode: "P6B 4J7",
-        addressCountry: "CA",
-      },
+      address: postalAddressJsonLd(settings),
     },
-    ...(job.salaryRange ? { baseSalary: job.salaryRange } : {}),
   };
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      <JsonLd data={jsonLd} />
+      <PageBreadcrumbs
+        items={crumbs(
+          { name: "Careers", href: "/careers" },
+          { name: job.title, href: `/careers/${job.slug}` },
+        )}
       />
 
       <section className="border-b border-slate-200 bg-slate-50 py-12 lg:py-16">

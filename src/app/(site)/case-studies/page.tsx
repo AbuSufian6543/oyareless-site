@@ -3,15 +3,16 @@ import Link from "next/link";
 
 import { PageHero } from "@/components/site/page-hero";
 import { SectionImage } from "@/components/visuals/section-image";
-import { env } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
+import { JsonLd } from "@/components/site/json-ld";
+import { collectionPageJsonLd, publicMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = publicMetadata({
   title: "Case Studies",
   description:
     "How WirelessCom.Ca Inc. has designed, installed, and supported networks, security, and communications for Northern Ontario organizations.",
-  alternates: { canonical: `${env.siteUrl}/case-studies` },
-};
+  path: "/case-studies",
+});
 
 export default async function CaseStudiesPage() {
   const studies = await prisma.caseStudy
@@ -23,6 +24,14 @@ export default async function CaseStudiesPage() {
 
   return (
     <>
+      <JsonLd
+        data={collectionPageJsonLd({
+          name: "Case Studies",
+          description:
+            "How WirelessCom.Ca Inc. has designed, installed, and supported networks, security, and communications for Northern Ontario organizations.",
+          path: "/case-studies",
+        })}
+      />
       <PageHero
         eyebrow="Work"
         title="Case Studies"

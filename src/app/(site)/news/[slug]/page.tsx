@@ -5,8 +5,10 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, Clock } from "lucide-react";
 
 import { BlockList } from "@/components/blocks/block-renderer";
+import { JsonLd } from "@/components/site/json-ld";
+import { PageBreadcrumbs } from "@/components/site/page-breadcrumbs";
 import { parseBlocks } from "@/lib/blocks";
-import { env } from "@/lib/env";
+import { articleJsonLd, crumbs, publicMetadata } from "@/lib/seo";
 import { prisma } from "@/lib/prisma";
 import { getSettings } from "@/lib/settings";
 import { formatDate } from "@/lib/utils";
@@ -29,19 +31,18 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = await loadPost(slug);
   if (!post) return { title: "Article Not Found" };
 
-  return {
+  const description = post.metaDescription || post.excerpt || post.title;
+
+  return publicMetadata({
     title: post.metaTitle || post.title,
-    description: post.metaDescription || post.excerpt || undefined,
-    alternates: { canonical: `/news/${post.slug}` },
-    openGraph: {
-      type: "article",
-      title: post.title,
-      description: post.excerpt || undefined,
-      url: `${env.siteUrl}/news/${post.slug}`,
-      publishedTime: post.publishedAt?.toISOString(),
-      images: post.coverImageUrl ? [{ url: post.coverImageUrl }] : undefined,
-    },
-  };
+    description,
+    path: `/news/${post.slug}`,
+    image: post.coverImageUrl,
+    imageAlt: post.title,
+    type: "article",
+    publishedTime: post.publishedAt?.toISOString(),
+    modifiedTime: post.updatedAt.toISOString(),
+  });
 }
 
 export default async function NewsArticlePage({ params }: Props) {
@@ -51,35 +52,27 @@ export default async function NewsArticlePage({ params }: Props) {
 
   const blocks = parseBlocks(post.blocks);
   const settings = await getSettings();
-
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "BlogPosting",
+  const jsonLd = articleJsonLd({
+    type: "BlogPosting",
     headline: post.title,
-    description: post.excerpt ?? undefined,
+    description: post.excerpt || undefined,
+    path: `/news/${post.slug}`,
     datePublished: post.publishedAt?.toISOString(),
     dateModified: post.updatedAt.toISOString(),
-    author: {
-      "@type": "Organization",
-      name: post.author?.name ?? settings.companyName,
-    },
-    publisher: {
-      "@type": "Organization",
-      name: settings.companyName,
-      logo: {
-        "@type": "ImageObject",
-        url: `${env.siteUrl}${settings.logoUrl}`,
-      },
-    },
-    mainEntityOfPage: `${env.siteUrl}/news/${post.slug}`,
-    image: post.coverImageUrl ?? undefined,
-  };
+    image: post.coverImageUrl,
+    authorName: post.author?.name,
+    publisherName: settings.companyName,
+    logoUrl: settings.logoUrl,
+  });
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      <JsonLd data={jsonLd} />
+      <PageBreadcrumbs
+        items={crumbs(
+          { name: "News", href: "/news" },
+          { name: post.title, href: `/news/${post.slug}` },
+        )}
       />
 
       <article>
@@ -128,7 +121,7 @@ export default async function NewsArticlePage({ params }: Props) {
             <div className="relative mx-auto aspect-[21/9] max-w-4xl overflow-hidden rounded-xl bg-slate-100">
               <Image
                 src={post.coverImageUrl}
-                alt=""
+                alt={post.title}
                 fill
                 sizes="(max-width: 1024px) 100vw, 60rem"
                 className="object-cover"

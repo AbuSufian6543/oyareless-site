@@ -4,7 +4,7 @@ import { Laptop, Monitor, Package } from "lucide-react";
 
 import { PageHero } from "@/components/site/page-hero";
 import { ButtonLink } from "@/components/ui/button";
-import { env } from "@/lib/env";
+import { publicMetadata } from "@/lib/seo";
 import {
   OFFICIAL_AGENT_DOWNLOADS,
   RUSTDESK_RELEASES_PAGE,
@@ -12,12 +12,12 @@ import {
 } from "@/lib/remote-support-downloads";
 import { getSettings } from "@/lib/settings";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = publicMetadata({
   title: "Remote Support",
   description:
-    "Download RustDesk or AnyDesk for Windows, macOS, or Debian, then read us the ID on your screen so we can help.",
-  alternates: { canonical: `${env.siteUrl}/remote-support` },
-};
+    "Download RustDesk or AnyDesk for Windows, macOS, or Debian, then read WirelessCom.Ca Inc. the ID on your screen so we can help.",
+  path: "/remote-support",
+});
 
 export default async function RemoteSupportPage() {
   const settings = await getSettings();

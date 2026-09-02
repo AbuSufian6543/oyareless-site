@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 
 import { StreamCard } from "@/components/blocks/stream-blocks";
 import { prisma } from "@/lib/prisma";
+import { publicMetadata } from "@/lib/seo";
 import { getStreamAccess } from "@/lib/streams";
 
 export const dynamic = "force-dynamic";
@@ -23,11 +24,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!stream) return { title: "Stream Not Found" };
 
   return {
-    title: stream.title,
-    description: stream.description ?? undefined,
-    alternates: { canonical: `/live/${slug}` },
-    // Private feeds should not be indexed.
-    robots: stream.isPublic ? undefined : { index: false, follow: false },
+    ...publicMetadata({
+      title: stream.title,
+      description: stream.description || `${stream.title} live video from WirelessCom.Ca Inc.`,
+      path: `/live/${slug}`,
+      index: stream.isPublic,
+      follow: stream.isPublic,
+    }),
   };
 }
 

@@ -5,21 +5,31 @@ import { Radio } from "lucide-react";
 import { StreamCard } from "@/components/blocks/stream-blocks";
 import { PageHero } from "@/components/site/page-hero";
 import { listStreamAccess } from "@/lib/streams";
+import { JsonLd } from "@/components/site/json-ld";
+import { collectionPageJsonLd, publicMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = publicMetadata({
   title: "Live Video Broadcasting",
   description:
-    "Live event broadcasts, job site cameras, and fixed weather cameras streamed by WirelessCom.Ca Inc.",
-  alternates: { canonical: "/live" },
-};
+    "Live event broadcasts, job-site cameras, and fixed weather cameras streamed by WirelessCom.Ca Inc. from Sault Ste. Marie.",
+  path: "/live",
+});
 
 export default async function LiveIndexPage() {
   const streams = await listStreamAccess({});
 
   return (
     <>
+      <JsonLd
+        data={collectionPageJsonLd({
+          name: "Live Video Broadcasting",
+          description:
+            "Live event broadcasts, job-site cameras, and fixed weather cameras streamed by WirelessCom.Ca Inc. from Sault Ste. Marie.",
+          path: "/live",
+        })}
+      />
       <PageHero
         eyebrow={
           <>

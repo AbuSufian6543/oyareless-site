@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { PageHero } from "@/components/site/page-hero";
-import { env } from "@/lib/env";
+import { publicMetadata } from "@/lib/seo";
 import { prisma } from "@/lib/prisma";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = publicMetadata({
   title: "System Status",
-  description: "Whether this website and its supporting services are reachable.",
-  alternates: { canonical: `${env.siteUrl}/system-status` },
-};
+  description: "Whether the WirelessCom.Ca Inc. website and its supporting services are reachable.",
+  path: "/system-status",
+});
 
 export default async function SystemStatusPage() {
   const databaseOk = await prisma.$queryRaw`SELECT 1`

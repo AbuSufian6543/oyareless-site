@@ -2,14 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { PageHero } from "@/components/site/page-hero";
-import { env } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
+import { JsonLd } from "@/components/site/json-ld";
+import { collectionPageJsonLd, publicMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = publicMetadata({
   title: "Knowledge Base",
-  description: "Guides from WirelessCom.Ca Inc. on networks, security, VoIP and workplace technology.",
-  alternates: { canonical: `${env.siteUrl}/knowledge-base` },
-};
+  description:
+    "Technician-written guides from WirelessCom.Ca Inc. on networks, security, VoIP, and workplace technology in Northern Ontario.",
+  path: "/knowledge-base",
+});
 
 export default async function KnowledgeBasePage() {
   const [categories, articles] = await Promise.all([
@@ -25,6 +27,14 @@ export default async function KnowledgeBasePage() {
 
   return (
     <>
+      <JsonLd
+        data={collectionPageJsonLd({
+          name: "Knowledge Base",
+          description:
+            "Technician-written guides from WirelessCom.Ca Inc. on networks, security, VoIP, and workplace technology in Northern Ontario.",
+          path: "/knowledge-base",
+        })}
+      />
       <PageHero
         eyebrow="Help"
         title="Knowledge Base"

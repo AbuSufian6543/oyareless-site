@@ -15,15 +15,17 @@ import { ButtonLink } from "@/components/ui/button";
 import { prisma } from "@/lib/prisma";
 import { getSettings } from "@/lib/settings";
 import { formatDate } from "@/lib/utils";
+import { JsonLd } from "@/components/site/json-ld";
+import { collectionPageJsonLd, publicMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = publicMetadata({
   title: "Careers",
   description:
-    "Join the WirelessCom.Ca Inc. team. Field technicians, network engineers and security specialists serving Northern Ontario.",
-  alternates: { canonical: "/careers" },
-};
+    "Join WirelessCom.Ca Inc. in Sault Ste. Marie. Field technicians, network engineers, and security specialists serving Northern Ontario.",
+  path: "/careers",
+});
 
 const BENEFITS = [
   {
@@ -66,6 +68,14 @@ export default async function CareersPage() {
 
   return (
     <>
+      <JsonLd
+        data={collectionPageJsonLd({
+          name: "Careers",
+          description:
+            "Join WirelessCom.Ca Inc. in Sault Ste. Marie. Field technicians, network engineers, and security specialists serving Northern Ontario.",
+          path: "/careers",
+        })}
+      />
       <PageHero
         eyebrow="Careers"
         title="Build Networks That Keep The North Connected"

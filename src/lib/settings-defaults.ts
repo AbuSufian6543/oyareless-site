@@ -11,7 +11,7 @@ export const DEFAULT_SETTINGS = {
   companyName: "WirelessCom.Ca Inc.",
   tagline: "Technology Service Provider",
   description:
-    "WirelessCom.Ca Inc. provides IT services, cybersecurity, networking, telephone, security systems, and internet solutions to businesses across Northern Ontario.",
+    "WirelessCom.Ca Inc. provides IT services, cybersecurity, networking, telephone, security systems, and internet solutions to businesses in Sault Ste. Marie and Northern Ontario.",
   phone: "1-800-705-3189",
   localPhone: "",
   email: "service@wirelesscom.ca",

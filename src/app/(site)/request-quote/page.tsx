@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 
 import { QuoteForm } from "@/components/site/quote-form";
 import { PageHero } from "@/components/site/page-hero";
-import { env } from "@/lib/env";
+import { publicMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Request A Quote",
+export const metadata: Metadata = publicMetadata({
+  title: "Request a Quote",
   description:
-    "Tell WirelessCom.Ca Inc. about your project. We will reply with a scoped proposal — no automated estimates.",
-  alternates: { canonical: `${env.siteUrl}/request-quote` },
-};
+    "Request a quote from WirelessCom.Ca Inc. in Sault Ste. Marie. A person reads every request and replies with a scoped proposal — no automated estimates.",
+  path: "/request-quote",
+});
 
 export default function RequestQuotePage() {
   return (

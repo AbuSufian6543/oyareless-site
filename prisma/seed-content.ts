@@ -32,6 +32,11 @@ export const HYTERA_CATALOG_HEADING =
   "Check current Hytera prices and quote the radios you need";
 const YEARS_SINCE_2005 = new Date().getFullYear() - 2005;
 
+/** Search-result title before the site template appends the company name. */
+function localMeta(name: string) {
+  return `${name} in Sault Ste. Marie`;
+}
+
 function vendorLogo(slug: string) {
   return vendorLogoUrl(slug);
 }
@@ -192,7 +197,7 @@ const home: SeedPage = {
   slug: "home",
   title: "Home",
   navLabel: "Home",
-  metaTitle: "IT, Security, And Communications In Northern Ontario",
+  metaTitle: "IT, Security & Radio in Northern Ontario",
   metaDescription:
     "WirelessCom.Ca Inc. designs, installs, and supports networks, firewalls, cameras and alarms, VoIP, and two-way radio for businesses in Northern Ontario. Local team in Sault Ste. Marie since 2005.",
   showInHeaderNav: true,
@@ -768,8 +773,9 @@ const home: SeedPage = {
 const itServices: SeedPage = {
   slug: "it-services",
   title: "IT Services",
+  metaTitle: localMeta("IT Services"),
   metaDescription:
-    "Professional IT infrastructure, Microsoft 365, Azure, AWS and Google Cloud, network management and cybersecurity for Windows and macOS business environments.",
+    "IT infrastructure, Microsoft 365, cloud, and network management for businesses in Sault Ste. Marie and Northern Ontario.",
   showInHeaderNav: true,
   navOrder: 10,
   blocks: [
@@ -939,7 +945,7 @@ const itServices: SeedPage = {
 const cybersecurity: SeedPage = {
   slug: "cybersecurity",
   title: "Cybersecurity",
-  metaTitle: "Cybersecurity Services For Business",
+  metaTitle: localMeta("Cybersecurity"),
   metaDescription:
     "Enterprise-grade cybersecurity for Ontario businesses: Barracuda, Fortinet, and Juniper firewalls, endpoint protection, vulnerability assessments, ransomware defense, backup, and disaster recovery.",
   showInHeaderNav: true,
@@ -1207,6 +1213,7 @@ const cybersecurity: SeedPage = {
 const securityServices: SeedPage = {
   slug: "security-services",
   title: "Security Services",
+  metaTitle: localMeta("Security Systems"),
   navLabel: "Security Systems",
   metaDescription:
     "IP CCTV surveillance with optional AI analytics, plus the cameras and recorders we design with the rest of your site security in Sault Ste. Marie and Northern Ontario.",
@@ -1391,6 +1398,7 @@ const securityServices: SeedPage = {
 const telephoneServices: SeedPage = {
   slug: "telephone-services",
   title: "Telephone Services",
+  metaTitle: localMeta("VoIP Telephone"),
   navLabel: "Telephone (VoIP)",
   metaDescription:
     "Cloud-hosted IP VoIP telephone service for business: desk phones, AI attendants, call transcription, mobile apps and local support from Sault Ste. Marie.",
@@ -1555,6 +1563,7 @@ const telephoneServices: SeedPage = {
 const internetServices: SeedPage = {
   slug: "internet-services",
   title: "Internet Services",
+  metaTitle: localMeta("Internet Services"),
   metaDescription:
     "Fast, affordable business and residential internet: fixed wireless, cable, fiber, satellite, LTE and DSL access across Northern Ontario, plus design and operations for ISPs.",
   showInHeaderNav: true,
@@ -1600,6 +1609,7 @@ const internetServices: SeedPage = {
 const videoServices: SeedPage = {
   slug: "video-services",
   title: "Video Services",
+  metaTitle: localMeta("Video Broadcasting"),
   navLabel: "Video & Broadcasting",
   metaDescription:
     "Live video streaming for events, press conferences, job sites and fixed weather cameras, produced and hosted by WirelessCom.Ca Inc.",
@@ -1671,6 +1681,7 @@ const videoServices: SeedPage = {
 const liveBroadcasting: SeedPage = {
   slug: "live-video-broadcasting",
   title: "Live Video Broadcasting",
+  metaTitle: "Private Live Broadcasts",
   metaDescription:
     "Password-protected live video broadcasting from WirelessCom.Ca Inc. Client and staff feeds are available after sign-in.",
   showInHeaderNav: false,
@@ -1704,8 +1715,9 @@ const liveBroadcasting: SeedPage = {
 const accessControl: SeedPage = {
   slug: "access-control",
   title: "Access Control",
+  metaTitle: localMeta("Access Control"),
   metaDescription:
-    "Access control and parking gate systems. We install and service Honeywell, Paradox, Kantech, Eyeongate and the full Schlage Engage smart lock line.",
+    "Access control and parking gates in Sault Ste. Marie. Honeywell, Paradox, Kantech, Eyeongate, and Schlage Engage — installed and serviced locally.",
   showInHeaderNav: true,
   navOrder: 70,
   blocks: [
@@ -1773,6 +1785,7 @@ const accessControl: SeedPage = {
 const alarmSystems: SeedPage = {
   slug: "alarm-systems",
   title: "Alarm Systems",
+  metaTitle: localMeta("Alarm Systems"),
   navLabel: "Alarm Systems",
   metaDescription:
     "Intrusion alarm systems for business in Sault Ste. Marie and Northern Ontario. Panels, sensors, and 24/7 monitoring where you contract it, installed by the same team as your cameras and network.",
@@ -1843,6 +1856,7 @@ const alarmSystems: SeedPage = {
 const doorIntercom: SeedPage = {
   slug: "door-intercom",
   title: "Door Intercom",
+  metaTitle: localMeta("Door Intercom"),
   navLabel: "Door Intercom",
   metaDescription:
     "Video and audio door intercom and telephone entry for offices, apartments and gates in Sault Ste. Marie and Northern Ontario. Stations that ring the phones we already support.",
@@ -1913,6 +1927,7 @@ const doorIntercom: SeedPage = {
 const panicButtons: SeedPage = {
   slug: "panic-buttons",
   title: "Panic Buttons",
+  metaTitle: localMeta("Panic Buttons"),
   navLabel: "Panic Buttons",
   metaDescription:
     "Panic and duress buttons for offices, reception, and staff areas in Sault Ste. Marie and Northern Ontario. Wall stations and wireless buttons on the alarm system, with monitoring where you contract it.",
@@ -1983,9 +1998,10 @@ const panicButtons: SeedPage = {
 const dataCabling: SeedPage = {
   slug: "data-cabling-fiber-optic",
   title: "Data Cabling & Fiber Optic Services",
+  metaTitle: localMeta("Data Cabling & Fiber"),
   navLabel: "Data Cabling & Fiber",
   metaDescription:
-    "Cat5e and Cat6 structured data cabling, network rack installation, cable TV pre-wire and single and multimode fiber optic fusion splicing.",
+    "Cat5e/Cat6 cabling, network racks, and fiber fusion splicing for businesses in Sault Ste. Marie and Northern Ontario.",
   showInHeaderNav: true,
   navOrder: 80,
   blocks: [
@@ -2036,9 +2052,10 @@ const dataCabling: SeedPage = {
 const evCharging: SeedPage = {
   slug: "ev-charging-solutions",
   title: "EV Charging Solutions",
+  metaTitle: localMeta("EV Charging"),
   navLabel: "EV Charging",
   metaDescription:
-    "Level 2 EV charging stations for home, fleet and multi-unit properties. GrizzLE EV Charge, EvoCharge and SWTCH Charge, with ESA-certified installation.",
+    "Level 2 EV charging for home, fleet, and multi-unit sites in Sault Ste. Marie. ESA-certified installation of GrizzLE, EvoCharge, and SWTCH Charge.",
   showInHeaderNav: true,
   navOrder: 90,
   blocks: [
@@ -2139,8 +2156,9 @@ const evCharging: SeedPage = {
 const twoWayRadios: SeedPage = {
   slug: "two-way-radios",
   title: "Two-Way Radios",
+  metaTitle: localMeta("Hytera Two-Way Radios"),
   metaDescription:
-    "Authorized Hytera dealer for digital and analog two-way radios: DMR handhelds, mobiles, repeaters and accessories, with sales, rentals, training and service.",
+    "Authorized Hytera dealer in Sault Ste. Marie for DMR handhelds, mobiles, repeaters, and accessories — sales, rentals, programming, and service.",
   showInHeaderNav: true,
   navOrder: 100,
   blocks: [
@@ -2236,9 +2254,10 @@ const twoWayRadios: SeedPage = {
 const fleetTracking: SeedPage = {
   slug: "fleet-vehicle-tracking",
   title: "Fleet Vehicle Tracking",
+  metaTitle: localMeta("Fleet Tracking"),
   navLabel: "Fleet Tracking",
   metaDescription:
-    "Real-time GPS tracking for fleet vehicles, trailers and equipment, supplied and supported by WirelessCom.Ca Inc.",
+    "GPS fleet tracking for vehicles, trailers, and equipment, supplied and supported from Sault Ste. Marie by WirelessCom.Ca Inc.",
   showInHeaderNav: true,
   navOrder: 110,
   blocks: [
@@ -2292,9 +2311,10 @@ const fleetTracking: SeedPage = {
 const digitalMarketing: SeedPage = {
   slug: "digital-marketing",
   title: "Digital Marketing",
+  metaTitle: localMeta("Digital Marketing"),
   navLabel: "Digital Marketing",
   metaDescription:
-    "Digital signage displays and professional graphic design that help businesses promote products, services and brand messaging in real time.",
+    "Digital signage and graphic design for Northern Ontario businesses — displays and messaging WirelessCom.Ca Inc. designs and supports locally.",
   showInHeaderNav: true,
   navOrder: 120,
   blocks: [
@@ -2324,7 +2344,7 @@ const webDevelopment: SeedPage = {
   slug: "web-development",
   title: "Web Development",
   navLabel: "Web Development",
-  metaTitle: "Web Development For Business",
+  metaTitle: localMeta("Web Development"),
   metaDescription:
     "WirelessCom.Ca Inc. designs and builds business websites in Sault Ste. Marie and Northern Ontario — clear, fast, and easy to update, with local support until you are satisfied.",
   showInHeaderNav: true,
@@ -2420,6 +2440,7 @@ const webDevelopment: SeedPage = {
 const support: SeedPage = {
   slug: "support",
   title: "Support",
+  metaTitle: "IT Support in Sault Ste. Marie",
   metaDescription:
     "Technical support from WirelessCom.Ca Inc. Run an internet speed test and submit a support request, or call 1-800-705-3189.",
   showInHeaderNav: true,
@@ -2495,6 +2516,7 @@ const support: SeedPage = {
 const contact: SeedPage = {
   slug: "contact",
   title: "Contact",
+  metaTitle: localMeta("Contact Us"),
   metaDescription:
     "Contact WirelessCom.Ca Inc. at 97 White Oak Drive East, Sault Ste. Marie, Ontario. Phone 1-800-705-3189.",
   showInHeaderNav: true,
@@ -2541,6 +2563,7 @@ const contact: SeedPage = {
 const privacyPolicy: SeedPage = {
   slug: "privacy-policy",
   title: "Privacy Policy",
+  metaTitle: "Privacy Policy",
   metaDescription:
     "How WirelessCom.Ca Inc. collects, uses, discloses and safeguards your personal information.",
   showInFooterNav: true,
@@ -2625,6 +2648,7 @@ const privacyPolicy: SeedPage = {
 const e911: SeedPage = {
   slug: "e-911",
   title: "E-911 Notice",
+  metaTitle: "E-911 Notice for VoIP Service",
   navLabel: "E-911",
   metaDescription:
     "Important information about how 9-1-1 emergency calling works with VoIP telephone service from WirelessCom.Ca Inc.",
@@ -2695,7 +2719,7 @@ const aiServices: SeedPage = {
   slug: "ai-services",
   title: "AI for cameras & phones",
   navLabel: "AI cameras & phones",
-  metaTitle: "AI Camera Analytics And AI Telephone Systems",
+  metaTitle: localMeta("AI Cameras & Phones"),
   metaDescription:
     "WirelessCom.Ca Inc. installs and supports AI analytics on business cameras and intelligent features on VoIP phones — person and vehicle detection, smarter search, AI attendants and call transcription in Sault Ste. Marie and Northern Ontario.",
   showInHeaderNav: true,
@@ -2872,7 +2896,7 @@ const firewalls: SeedPage = {
   slug: "firewalls",
   title: "Firewalls",
   navLabel: "Firewalls",
-  metaTitle: "Barracuda, Fortinet, And Juniper Firewalls",
+  metaTitle: localMeta("Business Firewalls"),
   metaDescription:
     "Next-generation firewall design, installation and support in Northern Ontario. Barracuda, Fortinet, Juniper and similar platforms WirelessCom.Ca Inc. is trained on — sized for your circuit, VPN users and applications.",
   showInHeaderNav: true,

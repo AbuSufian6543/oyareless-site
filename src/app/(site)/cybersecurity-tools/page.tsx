@@ -5,14 +5,14 @@ import { ShieldCheck, Wrench } from "lucide-react";
 import { PageHero } from "@/components/site/page-hero";
 import { PasswordTools } from "@/components/tools/password-tools";
 import { ToolCard, ToolForm } from "@/components/tools/tool-panel";
-import { env } from "@/lib/env";
+import { publicMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = publicMetadata({
   title: "Cybersecurity Tools",
   description:
-    "TLS certificate inspection, security-header checks, SPF/DKIM/DMARC lookups, and DNSBL reputation — all self-hosted.",
-  alternates: { canonical: `${env.siteUrl}/cybersecurity-tools` },
-};
+    "TLS certificate inspection, security-header checks, SPF/DKIM/DMARC lookups, and DNSBL reputation — hosted by WirelessCom.Ca Inc.",
+  path: "/cybersecurity-tools",
+});
 
 export default function CybersecurityToolsPage() {
   return (

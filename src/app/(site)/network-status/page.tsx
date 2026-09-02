@@ -3,15 +3,15 @@ import Link from "next/link";
 
 import { PageHero } from "@/components/site/page-hero";
 import { getStatusSummary } from "@/lib/monitoring";
-import { env } from "@/lib/env";
+import { publicMetadata } from "@/lib/seo";
 import { prisma } from "@/lib/prisma";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = publicMetadata({
   title: "Network Status",
   description:
     "Live probes WirelessCom.Ca Inc. runs against services we monitor, plus public incidents. Figures are real checks — never placeholders.",
-  alternates: { canonical: `${env.siteUrl}/network-status` },
-};
+  path: "/network-status",
+});
 
 export default async function NetworkStatusPage() {
   const [summary, incidents, maintenance] = await Promise.all([

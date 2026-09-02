@@ -10,14 +10,14 @@ import {
 } from "@/components/tools/calculators";
 import { ToolCard, ToolForm } from "@/components/tools/tool-panel";
 import { PageHero } from "@/components/site/page-hero";
-import { env } from "@/lib/env";
+import { publicMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = publicMetadata({
   title: "Network Tools",
   description:
-    "DNS lookups, TCP latency, port checks, WHOIS, subnet and cable calculators — run against our own servers with no third-party APIs.",
-  alternates: { canonical: `${env.siteUrl}/network-tools` },
-};
+    "DNS lookups, TCP latency, port checks, WHOIS, subnet and cable calculators — run on WirelessCom.Ca Inc. servers with no third-party APIs.",
+  path: "/network-tools",
+});
 
 export default function NetworkToolsPage() {
   return (

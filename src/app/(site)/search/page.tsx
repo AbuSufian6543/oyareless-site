@@ -2,19 +2,24 @@ import type { Metadata } from "next";
 
 import { PageHero } from "@/components/site/page-hero";
 import { Button } from "@/components/ui/button";
-import { env } from "@/lib/env";
+import { publicMetadata } from "@/lib/seo";
 import { searchSite } from "@/lib/search";
 
-export const metadata: Metadata = {
-  title: "Search",
-  alternates: { canonical: `${env.siteUrl}/search` },
-};
+type Props = { searchParams: Promise<{ q?: string }> };
 
-export default async function SearchPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ q?: string }>;
-}) {
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  const { q = "" } = await searchParams;
+  const indexed = q.trim().length === 0;
+  return publicMetadata({
+    title: q ? `Search results for “${q}”` : "Search",
+    description:
+      "Search WirelessCom.Ca Inc. pages, tools, FAQ, knowledge base, brands, and case studies.",
+    path: "/search",
+    index: indexed,
+  });
+}
+
+export default async function SearchPage({ searchParams }: Props) {
   const { q = "" } = await searchParams;
   const hits = q ? await searchSite(q) : [];
 

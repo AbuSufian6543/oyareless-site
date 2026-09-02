@@ -3,10 +3,17 @@ import "server-only";
 import { cache } from "react";
 import type { Metadata } from "next";
 
-import { env } from "@/lib/env";
 import { parseBlocks, type Block } from "@/lib/blocks";
 import { parseSlideshow, type SlideshowItem } from "@/lib/slideshow";
 import { prisma, withTimeout } from "@/lib/prisma";
+import {
+  absoluteUrl,
+  isServiceSlug,
+  ogImage,
+  serviceJsonLd,
+  webPageJsonLd,
+} from "@/lib/seo";
+import { DEFAULT_SETTINGS } from "@/lib/settings-defaults";
 import { stripHtml, truncate } from "@/lib/utils";
 
 export type RenderablePage = {
@@ -48,8 +55,12 @@ export const getPublishedPage = cache(
 /** Derives a description from page content when the editor left it blank. */
 function inferDescription(page: RenderablePage): string {
   for (const block of page.blocks) {
-    if (block.type === "hero" && block.data.subheadline) {
-      return truncate(block.data.subheadline, 300);
+    if (
+      (block.type === "hero" || block.type === "techHero") &&
+      "subheadline" in block.data &&
+      block.data.subheadline
+    ) {
+      return truncate(String(block.data.subheadline), 300);
     }
     if (block.type === "richText") {
       const text = stripHtml(block.data.html);
@@ -69,20 +80,64 @@ function inferDescription(page: RenderablePage): string {
 export function pageMetadata(page: RenderablePage): Metadata {
   const path = page.slug === "home" ? "/" : `/${page.slug}`;
   const description = page.metaDescription || inferDescription(page);
+  const title = page.metaTitle || page.title;
+  const image = ogImage(
+    page.ogImageUrl,
+    DEFAULT_SETTINGS.ogImageUrl,
+    `${DEFAULT_SETTINGS.companyName} — ${title}`,
+  );
 
   return {
-    title: page.metaTitle || page.title,
+    title,
     description: description || undefined,
-    alternates: { canonical: path },
+    alternates: {
+      canonical: page.slug === "live-video-broadcasting" ? "/live" : path,
+    },
     robots: page.noIndex
-      ? { index: false, follow: false }
+      ? { index: false, follow: true }
       : { index: true, follow: true },
     openGraph: {
-      title: page.metaTitle || page.title,
+      title,
       description: description || undefined,
-      url: `${env.siteUrl}${path}`,
+      url: absoluteUrl(
+        page.slug === "live-video-broadcasting" ? "/live" : path,
+      ),
       type: "website",
-      images: page.ogImageUrl ? [{ url: page.ogImageUrl }] : undefined,
+      locale: "en_CA",
+      siteName: DEFAULT_SETTINGS.companyName,
+      images: [image],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description: description || undefined,
+      images: [image.url],
     },
   };
+}
+
+export function pageJsonLd(page: RenderablePage) {
+  const path = page.slug === "home" ? "/" : `/${page.slug}`;
+  const description = page.metaDescription || inferDescription(page);
+  const name = page.metaTitle || page.title;
+
+  if (page.slug === "contact") {
+    return webPageJsonLd({
+      name,
+      description,
+      path,
+      type: "ContactPage",
+    });
+  }
+
+  if (isServiceSlug(page.slug) && description) {
+    return serviceJsonLd({
+      name: page.title,
+      description,
+      path,
+      brand: page.slug === "two-way-radios" ? "Hytera" : undefined,
+    });
+  }
+
+  return webPageJsonLd({ name, description, path });
 }

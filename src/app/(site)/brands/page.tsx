@@ -3,15 +3,16 @@ import Link from "next/link";
 
 import { PageHero } from "@/components/site/page-hero";
 import { SectionImage } from "@/components/visuals/section-image";
-import { env } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
+import { JsonLd } from "@/components/site/json-ld";
+import { collectionPageJsonLd, publicMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Brands We Deploy And Support",
+export const metadata: Metadata = publicMetadata({
+  title: "Brands We Deploy and Support",
   description:
-    "Technologies WirelessCom.Ca Inc. installs and supports. Vendor names describe equipment we work with; a formal partnership is stated only where one exists.",
-  alternates: { canonical: `${env.siteUrl}/brands` },
-};
+    "Technologies WirelessCom.Ca Inc. installs and supports in Sault Ste. Marie. Vendor names describe equipment we work with; a formal partnership is stated only where one exists.",
+  path: "/brands",
+});
 
 export default async function BrandsPage() {
   const brands = await prisma.brand
@@ -23,6 +24,14 @@ export default async function BrandsPage() {
 
   return (
     <>
+      <JsonLd
+        data={collectionPageJsonLd({
+          name: "Brands We Deploy and Support",
+          description:
+            "Technologies WirelessCom.Ca Inc. installs and supports in Sault Ste. Marie. Vendor names describe equipment we work with; a formal partnership is stated only where one exists.",
+          path: "/brands",
+        })}
+      />
       <PageHero
         eyebrow="Catalogue"
         title="Technologies We Deploy And Support"

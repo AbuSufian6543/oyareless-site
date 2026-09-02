@@ -1,7 +1,10 @@
 import type { ReactNode } from "react";
 
+import { AutoHeroBreadcrumbs } from "@/components/site/auto-hero-breadcrumbs";
+import { PageBreadcrumbs } from "@/components/site/page-breadcrumbs";
 import { SectionImage } from "@/components/visuals/section-image";
 import { TechBackdrop } from "@/components/visuals/tech-backdrop";
+import type { Crumb } from "@/lib/seo";
 
 /**
  * Shared dark page intro used by tools, collections, and utility routes so
@@ -14,6 +17,7 @@ export function PageHero({
   imageUrl,
   imageAlt,
   children,
+  breadcrumbs,
 }: {
   eyebrow?: ReactNode;
   title: string;
@@ -21,7 +25,11 @@ export function PageHero({
   imageUrl?: string;
   imageAlt?: string;
   children?: ReactNode;
+  /** Pass `false` to hide the trail (rare). Nested pages should pass the full path. */
+  breadcrumbs?: Crumb[] | false;
 }) {
+  const showCrumbs = breadcrumbs !== false;
+
   return (
     <section className="relative isolate overflow-hidden bg-navy-950">
       {imageUrl ? (
@@ -39,6 +47,13 @@ export function PageHero({
         <TechBackdrop density={0.6} glow="center" />
       )}
       <div className="container-page relative py-16 lg:py-20">
+        {showCrumbs ? (
+          breadcrumbs ? (
+            <PageBreadcrumbs items={breadcrumbs} tone="onDark" />
+          ) : (
+            <AutoHeroBreadcrumbs title={title} />
+          )
+        ) : null}
         {eyebrow && <p className="eyebrow-pill">{eyebrow}</p>}
         <h1 className="mt-5 max-w-3xl text-balance-tight text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-[2.75rem] lg:leading-[1.12]">
           {title}

@@ -39,19 +39,12 @@ export async function generateMetadata(): Promise<Metadata> {
     applicationName: settings.companyName,
     keywords: [
       "IT services Sault Ste. Marie",
-      "cybersecurity Ontario",
+      "cybersecurity Northern Ontario",
       "business networking",
-      "VoIP telephone service",
+      "VoIP telephone Sault Ste. Marie",
       "CCTV security systems",
-      "alarm systems",
-      "door intercom",
-      "panic buttons",
-      "access control",
-      "fiber optic splicing",
-      "structured cabling",
-      "two way radios Hytera",
-      "EV charging installation",
-      "managed IT support",
+      "Hytera two way radios",
+      "managed IT support Ontario",
     ],
     authors: [{ name: settings.companyName }],
     openGraph: {
@@ -99,7 +92,6 @@ export async function generateMetadata(): Promise<Metadata> {
       title: settings.companyName,
       statusBarStyle: "default",
     },
-    alternates: { canonical: "/" },
   };
 }
 

@@ -1,9 +1,10 @@
 import { AnnouncementBar } from "@/components/site/announcement-bar";
 import { CookieBanner } from "@/components/site/cookie-banner";
+import { JsonLd } from "@/components/site/json-ld";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
-import { env } from "@/lib/env";
 import { getFooterNav, getHeaderNav } from "@/lib/navigation";
+import { siteGraphJsonLd } from "@/lib/seo";
 import { getSettings } from "@/lib/settings";
 
 export default async function SiteLayout({
@@ -17,66 +18,13 @@ export default async function SiteLayout({
     getFooterNav(),
   ]);
 
-  // LocalBusiness schema materially helps a single-location service business
-  // rank for "near me" queries.
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": ["LocalBusiness", "ProfessionalService"],
-    name: settings.companyName,
-    description: settings.description,
-    url: env.siteUrl,
-    telephone: settings.phone,
-    email: settings.email,
-    image: `${env.siteUrl}${settings.ogImageUrl}`,
-    logo: `${env.siteUrl}${settings.logoUrl}`,
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: settings.addressLine1,
-      addressLocality: settings.city,
-      addressRegion: settings.province,
-      postalCode: settings.postalCode,
-      addressCountry: "CA",
-    },
-    geo: {
-      "@type": "GeoCoordinates",
-      latitude: 46.5136,
-      longitude: -84.3358,
-    },
-    areaServed: [
-      { "@type": "City", name: "Sault Ste. Marie" },
-      { "@type": "AdministrativeArea", name: "Northern Ontario" },
-      { "@type": "AdministrativeArea", name: "Ontario" },
-    ],
-    priceRange: "$$",
-    foundingDate: "2005",
-    knowsAbout: [
-      "Information Technology Services",
-      "Cybersecurity",
-      "Network Infrastructure",
-      "VoIP Telephony",
-      "Video Surveillance",
-      "Access Control",
-      "Alarm Monitoring",
-      "Fiber Optic Splicing",
-      "Two-Way Radio Communications",
-      "EV Charging Installation",
-    ],
-    contactPoint: {
-      "@type": "ContactPoint",
-      telephone: settings.phone,
-      contactType: "customer service",
-      areaServed: "CA",
-      availableLanguage: ["English"],
-    },
-  };
+  // LocalBusiness + WebSite JSON-LD (with SearchAction) helps a single-location
+  // service business rank for "near me" queries without repeating fake claims.
+  const jsonLd = siteGraphJsonLd(settings);
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        // Serialised server-side from trusted settings, not user input.
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      <JsonLd data={jsonLd} />
 
       {settings.announcementEnabled && settings.announcementText && (
         <AnnouncementBar

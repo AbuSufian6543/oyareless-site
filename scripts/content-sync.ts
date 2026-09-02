@@ -15,8 +15,9 @@
  *     or defense-in-depth section is still inserted, a missing core-capabilities
  *     section is still inserted, the home tech hero is upgraded when it
  *     still has a previous seed headline, banner CTAs on a light background
- *     are restored to a readable dark band, and a Hytera catalog callout is
- *     added on Home and Two-way Radios when missing;
+ *     are restored to a readable dark band, a Hytera catalog callout is
+ *     added on Home and Two-way Radios when missing, and blank search titles
+ *     or descriptions are filled from seed;
 
 
  *   - nothing is ever deleted, and redirects/navigation are only ever added to.
@@ -652,6 +653,20 @@ function fillMissingMedia(
   return notes.length > 0 ? { blocks: next, notes } : null;
 }
 
+function fillMissingMeta(
+  existing: { metaTitle: string | null; metaDescription: string | null },
+  seed: { metaTitle?: string; metaDescription: string },
+): { metaTitle?: string; metaDescription?: string } | null {
+  const patch: { metaTitle?: string; metaDescription?: string } = {};
+  if (!existing.metaTitle?.trim() && seed.metaTitle) {
+    patch.metaTitle = seed.metaTitle;
+  }
+  if (!existing.metaDescription?.trim() && seed.metaDescription) {
+    patch.metaDescription = seed.metaDescription;
+  }
+  return Object.keys(patch).length > 0 ? patch : null;
+}
+
 async function snapshotPage(
   pageId: string,
   title: string,
@@ -689,6 +704,8 @@ async function main(): Promise<void> {
         blocks: true,
         createdAt: true,
         updatedAt: true,
+        metaTitle: true,
+        metaDescription: true,
       },
     });
 
@@ -717,18 +734,57 @@ async function main(): Promise<void> {
 
     const nextBlocks = JSON.stringify(blocks);
     const currentBlocks = JSON.stringify(existing.blocks);
+    const edited = wasEditedByAdmin(existing.createdAt, existing.updatedAt);
+    const isForced = forceAll || forced.has(page.slug);
 
     if (nextBlocks === currentBlocks && existing.title === page.title) {
+      if (!edited || isForced) {
+        const metaChanged =
+          (page.metaTitle ?? null) !== existing.metaTitle ||
+          page.metaDescription !== existing.metaDescription;
+        if (metaChanged) {
+          rows.push({
+            slug: page.slug,
+            verdict: "update",
+            detail: "refreshing search titles and descriptions",
+          });
+          if (apply) {
+            await prisma.page.update({
+              where: { id: existing.id },
+              data: {
+                metaTitle: page.metaTitle ?? null,
+                metaDescription: page.metaDescription,
+              },
+            });
+          }
+          continue;
+        }
+      } else {
+        const meta = fillMissingMeta(existing, page);
+        if (meta) {
+          rows.push({
+            slug: page.slug,
+            verdict: "update",
+            detail: "filled blank search title or description",
+          });
+          if (apply) {
+            await prisma.page.update({
+              where: { id: existing.id },
+              data: meta,
+            });
+          }
+          continue;
+        }
+      }
+
       rows.push({ slug: page.slug, verdict: "identical", detail: "already up to date" });
       continue;
     }
 
-    const edited = wasEditedByAdmin(existing.createdAt, existing.updatedAt);
-    const isForced = forceAll || forced.has(page.slug);
-
     if (edited && !isForced) {
       const filled = fillMissingMedia(existing.blocks, blocks, page.slug);
-      if (!filled) {
+      const meta = fillMissingMeta(existing, page);
+      if (!filled && !meta) {
         rows.push({
           slug: page.slug,
           verdict: "skip-edited",
@@ -737,10 +793,15 @@ async function main(): Promise<void> {
         continue;
       }
 
+      const notes = [
+        ...(filled ? [`filled missing media (${filled.notes.join("; ")})`] : []),
+        ...(meta ? ["filled blank search title or description"] : []),
+      ];
+
       rows.push({
         slug: page.slug,
         verdict: "update",
-        detail: `filled missing media without replacing copy (${filled.notes.join("; ")})`,
+        detail: notes.join("; "),
       });
 
       if (apply) {
@@ -752,7 +813,10 @@ async function main(): Promise<void> {
         );
         await prisma.page.update({
           where: { id: existing.id },
-          data: { blocks: filled.blocks as never },
+          data: {
+            ...(filled ? { blocks: filled.blocks as never } : {}),
+            ...meta,
+          },
         });
       }
       continue;

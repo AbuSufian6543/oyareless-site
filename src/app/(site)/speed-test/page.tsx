@@ -11,14 +11,14 @@ import {
 
 import { SpeedTest } from "@/components/blocks/speed-test";
 import { TechBackdrop } from "@/components/visuals/tech-backdrop";
-import { env } from "@/lib/env";
+import { publicMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = publicMetadata({
   title: "Internet Speed Test",
   description:
-    "Measure your download speed, upload speed, latency and jitter against Cloudflare's public edge network. No account required.",
-  alternates: { canonical: `${env.siteUrl}/speed-test` },
-};
+    "Measure download, upload, latency, and jitter from Sault Ste. Marie against Cloudflare's public edge. No account required.",
+  path: "/speed-test",
+});
 
 const FACTORS = [
   {

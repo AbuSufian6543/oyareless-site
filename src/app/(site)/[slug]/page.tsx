@@ -2,7 +2,10 @@ import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
 
 import { BlockList } from "@/components/blocks/block-renderer";
-import { getPublishedPage, pageMetadata } from "@/lib/pages";
+import { JsonLd } from "@/components/site/json-ld";
+import { PageBreadcrumbs } from "@/components/site/page-breadcrumbs";
+import { getPublishedPage, pageJsonLd, pageMetadata } from "@/lib/pages";
+import { crumbs } from "@/lib/seo";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -40,5 +43,11 @@ export default async function CmsPage({ params }: Props) {
     notFound();
   }
 
-  return <BlockList blocks={page.blocks} slideshow={page.slideshow} sourcePage={`/${slug}`} />;
+  return (
+    <>
+      <PageBreadcrumbs items={crumbs({ name: page.title, href: `/${slug}` })} />
+      <JsonLd data={pageJsonLd(page)} />
+      <BlockList blocks={page.blocks} slideshow={page.slideshow} sourcePage={`/${slug}`} />
+    </>
+  );
 }

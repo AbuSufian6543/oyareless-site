@@ -6,15 +6,17 @@ import { ArrowUpRight, Clock } from "lucide-react";
 import { PageHero } from "@/components/site/page-hero";
 import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/utils";
+import { JsonLd } from "@/components/site/json-ld";
+import { collectionPageJsonLd, publicMetadata } from "@/lib/seo";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = publicMetadata({
   title: "News & Insights",
   description:
-    "Technology news, security advisories, and service updates from the WirelessCom.Ca Inc. team.",
-  alternates: { canonical: "/news" },
-};
+    "Technology news, security advisories, and service updates from WirelessCom.Ca Inc. in Sault Ste. Marie.",
+  path: "/news",
+});
 
 export default async function NewsIndexPage() {
   const posts = await prisma.post
@@ -26,6 +28,14 @@ export default async function NewsIndexPage() {
 
   return (
     <>
+      <JsonLd
+        data={collectionPageJsonLd({
+          name: "News & Insights",
+          description:
+            "Technology news, security advisories, and service updates from WirelessCom.Ca Inc. in Sault Ste. Marie.",
+          path: "/news",
+        })}
+      />
       <PageHero
         eyebrow="WirelessCom.Ca Inc."
         title="News & Insights"
@@ -52,7 +62,7 @@ export default async function NewsIndexPage() {
                     {post.coverImageUrl ? (
                       <Image
                         src={post.coverImageUrl}
-                        alt=""
+                        alt={post.title}
                         fill
                         sizes="(max-width: 640px) 100vw, 33vw"
                         className="object-cover transition-transform duration-500 group-hover:scale-105"

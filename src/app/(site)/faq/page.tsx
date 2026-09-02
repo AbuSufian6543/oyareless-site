@@ -1,16 +1,17 @@
 import type { Metadata } from "next";
 import { ChevronDown } from "lucide-react";
 
+import { JsonLd } from "@/components/site/json-ld";
 import { PageHero } from "@/components/site/page-hero";
-import { env } from "@/lib/env";
+import { publicMetadata } from "@/lib/seo";
 import { prisma } from "@/lib/prisma";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = publicMetadata({
   title: "Frequently Asked Questions",
   description:
-    "Answers about managed IT, cybersecurity, networking, VoIP, alarms and two-way radios from WirelessCom.Ca Inc.",
-  alternates: { canonical: `${env.siteUrl}/faq` },
-};
+    "Answers about managed IT, cybersecurity, VoIP, alarms, and Hytera two-way radios from WirelessCom.Ca Inc. in Sault Ste. Marie.",
+  path: "/faq",
+});
 
 export default async function FaqPage() {
   const items = await prisma.faqItem
@@ -39,10 +40,7 @@ export default async function FaqPage() {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      {items.length > 0 ? <JsonLd data={jsonLd} /> : null}
       <PageHero
         eyebrow="Help"
         title="Frequently Asked Questions"
