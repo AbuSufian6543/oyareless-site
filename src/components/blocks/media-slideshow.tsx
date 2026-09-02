@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import type { SlideshowItem } from "@/lib/slideshow";
+import { canonicalServicePhotoUrl } from "@/lib/service-photos";
 import { cn, toEmbedUrl } from "@/lib/utils";
 
 const PHOTO_INTERVAL_MS = 6500;
@@ -126,7 +127,7 @@ export function MediaSlideshow({
               {item.kind === "image" ? (
                 <>
                   <Image
-                    src={item.url}
+                    src={canonicalServicePhotoUrl(item.url)}
                     alt={item.alt}
                     fill
                     sizes={

@@ -1,5 +1,6 @@
 import Image from "next/image";
 
+import { canonicalServicePhotoUrl } from "@/lib/service-photos";
 import { cn } from "@/lib/utils";
 
 /**
@@ -58,6 +59,8 @@ export function SectionImage({
   fill?: boolean;
 }) {
   if (!src) return null;
+
+  src = canonicalServicePhotoUrl(src);
 
   const name = builtName(src);
 

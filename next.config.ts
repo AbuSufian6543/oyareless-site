@@ -65,6 +65,10 @@ const nextConfig: NextConfig = {
       { source: "/brand/logos/fortinet.svg", destination: "/brand/logos/fortinet.png" },
       { source: "/brand/logos/barracuda.svg", destination: "/brand/logos/barracuda.png" },
       { source: "/brand/logos/hytera.svg", destination: "/brand/logos/hytera.png" },
+      {
+        source: "/images/services/digital-marketing/02.webp",
+        destination: "/images/services/digital-marketing/02.jpg",
+      },
     ];
   },
   async headers() {

@@ -58,6 +58,16 @@ export function slideshowForSlug(slug: string): SlideshowItem[] {
   }));
 }
 
+const MOVED_SERVICE_PHOTOS: Record<string, string> = {
+  "/images/services/digital-marketing/02.webp":
+    "/images/services/digital-marketing/02.jpg",
+};
+
+/** Pages saved before the file was renamed still point at the old URL. */
+export function canonicalServicePhotoUrl(url: string): string {
+  return MOVED_SERVICE_PHOTOS[url] ?? url;
+}
+
 export function usesShippedServicePhotos(items: SlideshowItem[]): boolean {
   return items.some(
     (item) => item.kind === "image" && item.url.startsWith("/images/services/"),

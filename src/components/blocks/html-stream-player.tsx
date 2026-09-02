@@ -89,13 +89,35 @@ function loadMistPlayer(): Promise<MistPlayFn> {
   return mistLoader;
 }
 
-function hostSize(element: HTMLElement): { width: number; height: number } {
+function hostSize(element: HTMLElement): { width: number; height: number } | null {
   const width = Math.round(element.clientWidth);
   const height = Math.round(element.clientHeight);
-  return {
-    width: width > 0 ? width : 1280,
-    height: height > 0 ? height : 720,
-  };
+  if (width < 32 || height < 32) return null;
+  return { width, height };
+}
+
+function waitForHostSize(element: HTMLElement): Promise<{ width: number; height: number }> {
+  const immediate = hostSize(element);
+  if (immediate) return Promise.resolve(immediate);
+
+  return new Promise((resolve) => {
+    let observer: ResizeObserver | undefined;
+    const finish = (size: { width: number; height: number }) => {
+      observer?.disconnect();
+      window.clearTimeout(timer);
+      resolve(size);
+    };
+
+    observer = new ResizeObserver(() => {
+      const size = hostSize(element);
+      if (size) finish(size);
+    });
+    observer.observe(element);
+
+    const timer = window.setTimeout(() => {
+      finish(hostSize(element) ?? { width: 1024, height: 576 });
+    }, 800);
+  });
 }
 
 /**
@@ -107,13 +129,11 @@ function hostSize(element: HTMLElement): { width: number; height: number } {
 export function HtmlStreamPlayer({
   html,
   title,
-  aspectClass,
   className,
   posterUrl,
 }: {
   html: string;
   title: string;
-  aspectClass: string;
   className?: string;
   posterUrl?: string | null;
 }) {
@@ -140,11 +160,8 @@ export function HtmlStreamPlayer({
       try {
         const play = await loadMistPlayer();
         if (cancelled || !hostRef.current) return true;
-        await new Promise<void>((resolve) => {
-          requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
-        });
+        const size = await waitForHostSize(hostRef.current);
         if (cancelled || !hostRef.current) return true;
-        const size = hostSize(hostRef.current);
         const poster = call.poster || posterUrl || undefined;
         const instance = play(call.streamName, {
           target: hostRef.current,
@@ -233,16 +250,10 @@ export function HtmlStreamPlayer({
   const fallbackHref = parsed?.fallbackHref;
 
   return (
-    <div
-      className={cn(
-        "relative overflow-hidden rounded-xl bg-navy-950 shadow-card",
-        aspectClass,
-        className,
-      )}
-    >
+    <div className={cn("absolute inset-0", className)}>
       <div
         ref={hostRef}
-        className="size-full min-h-[12.5rem] [&_a]:text-accent-300 [&_a]:underline [&_.mistvideo]:block [&_.mistvideo]:size-full [&_video]:size-full"
+        className="wc-mist-host [&_a]:text-accent-300 [&_a]:underline"
         aria-label={title}
       />
 

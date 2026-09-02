@@ -17,6 +17,7 @@ import { prisma } from "../src/lib/prisma";
 import { DEFAULT_SETTINGS } from "../src/lib/settings-defaults";
 import {
   SERVICE_PHOTO_COUNT,
+  canonicalServicePhotoUrl,
   rewriteOldServiceImages,
   slideshowForSlug,
   usesShippedServicePhotos,
@@ -162,10 +163,19 @@ async function seedServicePhotography(): Promise<void> {
       (item) => item.kind === "image" && item.url.startsWith("/uploads/"),
     );
     const imageSlides = current.filter((item) => item.kind === "image");
+    const remappedSlideshow = current.map((item) =>
+      item.kind === "image"
+        ? { ...item, url: canonicalServicePhotoUrl(item.url) }
+        : item,
+    );
+    const slideshowUrlsChanged =
+      JSON.stringify(remappedSlideshow) !== JSON.stringify(current);
     const nextSlideshow =
       shipped.length > 0 && !hasShipped && !hasUploads && imageSlides.length === 0
         ? [...shipped, ...current.filter((item) => item.kind === "video")]
-        : null;
+        : slideshowUrlsChanged
+          ? remappedSlideshow
+          : null;
 
     const rewritten = rewriteOldServiceImages(page.blocks);
 

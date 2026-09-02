@@ -2,7 +2,7 @@ import { MapPin, Radio } from "lucide-react";
 
 import { Section, SectionHeading, isDarkBackground } from "@/components/blocks/section";
 import { StreamGate } from "@/components/blocks/stream-gate";
-import { LiveBadge, StreamPlayer } from "@/components/blocks/stream-player";
+import { LiveBadge, StreamPlayer, streamFrameClass, type StreamLayout } from "@/components/blocks/stream-player";
 import type { BlockOf } from "@/lib/blocks";
 import {
   getStreamAccess,
@@ -27,7 +27,9 @@ export async function LiveStreamBlock({
           description={block.data.description}
           dark={dark}
         />
-        <EmptyStreamNotice message="Select a stream in the page editor. Create it under Live Streams first if you have not already — that is where the player embed and optional password live." />
+        <div className={streamFrameClass("feature")}>
+          <EmptyStreamNotice message="Select a stream in the page editor. Create it under Live Streams first if you have not already — that is where the player embed and optional password live." />
+        </div>
       </Section>
     );
   }
@@ -41,7 +43,7 @@ export async function LiveStreamBlock({
         description={block.data.description}
         dark={isDarkBackground(block.settings, "dark")}
       />
-      <StreamCard access={access} showTitle={block.data.showTitle} />
+      <StreamCard access={access} showTitle={block.data.showTitle} layout="feature" />
     </Section>
   );
 }
@@ -64,6 +66,14 @@ export async function StreamGridBlock({
     featuredOnly: block.data.featuredOnly,
     listedOnly: !hasSlugs,
   });
+  const layout: StreamLayout =
+    streams.length <= 1 || block.data.columns === "1" ? "feature" : "grid";
+  const columnsClass =
+    layout === "feature"
+      ? ""
+      : block.data.columns === "3" && streams.length >= 3
+        ? STREAM_COLUMNS["3"]
+        : STREAM_COLUMNS["2"];
 
   return (
     <Section settings={block.settings} defaultBackground="dark">
@@ -76,14 +86,9 @@ export async function StreamGridBlock({
       {streams.length === 0 ? (
         <EmptyStreamNotice message="No published streams yet. Add one under Live Streams in the admin." />
       ) : (
-        <div
-          className={cn(
-            "grid gap-6",
-            STREAM_COLUMNS[block.data.columns] ?? STREAM_COLUMNS["2"],
-          )}
-        >
+        <div className={cn("grid gap-6", columnsClass)}>
           {streams.map((access, index) => (
-            <StreamCard key={index} access={access} showTitle />
+            <StreamCard key={index} access={access} showTitle layout={layout} />
           ))}
         </div>
       )}
@@ -94,17 +99,23 @@ export async function StreamGridBlock({
 export function StreamCard({
   access,
   showTitle = true,
+  layout = "feature",
 }: {
   access: StreamAccess;
   showTitle?: boolean;
+  layout?: StreamLayout;
 }) {
   if (access.state === "missing") {
-    return <EmptyStreamNotice message="This stream is no longer available." />;
+    return (
+      <div className={streamFrameClass(layout)}>
+        <EmptyStreamNotice message="This stream is no longer available." />
+      </div>
+    );
   }
 
   if (access.state === "locked") {
     return (
-      <div>
+      <div className={streamFrameClass(layout)}>
         <StreamGate
           slug={access.slug}
           title={access.title}
@@ -117,8 +128,12 @@ export function StreamCard({
   const { stream } = access;
 
   return (
-    <figure>
-      <StreamPlayer stream={stream} iframeSrc={iframeSourceFor(stream)} />
+    <figure className={streamFrameClass(layout)}>
+      <StreamPlayer
+        stream={stream}
+        iframeSrc={iframeSourceFor(stream)}
+        layout="grid"
+      />
 
       {showTitle && (
         <figcaption className="mt-3.5">

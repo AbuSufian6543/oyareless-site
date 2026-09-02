@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { LoaderCircle, TriangleAlert } from "lucide-react";
 
 import { HtmlStreamPlayer } from "@/components/blocks/html-stream-player";
@@ -14,6 +14,15 @@ const ASPECTS: Record<string, string> = {
   "1/1": "aspect-square",
 };
 
+/** Featured = one player on a page. Grid = a cell in a multi-stream layout. */
+export type StreamLayout = "feature" | "grid";
+
+export function streamFrameClass(layout: StreamLayout = "feature"): string {
+  return layout === "grid"
+    ? "w-full min-w-0"
+    : "mx-auto w-full min-w-0 max-w-5xl";
+}
+
 /**
  * Plays HLS/DASH via hls.js (loaded on demand), native video for progressive
  * sources, an <img> for MJPEG camera feeds, and an iframe for hosted platforms.
@@ -22,83 +31,72 @@ export function StreamPlayer({
   stream,
   iframeSrc,
   className,
+  layout = "feature",
 }: {
   stream: PublicStream;
   iframeSrc: string;
   className?: string;
+  layout?: StreamLayout;
 }) {
   const aspect = ASPECTS[stream.aspectRatio] ?? ASPECTS["16/9"];
   const isIframe = ["YOUTUBE", "VIMEO", "TWITCH", "FACEBOOK", "IFRAME"].includes(
     stream.type,
   );
 
+  const stage = (child: ReactNode) => (
+    <div className={cn(streamFrameClass(layout), className)}>
+      <div
+        className={cn(
+          "relative overflow-hidden rounded-xl bg-navy-950 shadow-card",
+          aspect,
+        )}
+      >
+        {child}
+      </div>
+    </div>
+  );
+
   if (stream.type === "HTML") {
-    return (
+    return stage(
       <HtmlStreamPlayer
         html={stream.source}
         title={stream.title}
-        aspectClass={aspect}
-        className={className}
         posterUrl={stream.posterUrl}
-      />
+      />,
     );
   }
 
   if (isIframe) {
-    return (
-      <div
-        className={cn(
-          "overflow-hidden rounded-xl bg-navy-950 shadow-card",
-          aspect,
-          className,
-        )}
-      >
-        <iframe
-          src={iframeSrc}
-          title={stream.title}
-          className="size-full border-0"
-          allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-          allowFullScreen
-          loading="lazy"
-          referrerPolicy="strict-origin-when-cross-origin"
-        />
-      </div>
+    return stage(
+      <iframe
+        src={iframeSrc}
+        title={stream.title}
+        className="absolute inset-0 size-full border-0"
+        allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+        allowFullScreen
+        loading="lazy"
+        referrerPolicy="strict-origin-when-cross-origin"
+      />,
     );
   }
 
   if (stream.type === "MJPEG") {
-    return (
-      <div
-        className={cn(
-          "overflow-hidden rounded-xl bg-navy-950 shadow-card",
-          aspect,
-          className,
-        )}
-      >
-        {/* MJPEG feeds are a continuous multipart image response, so the image
-            optimizer cannot handle them. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={stream.source}
-          alt={stream.title}
-          className="size-full object-cover"
-        />
-      </div>
+    return stage(
+      // MJPEG feeds are a continuous multipart image response, so the image
+      // optimizer cannot handle them.
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={stream.source}
+        alt={stream.title}
+        className="absolute inset-0 size-full object-contain"
+      />,
     );
   }
 
-  return <HlsPlayer stream={stream} aspect={aspect} className={className} />;
+  return stage(<HlsPlayer stream={stream} />);
 }
 
-function HlsPlayer({
-  stream,
-  aspect,
-  className,
-}: {
-  stream: PublicStream;
-  aspect: string;
-  className?: string;
-}) {
+function HlsPlayer({ stream }: { stream: PublicStream }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [errorMessage, setErrorMessage] = useState("");
@@ -185,13 +183,7 @@ function HlsPlayer({
   }, [stream.source, stream.type]);
 
   return (
-    <div
-      className={cn(
-        "relative overflow-hidden rounded-xl bg-navy-950 shadow-card",
-        aspect,
-        className,
-      )}
-    >
+    <>
       <video
         ref={videoRef}
         poster={stream.posterUrl ?? undefined}
@@ -200,7 +192,7 @@ function HlsPlayer({
         controls={stream.showControls}
         playsInline
         loop={false}
-        className="size-full object-cover"
+        className="absolute inset-0 size-full object-contain"
         aria-label={stream.title}
       />
 
@@ -226,7 +218,7 @@ function HlsPlayer({
           </button>
         </div>
       )}
-    </div>
+    </>
   );
 }
 

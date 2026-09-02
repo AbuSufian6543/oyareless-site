@@ -11,7 +11,7 @@
  *   2. C:\Users\abu\Desktop\logos
  *   3. assets/source-images/services  (gitignored copy from a previous run)
  */
-import { copyFile, mkdir, readdir, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, readFile, readdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
 
@@ -110,15 +110,36 @@ async function resolveSourceDir() {
   );
 }
 
-/** Original photos that must ship as-is — no watermark, fill, or resize. */
+/** Original photos that must ship as-is — no watermark, fill, resize, or re-encode. */
 const PASSTHROUGH = new Set(["digital marketing 2.png"]);
+
+function sniffImageExtension(buffer, fallback) {
+  if (buffer[0] === 0xff && buffer[1] === 0xd8) return ".jpg";
+  if (buffer[0] === 0x89 && buffer[1] === 0x50) return ".png";
+  if (
+    buffer[0] === 0x52 &&
+    buffer[1] === 0x49 &&
+    buffer[8] === 0x57 &&
+    buffer[9] === 0x45
+  ) {
+    return ".webp";
+  }
+  return fallback;
+}
 
 async function encodeOne(inputPath, outputPath, originalName) {
   if (PASSTHROUGH.has(originalName.toLowerCase())) {
-    await sharp(inputPath, { failOn: "none", animated: false })
-      .webp({ lossless: true, effort: 4 })
-      .toFile(outputPath);
-    return;
+    const bytes = await readFile(inputPath);
+    const ext = sniffImageExtension(
+      bytes,
+      path.extname(originalName).toLowerCase() || ".jpg",
+    );
+    const dest = outputPath.replace(/\.webp$/i, ext);
+    await writeFile(dest, bytes);
+    if (dest !== outputPath) {
+      await unlink(outputPath).catch(() => undefined);
+    }
+    return path.basename(dest);
   }
 
   await (
@@ -126,6 +147,7 @@ async function encodeOne(inputPath, outputPath, originalName) {
   )
     .webp({ quality: WEBP_QUALITY, effort: 4 })
     .toFile(outputPath);
+  return path.basename(outputPath);
 }
 
 async function main() {
@@ -173,14 +195,14 @@ async function main() {
     for (const [index, item] of group.entries()) {
       const stem = String(index + 1).padStart(2, "0");
       const filename = `${stem}.webp`;
-      const url = `/images/services/${slug}/${filename}`;
-      await encodeOne(
+      const outputPath = path.join(outDir, filename);
+      const written = await encodeOne(
         path.join(sourceDir, item.originalName),
-        path.join(outDir, filename),
+        outputPath,
         item.originalName,
       );
       manifest[slug].push({
-        url,
+        url: `/images/services/${slug}/${written}`,
         alt: `${item.label} from WirelessCom.Ca Inc. Photo ${index + 1}.`,
         originalName: item.originalName,
       });

@@ -457,3 +457,34 @@
     animation: wc-go-ring 2s ease-out infinite;
   }
 }
+
+/*
+  Mist / VideoStreamCanada sizes its UI in pixels from the stream metadata
+  or the window. Keep the vendor chrome inside our 16:9 stage so a featured
+  player stays at most 64rem (1024px) and a grid cell fills its column —
+  not the viewport.
+*/
+.wc-mist-host {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #020617;
+}
+
+.wc-mist-host > *,
+.wc-mist-host .mistvideo {
+  box-sizing: border-box;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+}
+
+.wc-mist-host video,
+.wc-mist-host canvas {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain;
+  background: #020617;
+}
+

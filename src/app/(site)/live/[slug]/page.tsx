@@ -52,7 +52,7 @@ export default async function StreamPage({ params }: Props) {
   return (
     <section className="bg-navy-900 py-12 lg:py-16">
       <div className="container-page">
-        <div className="mx-auto max-w-5xl">
+        <div className="mx-auto w-full max-w-5xl">
           <Link
             href="/live"
             className="inline-flex items-center gap-1.5 text-sm font-semibold text-accent-400 hover:text-accent-300"
@@ -65,7 +65,7 @@ export default async function StreamPage({ params }: Props) {
             {title}
           </h1>
 
-          <StreamCard access={access} showTitle={false} />
+          <StreamCard access={access} showTitle={false} layout="feature" />
 
           {access.state === "ok" && (
             <div className="mt-6 space-y-2">
