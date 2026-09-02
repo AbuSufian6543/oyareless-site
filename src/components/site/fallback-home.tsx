@@ -268,22 +268,26 @@ export function FallbackHome() {
         </div>
       </section>
 
-      <section className="bg-slate-50 py-16">
-        <div className="container-page flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
+      <section className="relative isolate overflow-hidden bg-gradient-to-br from-navy-900 via-navy-800 to-brand-900 py-16 text-white">
+        <div
+          className="pointer-events-none absolute inset-0 bg-tech-grid"
+          aria-hidden="true"
+        />
+        <div className="container-page relative z-10 flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight text-navy-900">
+            <h2 className="text-2xl font-bold tracking-tight text-white">
               Ready to talk about the site?
             </h2>
-            <p className="mt-2 max-w-xl text-slate-600">
+            <p className="mt-2 max-w-xl text-navy-100">
               Tell us what you need. We will put together a plan and a fixed
               quote. Already a client? Start remote support or call.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <ButtonLink href="/request-quote" variant="primary" size="lg">
+            <ButtonLink href="/request-quote" variant="accent" size="lg">
               Request a quote
             </ButtonLink>
-            <ButtonLink href="/remote-support" variant="outline" size="lg">
+            <ButtonLink href="/remote-support" variant="onDark" size="lg">
               Remote support
             </ButtonLink>
           </div>

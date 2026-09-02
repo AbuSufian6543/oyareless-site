@@ -11,8 +11,16 @@ const BACKGROUNDS: Record<string, string> = {
   gradient:
     "bg-gradient-to-br from-navy-900 via-navy-800 to-brand-900 text-white",
   accent: "bg-accent-500 text-navy-950",
-  grid: "bg-navy-900 text-white bg-tech-grid",
+  grid: "bg-navy-900 text-white",
 };
+
+/**
+ * `bg-tech-grid` is a background-image. Putting it on the same node as
+ * `bg-gradient-to-br` or `bg-navy-900` lets tailwind-merge drop the fill, so
+ * the section turns transparent and white copy disappears. Draw the grid on a
+ * separate overlay instead.
+ */
+const GRID_OVERLAY = new Set(["gradient", "grid"]);
 
 const PADDING: Record<string, string> = {
   none: "py-0",
@@ -68,12 +76,13 @@ export function Section({
   const paddingY = settings?.paddingY ?? defaultPadding ?? "lg";
   const width = settings?.width ?? "default";
   const align = settings?.align ?? "left";
+  const showGrid = GRID_OVERLAY.has(background);
 
   return (
     <section
       id={settings?.anchor || undefined}
       className={cn(
-        "relative",
+        "relative isolate",
         BACKGROUNDS[background] ?? BACKGROUNDS.white,
         PADDING[paddingY] ?? PADDING.lg,
         className,
@@ -84,7 +93,13 @@ export function Section({
           : undefined
       }
     >
-      <div className="container-page">
+      {showGrid ? (
+        <div
+          className="pointer-events-none absolute inset-0 bg-tech-grid"
+          aria-hidden="true"
+        />
+      ) : null}
+      <div className="container-page relative z-10">
         <div className={cn("mx-auto", WIDTHS[width] ?? WIDTHS.default, ALIGN[align])}>
           {children}
         </div>
@@ -143,16 +158,16 @@ export function SectionHeading({
           {heading}
         </Tag>
       )}
-      {description && (
-        <p
-          className={cn(
-            "mt-4 text-lg leading-relaxed",
-            dark ? "text-navy-200" : "text-slate-600",
+          {description && (
+            <p
+              className={cn(
+                "mt-4 text-lg leading-relaxed",
+                dark ? "text-navy-100" : "text-slate-600",
+              )}
+            >
+              {description}
+            </p>
           )}
-        >
-          {description}
-        </p>
-      )}
     </div>
   );
 }

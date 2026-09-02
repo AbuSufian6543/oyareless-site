@@ -22,7 +22,7 @@ export function CtaBlock({ block }: { block: BlockOf<"cta"> }) {
                 {data.heading}
               </h2>
               {data.description && (
-                <p className="mt-3 text-navy-200">{data.description}</p>
+                <p className="mt-3 text-navy-100">{data.description}</p>
               )}
             </div>
             <CtaActions data={data} dark />
@@ -47,11 +47,7 @@ export function CtaBlock({ block }: { block: BlockOf<"cta"> }) {
   const dark = isDarkBackground(settings, defaultBackground);
 
   return (
-    <Section
-      settings={settings}
-      defaultBackground={defaultBackground}
-      className={banner ? "bg-tech-grid" : undefined}
-    >
+    <Section settings={settings} defaultBackground={defaultBackground}>
       <div
         className={cn(
           "flex flex-col gap-6",
@@ -75,7 +71,7 @@ export function CtaBlock({ block }: { block: BlockOf<"cta"> }) {
             <p
               className={cn(
                 "mt-4 text-lg leading-relaxed",
-                dark ? "text-navy-200" : "text-slate-600",
+                dark ? "text-navy-100" : "text-slate-600",
               )}
             >
               {data.description}
