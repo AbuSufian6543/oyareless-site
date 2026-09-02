@@ -97,9 +97,9 @@ export function SlideshowEditor({
         <div>
           <h2 className="font-bold text-navy-900">Photos and promo videos</h2>
           <p className="mt-1 max-w-2xl text-sm text-slate-600">
-            These play as a slideshow under the hero on this page. Upload several
-            photos at once, add YouTube or Vimeo links, and change the order with
-            the arrows.
+            These play in the hero picture on this page — the same panel
+            beside the headline. Upload several photos at once, add YouTube
+            or Vimeo links, and change the order with the arrows.
           </p>
         </div>
         <div className="flex shrink-0 flex-wrap gap-2">

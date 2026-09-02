@@ -8,20 +8,27 @@ import type { SlideshowItem } from "@/lib/slideshow";
 import { cn, toEmbedUrl } from "@/lib/utils";
 
 const PHOTO_INTERVAL_MS = 5500;
+const DOT_LIMIT = 8;
 
 /**
  * Auto-advancing mixed photo/video carousel. Photos rotate on a timer; a
  * video slide stays until the visitor moves on so a promo is not cut off.
+ *
+ * `hero` sits in the split-hero picture column. `page` is the fallback band
+ * used when a page has slides but no split hero to host them.
  */
 export function MediaSlideshow({
   items,
   label = "Photos and promo videos",
+  variant = "page",
 }: {
   items: SlideshowItem[];
   label?: string;
+  variant?: "page" | "hero";
 }) {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const inHero = variant === "hero";
 
   const go = useCallback(
     (direction: 1 | -1) => {
@@ -41,21 +48,28 @@ export function MediaSlideshow({
 
   if (items.length === 0) return null;
 
+  const useDots = items.length <= DOT_LIMIT;
+
   return (
     <div
-      className="relative overflow-hidden rounded-xl bg-navy-950"
+      className={cn(
+        "relative overflow-hidden rounded-xl",
+        inHero
+          ? "bg-navy-900 shadow-lift ring-1 ring-white/10"
+          : "bg-navy-950",
+      )}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       role="region"
       aria-roledescription="carousel"
       aria-label={label}
     >
-      <div className="relative aspect-[16/9]">
+      <div className={cn("relative", inHero ? "aspect-[16/10]" : "aspect-[16/9]")}>
         {items.map((item, itemIndex) => {
           const active = itemIndex === index;
           return (
             <div
-              key={`${item.kind}-${item.kind === "image" ? item.url : item.url}-${itemIndex}`}
+              key={`${item.kind}-${item.url}-${itemIndex}`}
               className={cn(
                 "absolute inset-0 transition-opacity duration-700",
                 active ? "opacity-100" : "opacity-0",
@@ -68,8 +82,12 @@ export function MediaSlideshow({
                     src={item.url}
                     alt={item.alt}
                     fill
-                    sizes="(max-width: 1024px) 100vw, 70vw"
-                    className="object-contain p-2"
+                    sizes={
+                      inHero
+                        ? "(min-width: 1024px) 42vw, 100vw"
+                        : "(max-width: 1024px) 100vw, 70vw"
+                    }
+                    className="object-contain p-3 sm:p-4"
                     priority={itemIndex === 0}
                   />
                   {item.caption && (
@@ -88,7 +106,7 @@ export function MediaSlideshow({
                   referrerPolicy="strict-origin-when-cross-origin"
                 />
               ) : (
-                <div className="size-full bg-navy-950" />
+                <div className="size-full bg-navy-900" />
               )}
             </div>
           );
@@ -101,36 +119,52 @@ export function MediaSlideshow({
             type="button"
             onClick={() => go(-1)}
             aria-label="Previous slide"
-            className="absolute left-3 top-1/2 -translate-y-1/2 rounded-full bg-navy-950/60 p-2.5 text-white backdrop-blur transition-colors hover:bg-navy-950/85"
+            className={cn(
+              "absolute top-1/2 -translate-y-1/2 rounded-full text-white backdrop-blur transition-colors",
+              inHero
+                ? "left-2 bg-navy-950/75 p-1.5 ring-1 ring-white/15 hover:bg-navy-950/90"
+                : "left-3 bg-navy-950/60 p-2.5 hover:bg-navy-950/85",
+            )}
           >
-            <ChevronLeft className="size-5" aria-hidden="true" />
+            <ChevronLeft className={inHero ? "size-4" : "size-5"} aria-hidden="true" />
           </button>
           <button
             type="button"
             onClick={() => go(1)}
             aria-label="Next slide"
-            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full bg-navy-950/60 p-2.5 text-white backdrop-blur transition-colors hover:bg-navy-950/85"
+            className={cn(
+              "absolute top-1/2 -translate-y-1/2 rounded-full text-white backdrop-blur transition-colors",
+              inHero
+                ? "right-2 bg-navy-950/75 p-1.5 ring-1 ring-white/15 hover:bg-navy-950/90"
+                : "right-3 bg-navy-950/60 p-2.5 hover:bg-navy-950/85",
+            )}
           >
-            <ChevronRight className="size-5" aria-hidden="true" />
+            <ChevronRight className={inHero ? "size-4" : "size-5"} aria-hidden="true" />
           </button>
 
-          <div className="absolute inset-x-0 bottom-3 flex justify-center gap-2">
-            {items.map((_, dotIndex) => (
-              <button
-                key={dotIndex}
-                type="button"
-                onClick={() => setIndex(dotIndex)}
-                aria-label={`Go to slide ${dotIndex + 1}`}
-                aria-current={dotIndex === index}
-                className={cn(
-                  "h-1.5 rounded-full transition-all",
-                  dotIndex === index
-                    ? "w-7 bg-accent-400"
-                    : "w-1.5 bg-white/50 hover:bg-white/80",
-                )}
-              />
-            ))}
-          </div>
+          {useDots ? (
+            <div className="absolute inset-x-0 bottom-2.5 flex justify-center gap-1.5">
+              {items.map((_, dotIndex) => (
+                <button
+                  key={dotIndex}
+                  type="button"
+                  onClick={() => setIndex(dotIndex)}
+                  aria-label={`Go to slide ${dotIndex + 1}`}
+                  aria-current={dotIndex === index ? true : undefined}
+                  className={cn(
+                    "h-1.5 rounded-full transition-all",
+                    dotIndex === index
+                      ? "w-6 bg-accent-400"
+                      : "w-1.5 bg-white/45 hover:bg-white/80",
+                  )}
+                />
+              ))}
+            </div>
+          ) : (
+            <p className="absolute bottom-2.5 left-1/2 -translate-x-1/2 rounded-full bg-navy-950/70 px-2.5 py-0.5 text-[0.6875rem] font-semibold tabular-nums text-white backdrop-blur">
+              {index + 1} / {items.length}
+            </p>
+          )}
         </>
       )}
     </div>

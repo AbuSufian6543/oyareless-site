@@ -1,9 +1,11 @@
 import { Check, ChevronRight } from "lucide-react";
 
+import { MediaSlideshow } from "@/components/blocks/media-slideshow";
 import { ButtonLink, type ButtonVariant } from "@/components/ui/button";
 import { SectionImage } from "@/components/visuals/section-image";
 import { TechBackdrop } from "@/components/visuals/tech-backdrop";
 import type { BlockOf, LinkItem } from "@/lib/blocks";
+import { visibleSlideshow, type SlideshowItem } from "@/lib/slideshow";
 import { cn } from "@/lib/utils";
 
 const HEIGHTS: Record<string, string> = {
@@ -20,34 +22,51 @@ const STYLE_TO_VARIANT: Record<string, ButtonVariant> = {
   outline: "outline",
 };
 
-export function HeroBlock({ block }: { block: BlockOf<"hero"> }) {
+export function HeroBlock({
+  block,
+  slideshow = [],
+}: {
+  block: BlockOf<"hero">;
+  slideshow?: SlideshowItem[];
+}) {
   const { data } = block;
   const isLight = data.variant === "light";
   const isSplit = data.variant === "split";
   const hasMedia = Boolean(data.backgroundImageUrl || data.backgroundVideoUrl);
+  const slides = visibleSlideshow(slideshow);
 
   if (isSplit) {
+    const picture = slides.length > 0 || data.backgroundImageUrl;
+
     return (
       <section className="relative isolate overflow-hidden bg-navy-950">
         <TechBackdrop network density={0.75} glow="right" mood="network" />
         <div className="container-page relative">
-          <div className="grid items-center gap-12 py-20 lg:grid-cols-2 lg:gap-16 lg:py-28">
+          <div className="grid items-center gap-10 py-16 sm:gap-12 lg:grid-cols-2 lg:gap-16 lg:py-28">
             <div>
               <HeroCopy data={data} dark />
             </div>
-            {data.backgroundImageUrl && (
+            {picture && (
               <div className="relative">
                 <div
                   className="absolute -inset-4 rounded-2xl bg-accent-500/10 blur-2xl"
                   aria-hidden="true"
                 />
-                <SectionImage
-                  src={data.backgroundImageUrl}
-                  alt={data.backgroundImageAlt || data.headline}
-                  sizes="(min-width: 1024px) 42vw, 100vw"
-                  className="relative w-full rounded-xl object-cover shadow-lift"
-                  priority
-                />
+                {slides.length > 0 ? (
+                  <MediaSlideshow
+                    items={slides}
+                    variant="hero"
+                    label={`${data.eyebrow || data.headline} photos`}
+                  />
+                ) : (
+                  <SectionImage
+                    src={data.backgroundImageUrl}
+                    alt={data.backgroundImageAlt || data.headline}
+                    sizes="(min-width: 1024px) 42vw, 100vw"
+                    className="relative w-full rounded-xl object-cover shadow-lift"
+                    priority
+                  />
+                )}
               </div>
             )}
           </div>

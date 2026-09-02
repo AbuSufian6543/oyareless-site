@@ -58,13 +58,15 @@ import type { Block } from "@/lib/blocks";
 export function BlockRenderer({
   block,
   sourcePage,
+  slideshow,
 }: {
   block: Block;
   sourcePage: string;
+  slideshow?: SlideshowItem[];
 }) {
   switch (block.type) {
     case "hero":
-      return <HeroBlock block={block} />;
+      return <HeroBlock block={block} slideshow={slideshow} />;
     case "heading":
       return <HeadingBlock block={block} />;
     case "richText":
@@ -194,12 +196,22 @@ export function BlockList({
   const heroIndex = blocks.findIndex(
     (block) => block.type === "hero" || block.type === "techHero",
   );
+  const hero = heroIndex >= 0 ? blocks[heroIndex] : undefined;
+  const embedInHero =
+    slides.length > 0 &&
+    hero?.type === "hero" &&
+    hero.data.variant === "split";
 
-  const nodes = blocks.map((block) => (
-    <BlockRenderer key={block.id} block={block} sourcePage={sourcePage} />
+  const nodes = blocks.map((block, index) => (
+    <BlockRenderer
+      key={block.id}
+      block={block}
+      sourcePage={sourcePage}
+      slideshow={embedInHero && index === heroIndex ? slides : undefined}
+    />
   ));
 
-  if (slides.length === 0) return <>{nodes}</>;
+  if (slides.length === 0 || embedInHero) return <>{nodes}</>;
 
   const carousel = (
     <section key="page-slideshow" className="bg-slate-50 py-12 lg:py-16">
