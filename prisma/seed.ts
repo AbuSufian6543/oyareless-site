@@ -174,9 +174,15 @@ async function seedServicePhotography(): Promise<void> {
       const refreshed = remappedSlideshow.map((item) => {
         if (item.kind !== "image") return item;
         const ship = shipped.find(
-          (slide) => slide.url === canonicalServicePhotoUrl(item.url),
+          (slide) =>
+            slide.kind === "image" &&
+            slide.url === canonicalServicePhotoUrl(item.url),
         );
-        if (!ship || (item.alt === ship.alt && item.caption === ship.caption)) {
+        if (
+          !ship ||
+          ship.kind !== "image" ||
+          (item.alt === ship.alt && item.caption === ship.caption)
+        ) {
           return item;
         }
         return { ...item, alt: ship.alt, caption: ship.caption };
