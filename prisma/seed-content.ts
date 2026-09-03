@@ -4,7 +4,7 @@
  */
 
 import { blocksSchema, type Block } from "../src/lib/blocks";
-import { serviceHeroPhoto } from "../src/lib/service-photos";
+import { serviceHeroPhoto, servicePhoto } from "../src/lib/service-photos";
 import { vendorLogoUrl } from "../src/lib/vendor-logos";
 
 type BlockInput = {
@@ -45,8 +45,8 @@ function photo(name: string, alt: string) {
   return { url: `/images/${name}-1400.webp`, alt };
 }
 
-function owned(slug: string) {
-  const picture = serviceHeroPhoto(slug);
+function owned(slug: string, index = 0) {
+  const picture = servicePhoto(slug, index) ?? serviceHeroPhoto(slug);
   if (!picture) {
     throw new Error(`Missing owned service photos for ${slug}`);
   }
@@ -782,23 +782,46 @@ const itServices: SeedPage = {
     serviceHero(
       "IT Services",
       "IT Infrastructure Built For Uptime",
-      "WirelessCom provides professional IT infrastructure, Microsoft 365, Azure, AWS and Google Cloud, network management, server administration, and cybersecurity services for business environments running Windows and macOS. We design, implement, and maintain secure, high-availability systems aligned with industry best practices.",
-      ["Network design", "Microsoft 365", "Azure, AWS and Google Cloud", "Security"],
+      "WirelessCom designs, installs, and supports business IT — networks and Wi-Fi at your site, cabling in the rack, servers in the closet, and the cloud tenants your staff use every day. We put crews on the road with bucket trucks and test gear when the work is outdoors or at height, and the same local team stays on it after turn-up.",
+      ["Network design", "On-site installation", "Microsoft 365 & cloud", "Security"],
       photos.it,
     ),
     {
       type: "imageText",
       settings: { background: "light", paddingY: "xl" },
       data: {
-        eyebrow: "Cloud and Microsoft 365",
-        heading: "Azure, AWS, Google Cloud and Microsoft 365",
-        html: "<p>We design, connect and support cloud services on <strong>Microsoft Azure</strong>, <strong>Amazon Web Services</strong> and <strong>Google Cloud</strong> — identity, virtual machines, backup, and the network path from your office to the region you choose. These are platforms we work with, not a claim of partnership.</p><p><strong>Microsoft 365</strong> — the Office apps, Exchange email, Teams and SharePoint — is the same story on the desktop: we set it up, connect it to your users and devices, and stay on it. Cloudflare sits in front of sites that need a CDN or edge filter. Nothing is moved to a cloud we cannot name, and we will write down which tenant and region you are in.</p>",
+        eyebrow: "On-site installation",
+        heading: "We put the gear in where your site needs it",
+        html: "<p>Most of our IT work happens on your property — not in a stock photo of a data centre. Our crews arrive with ladder racks, bucket trucks, and test gear to mount wireless links, run cabling, install cameras and network gear on poles and rooftops, and finish the job in the rack or closet.</p><p>That field work is the same team that later supports your Microsoft 365 tenants, Azure or AWS resources, and on-prem servers. One provider means the outdoor install and the indoor network are designed together.</p>",
         image: {
           url: photos.it.url,
           alt: photos.it.alt,
           caption: "",
         },
         imagePosition: "right",
+        bullets: [
+          "Multi-site and outdoor wireless where trenching is not an option",
+          "Bucket-truck and ladder work for poles, rooftops, and building faces",
+          "Northern Ontario weather — we schedule around it and document what we mount",
+          "Turn-up testing before we hand the site back to your staff",
+        ],
+        buttons: [
+          { label: "Request a quote", href: "/request-quote", style: "secondary", openInNewTab: false },
+        ],
+      },
+    },
+    {
+      type: "imageText",
+      settings: { background: "white", paddingY: "xl" },
+      data: {
+        eyebrow: "Cloud and Microsoft 365",
+        heading: "Azure, AWS, Google Cloud and Microsoft 365",
+        html: "<p>We design, connect and support cloud services on <strong>Microsoft Azure</strong>, <strong>Amazon Web Services</strong> and <strong>Google Cloud</strong> — identity, virtual machines, backup, and the network path from your office to the region you choose. These are platforms we work with, not a claim of partnership.</p><p><strong>Microsoft 365</strong> — the Office apps, Exchange email, Teams and SharePoint — is the same story on the desktop: we set it up, connect it to your users and devices, and stay on it. Cloudflare sits in front of sites that need a CDN or edge filter. Nothing is moved to a cloud we cannot name, and we will write down which tenant and region you are in.</p>",
+        image: {
+          ...owned("it-services", 3),
+          caption: "",
+        },
+        imagePosition: "left",
         bullets: [
           "Microsoft Azure — identity, VMs, backup and hybrid with your LAN",
           "Amazon Web Services — compute, storage and the circuit to them",

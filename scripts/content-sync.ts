@@ -222,6 +222,73 @@ const PREVIOUS_CTA_HEADINGS = new Set([
   "Add AI to the cameras or the phones you already have",
 ]);
 
+const PREVIOUS_IT_CLOUD_SECTION = {
+  eyebrow: "Cloud and Microsoft 365",
+  heading: "Azure, AWS, Google Cloud and Microsoft 365",
+};
+
+function upgradeItServicesCopy(
+  next: JsonBlock[],
+  seed: ReturnType<typeof buildBlocks>,
+  slug: string,
+  notes: string[],
+): void {
+  if (slug !== "it-services") return;
+
+  const seedImageTexts = seed.filter((block) => block.type === "imageText");
+  const currentImageTexts = next.filter((block) => block.type === "imageText");
+  const first = currentImageTexts[0];
+  const firstData = (first?.data ?? {}) as Record<string, unknown>;
+
+  if (
+    first &&
+    String(firstData.eyebrow ?? "") === PREVIOUS_IT_CLOUD_SECTION.eyebrow &&
+    String(firstData.heading ?? "") === PREVIOUS_IT_CLOUD_SECTION.heading &&
+    seedImageTexts[0]
+  ) {
+    first.data = structuredClone(seedImageTexts[0].data);
+    first.settings = {
+      ...(first.settings ?? {}),
+      ...(seedImageTexts[0].settings ?? {}),
+    };
+    notes.push("IT field install section");
+  }
+
+  const hasCloudSection = currentImageTexts.some(
+    (block) =>
+      String((block.data as { heading?: string })?.heading ?? "") ===
+      PREVIOUS_IT_CLOUD_SECTION.heading,
+  );
+  if (!hasCloudSection && seedImageTexts[1]) {
+    const brandIndex = next.findIndex((block) => block.type === "brandGrid");
+    const featureIndex = next.findIndex((block) => block.type === "featureGrid");
+    const insertAt = brandIndex >= 0 ? brandIndex : featureIndex;
+    if (insertAt >= 0) {
+      next.splice(insertAt, 0, {
+        ...(structuredClone(seedImageTexts[1]) as JsonBlock),
+        id: newBlockId(),
+      });
+      notes.push("IT cloud section");
+    }
+  }
+
+  const seedHero = seed.find((block) => block.type === "hero");
+  const currentHero = next.find((block) => block.type === "hero");
+  if (!seedHero || !currentHero) return;
+
+  const currentData = (currentHero.data ??= {});
+  const seedData = seedHero.data as Record<string, unknown>;
+  const highlights = currentData.highlights;
+  if (
+    Array.isArray(highlights) &&
+    highlights.some((item) => /azure|aws|google cloud/i.test(String(item)))
+  ) {
+    currentData.subheadline = seedData.subheadline;
+    currentData.highlights = structuredClone(seedData.highlights);
+    notes.push("IT hero copy");
+  }
+}
+
 function upgradeTechHeroCopy(
   next: JsonBlock[],
   seed: ReturnType<typeof buildBlocks>,
@@ -591,6 +658,7 @@ function fillMissingMedia(
   upgradeCapabilityCopy(next, seed, notes);
   upgradeServiceHeroCopy(next, seed, notes);
   upgradeCtaCopy(next, seed, notes);
+  upgradeItServicesCopy(next, seed, slug, notes);
   fixBannerCtaSurfaces(next, notes);
   upgradeHyteraCtaCopy(next, notes);
   ensureHyteraCatalog(next, seed, slug, notes);

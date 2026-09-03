@@ -9,6 +9,41 @@ export type ServicePhoto = {
 
 export const SERVICE_PHOTOS = generated as Record<string, ServicePhoto[]>;
 
+/** Descriptive alts when the generic manifest text is too vague. */
+const SERVICE_PHOTO_ALTS: Record<string, string[]> = {
+  "it-services": [
+    "WirelessCom service truck and boom lift at a commercial building while a technician works from the bucket.",
+    "WirelessCom field crew with a bucket truck installing equipment at an outdoor wireless site in winter.",
+    "WirelessCom bucket truck reaching a pole-mounted wireless or camera head.",
+    "Technician terminating fiber and Ethernet in a communications rack.",
+    "Technician testing network cabling with a cable tester at a patch panel.",
+  ],
+};
+
+/** Short carousel captions for service pages with a photo slideshow. */
+const SERVICE_SLIDESHOW_CAPTIONS: Record<string, string[]> = {
+  "it-services": [
+    "Boom-lift work on a commercial building",
+    "Outdoor wireless install in winter",
+    "Pole and rooftop reach with a bucket truck",
+    "Rack terminations and patching",
+    "Cable testing after an install",
+  ],
+};
+
+export function servicePhotoAlt(slug: string, index: number, fallback: string): string {
+  return SERVICE_PHOTO_ALTS[slug]?.[index] ?? fallback;
+}
+
+export function servicePhoto(slug: string, index = 0): ServicePhoto | undefined {
+  const photo = SERVICE_PHOTOS[slug]?.[index];
+  if (!photo) return undefined;
+  return {
+    ...photo,
+    alt: servicePhotoAlt(slug, index, photo.alt),
+  };
+}
+
 export const SERVICE_PHOTO_COUNT = Object.values(SERVICE_PHOTOS).reduce(
   (count, photos) => count + photos.length,
   0,
@@ -46,15 +81,16 @@ const URL_ALT_PAIRS = [
 ] as const;
 
 export function serviceHeroPhoto(slug: string): ServicePhoto | undefined {
-  return SERVICE_PHOTOS[slug]?.[0];
+  return servicePhoto(slug, 0);
 }
 
 export function slideshowForSlug(slug: string): SlideshowItem[] {
-  return (SERVICE_PHOTOS[slug] ?? []).map((photo) => ({
+  const captions = SERVICE_SLIDESHOW_CAPTIONS[slug] ?? [];
+  return (SERVICE_PHOTOS[slug] ?? []).map((photo, index) => ({
     kind: "image" as const,
     url: photo.url,
-    alt: photo.alt,
-    caption: "",
+    alt: servicePhotoAlt(slug, index, photo.alt),
+    caption: captions[index] ?? "",
   }));
 }
 

@@ -168,12 +168,29 @@ async function seedServicePhotography(): Promise<void> {
     );
     const slideshowUrlsChanged =
       JSON.stringify(remappedSlideshow) !== JSON.stringify(current);
+
+    let captionRefresh: typeof current | null = null;
+    if (hasShipped && shipped.length > 0 && !hasUploads) {
+      const refreshed = remappedSlideshow.map((item) => {
+        if (item.kind !== "image") return item;
+        const ship = shipped.find(
+          (slide) => slide.url === canonicalServicePhotoUrl(item.url),
+        );
+        if (!ship || (item.alt === ship.alt && item.caption === ship.caption)) {
+          return item;
+        }
+        return { ...item, alt: ship.alt, caption: ship.caption };
+      });
+      if (JSON.stringify(refreshed) !== JSON.stringify(remappedSlideshow)) {
+        captionRefresh = refreshed;
+      }
+    }
+
     const nextSlideshow =
       shipped.length > 0 && !hasShipped && !hasUploads && imageSlides.length === 0
         ? [...shipped, ...current.filter((item) => item.kind === "video")]
-        : slideshowUrlsChanged
-          ? remappedSlideshow
-          : null;
+        : captionRefresh ??
+          (slideshowUrlsChanged ? remappedSlideshow : null);
 
     const rewritten = rewriteOldServiceImages(page.blocks);
 
