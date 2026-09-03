@@ -2,7 +2,7 @@
  * Shipped vendor marks under public/brand/logos. Extensions follow the files
  * we actually have — some vendors only publish a PNG or WebP lockup.
  */
-export const VENDOR_LOGO_EXT: Record<string, "svg" | "png"> = {
+export const VENDOR_LOGO_EXT: Record<string, "svg" | "png" | "webp"> = {
   cisco: "png",
   unifi: "png",
   mikrotik: "png",
@@ -23,6 +23,13 @@ export const VENDOR_LOGO_EXT: Record<string, "svg" | "png"> = {
   genetec: "png",
   tait: "png",
   rogers: "png",
+  sonicwall: "webp",
+  watchguard: "webp",
+  "palo-alto": "webp",
+  sophos: "webp",
+  butterflymx: "webp",
+  fs: "webp",
+  oracle: "webp",
 };
 
 export function vendorLogoUrl(slug: string): string {
@@ -62,6 +69,15 @@ export const FOOTER_PRODUCTS: FooterProduct[] = [
   { slug: "fortinet", name: "Fortinet", plate: "light", href: "/firewalls" },
   { slug: "barracuda", name: "Barracuda", plate: "dark", href: "/firewalls" },
   { slug: "juniper", name: "Juniper", plate: "light", href: "/firewalls" },
+  { slug: "sonicwall", name: "SonicWall", plate: "light", href: "/firewalls" },
+  { slug: "watchguard", name: "WatchGuard", plate: "light", href: "/firewalls" },
+  {
+    slug: "palo-alto",
+    name: "Palo Alto",
+    plate: "light",
+    href: "/firewalls",
+  },
+  { slug: "sophos", name: "Sophos", plate: "light", href: "/firewalls" },
   { slug: "microsoft", name: "Microsoft", plate: "light", href: "/it-services" },
   {
     slug: "microsoft-365",
@@ -77,6 +93,7 @@ export const FOOTER_PRODUCTS: FooterProduct[] = [
     plate: "dark",
     href: "/it-services",
   },
+  { slug: "oracle", name: "Oracle", plate: "light", href: "/it-services" },
   { slug: "cloudflare", name: "Cloudflare", plate: "dark", href: "/it-services" },
   { slug: "rogers", name: "Rogers", plate: "fill", href: "/internet-services" },
   {
@@ -98,7 +115,19 @@ export const FOOTER_PRODUCTS: FooterProduct[] = [
     plate: "light",
     href: "/access-control",
   },
+  {
+    slug: "butterflymx",
+    name: "ButterflyMX",
+    plate: "light",
+    href: "/access-control",
+  },
   { slug: "surecall", name: "SureCall", plate: "dark", href: "/it-services" },
+  {
+    slug: "fs",
+    name: "FS",
+    plate: "light",
+    href: "/data-cabling-fiber-optic",
+  },
   {
     slug: "tait",
     name: "Tait Communications",

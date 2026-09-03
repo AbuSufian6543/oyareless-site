@@ -128,6 +128,13 @@ function canonicalBrandName(value: unknown): string {
   if (name === "mikrotik" || name === "mikro tik") return "mikrotik";
   if (name === "grandstream" || name === "grandstrea") return "grandstream";
   if (name === "fortinet" || name === "fotinet") return "fortinet";
+  if (name === "sonicwall" || name === "sonic wall") return "sonicwall";
+  if (name === "watchguard" || name === "watch guard") return "watchguard";
+  if (name === "palo alto" || name === "palo alto networks") return "palo alto";
+  if (name === "sophos") return "sophos";
+  if (name === "butterflymx" || name === "butterfly mx") return "butterflymx";
+  if (name === "fs" || name === "fs com" || name === "fs.com") return "fs";
+  if (name === "oracle") return "oracle";
   return name;
 }
 
@@ -286,6 +293,38 @@ function upgradeItServicesCopy(
     currentData.subheadline = seedData.subheadline;
     currentData.highlights = structuredClone(seedData.highlights);
     notes.push("IT hero copy");
+  }
+}
+
+function upgradeFirewallsBrandGrid(
+  next: JsonBlock[],
+  seed: ReturnType<typeof buildBlocks>,
+  slug: string,
+  notes: string[],
+): void {
+  if (slug !== "firewalls") return;
+
+  const seedGrid = seed.find((block) => block.type === "brandGrid");
+  const currentGrid = next.find((block) => block.type === "brandGrid");
+  if (!seedGrid || !currentGrid) return;
+
+  const heading = String((currentGrid.data as { heading?: string })?.heading ?? "");
+  if (heading !== "Firewalls we deploy and support") return;
+
+  const currentItems = (currentGrid.data as { items?: Array<Record<string, unknown>> }).items;
+  if (!Array.isArray(currentItems)) return;
+
+  const names = currentItems.map((item) => canonicalBrandName(item.name));
+  const hasRetiredTiles =
+    names.includes("barracuda") ||
+    names.includes("fortinet") ||
+    names.includes("juniper") ||
+    names.includes("cisco") ||
+    names.includes("unifi");
+  const seedItems = (seedGrid.data as { items: Array<Record<string, unknown>> }).items;
+  if (hasRetiredTiles) {
+    (currentGrid.data as { items: unknown }).items = structuredClone(seedItems);
+    notes.push("firewalls brand tiles");
   }
 }
 
@@ -678,6 +717,7 @@ function fillMissingMedia(
   upgradeServiceHeroCopy(next, seed, notes);
   upgradeCtaCopy(next, seed, notes);
   upgradeItServicesCopy(next, seed, slug, notes);
+  upgradeFirewallsBrandGrid(next, seed, slug, notes);
   upgradeVideoServicesSurfaces(next, slug, notes);
   fixBannerCtaSurfaces(next, notes);
   upgradeHyteraCtaCopy(next, notes);

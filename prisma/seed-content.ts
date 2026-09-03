@@ -3027,14 +3027,10 @@ const firewalls: SeedPage = {
         disclaimer:
           "Vendor names describe the equipment we install and support. They do not imply a formal partnership unless a relationship is stated. WirelessCom.Ca Inc. is an authorized Hytera dealer; firewall brands are supported technologies.",
         items: [
-          { name: "Barracuda", category: "NGFW, email and web security", logoUrl: vendorLogo("barracuda"), href: "" },
-          { name: "Fortinet", category: "FortiGate next-generation firewall", logoUrl: vendorLogo("fortinet"), href: "" },
-          { name: "Juniper", category: "SRX firewalls and routing", logoUrl: vendorLogo("juniper"), href: "" },
-          { name: "SonicWall", category: "SMB and mid-market NGFW", logoUrl: "", href: "" },
-          { name: "WatchGuard", category: "Unified threat management", logoUrl: "", href: "" },
-          { name: "Palo Alto", category: "Enterprise NGFW", logoUrl: "", href: "" },
-          { name: "Cisco", category: "ASA / Firepower and related", logoUrl: vendorLogo("cisco"), href: "" },
-          { name: "Ubiquiti", category: "Gateway security where UniFi is the LAN", logoUrl: vendorLogo("unifi"), href: "" },
+          { name: "SonicWall", category: "SMB and mid-market NGFW", logoUrl: vendorLogo("sonicwall"), href: "" },
+          { name: "WatchGuard", category: "Unified threat management", logoUrl: vendorLogo("watchguard"), href: "" },
+          { name: "Palo Alto", category: "Enterprise NGFW", logoUrl: vendorLogo("palo-alto"), href: "" },
+          { name: "Sophos", category: "Firewall and endpoint security", logoUrl: vendorLogo("sophos"), href: "" },
         ],
       },
     },
