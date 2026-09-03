@@ -348,9 +348,10 @@ export default async function SettingsPage({
               description="Recommended for PIPEDA compliance when analytics are enabled."
             />
             <CheckboxField
-              label="Show the live chat call-to-action"
+              label="Show the Tawk.to live chat widget"
               name="showLiveChatCta"
               defaultChecked={settings.showLiveChatCta}
+              description="Chat bubble on public pages only. It does not load in admin, login, or the client portal."
             />
             <TextAreaField
               label="Analytics snippet"

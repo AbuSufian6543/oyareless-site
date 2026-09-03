@@ -78,7 +78,13 @@ function groupFor(key: SettingKey): string {
     return "remote-support";
   }
   if (key.startsWith("verification")) return "seo";
-  if (key === "analyticsSnippet" || key === "cookieBannerEnabled") return "privacy";
+  if (
+    key === "analyticsSnippet" ||
+    key === "cookieBannerEnabled" ||
+    key === "showLiveChatCta"
+  ) {
+    return "privacy";
+  }
   if (
     key === "phone" ||
     key === "localPhone" ||

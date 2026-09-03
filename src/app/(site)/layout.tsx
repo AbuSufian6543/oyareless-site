@@ -3,6 +3,7 @@ import { CookieBanner } from "@/components/site/cookie-banner";
 import { JsonLd } from "@/components/site/json-ld";
 import { SiteFooter } from "@/components/site/site-footer";
 import { SiteHeader } from "@/components/site/site-header";
+import { TawkChat } from "@/components/site/tawk-chat";
 import { getFooterNav, getHeaderNav } from "@/lib/navigation";
 import { siteGraphJsonLd } from "@/lib/seo";
 import { getSettings } from "@/lib/settings";
@@ -49,6 +50,8 @@ export default async function SiteLayout({
       <SiteFooter nav={footerNav} settings={settings} />
 
       {settings.cookieBannerEnabled && <CookieBanner />}
+
+      {settings.showLiveChatCta ? <TawkChat /> : null}
 
       {settings.analyticsSnippet ? (
         <script dangerouslySetInnerHTML={{ __html: settings.analyticsSnippet }} />

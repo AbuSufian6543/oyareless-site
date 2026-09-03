@@ -166,7 +166,7 @@ export default async function BrandingPage({
               rows={5}
               defaultValue={settings.bodyEndEmbedCode}
               className="font-mono"
-              hint="chat widgets, pixels"
+              hint="pixels and extra scripts. Tawk.to is already on public pages — do not paste it here or the bubble appears twice."
             />
             <Alert tone="warning">
               To embed a dashboard, camera feed or map <em>inside a page</em>,
