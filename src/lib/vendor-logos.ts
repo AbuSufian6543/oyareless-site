@@ -30,6 +30,9 @@ export const VENDOR_LOGO_EXT: Record<string, "svg" | "png" | "webp"> = {
   butterflymx: "webp",
   fs: "webp",
   oracle: "webp",
+  uniview: "webp",
+  schlage: "webp",
+  shure: "webp",
 };
 
 export function vendorLogoUrl(slug: string): string {
@@ -53,10 +56,11 @@ export type FooterProduct = {
 
 /**
  * Every shipped product mark, in the order the footer wall shows them.
- * Hytera is the only authorized dealership; the rest are platforms we deploy.
+ * Grouped by what we actually sell so related chips wrap together. Hytera is
+ * the only authorized dealership — it leads the strip; the rest are platforms
+ * we deploy.
  */
 export const FOOTER_PRODUCTS: FooterProduct[] = [
-  { slug: "unifi", name: "UniFi", plate: "fill", href: "/it-services" },
   {
     slug: "hytera",
     name: "Hytera",
@@ -64,6 +68,13 @@ export const FOOTER_PRODUCTS: FooterProduct[] = [
     href: "/two-way-radios",
     authorizedDealer: true,
   },
+  {
+    slug: "tait",
+    name: "Tait Communications",
+    plate: "dark",
+    href: "/two-way-radios",
+  },
+  { slug: "unifi", name: "UniFi", plate: "fill", href: "/it-services" },
   { slug: "cisco", name: "Cisco", plate: "light", href: "/it-services" },
   { slug: "mikrotik", name: "MikroTik", plate: "light", href: "/it-services" },
   { slug: "fortinet", name: "Fortinet", plate: "light", href: "/firewalls" },
@@ -96,6 +107,7 @@ export const FOOTER_PRODUCTS: FooterProduct[] = [
   { slug: "oracle", name: "Oracle", plate: "light", href: "/it-services" },
   { slug: "cloudflare", name: "Cloudflare", plate: "dark", href: "/it-services" },
   { slug: "rogers", name: "Rogers", plate: "fill", href: "/internet-services" },
+  { slug: "surecall", name: "SureCall", plate: "dark", href: "/it-services" },
   {
     slug: "grandstream",
     name: "Grandstream",
@@ -103,11 +115,24 @@ export const FOOTER_PRODUCTS: FooterProduct[] = [
     href: "/telephone-services",
   },
   { slug: "fanvil", name: "Fanvil", plate: "dark", href: "/telephone-services" },
+  { slug: "shure", name: "Shure", plate: "light", href: "/video-services" },
+  {
+    slug: "fs",
+    name: "FS",
+    plate: "light",
+    href: "/data-cabling-fiber-optic",
+  },
   {
     slug: "paradox",
     name: "Paradox",
     plate: "dark",
     href: "/alarm-systems",
+  },
+  {
+    slug: "uniview",
+    name: "Uniview",
+    plate: "light",
+    href: "/security-services",
   },
   {
     slug: "genetec",
@@ -121,18 +146,11 @@ export const FOOTER_PRODUCTS: FooterProduct[] = [
     plate: "light",
     href: "/access-control",
   },
-  { slug: "surecall", name: "SureCall", plate: "dark", href: "/it-services" },
   {
-    slug: "fs",
-    name: "FS",
+    slug: "schlage",
+    name: "Schlage",
     plate: "light",
-    href: "/data-cabling-fiber-optic",
-  },
-  {
-    slug: "tait",
-    name: "Tait Communications",
-    plate: "dark",
-    href: "/two-way-radios",
+    href: "/access-control",
   },
 ];
 

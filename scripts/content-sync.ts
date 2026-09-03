@@ -135,6 +135,9 @@ function canonicalBrandName(value: unknown): string {
   if (name === "butterflymx" || name === "butterfly mx") return "butterflymx";
   if (name === "fs" || name === "fs com" || name === "fs.com") return "fs";
   if (name === "oracle") return "oracle";
+  if (name === "uniview" || name === "unv" || name === "uniview unv") return "uniview";
+  if (name === "schlage") return "schlage";
+  if (name === "shure") return "shure";
   return name;
 }
 
