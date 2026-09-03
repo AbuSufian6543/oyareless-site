@@ -5,29 +5,10 @@ import { cookies } from "next/headers";
 
 import { env } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
-import type { Stream, StreamType } from "@/generated/prisma/client";
+import type { Stream } from "@/generated/prisma/client";
+import type { PublicStream, PublicStreamType, StreamAccess } from "@/lib/stream-public";
 
-/** Shape sent to the client. Never includes the password hash. */
-export type PublicStream = {
-  id: string;
-  slug: string;
-  title: string;
-  description: string | null;
-  type: StreamType;
-  source: string;
-  posterUrl: string | null;
-  location: string | null;
-  isLive: boolean;
-  autoplay: boolean;
-  muted: boolean;
-  showControls: boolean;
-  aspectRatio: string;
-};
-
-export type StreamAccess =
-  | { state: "ok"; stream: PublicStream }
-  | { state: "locked"; slug: string; title: string; description: string | null }
-  | { state: "missing" };
+export type { PublicStream, PublicStreamType, StreamAccess } from "@/lib/stream-public";
 
 function unlockCookieName(slug: string): string {
   return `wc_stream_${slug.replace(/[^a-z0-9_-]/gi, "")}`;
@@ -76,7 +57,7 @@ function toPublicStream(stream: Stream): PublicStream {
     slug: stream.slug,
     title: stream.title,
     description: stream.description,
-    type: stream.type,
+    type: stream.type as PublicStream["type"],
     source: stream.source,
     posterUrl: stream.posterUrl,
     location: stream.location,
@@ -95,22 +76,26 @@ function toPublicStream(stream: Stream): PublicStream {
  * watchable by URL; they are only omitted from public directories.
  */
 export async function getStreamAccess(slug: string): Promise<StreamAccess> {
-  const stream = await prisma.stream
-    .findFirst({ where: { slug, status: "PUBLISHED" } })
-    .catch(() => null);
+  try {
+    const stream = await prisma.stream
+      .findFirst({ where: { slug, status: "PUBLISHED" } })
+      .catch(() => null);
 
-  if (!stream) return { state: "missing" };
+    if (!stream) return { state: "missing" };
 
-  if (await isPasswordLocked(stream.slug, stream.accessPasswordHash)) {
-    return {
-      state: "locked",
-      slug: stream.slug,
-      title: stream.title,
-      description: stream.description,
-    };
+    if (await isPasswordLocked(stream.slug, stream.accessPasswordHash)) {
+      return {
+        state: "locked",
+        slug: stream.slug,
+        title: stream.title,
+        description: stream.description,
+      };
+    }
+
+    return { state: "ok", stream: toPublicStream(stream) };
+  } catch {
+    return { state: "missing" };
   }
-
-  return { state: "ok", stream: toPublicStream(stream) };
 }
 
 async function isPasswordLocked(
@@ -131,33 +116,37 @@ export async function listStreamAccess(options: {
    */
   listedOnly?: boolean;
 }): Promise<StreamAccess[]> {
-  const hasSlugs = Boolean(options.slugs && options.slugs.length > 0);
-  const streams = await prisma.stream
-    .findMany({
-      where: {
-        status: "PUBLISHED",
-        ...(hasSlugs ? { slug: { in: options.slugs } } : {}),
-        ...(options.featuredOnly ? { featured: true } : {}),
-        ...(options.listedOnly && !hasSlugs ? { isPublic: true } : {}),
-      },
-      orderBy: [{ featured: "desc" }, { order: "asc" }, { title: "asc" }],
-      take: options.limit,
-    })
-    .catch(() => []);
+  try {
+    const hasSlugs = Boolean(options.slugs && options.slugs.length > 0);
+    const streams = await prisma.stream
+      .findMany({
+        where: {
+          status: "PUBLISHED",
+          ...(hasSlugs ? { slug: { in: options.slugs } } : {}),
+          ...(options.featuredOnly ? { featured: true } : {}),
+          ...(options.listedOnly && !hasSlugs ? { isPublic: true } : {}),
+        },
+        orderBy: [{ featured: "desc" }, { order: "asc" }, { title: "asc" }],
+        take: options.limit,
+      })
+      .catch(() => []);
 
-  return Promise.all(
-    streams.map(async (stream): Promise<StreamAccess> => {
-      if (await isPasswordLocked(stream.slug, stream.accessPasswordHash)) {
-        return {
-          state: "locked",
-          slug: stream.slug,
-          title: stream.title,
-          description: stream.description,
-        };
-      }
-      return { state: "ok", stream: toPublicStream(stream) };
-    }),
-  );
+    return await Promise.all(
+      streams.map(async (stream): Promise<StreamAccess> => {
+        if (await isPasswordLocked(stream.slug, stream.accessPasswordHash)) {
+          return {
+            state: "locked",
+            slug: stream.slug,
+            title: stream.title,
+            description: stream.description,
+          };
+        }
+        return { state: "ok", stream: toPublicStream(stream) };
+      }),
+    );
+  } catch {
+    return [];
+  }
 }
 
 /** Converts a stored source into the URL an iframe player should load. */
@@ -204,7 +193,7 @@ export function iframeSourceFor(stream: PublicStream): string {
   }
 }
 
-export const IFRAME_STREAM_TYPES: StreamType[] = [
+export const IFRAME_STREAM_TYPES: PublicStreamType[] = [
   "YOUTUBE",
   "VIMEO",
   "TWITCH",

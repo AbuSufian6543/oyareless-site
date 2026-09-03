@@ -4,7 +4,8 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { LoaderCircle, TriangleAlert } from "lucide-react";
 
 import { HtmlStreamPlayer } from "@/components/blocks/html-stream-player";
-import type { PublicStream } from "@/lib/streams";
+import type { ParsedMistEmbed } from "@/lib/html-stream-embed";
+import type { PublicStream } from "@/lib/stream-public";
 import { cn } from "@/lib/utils";
 
 const ASPECTS: Record<string, string> = {
@@ -32,11 +33,15 @@ export function StreamPlayer({
   iframeSrc,
   className,
   layout = "feature",
+  mist = null,
+  html = "",
 }: {
   stream: PublicStream;
   iframeSrc: string;
   className?: string;
   layout?: StreamLayout;
+  mist?: ParsedMistEmbed | null;
+  html?: string;
 }) {
   const aspect = ASPECTS[stream.aspectRatio] ?? ASPECTS["16/9"];
   const isIframe = ["YOUTUBE", "VIMEO", "TWITCH", "FACEBOOK", "IFRAME"].includes(
@@ -59,9 +64,10 @@ export function StreamPlayer({
   if (stream.type === "HTML") {
     return stage(
       <HtmlStreamPlayer
-        html={stream.source}
+        mist={mist}
+        html={html}
         title={stream.title}
-        posterUrl={stream.posterUrl}
+        posterUrl={stream.posterUrl ?? mist?.poster}
       />,
     );
   }

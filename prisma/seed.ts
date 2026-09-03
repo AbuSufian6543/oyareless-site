@@ -310,34 +310,53 @@ async function seedDowntownNorthPtz(): Promise<void> {
   const existing = await prisma.stream.findUnique({
     where: { slug: DOWNTOWN_NORTH_PTZ_SLUG },
   });
-  if (existing) {
-    log("Downtown north PTZ stream already present");
+
+  const demo = {
+    title: "Downtown North PTZ",
+    description:
+      "Live PTZ camera looking north over downtown Sault Ste. Marie.",
+    type: "HTML" as const,
+    source: DOWNTOWN_NORTH_PTZ_EMBED,
+    posterUrl:
+      "https://www.wirelesscom.org/uploads/4/6/3/6/46366157/416823.jpg",
+    location: "Downtown Sault Ste. Marie, ON",
+    status: "PUBLISHED" as const,
+    isLive: true,
+    featured: true,
+    isPublic: true,
+    autoplay: true,
+    muted: true,
+    showControls: true,
+    order: 0,
+  };
+
+  if (!existing) {
+    await prisma.stream.create({
+      data: { slug: DOWNTOWN_NORTH_PTZ_SLUG, ...demo },
+    });
+    log("Created downtown north PTZ live demo stream");
     return;
   }
 
-  await prisma.stream.create({
+  const needsEmbed =
+    existing.type !== "HTML" || !existing.source.includes("mistPlay");
+  await prisma.stream.update({
+    where: { slug: DOWNTOWN_NORTH_PTZ_SLUG },
     data: {
-      slug: DOWNTOWN_NORTH_PTZ_SLUG,
-      title: "Downtown North PTZ",
-      description:
-        "Live PTZ camera looking north over downtown Sault Ste. Marie.",
-      type: "HTML",
-      source: DOWNTOWN_NORTH_PTZ_EMBED,
-      posterUrl:
-        "https://www.wirelesscom.org/uploads/4/6/3/6/46366157/416823.jpg",
-      location: "Downtown Sault Ste. Marie, ON",
+      ...(needsEmbed
+        ? {
+            type: demo.type,
+            source: demo.source,
+            posterUrl: existing.posterUrl || demo.posterUrl,
+          }
+        : {}),
+      featured: true,
+      isPublic: true,
       status: "PUBLISHED",
       isLive: true,
-      featured: false,
-      isPublic: true,
-      autoplay: true,
-      muted: true,
-      showControls: true,
-      order: 0,
     },
   });
-
-  log("Created downtown north PTZ live demo stream");
+  log("Downtown north PTZ stream is published and featured");
 }
 
 async function seedExampleStream(): Promise<void> {

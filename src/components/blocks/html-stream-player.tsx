@@ -8,6 +8,7 @@ import {
   parseMistEmbed,
   rewriteInsecureMistPlayer,
   uniquifyEmbedIds,
+  type ParsedMistEmbed,
 } from "@/lib/html-stream-embed";
 import { cn } from "@/lib/utils";
 
@@ -127,12 +128,14 @@ function waitForHostSize(element: HTMLElement): Promise<{ width: number; height:
  * back to re-inserting their script tags (innerHTML does not execute them).
  */
 export function HtmlStreamPlayer({
-  html,
+  html = "",
+  mist = null,
   title,
   className,
   posterUrl,
 }: {
-  html: string;
+  html?: string;
+  mist?: ParsedMistEmbed | null;
   title: string;
   className?: string;
   posterUrl?: string | null;
@@ -140,7 +143,7 @@ export function HtmlStreamPlayer({
   const hostRef = useRef<HTMLDivElement>(null);
   const instanceRef = useRef<MistInstance | null>(null);
   const reactId = useId().replace(/[^a-zA-Z0-9]/g, "") || "embed";
-  const parsed = parseMistEmbed(html);
+  const parsed = mist ?? parseMistEmbed(html);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -153,7 +156,7 @@ export function HtmlStreamPlayer({
     host.innerHTML = "";
     setStatus("loading");
     setErrorMessage("");
-    const call = parseMistEmbed(html);
+    const call = mist ?? parseMistEmbed(html);
 
     const runParsed = async () => {
       if (!call) return false;
@@ -232,7 +235,13 @@ export function HtmlStreamPlayer({
 
     void (async () => {
       const handled = await runParsed();
-      if (!handled && !cancelled) runFallback();
+      if (handled || cancelled) return;
+      if (html.trim()) {
+        runFallback();
+        return;
+      }
+      setStatus("error");
+      setErrorMessage("This stream has no player embed.");
     })();
 
     return () => {
@@ -245,7 +254,7 @@ export function HtmlStreamPlayer({
       instanceRef.current = null;
       host.innerHTML = "";
     };
-  }, [html, posterUrl, reactId]);
+  }, [html, mist, posterUrl, reactId]);
 
   const fallbackHref = parsed?.fallbackHref;
 

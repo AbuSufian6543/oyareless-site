@@ -18,7 +18,7 @@ export const metadata: Metadata = publicMetadata({
 });
 
 export default async function LiveIndexPage() {
-  const streams = await listStreamAccess({ listedOnly: true });
+  const streams = await listStreamAccess({ listedOnly: true }).catch(() => []);
 
   return (
     <>

@@ -3,6 +3,7 @@ import { MapPin, Radio } from "lucide-react";
 import { Section, SectionHeading, isDarkBackground } from "@/components/blocks/section";
 import { StreamGate } from "@/components/blocks/stream-gate";
 import { LiveBadge, StreamPlayer, streamFrameClass, type StreamLayout } from "@/components/blocks/stream-player";
+import { parseMistEmbed } from "@/lib/html-stream-embed";
 import type { BlockOf } from "@/lib/blocks";
 import {
   getStreamAccess,
@@ -34,7 +35,9 @@ export async function LiveStreamBlock({
     );
   }
 
-  const access = await getStreamAccess(block.data.streamSlug);
+  const access = await getStreamAccess(block.data.streamSlug).catch(
+    () => ({ state: "missing" as const }),
+  );
 
   return (
     <Section settings={block.settings} defaultBackground="dark">
@@ -65,7 +68,7 @@ export async function StreamGridBlock({
     slugs: hasSlugs ? block.data.slugs : undefined,
     featuredOnly: block.data.featuredOnly,
     listedOnly: !hasSlugs,
-  });
+  }).catch(() => []);
   const layout: StreamLayout =
     streams.length <= 1 || block.data.columns === "1" ? "feature" : "grid";
   const columnsClass =
@@ -126,12 +129,21 @@ export function StreamCard({
   }
 
   const { stream } = access;
+  const mist = stream.type === "HTML" ? parseMistEmbed(stream.source) : null;
+  const playerStream =
+    stream.type === "HTML" ? { ...stream, source: "" } : stream;
+  const html =
+    stream.type === "HTML" && !mist
+      ? stream.source.replace(/<\/script/gi, "<\\/script")
+      : "";
 
   return (
     <figure className={streamFrameClass(layout)}>
       <StreamPlayer
-        stream={stream}
-        iframeSrc={iframeSourceFor(stream)}
+        stream={playerStream}
+        iframeSrc={stream.type === "HTML" ? "" : iframeSourceFor(stream)}
+        mist={mist}
+        html={html}
         layout="grid"
       />
 
