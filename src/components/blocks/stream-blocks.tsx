@@ -2,8 +2,16 @@ import { MapPin, Radio } from "lucide-react";
 
 import { Section, SectionHeading, isDarkBackground } from "@/components/blocks/section";
 import { StreamGate } from "@/components/blocks/stream-gate";
-import { LiveBadge, StreamPlayer, streamFrameClass, type StreamLayout } from "@/components/blocks/stream-player";
+import { LiveBadge } from "@/components/blocks/live-badge";
+import { MistPlayerSlot } from "@/components/blocks/mist-player-slot";
+import { StreamPlayer } from "@/components/blocks/stream-player";
 import { parseMistEmbed } from "@/lib/html-stream-embed";
+import {
+  isHtmlStreamType,
+  streamAspectClass,
+  streamFrameClass,
+  type StreamLayout,
+} from "@/lib/stream-public";
 import type { BlockOf } from "@/lib/blocks";
 import {
   getStreamAccess,
@@ -129,23 +137,36 @@ export function StreamCard({
   }
 
   const { stream } = access;
-  const mist = stream.type === "HTML" ? parseMistEmbed(stream.source) : null;
-  const playerStream =
-    stream.type === "HTML" ? { ...stream, source: "" } : stream;
-  const html =
-    stream.type === "HTML" && !mist
-      ? stream.source.replace(/<\/script/gi, "<\\/script")
-      : "";
+  const htmlStream = isHtmlStreamType(stream.type);
+  const mist = htmlStream ? parseMistEmbed(stream.source) : null;
+  const aspectClass = streamAspectClass(stream.aspectRatio);
 
   return (
     <figure className={streamFrameClass(layout)}>
-      <StreamPlayer
-        stream={playerStream}
-        iframeSrc={stream.type === "HTML" ? "" : iframeSourceFor(stream)}
-        mist={mist}
-        html={html}
-        layout="grid"
-      />
+      {mist ? (
+        <MistPlayerSlot
+          streamName={mist.streamName}
+          loop={mist.loop}
+          poster={stream.posterUrl ?? mist.poster ?? ""}
+          title={stream.title}
+          fallbackHref={
+            mist.fallbackHref ??
+            `https://videostreamcanada.ca/${mist.streamName}.html`
+          }
+          aspectClass={aspectClass}
+        />
+      ) : (
+        <StreamPlayer
+          stream={htmlStream ? { ...stream, source: "" } : stream}
+          iframeSrc={htmlStream ? "" : iframeSourceFor(stream)}
+          html={
+            htmlStream
+              ? stream.source.replace(/<\/script/gi, "<\\/script")
+              : ""
+          }
+          layout="grid"
+        />
+      )}
 
       {showTitle && (
         <figcaption className="mt-3.5">

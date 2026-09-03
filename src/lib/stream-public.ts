@@ -39,3 +39,23 @@ export type StreamAccess =
   | { state: "ok"; stream: PublicStream }
   | { state: "locked"; slug: string; title: string; description: string | null }
   | { state: "missing" };
+
+/** Featured = one player on a page. Grid = a cell in a multi-stream layout. */
+export type StreamLayout = "feature" | "grid";
+
+export function streamFrameClass(layout: StreamLayout = "feature"): string {
+  return layout === "grid"
+    ? "w-full min-w-0"
+    : "mx-auto w-full min-w-0 max-w-5xl";
+}
+
+export function streamAspectClass(ratio: string): string {
+  if (ratio === "4/3") return "aspect-[4/3]";
+  if (ratio === "21/9") return "aspect-[21/9]";
+  if (ratio === "1/1") return "aspect-square";
+  return "aspect-video";
+}
+
+export function isHtmlStreamType(type: string): boolean {
+  return type === "HTML";
+}

@@ -1,36 +1,8 @@
-/**
- * Default Mist / VideoStreamCanada snippet for the downtown north PTZ demo.
- * Admins edit the live copy under Live Streams; this is only the seed value.
- */
+import { MIST_PLAYER_SCRIPT_URL } from "@/lib/mist-config";
+
+export { MIST_PLAYER_SCRIPT_URL };
+
 export const DOWNTOWN_NORTH_PTZ_SLUG = "downtown-north-ptz";
-
-export const MIST_PLAYER_SCRIPT_URL =
-  "https://videostreamcanada.ca/player.js";
-
-export const DOWNTOWN_NORTH_PTZ_EMBED = `<div class="mistvideo" id="downtown-north-ptz_XOj7i42joT3I">
-  <noscript>
-    <a href="https://videostreamcanada.ca/downtown-north-ptz.html" target="_blank" rel="noopener noreferrer">
-      Click here to play this video
-    </a>
-  </noscript>
-  <script>
-    var a = function(){
-      mistPlay("downtown-north-ptz",{
-        target: document.getElementById("downtown-north-ptz_XOj7i42joT3I"),
-        loop: true,
-        poster: "https://www.wirelesscom.org/uploads/4/6/3/6/46366157/416823.jpg"
-      });
-    };
-    if (!window.mistplayers) {
-      var p = document.createElement("script");
-      if (location.protocol == "https:") { p.src = "https://videostreamcanada.ca/player.js" }
-      else { p.src = "http://videostreamcanada.ca/player.js" }
-      document.head.appendChild(p);
-      p.onload = a;
-    }
-    else { a(); }
-  </script>
-</div>`;
 
 export type ParsedMistEmbed = {
   streamName: string;
@@ -52,7 +24,9 @@ export function looksLikeMistEmbed(html: string): boolean {
  * Reads mistPlay("name", { loop, poster }) from the vendor snippet so the
  * site can call mistPlay itself with a React-managed container.
  */
-export function parseMistEmbed(html: string): ParsedMistEmbed | null {
+export function parseMistEmbed(html: string | null | undefined): ParsedMistEmbed | null {
+  if (typeof html !== "string" || !html) return null;
+
   const nameMatch = html.match(/mistPlay\s*\(\s*(["'])([^"']+)\1/);
   if (!nameMatch?.[2]) return null;
 

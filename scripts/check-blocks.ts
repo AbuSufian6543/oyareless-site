@@ -6,8 +6,8 @@
 import { buildBlocks, SEED_PAGES } from "../prisma/seed-content";
 import { BLOCK_DEFINITIONS, createBlock } from "../src/lib/block-registry";
 import { blocksSchema, parseBlocks } from "../src/lib/blocks";
+import { DOWNTOWN_NORTH_PTZ_EMBED } from "../src/lib/downtown-north-ptz-embed";
 import {
-  DOWNTOWN_NORTH_PTZ_EMBED,
   looksLikeMistEmbed,
   parseMistEmbed,
   rewriteInsecureMistPlayer,

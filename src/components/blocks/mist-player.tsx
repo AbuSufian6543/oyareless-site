@@ -1,16 +1,9 @@
 "use client";
 
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { LoaderCircle, TriangleAlert } from "lucide-react";
 
-import {
-  parseMistEmbed,
-  rewriteInsecureMistPlayer,
-  uniquifyEmbedIds,
-  type ParsedMistEmbed,
-} from "@/lib/html-stream-embed";
 import { MIST_PLAYER_SCRIPT_URL } from "@/lib/mist-config";
-import { cn } from "@/lib/utils";
 
 type MistPlayFn = (
   streamName: string,
@@ -23,11 +16,7 @@ type MistPlayFn = (
     maxwidth?: number;
     maxheight?: number;
   },
-) => MistInstance | void;
-
-type MistInstance = {
-  unload?: (arg?: unknown) => void;
-};
+) => { unload?: (arg?: unknown) => void } | void;
 
 declare global {
   interface Window {
@@ -70,9 +59,11 @@ function loadMistPlayer(): Promise<MistPlayFn> {
         return;
       }
       existing.addEventListener("load", finish, { once: true });
-      existing.addEventListener("error", () => fail("Unable to load the video player."), {
-        once: true,
-      });
+      existing.addEventListener(
+        "error",
+        () => fail("Unable to load the video player."),
+        { once: true },
+      );
       return;
     }
 
@@ -121,55 +112,50 @@ function waitForHostSize(element: HTMLElement): Promise<{ width: number; height:
   });
 }
 
-/**
- * Plays admin-pasted Mist / VideoStreamCanada HTML. Typical snippets call
- * mistPlay(name, { target, loop, poster }); we parse that and call mistPlay
- * with a React-managed container so ids never collide. Unknown snippets fall
- * back to re-inserting their script tags (innerHTML does not execute them).
- */
-export function HtmlStreamPlayer({
-  html = "",
-  mist = null,
-  title,
-  className,
-  posterUrl,
-}: {
-  html?: string;
-  mist?: ParsedMistEmbed | null;
+export type MistPlayerProps = {
+  streamName: string;
+  loop: boolean;
+  poster: string;
   title: string;
-  className?: string;
-  posterUrl?: string | null;
-}) {
+  fallbackHref: string;
+};
+
+/**
+ * Browser-only Mist / VideoStreamCanada player. Props are plain strings so
+ * the live page never serializes vendor HTML (script tags) into the RSC payload.
+ */
+export function MistPlayer({
+  streamName,
+  loop,
+  poster,
+  title,
+  fallbackHref,
+}: MistPlayerProps) {
   const hostRef = useRef<HTMLDivElement>(null);
-  const instanceRef = useRef<MistInstance | null>(null);
-  const reactId = useId().replace(/[^a-zA-Z0-9]/g, "") || "embed";
-  const parsed = mist ?? parseMistEmbed(html);
+  const instanceRef = useRef<{ unload?: (arg?: unknown) => void } | null>(null);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     const host = hostRef.current;
-    if (!host) return;
+    if (!host || !streamName) return;
 
     let cancelled = false;
     instanceRef.current = null;
     host.innerHTML = "";
     setStatus("loading");
     setErrorMessage("");
-    const call = mist ?? parseMistEmbed(html);
 
-    const runParsed = async () => {
-      if (!call) return false;
+    void (async () => {
       try {
         const play = await loadMistPlayer();
-        if (cancelled || !hostRef.current) return true;
+        if (cancelled || !hostRef.current) return;
         const size = await waitForHostSize(hostRef.current);
-        if (cancelled || !hostRef.current) return true;
-        const poster = call.poster || posterUrl || undefined;
-        const instance = play(call.streamName, {
+        if (cancelled || !hostRef.current) return;
+        const instance = play(streamName, {
           target: hostRef.current,
-          loop: call.loop,
-          poster,
+          loop,
+          poster: poster || undefined,
           width: size.width,
           height: size.height,
           maxwidth: size.width,
@@ -178,70 +164,18 @@ export function HtmlStreamPlayer({
         if (cancelled) {
           instance?.unload?.();
           hostRef.current.innerHTML = "";
-          return true;
+          return;
         }
         instanceRef.current = instance ?? null;
-        if (!cancelled) setStatus("ready");
+        setStatus("ready");
       } catch (error) {
         if (!cancelled) {
           setStatus("error");
           setErrorMessage(
-            error instanceof Error
-              ? error.message
-              : "Unable to start the video player.",
+            error instanceof Error ? error.message : "Unable to start the video player.",
           );
         }
       }
-      return true;
-    };
-
-    const runFallback = () => {
-      const prepared = uniquifyEmbedIds(rewriteInsecureMistPlayer(html), reactId);
-      host.innerHTML = prepared;
-      const originals = [...host.querySelectorAll("script")];
-
-      const run = (index: number) => {
-        if (cancelled || index >= originals.length) {
-          if (!cancelled) setStatus("ready");
-          return;
-        }
-        const old = originals[index];
-        if (!old) {
-          run(index + 1);
-          return;
-        }
-
-        const next = document.createElement("script");
-        for (const attr of old.attributes) {
-          next.setAttribute(attr.name, attr.value);
-        }
-        if (next.src.startsWith("http://videostreamcanada.ca/")) {
-          next.src = next.src.replace(/^http:/, "https:");
-        }
-        next.textContent = old.textContent;
-        old.replaceWith(next);
-
-        if (next.src) {
-          next.addEventListener("load", () => run(index + 1), { once: true });
-          next.addEventListener("error", () => run(index + 1), { once: true });
-          return;
-        }
-
-        run(index + 1);
-      };
-
-      run(0);
-    };
-
-    void (async () => {
-      const handled = await runParsed();
-      if (handled || cancelled) return;
-      if (html.trim()) {
-        runFallback();
-        return;
-      }
-      setStatus("error");
-      setErrorMessage("This stream has no player embed.");
     })();
 
     return () => {
@@ -249,17 +183,15 @@ export function HtmlStreamPlayer({
       try {
         instanceRef.current?.unload?.();
       } catch {
-        // Vendor teardown is best-effort; the host is cleared either way.
+        // Vendor teardown is best-effort.
       }
       instanceRef.current = null;
       host.innerHTML = "";
     };
-  }, [html, mist, posterUrl, reactId]);
-
-  const fallbackHref = parsed?.fallbackHref;
+  }, [streamName, loop, poster]);
 
   return (
-    <div className={cn("absolute inset-0", className)}>
+    <div className="absolute inset-0">
       <div
         ref={hostRef}
         className="wc-mist-host [&_a]:text-accent-300 [&_a]:underline"
@@ -299,23 +231,6 @@ export function HtmlStreamPlayer({
           )}
         </div>
       )}
-
-      <noscript>
-        <p className="p-6 text-center text-sm text-navy-200">
-          {fallbackHref ? (
-            <a
-              href={fallbackHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-accent-300 underline"
-            >
-              Click here to play this video
-            </a>
-          ) : (
-            "JavaScript is required to play this live stream."
-          )}
-        </p>
-      </noscript>
     </div>
   );
 }

@@ -5,24 +5,17 @@ import { LoaderCircle, TriangleAlert } from "lucide-react";
 
 import { HtmlStreamPlayer } from "@/components/blocks/html-stream-player";
 import type { ParsedMistEmbed } from "@/lib/html-stream-embed";
-import type { PublicStream } from "@/lib/stream-public";
+import {
+  streamAspectClass,
+  streamFrameClass,
+  type PublicStream,
+  type StreamLayout,
+} from "@/lib/stream-public";
 import { cn } from "@/lib/utils";
 
-const ASPECTS: Record<string, string> = {
-  "16/9": "aspect-video",
-  "4/3": "aspect-[4/3]",
-  "21/9": "aspect-[21/9]",
-  "1/1": "aspect-square",
-};
-
-/** Featured = one player on a page. Grid = a cell in a multi-stream layout. */
-export type StreamLayout = "feature" | "grid";
-
-export function streamFrameClass(layout: StreamLayout = "feature"): string {
-  return layout === "grid"
-    ? "w-full min-w-0"
-    : "mx-auto w-full min-w-0 max-w-5xl";
-}
+export type { StreamLayout };
+export { streamFrameClass };
+export { LiveBadge } from "@/components/blocks/live-badge";
 
 /**
  * Plays HLS/DASH via hls.js (loaded on demand), native video for progressive
@@ -43,7 +36,7 @@ export function StreamPlayer({
   mist?: ParsedMistEmbed | null;
   html?: string;
 }) {
-  const aspect = ASPECTS[stream.aspectRatio] ?? ASPECTS["16/9"];
+  const aspect = streamAspectClass(stream.aspectRatio);
   const isIframe = ["YOUTUBE", "VIMEO", "TWITCH", "FACEBOOK", "IFRAME"].includes(
     stream.type,
   );
@@ -228,19 +221,3 @@ function HlsPlayer({ stream }: { stream: PublicStream }) {
   );
 }
 
-export function LiveBadge({ className }: { className?: string }) {
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1.5 rounded-full bg-red-600 px-2.5 py-1 text-[0.6875rem] font-bold uppercase tracking-wider text-white",
-        className,
-      )}
-    >
-      <span
-        className="size-1.5 rounded-full bg-white animate-live-dot"
-        aria-hidden="true"
-      />
-      Live
-    </span>
-  );
-}

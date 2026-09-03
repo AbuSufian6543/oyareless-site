@@ -8,10 +8,8 @@
 import "dotenv/config";
 
 import { env } from "../src/lib/env";
-import {
-  DOWNTOWN_NORTH_PTZ_EMBED,
-  DOWNTOWN_NORTH_PTZ_SLUG,
-} from "../src/lib/html-stream-embed";
+import { DOWNTOWN_NORTH_PTZ_EMBED } from "../src/lib/downtown-north-ptz-embed";
+import { DOWNTOWN_NORTH_PTZ_SLUG } from "../src/lib/html-stream-embed";
 import { hashPassword, validatePasswordStrength } from "../src/lib/passwords";
 import { prisma } from "../src/lib/prisma";
 import { DEFAULT_SETTINGS } from "../src/lib/settings-defaults";
