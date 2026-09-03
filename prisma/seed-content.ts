@@ -1684,7 +1684,7 @@ const videoServices: SeedPage = {
     },
     {
       type: "liveStream",
-      settings: { background: "dark", paddingY: "xl" },
+      settings: { background: "grid", paddingY: "xl" },
       data: {
         heading: "Live demo",
         description:
@@ -1695,7 +1695,7 @@ const videoServices: SeedPage = {
     },
     {
       type: "streamGrid",
-      settings: { background: "light", paddingY: "xl" },
+      settings: { background: "grid", paddingY: "xl" },
       data: {
         heading: "Live streams",
         description:
@@ -1729,7 +1729,7 @@ const liveBroadcasting: SeedPage = {
     ),
     {
       type: "streamGrid",
-      settings: { background: "white", paddingY: "xl" },
+      settings: { background: "grid", paddingY: "xl" },
       data: {
         heading: "Available broadcasts",
         description:

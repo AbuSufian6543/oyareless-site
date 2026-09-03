@@ -76,6 +76,7 @@ export default async function LiveIndexPage() {
                   access={access}
                   showTitle
                   layout={streams.length > 1 ? "grid" : "feature"}
+                  dark
                 />
               ))}
             </div>

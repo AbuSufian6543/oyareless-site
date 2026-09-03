@@ -26,18 +26,21 @@ export async function LiveStreamBlock({
 }: {
   block: BlockOf<"liveStream">;
 }) {
-  const dark = isDarkBackground(block.settings);
+  const dark = isDarkBackground(block.settings, "dark");
 
   if (!block.data.streamSlug) {
     return (
-      <Section settings={block.settings}>
+      <Section settings={block.settings} defaultBackground="dark">
         <SectionHeading
           heading={block.data.heading}
           description={block.data.description}
           dark={dark}
         />
         <div className={streamFrameClass("feature")}>
-          <EmptyStreamNotice message="Select a stream in the page editor. Create it under Live Streams first if you have not already — that is where the player embed and optional password live." />
+          <EmptyStreamNotice
+            dark={dark}
+            message="Select a stream in the page editor. Create it under Live Streams first if you have not already — that is where the player embed and optional password live."
+          />
         </div>
       </Section>
     );
@@ -52,9 +55,14 @@ export async function LiveStreamBlock({
       <SectionHeading
         heading={block.data.heading}
         description={block.data.description}
-        dark={isDarkBackground(block.settings, "dark")}
+        dark={dark}
       />
-      <StreamCard access={access} showTitle={block.data.showTitle} layout="feature" />
+      <StreamCard
+        access={access}
+        showTitle={block.data.showTitle}
+        layout="feature"
+        dark={dark}
+      />
     </Section>
   );
 }
@@ -95,11 +103,20 @@ export async function StreamGridBlock({
       />
 
       {streams.length === 0 ? (
-        <EmptyStreamNotice message="No published streams yet. Add one under Live Streams in the admin." />
+        <EmptyStreamNotice
+          dark={dark}
+          message="No published streams yet. Add one under Live Streams in the admin."
+        />
       ) : (
         <div className={cn("grid gap-6", columnsClass)}>
           {streams.map((access, index) => (
-            <StreamCard key={index} access={access} showTitle layout={layout} />
+            <StreamCard
+              key={index}
+              access={access}
+              showTitle
+              layout={layout}
+              dark={dark}
+            />
           ))}
         </div>
       )}
@@ -111,15 +128,20 @@ export function StreamCard({
   access,
   showTitle = true,
   layout = "feature",
+  dark = true,
 }: {
   access: StreamAccess;
   showTitle?: boolean;
   layout?: StreamLayout;
+  dark?: boolean;
 }) {
   if (access.state === "missing") {
     return (
       <div className={streamFrameClass(layout)}>
-        <EmptyStreamNotice message="This stream is no longer available." />
+        <EmptyStreamNotice
+          dark={dark}
+          message="This stream is no longer available."
+        />
       </div>
     );
   }
@@ -169,21 +191,41 @@ export function StreamCard({
       )}
 
       {showTitle && (
-        <figcaption className="mt-3.5">
+        <figcaption
+          className={cn(
+            "mt-4 border-t pt-4",
+            dark ? "border-white/15" : "border-slate-200",
+          )}
+        >
           <div className="flex flex-wrap items-center gap-2.5">
             {stream.isLive && <LiveBadge />}
-            <h3 className="text-[1.0625rem] font-bold text-white">
+            <h3
+              className={cn(
+                "text-[1.0625rem] font-bold",
+                dark ? "text-white" : "text-navy-900",
+              )}
+            >
               {stream.title}
             </h3>
           </div>
           {stream.location && (
-            <p className="mt-1.5 flex items-center gap-1.5 text-sm text-navy-300">
+            <p
+              className={cn(
+                "mt-1.5 flex items-center gap-1.5 text-sm",
+                dark ? "text-navy-200" : "text-slate-600",
+              )}
+            >
               <MapPin className="size-3.5" aria-hidden="true" />
               {stream.location}
             </p>
           )}
           {stream.description && (
-            <p className="mt-2 text-sm leading-relaxed text-navy-300">
+            <p
+              className={cn(
+                "mt-2 text-sm leading-relaxed",
+                dark ? "text-navy-200" : "text-slate-600",
+              )}
+            >
               {stream.description}
             </p>
           )}
@@ -193,11 +235,29 @@ export function StreamCard({
   );
 }
 
-function EmptyStreamNotice({ message }: { message: string }) {
+function EmptyStreamNotice({
+  message,
+  dark = true,
+}: {
+  message: string;
+  dark?: boolean;
+}) {
   return (
-    <div className="flex aspect-video flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-navy-700 bg-navy-900/50 p-8 text-center">
-      <Radio className="size-8 text-navy-500" aria-hidden="true" />
-      <p className="max-w-sm text-sm text-navy-400">{message}</p>
+    <div
+      className={cn(
+        "flex aspect-video flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-8 text-center",
+        dark
+          ? "border-navy-700 bg-navy-900/50"
+          : "border-slate-300 bg-slate-50",
+      )}
+    >
+      <Radio
+        className={cn("size-8", dark ? "text-navy-500" : "text-slate-400")}
+        aria-hidden="true"
+      />
+      <p className={cn("max-w-sm text-sm", dark ? "text-navy-400" : "text-slate-500")}>
+        {message}
+      </p>
     </div>
   );
 }

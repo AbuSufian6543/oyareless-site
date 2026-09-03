@@ -289,6 +289,25 @@ function upgradeItServicesCopy(
   }
 }
 
+const LIGHT_STREAM_BANDS = new Set(["white", "light"]);
+
+function upgradeVideoServicesSurfaces(
+  next: JsonBlock[],
+  slug: string,
+  notes: string[],
+): void {
+  if (slug !== "video-services" && slug !== "live-video-broadcasting") return;
+
+  for (const block of next) {
+    if (block.type !== "liveStream" && block.type !== "streamGrid") continue;
+    const settings = (block.settings ??= {});
+    const background = String(settings.background ?? "white");
+    if (!LIGHT_STREAM_BANDS.has(background)) continue;
+    settings.background = "grid";
+    notes.push(`${block.type} broadcast band`);
+  }
+}
+
 function upgradeTechHeroCopy(
   next: JsonBlock[],
   seed: ReturnType<typeof buildBlocks>,
@@ -659,6 +678,7 @@ function fillMissingMedia(
   upgradeServiceHeroCopy(next, seed, notes);
   upgradeCtaCopy(next, seed, notes);
   upgradeItServicesCopy(next, seed, slug, notes);
+  upgradeVideoServicesSurfaces(next, slug, notes);
   fixBannerCtaSurfaces(next, notes);
   upgradeHyteraCtaCopy(next, notes);
   ensureHyteraCatalog(next, seed, slug, notes);
