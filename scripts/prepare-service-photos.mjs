@@ -1,8 +1,8 @@
 /**
- * Encode the 81 service pictures from the Desktop `logos` folder (or a
+ * Encode the service pictures from the Desktop `logos` folder (or a
  * previously copied source tree) into committed WebP files with a white
- * backdrop where needed and the WirelessCom lockup watermarked in the
- * centre, then write the ordered manifest the seed and media library read.
+ * backdrop where needed — no watermark — then write the ordered manifest
+ * the seed and media library read.
  *
  *   node scripts/prepare-service-photos.mjs
  *
@@ -22,14 +22,12 @@ import { prepareServiceBitmap } from "./image-backdrop.mjs";
 const ROOT = process.cwd();
 const MAX_EDGE = 1600;
 const WEBP_QUALITY = 84;
-const EXPECTED_COUNT = 81;
+const MIN_COUNT = 81;
 
 const DESKTOP_DIR = "C:\\Users\\abu\\Desktop\\logos";
 const SOURCE_COPY = path.join(ROOT, "assets", "source-images", "services");
 const PUBLIC_DIR = path.join(ROOT, "public", "images", "services");
 const MANIFEST = path.join(ROOT, "src", "lib", "service-photos.generated.json");
-const LOGO = path.join(ROOT, "public", "brand", "logo.png");
-const LOGO_INVERSE = path.join(ROOT, "public", "brand", "logo-inverse.png");
 
 /** Longest prefix first. Filenames are matched case-insensitively. */
 const PREFIXES = [
@@ -143,7 +141,7 @@ async function encodeOne(inputPath, outputPath, originalName) {
   }
 
   await (
-    await prepareServiceBitmap(inputPath, LOGO, LOGO_INVERSE, { maxEdge: MAX_EDGE })
+    await prepareServiceBitmap(inputPath, { maxEdge: MAX_EDGE })
   )
     .webp({ quality: WEBP_QUALITY, effort: 4 })
     .toFile(outputPath);
@@ -152,9 +150,9 @@ async function encodeOne(inputPath, outputPath, originalName) {
 
 async function main() {
   const { dir: sourceDir, files } = await resolveSourceDir();
-  if (files.length !== EXPECTED_COUNT) {
+  if (files.length < MIN_COUNT) {
     throw new Error(
-      `Expected ${EXPECTED_COUNT} pictures in ${sourceDir}, found ${files.length}.`,
+      `Expected at least ${MIN_COUNT} pictures in ${sourceDir}, found ${files.length}.`,
     );
   }
 
@@ -192,6 +190,7 @@ async function main() {
     await mkdir(outDir, { recursive: true });
     manifest[slug] = [];
 
+    const kept = new Set();
     for (const [index, item] of group.entries()) {
       const stem = String(index + 1).padStart(2, "0");
       const filename = `${stem}.webp`;
@@ -201,6 +200,7 @@ async function main() {
         outputPath,
         item.originalName,
       );
+      kept.add(written);
       manifest[slug].push({
         url: `/images/services/${slug}/${written}`,
         alt: `${item.label} from WirelessCom.Ca Inc. Photo ${index + 1}.`,
@@ -208,10 +208,14 @@ async function main() {
       });
       encoded += 1;
     }
+
+    for (const name of await readdir(outDir)) {
+      if (!kept.has(name)) await unlink(path.join(outDir, name));
+    }
   }
 
-  if (encoded !== EXPECTED_COUNT) {
-    throw new Error(`Encoded ${encoded} files, expected ${EXPECTED_COUNT}.`);
+  if (encoded !== files.length) {
+    throw new Error(`Encoded ${encoded} files, expected ${files.length}.`);
   }
 
   await writeFile(MANIFEST, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");

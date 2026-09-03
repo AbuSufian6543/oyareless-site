@@ -134,11 +134,11 @@ installations) and `marketing-1.png` / `marketing-2.png` where those
 files are present.
 
 Service-page photography lives in `public/images/services/{slug}/`.
-Those 81 WebP files are company-owned product and field pictures,
-encoded by `node scripts/prepare-service-photos.mjs` from the supplied
-masters (mixed JPEG, PNG, WebP, AVIF, and HEIF sources). Transparent or
-black studio backdrops are flattened onto white, and the WirelessCom
-lockup is watermarked in the centre. They are not CC0 stock. Video services, support, and contact still use the generated
+Those files are company-owned product and field pictures, encoded by
+`node scripts/prepare-service-photos.mjs` from the supplied masters
+(mixed JPEG, PNG, WebP, AVIF, and HEIF sources). Transparent or black
+studio backdrops are flattened onto white. They are not watermarked and
+are not CC0 stock. Video services, support, and contact still use the generated
 or CC0 cards listed above.
 
 ## Full-bleed backgrounds

@@ -1,7 +1,7 @@
 /**
- * Shared pixel helpers for service photos and app icons: flatten onto white,
- * fill a thin uniform letterbox (not a dark photograph), and stamp the
- * WirelessCom lockup in the centre.
+ * Shared pixel helpers for service photos and app icons: flatten onto white
+ * and fill a thin uniform letterbox (not a dark photograph). Service photos
+ * are not watermarked.
  */
 import sharp from "sharp";
 
@@ -207,7 +207,7 @@ export async function watermarkCenter(rgba, width, height, logoPng, logoInverseP
     ]);
 }
 
-export async function prepareServiceBitmap(inputPath, logoPng, logoInversePng, { maxEdge = 1600 } = {}) {
+export async function prepareServiceBitmap(inputPath, { maxEdge = 1600 } = {}) {
   const image = sharp(inputPath, { failOn: "none", animated: false }).rotate();
   const meta = await image.metadata();
   const width = meta.width ?? 0;
@@ -232,5 +232,7 @@ export async function prepareServiceBitmap(inputPath, logoPng, logoInversePng, {
   const rgba = Buffer.from(data);
   flattenOntoWhite(rgba);
   fillDarkBackdrop(rgba, info.width, info.height, 16);
-  return watermarkCenter(rgba, info.width, info.height, logoPng, logoInversePng);
+  return sharp(rgba, {
+    raw: { width: info.width, height: info.height, channels: 4 },
+  });
 }
