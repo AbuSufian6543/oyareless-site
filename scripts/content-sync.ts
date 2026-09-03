@@ -311,21 +311,39 @@ function upgradeFirewallsBrandGrid(
   const heading = String((currentGrid.data as { heading?: string })?.heading ?? "");
   if (heading !== "Firewalls we deploy and support") return;
 
-  const currentItems = (currentGrid.data as { items?: Array<Record<string, unknown>> }).items;
+  const currentItems = (currentGrid.data as { items?: Array<Record<string, unknown>> })
+    .items;
   if (!Array.isArray(currentItems)) return;
 
-  const names = currentItems.map((item) => canonicalBrandName(item.name));
-  const hasRetiredTiles =
-    names.includes("barracuda") ||
-    names.includes("fortinet") ||
-    names.includes("juniper") ||
-    names.includes("cisco") ||
-    names.includes("unifi");
   const seedItems = (seedGrid.data as { items: Array<Record<string, unknown>> }).items;
-  if (hasRetiredTiles) {
-    (currentGrid.data as { items: unknown }).items = structuredClone(seedItems);
-    notes.push("firewalls brand tiles");
+  const merged: Array<Record<string, unknown>> = [];
+
+  for (const seedItem of seedItems) {
+    const match = currentItems.find((item) =>
+      sameBrand(item, seedItem),
+    ) as Record<string, unknown> | undefined;
+    if (!match) {
+      merged.push(structuredClone(seedItem));
+      continue;
+    }
+    const nextItem = { ...match };
+    const seedLogo = String(seedItem.logoUrl ?? "");
+    const currentLogo = String(match.logoUrl ?? "");
+    if (seedLogo && (!currentLogo || currentLogo.startsWith("/brand/logos/"))) {
+      nextItem.logoUrl = seedLogo;
+    }
+    merged.push(nextItem);
   }
+
+  for (const item of currentItems) {
+    if (!seedItems.some((seedItem) => sameBrand(item, seedItem))) {
+      merged.push(item);
+    }
+  }
+
+  if (JSON.stringify(merged) === JSON.stringify(currentItems)) return;
+  (currentGrid.data as { items: unknown }).items = merged;
+  notes.push("firewalls brand tiles");
 }
 
 const LIGHT_STREAM_BANDS = new Set(["white", "light"]);
