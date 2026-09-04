@@ -561,6 +561,14 @@ async function seedCatalogue(): Promise<void> {
       order: 29,
     },
     {
+      slug: "cdvi",
+      name: "CDVI",
+      category: "Access control",
+      description: "CDVI readers, controllers and credentials we install with building access.",
+      logoUrl: vendorLogoUrl("cdvi"),
+      order: 30,
+    },
+    {
       slug: "cisco",
       name: "Cisco",
       category: "Switching, routing and firewalls",

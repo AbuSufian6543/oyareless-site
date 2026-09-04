@@ -73,6 +73,7 @@ export const SITE_PICTURES: SitePicture[] = [
   logo("uniview", "Uniview"),
   logo("schlage", "Schlage"),
   logo("shure", "Shure"),
+  logo("cdvi", "CDVI"),
   {
     url: "/brand/logo.png",
     name: "Primary logo",

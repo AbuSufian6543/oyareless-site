@@ -33,6 +33,7 @@ export const VENDOR_LOGO_EXT: Record<string, "svg" | "png" | "webp"> = {
   uniview: "webp",
   schlage: "webp",
   shure: "webp",
+  cdvi: "webp",
 };
 
 export function vendorLogoUrl(slug: string): string {
@@ -137,6 +138,12 @@ export const FOOTER_PRODUCTS: FooterProduct[] = [
   {
     slug: "genetec",
     name: "Genetec",
+    plate: "light",
+    href: "/access-control",
+  },
+  {
+    slug: "cdvi",
+    name: "CDVI",
     plate: "light",
     href: "/access-control",
   },

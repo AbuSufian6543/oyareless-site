@@ -138,6 +138,7 @@ function canonicalBrandName(value: unknown): string {
   if (name === "uniview" || name === "unv" || name === "uniview unv") return "uniview";
   if (name === "schlage") return "schlage";
   if (name === "shure") return "shure";
+  if (name === "cdvi") return "cdvi";
   return name;
 }
 
