@@ -169,6 +169,7 @@ export function StreamCard({
         <MistPlayerSlot
           streamName={mist.streamName}
           loop={mist.loop}
+          muted={mist.muted || stream.muted}
           poster={stream.posterUrl ?? mist.poster ?? ""}
           title={stream.title}
           fallbackHref={

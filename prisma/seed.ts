@@ -9,7 +9,11 @@ import "dotenv/config";
 
 import { env } from "../src/lib/env";
 import { DOWNTOWN_NORTH_PTZ_EMBED } from "../src/lib/downtown-north-ptz-embed";
-import { DOWNTOWN_NORTH_PTZ_SLUG } from "../src/lib/html-stream-embed";
+import { DOWNTOWN_SOUTH_PTZ_EMBED } from "../src/lib/downtown-south-ptz-embed";
+import {
+  DOWNTOWN_NORTH_PTZ_SLUG,
+  DOWNTOWN_SOUTH_PTZ_SLUG,
+} from "../src/lib/html-stream-embed";
 import { hashPassword, validatePasswordStrength } from "../src/lib/passwords";
 import { prisma } from "../src/lib/prisma";
 import { DEFAULT_SETTINGS } from "../src/lib/settings-defaults";
@@ -378,6 +382,59 @@ async function seedDowntownNorthPtz(): Promise<void> {
     },
   });
   log("Downtown north PTZ stream is published and featured");
+}
+
+async function seedDowntownSouthPtz(): Promise<void> {
+  const existing = await prisma.stream.findUnique({
+    where: { slug: DOWNTOWN_SOUTH_PTZ_SLUG },
+  });
+
+  const demo = {
+    title: "Downtown South PTZ",
+    description:
+      "Live PTZ camera looking south over downtown Sault Ste. Marie.",
+    type: "HTML" as const,
+    source: DOWNTOWN_SOUTH_PTZ_EMBED,
+    posterUrl:
+      "https://www.wirelesscom.org/uploads/4/6/3/6/46366157/416823.jpg",
+    location: "Downtown Sault Ste. Marie, ON",
+    status: "PUBLISHED" as const,
+    isLive: true,
+    featured: true,
+    isPublic: true,
+    autoplay: true,
+    muted: true,
+    showControls: true,
+    order: 1,
+  };
+
+  if (!existing) {
+    await prisma.stream.create({
+      data: { slug: DOWNTOWN_SOUTH_PTZ_SLUG, ...demo },
+    });
+    log("Created downtown south PTZ live stream");
+    return;
+  }
+
+  const needsEmbed =
+    existing.type !== "HTML" || !existing.source.includes("mistPlay");
+  await prisma.stream.update({
+    where: { slug: DOWNTOWN_SOUTH_PTZ_SLUG },
+    data: {
+      ...(needsEmbed
+        ? {
+            type: demo.type,
+            source: demo.source,
+            posterUrl: existing.posterUrl || demo.posterUrl,
+          }
+        : {}),
+      featured: true,
+      isPublic: true,
+      status: "PUBLISHED",
+      isLive: true,
+    },
+  });
+  log("Downtown south PTZ stream is published and featured");
 }
 
 async function seedExampleStream(): Promise<void> {
@@ -790,6 +847,7 @@ async function main(): Promise<void> {
   await seedRedirects();
   await seedLaunchPost();
   await seedDowntownNorthPtz();
+  await seedDowntownSouthPtz();
   await seedExampleStream();
   await seedCatalogue();
   const mediaAdded = await ensureSiteMedia();

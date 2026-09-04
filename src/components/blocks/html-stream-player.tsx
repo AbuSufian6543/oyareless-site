@@ -17,6 +17,7 @@ type MistPlayFn = (
   options: {
     target: HTMLElement;
     loop?: boolean;
+    muted?: boolean;
     poster?: string;
     width?: number;
     height?: number;
@@ -123,7 +124,7 @@ function waitForHostSize(element: HTMLElement): Promise<{ width: number; height:
 
 /**
  * Plays admin-pasted Mist / VideoStreamCanada HTML. Typical snippets call
- * mistPlay(name, { target, loop, poster }); we parse that and call mistPlay
+ * mistPlay(name, { target, loop, muted, poster }); we parse that and call mistPlay
  * with a React-managed container so ids never collide. Unknown snippets fall
  * back to re-inserting their script tags (innerHTML does not execute them).
  */
@@ -169,6 +170,7 @@ export function HtmlStreamPlayer({
         const instance = play(call.streamName, {
           target: hostRef.current,
           loop: call.loop,
+          muted: call.muted,
           poster,
           width: size.width,
           height: size.height,

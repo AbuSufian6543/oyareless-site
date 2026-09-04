@@ -3,10 +3,12 @@ import { MIST_PLAYER_SCRIPT_URL } from "@/lib/mist-config";
 export { MIST_PLAYER_SCRIPT_URL };
 
 export const DOWNTOWN_NORTH_PTZ_SLUG = "downtown-north-ptz";
+export const DOWNTOWN_SOUTH_PTZ_SLUG = "downtown-south-ptz";
 
 export type ParsedMistEmbed = {
   streamName: string;
   loop: boolean;
+  muted: boolean;
   poster: string | null;
   fallbackHref: string | null;
 };
@@ -21,8 +23,8 @@ export function looksLikeMistEmbed(html: string): boolean {
 }
 
 /**
- * Reads mistPlay("name", { loop, poster }) from the vendor snippet so the
- * site can call mistPlay itself with a React-managed container.
+ * Reads mistPlay("name", { loop, muted, poster }) from the vendor snippet so
+ * the site can call mistPlay itself with a React-managed container.
  */
 export function parseMistEmbed(html: string | null | undefined): ParsedMistEmbed | null {
   if (typeof html !== "string" || !html) return null;
@@ -36,6 +38,7 @@ export function parseMistEmbed(html: string | null | undefined): ParsedMistEmbed
   return {
     streamName: nameMatch[2],
     loop: /\bloop\s*:\s*true\b/.test(html),
+    muted: /\bmuted\s*:\s*true\b/.test(html),
     poster: posterMatch?.[2] || null,
     fallbackHref: hrefMatch?.[2] ?? null,
   };

@@ -10,6 +10,7 @@ type MistPlayFn = (
   options: {
     target: HTMLElement;
     loop?: boolean;
+    muted?: boolean;
     poster?: string;
     width?: number;
     height?: number;
@@ -115,6 +116,7 @@ function waitForHostSize(element: HTMLElement): Promise<{ width: number; height:
 export type MistPlayerProps = {
   streamName: string;
   loop: boolean;
+  muted?: boolean;
   poster: string;
   title: string;
   fallbackHref: string;
@@ -127,6 +129,7 @@ export type MistPlayerProps = {
 export function MistPlayer({
   streamName,
   loop,
+  muted = false,
   poster,
   title,
   fallbackHref,
@@ -155,6 +158,7 @@ export function MistPlayer({
         const instance = play(streamName, {
           target: hostRef.current,
           loop,
+          muted,
           poster: poster || undefined,
           width: size.width,
           height: size.height,
@@ -188,7 +192,7 @@ export function MistPlayer({
       instanceRef.current = null;
       host.innerHTML = "";
     };
-  }, [streamName, loop, poster]);
+  }, [streamName, loop, muted, poster]);
 
   return (
     <div className="absolute inset-0">

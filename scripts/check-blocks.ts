@@ -7,6 +7,7 @@ import { buildBlocks, SEED_PAGES } from "../prisma/seed-content";
 import { BLOCK_DEFINITIONS, createBlock } from "../src/lib/block-registry";
 import { blocksSchema, parseBlocks } from "../src/lib/blocks";
 import { DOWNTOWN_NORTH_PTZ_EMBED } from "../src/lib/downtown-north-ptz-embed";
+import { DOWNTOWN_SOUTH_PTZ_EMBED } from "../src/lib/downtown-south-ptz-embed";
 import {
   looksLikeMistEmbed,
   parseMistEmbed,
@@ -79,6 +80,7 @@ if (
   !parsedMist ||
   parsedMist.streamName !== "downtown-north-ptz" ||
   !parsedMist.loop ||
+  parsedMist.muted ||
   !parsedMist.poster?.includes("416823.jpg") ||
   !looksLikeMistEmbed(DOWNTOWN_NORTH_PTZ_EMBED)
 ) {
@@ -92,6 +94,28 @@ if (
   !unique.includes('mistPlay("downtown-north-ptz"')
 ) {
   console.error("FAIL Mist embed id uniquify must not rewrite mistPlay stream names");
+  process.exit(1);
+}
+
+const parsedSouth = parseMistEmbed(DOWNTOWN_SOUTH_PTZ_EMBED);
+if (
+  !parsedSouth ||
+  parsedSouth.streamName !== "downtown-south-ptz" ||
+  !parsedSouth.loop ||
+  !parsedSouth.muted ||
+  !parsedSouth.poster?.includes("416823.jpg") ||
+  !looksLikeMistEmbed(DOWNTOWN_SOUTH_PTZ_EMBED)
+) {
+  console.error("FAIL downtown-south Mist embed parse");
+  process.exit(1);
+}
+
+const uniqueSouth = uniquifyEmbedIds(DOWNTOWN_SOUTH_PTZ_EMBED, "abc");
+if (
+  !uniqueSouth.includes("downtown-south-ptz_cOcXMwrFexSI-abc") ||
+  !uniqueSouth.includes('mistPlay("downtown-south-ptz"')
+) {
+  console.error("FAIL downtown-south uniquify must not rewrite mistPlay stream names");
   process.exit(1);
 }
 
