@@ -38,12 +38,12 @@ export type StatusSummary = {
 
 export const getStatusSummary = cache(async (): Promise<StatusSummary | null> => {
   const { refreshStaleProbes } = await import("@/lib/probes");
-  await refreshStaleProbes({ limit: 10, concurrency: 5 }).catch(() => undefined);
+  await refreshStaleProbes({ limit: 6, concurrency: 2 }).catch(() => undefined);
 
   try {
     const { after } = await import("next/server");
     after(() => {
-      void refreshStaleProbes({ limit: 30, concurrency: 4 });
+      void refreshStaleProbes({ limit: 12, concurrency: 2 });
     });
   } catch {
     // `after` is only valid during a request. Seeded or background callers skip it.

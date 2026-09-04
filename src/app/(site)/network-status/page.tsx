@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 export const metadata: Metadata = publicMetadata({
   title: "Network Status",
   description:
-    "Live checks of public services people in Sault Ste. Marie rely on — city hall, hospitals, schools, news, and the sites we all use every day. Figures are real probes, never placeholders.",
+    "Live checks of public services people in Sault Ste. Marie rely on — city hall, hospitals, schools, news, and the sites we all use every day. Figures come from public uptime APIs and our own servers, never placeholders.",
   path: "/network-status",
 });
 
@@ -54,7 +54,7 @@ export default async function NetworkStatusPage() {
       <PageHero
         eyebrow="Sault Ste. Marie"
         title="Network Status"
-        description="Independent checks of public websites the city relies on — municipal services, hospitals, schools, newsrooms, and everyday platforms. If a site is slow or unreachable from the internet, it shows here. Nothing on this page is invented."
+        description="Independent checks of public websites the city relies on — municipal services, hospitals, schools, newsrooms, and everyday platforms. We ask a free public uptime API first, then our own servers if that API is busy. Nothing on this page is invented."
       >
         {summary && (
           <dl className="mt-8 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4">
@@ -141,7 +141,9 @@ export default async function NetworkStatusPage() {
           </div>
 
           <p className="text-sm text-slate-500">
-            Application health for this website is on{" "}
+            Homepage checks use the free Check-Host and IsItUp APIs from our
+            server, then a direct check if those APIs are busy. Application
+            health for this website is on{" "}
             <Link href="/system-status" className="font-semibold text-brand-700 hover:underline">
               system status
             </Link>

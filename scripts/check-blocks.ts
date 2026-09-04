@@ -11,6 +11,7 @@ import { BLOCK_DEFINITIONS, createBlock } from "../src/lib/block-registry";
 import { blocksSchema, parseBlocks } from "../src/lib/blocks";
 import { DOWNTOWN_NORTH_PTZ_EMBED } from "../src/lib/downtown-north-ptz-embed";
 import { DOWNTOWN_SOUTH_PTZ_EMBED } from "../src/lib/downtown-south-ptz-embed";
+import { httpStatusIsHealthy } from "../src/lib/http-health";
 import {
   looksLikeMistEmbed,
   parseMistEmbed,
@@ -188,6 +189,33 @@ if (!storeSource.includes("shouldHidePublicMonitor") || !storeSource.includes("p
 if (storeSource.includes("target: endpoint.target") || storeSource.includes("target: endpoint,")) {
   failures += 1;
   console.error("FAIL monitoring store must not return probe targets");
+}
+
+if (!httpStatusIsHealthy(302, 200) || !httpStatusIsHealthy(403, 200) || httpStatusIsHealthy(503, 200)) {
+  failures += 1;
+  console.error("FAIL default HTTP health must treat answering origins as up");
+}
+
+const probesSource = readFileSync(
+  path.join(process.cwd(), "src/lib/probes.ts"),
+  "utf8",
+);
+if (!probesSource.includes("checkViaPublicUptimeApis")) {
+  failures += 1;
+  console.error("FAIL HTTP monitors must try a public uptime API before a local fetch");
+}
+
+const publicApiSource = readFileSync(
+  path.join(process.cwd(), "src/lib/public-uptime-apis.ts"),
+  "utf8",
+);
+if (
+  !publicApiSource.includes("check-host.net") ||
+  !publicApiSource.includes("isitup.org") ||
+  !publicApiSource.includes("isCompanyStatusHost")
+) {
+  failures += 1;
+  console.error("FAIL public uptime APIs must stay server-side and skip company hosts");
 }
 
 if (failures === 0) {

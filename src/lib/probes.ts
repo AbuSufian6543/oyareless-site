@@ -12,8 +12,12 @@ import {
   resolvePublicTarget,
   withTimeout,
 } from "@/lib/net-guard";
+import { httpStatusIsHealthy } from "@/lib/http-health";
+import { checkViaPublicUptimeApis } from "@/lib/public-uptime-apis";
 import { prisma } from "@/lib/prisma";
 import type { ProbeKind } from "@/generated/prisma/client";
+
+export { httpStatusIsHealthy } from "@/lib/http-health";
 
 /**
  * Runs a single health probe against an admin-configured endpoint.
@@ -34,7 +38,7 @@ export async function probeEndpoint(endpoint: {
   try {
     if (endpoint.kind === "HTTP") {
       const result = await probeHttp(endpoint);
-      return { ...result, latencyMs: Date.now() - started };
+      return { ...result, latencyMs: result.latencyMs ?? Date.now() - started };
     }
     if (endpoint.kind === "TCP") {
       const host = extractHost(endpoint.target);
@@ -82,6 +86,20 @@ async function probeHttp(endpoint: {
   if (url.protocol !== "https:" && url.protocol !== "http:") {
     throw new NetGuardError("Only http/https probes are allowed.", "invalid");
   }
+
+  const fromPublicApi = await checkViaPublicUptimeApis(url.toString(), {
+    timeoutMs: endpoint.timeoutMs,
+    expectStatus: endpoint.expectStatus,
+  });
+  if (fromPublicApi) {
+    return {
+      ok: fromPublicApi.ok,
+      statusCode: fromPublicApi.statusCode,
+      error: fromPublicApi.error,
+      latencyMs: fromPublicApi.latencyMs ?? undefined,
+    };
+  }
+
   const resolved = await resolvePublicTarget(url.hostname);
   url.hostname = resolved.host;
 
@@ -101,17 +119,6 @@ async function probeHttp(endpoint: {
     statusCode: response.status,
     error: ok ? null : `Expected a healthy response, got ${response.status}.`,
   };
-}
-
-/**
- * Default HTTP monitors treat any answering origin as up: 2xx–4xx, including
- * login walls, bot challenges, and redirects. 5xx and network failures are
- * down. An explicit expected status (anything other than 200) still requires
- * an exact match, for dedicated health URLs.
- */
-export function httpStatusIsHealthy(status: number, expectStatus: number): boolean {
-  if (expectStatus !== 200) return status === expectStatus;
-  return status >= 200 && status < 500;
 }
 
 function connect(address: string, port: number): Promise<void> {
@@ -135,7 +142,7 @@ export async function refreshStaleProbes(
   options: { limit?: number; concurrency?: number } = {},
 ): Promise<void> {
   const limit = options.limit ?? 12;
-  const concurrency = Math.max(1, options.concurrency ?? 4);
+  const concurrency = Math.max(1, options.concurrency ?? 3);
 
   const endpoints = await prisma.monitoredEndpoint
     .findMany({

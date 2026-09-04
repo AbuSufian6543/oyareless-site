@@ -524,7 +524,7 @@ export const COLLECTIONS: CollectionDefinition[] = [
     orderBy: [{ order: "asc" }, { name: "asc" }],
     publicPath: "/network-status",
     guidance:
-      "Probes run from the server, so only target hosts you are authorized to check. The probe URL stays on the server and is never sent to visitors. A homepage link on the card is optional and separate. Rows on the internal denylist stay off the public page even if Public is checked.",
+      "HTTP checks ask a free public uptime API first, then this server if that API is busy. Company-owned hosts are never sent to a third-party API. The probe URL stays on the server and is never sent to visitors. A homepage link on the card is optional and separate. Rows on the internal denylist stay off the public page even if Public is checked.",
     listColumns: [
       { field: "name", label: "Name" },
       { field: "category", label: "Category" },
