@@ -63,13 +63,16 @@ export async function StatusStripBlock({
           </div>
         </div>
 
-        {summary && summary.services.length > 0 && (
+        {summary && summary.services.length > 0 && degraded > 0 && (
           <ul className="flex flex-wrap gap-2">
-            {summary.services.slice(0, 5).map((service) => (
-              <li key={service.name}>
-                <ServicePill service={service} dark={dark} />
-              </li>
-            ))}
+            {summary.services
+              .filter((service) => service.operational === false)
+              .slice(0, 6)
+              .map((service) => (
+                <li key={service.key}>
+                  <ServicePill service={service} dark={dark} />
+                </li>
+              ))}
           </ul>
         )}
 
@@ -102,11 +105,12 @@ function statusLine(
   if (!summary) return "Live monitoring is not yet reporting for this site.";
   if (!reporting) return "Endpoints are configured but have not been probed yet.";
 
+  const total = summary.services.length;
   const parts: string[] = [];
   parts.push(
     degraded === 0
-      ? "All monitored services responding."
-      : `${degraded} monitored service${degraded === 1 ? "" : "s"} not responding.`,
+      ? `All ${total} monitored public services responding.`
+      : `${degraded} of ${total} monitored public services not responding.`,
   );
   if (summary.uptime24h !== null) {
     parts.push(`${summary.uptime24h.toFixed(2)}% of checks passed in the last 24 hours.`);

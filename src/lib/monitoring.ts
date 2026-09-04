@@ -10,13 +10,18 @@ import { cache } from "react";
  * functions return `null` and the UI says so — no placeholder uptime figures,
  * latency numbers or incident counts are ever produced.
  *
- * The probe scheduler and the `MonitoredEndpoint` / `StatusCheck` /
- * `Incident` tables are introduced with the monitoring admin section; until an
- * administrator adds endpoints there is genuinely nothing to report.
+ * Probe targets never leave the server. Company-owned hosts are dropped even
+ * when a row is marked public.
  */
 
 export type ServiceHealth = {
+  /** Stable public key (slug). Not a probe URL. */
+  key: string;
   name: string;
+  logoUrl: string | null;
+  /** Visitor homepage. Probe URLs never appear here. */
+  websiteUrl: string | null;
+  category: string;
   /** Null when the endpoint has never been probed. */
   operational: boolean | null;
   latencyMs: number | null;
@@ -33,7 +38,17 @@ export type StatusSummary = {
 
 export const getStatusSummary = cache(async (): Promise<StatusSummary | null> => {
   const { refreshStaleProbes } = await import("@/lib/probes");
-  await refreshStaleProbes().catch(() => undefined);
+  await refreshStaleProbes({ limit: 10, concurrency: 5 }).catch(() => undefined);
+
+  try {
+    const { after } = await import("next/server");
+    after(() => {
+      void refreshStaleProbes({ limit: 30, concurrency: 4 });
+    });
+  } catch {
+    // `after` is only valid during a request. Seeded or background callers skip it.
+  }
+
   const { loadStatusSummary } = await import("@/lib/monitoring-store");
   return loadStatusSummary();
 });

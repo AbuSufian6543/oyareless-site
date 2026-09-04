@@ -30,6 +30,10 @@ import { vendorLogoUrl } from "../src/lib/vendor-logos";
 import { buildBlocks, SEED_NAV, SEED_PAGES, SEED_REDIRECTS } from "./seed-content";
 import { SEED_CASE_STUDIES } from "./seed-case-studies";
 import { ADDITIONAL_FAQS } from "./seed-faqs";
+import {
+  PUBLIC_STATUS_MONITORS,
+  statusLogoUrl,
+} from "../src/lib/status-monitor-catalog";
 
 function log(message: string): void {
   process.stdout.write(`  ${message}\n`);
@@ -836,6 +840,59 @@ async function seedCatalogue(): Promise<void> {
   log(`Case studies: ensured ${SEED_CASE_STUDIES.length} sample stories`);
 }
 
+async function seedStatusMonitors(): Promise<void> {
+  let created = 0;
+  let updated = 0;
+
+  for (const monitor of PUBLIC_STATUS_MONITORS) {
+    const logoUrl = statusLogoUrl(monitor.slug);
+    const existing = await prisma.monitoredEndpoint.findUnique({
+      where: { slug: monitor.slug },
+    });
+
+    if (existing) {
+      const data: {
+        logoUrl?: string;
+        websiteUrl?: string;
+        category?: string;
+      } = {};
+      if (!existing.logoUrl) data.logoUrl = logoUrl;
+      if (!existing.websiteUrl) data.websiteUrl = monitor.websiteUrl;
+      if (!existing.category) data.category = monitor.category;
+      if (Object.keys(data).length === 0) continue;
+      await prisma.monitoredEndpoint.update({
+        where: { id: existing.id },
+        data,
+      });
+      updated += 1;
+      continue;
+    }
+
+    await prisma.monitoredEndpoint.create({
+      data: {
+        slug: monitor.slug,
+        name: monitor.name,
+        category: monitor.category,
+        target: monitor.target,
+        websiteUrl: monitor.websiteUrl,
+        logoUrl,
+        kind: "HTTP",
+        expectStatus: 200,
+        timeoutMs: 4000,
+        intervalSec: 180,
+        enabled: true,
+        isPublic: true,
+        order: monitor.order,
+      },
+    });
+    created += 1;
+  }
+
+  log(
+    `Status monitors: ${PUBLIC_STATUS_MONITORS.length} catalogued (${created} added, ${updated} filled)`,
+  );
+}
+
 async function main(): Promise<void> {
   process.stdout.write("\nSeeding WirelessCom.Ca Inc.\n\n");
 
@@ -850,6 +907,7 @@ async function main(): Promise<void> {
   await seedDowntownSouthPtz();
   await seedExampleStream();
   await seedCatalogue();
+  await seedStatusMonitors();
   const mediaAdded = await ensureSiteMedia();
   if (mediaAdded > 0) log(`Media library: added ${mediaAdded} site photographs`);
   else log("Media library: site photographs already catalogued");

@@ -3,6 +3,10 @@ import path from "node:path";
 
 import { prisma } from "@/lib/prisma";
 import { catalogServicePictures } from "@/lib/service-photos";
+import {
+  PUBLIC_STATUS_MONITORS,
+  statusLogoUrl,
+} from "@/lib/status-monitor-catalog";
 import { vendorLogoUrl } from "@/lib/vendor-logos";
 
 /**
@@ -74,6 +78,7 @@ export const SITE_PICTURES: SitePicture[] = [
   logo("schlage", "Schlage"),
   logo("shure", "Shure"),
   logo("cdvi", "CDVI"),
+  ...PUBLIC_STATUS_MONITORS.map((monitor) => statusMark(monitor.slug, monitor.name)),
   {
     url: "/brand/logo.png",
     name: "Primary logo",
@@ -157,6 +162,15 @@ function logo(slug: string, name: string): SitePicture {
     name: `${name} logo`,
     alt: name,
     folder: "logos",
+  };
+}
+
+function statusMark(slug: string, name: string): SitePicture {
+  return {
+    url: statusLogoUrl(slug),
+    name: `${name} status mark`,
+    alt: `${name} logo`,
+    folder: "status-logos",
   };
 }
 

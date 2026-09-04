@@ -690,10 +690,18 @@ enum ProbeKind {
 model MonitoredEndpoint {
   id            String        @id @default(cuid())
   name          String
+  /// Stable key for seed upserts and logo files. Never shown to visitors.
+  slug          String        @unique
   kind          ProbeKind     @default(HTTP)
 
-  /// URL for HTTP, host for TCP/DNS.
+  /// URL for HTTP, host for TCP/DNS. Server-only — never sent to the browser.
   target        String
+  /// Homepage visitors may open. Omit for internal monitors.
+  websiteUrl    String?
+  /// Shipped or uploaded mark for the public status cards.
+  logoUrl       String?
+  /// Grouping label on /network-status (e.g. Health, Education).
+  category      String        @default("")
   port          Int?
   /// HTTP status treated as healthy; ignored for TCP/DNS.
   expectStatus  Int           @default(200)

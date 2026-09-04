@@ -407,7 +407,12 @@ function toFieldDef(field: CollectionField) {
     case "number":
       return { ...base, kind: "number" as const, min: field.min, max: field.max };
     case "boolean":
-      return { key: field.name, label: field.label, kind: "boolean" as const };
+      return {
+        key: field.name,
+        label: field.label,
+        kind: "boolean" as const,
+        description: field.hint,
+      };
     case "select":
       return { ...base, kind: "select" as const, options: field.options ?? [] };
     case "image":

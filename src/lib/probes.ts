@@ -88,16 +88,30 @@ async function probeHttp(endpoint: {
   const response = await fetch(url.toString(), {
     method: "GET",
     redirect: "manual",
-    headers: { "User-Agent": "WirelessCom-Monitor/1.0" },
+    headers: {
+      Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+      "User-Agent": "Mozilla/5.0 (compatible; StatusProbe/1.0)",
+    },
     signal: AbortSignal.timeout(endpoint.timeoutMs),
   });
 
-  const ok = response.status === endpoint.expectStatus;
+  const ok = httpStatusIsHealthy(response.status, endpoint.expectStatus);
   return {
     ok,
     statusCode: response.status,
-    error: ok ? null : `Expected ${endpoint.expectStatus}, got ${response.status}.`,
+    error: ok ? null : `Expected a healthy response, got ${response.status}.`,
   };
+}
+
+/**
+ * Default HTTP monitors treat any answering origin as up: 2xx–4xx, including
+ * login walls, bot challenges, and redirects. 5xx and network failures are
+ * down. An explicit expected status (anything other than 200) still requires
+ * an exact match, for dedicated health URLs.
+ */
+export function httpStatusIsHealthy(status: number, expectStatus: number): boolean {
+  if (expectStatus !== 200) return status === expectStatus;
+  return status >= 200 && status < 500;
 }
 
 function connect(address: string, port: number): Promise<void> {
@@ -116,8 +130,13 @@ function connect(address: string, port: number): Promise<void> {
   });
 }
 
-/** Probes any public endpoint whose last check is older than its interval. */
-export async function refreshStaleProbes(): Promise<void> {
+/** Probes enabled endpoints whose last check is older than their interval. */
+export async function refreshStaleProbes(
+  options: { limit?: number; concurrency?: number } = {},
+): Promise<void> {
+  const limit = options.limit ?? 12;
+  const concurrency = Math.max(1, options.concurrency ?? 4);
+
   const endpoints = await prisma.monitoredEndpoint
     .findMany({
       where: { enabled: true },
@@ -145,18 +164,30 @@ export async function refreshStaleProbes(): Promise<void> {
     return now - last.getTime() > endpoint.intervalSec * 1000;
   });
 
-  for (const endpoint of stale.slice(0, 8)) {
-    const result = await probeEndpoint(endpoint);
-    await prisma.statusCheck
-      .create({
-        data: {
-          endpointId: endpoint.id,
-          ok: result.ok,
-          latencyMs: result.latencyMs,
-          statusCode: result.statusCode,
-          error: result.error,
-        },
-      })
-      .catch(() => undefined);
+  const batch = stale.slice(0, limit);
+  let next = 0;
+
+  async function worker(): Promise<void> {
+    while (next < batch.length) {
+      const endpoint = batch[next];
+      next += 1;
+      if (!endpoint) return;
+      const result = await probeEndpoint(endpoint);
+      await prisma.statusCheck
+        .create({
+          data: {
+            endpointId: endpoint.id,
+            ok: result.ok,
+            latencyMs: result.latencyMs,
+            statusCode: result.statusCode,
+            error: result.error,
+          },
+        })
+        .catch(() => undefined);
+    }
   }
+
+  await Promise.all(
+    Array.from({ length: Math.min(concurrency, batch.length) }, () => worker()),
+  );
 }

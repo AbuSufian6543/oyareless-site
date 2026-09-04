@@ -3,6 +3,7 @@ import "server-only";
 import type { CollectionDefinition, CollectionField } from "@/lib/admin-collections";
 import { getCollection } from "@/lib/admin-collections";
 import { blocksSchema, parseBlocks, type Block } from "@/lib/blocks";
+import { isCompanyStatusHost } from "@/lib/company-status-hosts";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
 
@@ -228,6 +229,14 @@ export function validateRecord(
     const derived = slugify(String(source ?? ""));
     if (!derived) return { ok: false, error: `${field.label} is required.` };
     data[field.name] = derived;
+  }
+
+  if (collection.model === "monitoredEndpoint") {
+    const target = String(data.target ?? "");
+    const website = String(data.websiteUrl ?? "");
+    if (isCompanyStatusHost(target) || isCompanyStatusHost(website)) {
+      data.isPublic = false;
+    }
   }
 
   return { ok: true, data };

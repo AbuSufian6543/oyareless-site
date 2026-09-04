@@ -11,6 +11,8 @@
  * `server-only` imports. Database access lives in `admin-collections.server.ts`.
  */
 
+import { STATUS_CATEGORY_OPTIONS } from "@/lib/status-categories";
+
 export type CollectionFieldKind =
   | "text"
   | "slug"
@@ -513,32 +515,63 @@ export const COLLECTIONS: CollectionDefinition[] = [
     label: "Monitored endpoint",
     plural: "Monitoring",
     description:
-      "Endpoints this application probes itself. Everything on the public status pages comes from these checks.",
+      "Endpoints this application probes from the server. The public status page never receives the probe URL — only the display name, logo, category, and an optional homepage link.",
     icon: "Activity",
     group: "Operations",
     titleField: "name",
     writeRole: "ADMIN",
-    searchFields: ["name", "target"],
+    searchFields: ["name", "slug", "category", "target"],
     orderBy: [{ order: "asc" }, { name: "asc" }],
     publicPath: "/network-status",
     guidance:
-      "Probes run from the server, so only target hosts you are authorized to check. Public endpoints appear on /network-status; leave that off for internal-only monitoring.",
+      "Probes run from the server, so only target hosts you are authorized to check. The probe URL stays on the server and is never sent to visitors. A homepage link on the card is optional and separate. Rows on the internal denylist stay off the public page even if Public is checked.",
     listColumns: [
       { field: "name", label: "Name" },
+      { field: "category", label: "Category" },
       { field: "kind", label: "Type" },
-      { field: "target", label: "Target" },
       { field: "enabled", label: "Enabled" },
+      { field: "isPublic", label: "Public" },
     ],
     fields: [
       { kind: "text", name: "name", label: "Display name", required: true, maxLength: 120 },
       {
+        kind: "slug",
+        name: "slug",
+        label: "Slug",
+        hint: "internal key for the logo file; visitors never see this",
+        derivedFrom: "name",
+        required: true,
+      },
+      {
+        kind: "select",
+        name: "category",
+        label: "Category",
+        options: STATUS_CATEGORY_OPTIONS,
+        defaultValue: "Other",
+      },
+      {
+        kind: "text",
+        name: "websiteUrl",
+        label: "Homepage link",
+        hint: "optional public link on the status card — not the probe URL",
+        placeholder: "https://",
+        maxLength: 500,
+      },
+      {
+        kind: "image",
+        name: "logoUrl",
+        label: "Logo",
+        hint: "shown on the public status card",
+        column: "side",
+      },
+      {
         kind: "text",
         name: "target",
-        label: "Target",
-        hint: "full URL for HTTP, hostname for TCP or DNS",
+        label: "Probe target",
+        hint: "full URL for HTTP, hostname for TCP or DNS. Never shown to visitors.",
         required: true,
         maxLength: 500,
-        placeholder: "https://example.ca/health",
+        placeholder: "https://example.ca/",
       },
       {
         kind: "select",
@@ -599,6 +632,7 @@ export const COLLECTIONS: CollectionDefinition[] = [
         kind: "boolean",
         name: "isPublic",
         label: "Show on the public status page",
+        hint: "internal denylist hosts stay hidden even when this is on",
         defaultValue: true,
         column: "side",
       },

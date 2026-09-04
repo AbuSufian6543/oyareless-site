@@ -3,6 +3,9 @@
  * schema defaults and survive a parse round-trip, and every page of seed
  * content must validate. Runs without a database.
  */
+import { readFileSync } from "node:fs";
+import path from "node:path";
+
 import { buildBlocks, SEED_PAGES } from "../prisma/seed-content";
 import { BLOCK_DEFINITIONS, createBlock } from "../src/lib/block-registry";
 import { blocksSchema, parseBlocks } from "../src/lib/blocks";
@@ -14,6 +17,7 @@ import {
   rewriteInsecureMistPlayer,
   uniquifyEmbedIds,
 } from "../src/lib/html-stream-embed";
+import { PUBLIC_STATUS_MONITORS } from "../src/lib/status-monitor-catalog";
 
 let failures = 0;
 
@@ -128,4 +132,69 @@ if (
 }
 
 console.log("OK  Mist / VideoStreamCanada embed parse and id handling.");
+
+const catalogSlugs = PUBLIC_STATUS_MONITORS.map((monitor) => monitor.slug);
+if (PUBLIC_STATUS_MONITORS.length < 40) {
+  failures += 1;
+  console.error(
+    `FAIL status catalog must list at least 40 public monitors, got ${PUBLIC_STATUS_MONITORS.length}`,
+  );
+}
+if (new Set(catalogSlugs).size !== catalogSlugs.length) {
+  failures += 1;
+  console.error("FAIL status catalog slugs must be unique");
+}
+
+const catalogBlob = JSON.stringify(PUBLIC_STATUS_MONITORS).toLowerCase();
+const hostsSource = readFileSync(
+  path.join(process.cwd(), "src/lib/company-status-hosts.ts"),
+  "utf8",
+);
+const hiddenHosts = [...hostsSource.matchAll(/"([a-z0-9.-]+\.[a-z]{2,})"/g)].map(
+  (match) => match[1],
+);
+if (hiddenHosts.length < 3) {
+  failures += 1;
+  console.error("FAIL company status host denylist is missing");
+}
+for (const host of hiddenHosts) {
+  if (catalogBlob.includes(host)) {
+    failures += 1;
+    console.error(`FAIL public status catalog must not include ${host}`);
+  }
+}
+
+const healthSource = readFileSync(
+  path.join(process.cwd(), "src/lib/monitoring.ts"),
+  "utf8",
+);
+const healthType = healthSource.match(/export type ServiceHealth = \{[\s\S]*?\n\};/)?.[0] ?? "";
+if (!healthType) {
+  failures += 1;
+  console.error("FAIL ServiceHealth type is missing");
+} else if (/^\s+target\??:/m.test(healthType)) {
+  failures += 1;
+  console.error("FAIL ServiceHealth must not expose a probe target to the browser");
+}
+
+const storeSource = readFileSync(
+  path.join(process.cwd(), "src/lib/monitoring-store.ts"),
+  "utf8",
+);
+if (!storeSource.includes("shouldHidePublicMonitor") || !storeSource.includes("publicWebsiteUrl")) {
+  failures += 1;
+  console.error("FAIL monitoring store must strip company hosts and probe URLs");
+}
+if (storeSource.includes("target: endpoint.target") || storeSource.includes("target: endpoint,")) {
+  failures += 1;
+  console.error("FAIL monitoring store must not return probe targets");
+}
+
+if (failures === 0) {
+  console.log(
+    `OK  ${PUBLIC_STATUS_MONITORS.length} public status monitors; probe targets stay server-side.`,
+  );
+} else {
+  process.exit(1);
+}
 
