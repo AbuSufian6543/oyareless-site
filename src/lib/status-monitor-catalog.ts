@@ -1,4 +1,5 @@
 import type { StatusCategory } from "@/lib/status-categories";
+import { MORE_STATUS_MONITORS } from "@/lib/status-monitor-catalog-more";
 
 /**
  * Public sites this application probes for the community status board.
@@ -21,7 +22,7 @@ export function statusLogoUrl(slug: string): string {
   return `/brand/status-logos/${slug}.webp`;
 }
 
-export const PUBLIC_STATUS_MONITORS: StatusMonitorSeed[] = [
+const CORE_STATUS_MONITORS: StatusMonitorSeed[] = [
   // News
   {
     slug: "sootoday",
@@ -461,4 +462,9 @@ export const PUBLIC_STATUS_MONITORS: StatusMonitorSeed[] = [
     websiteUrl: "https://www.algoma.com/",
     order: 510,
   },
+];
+
+export const PUBLIC_STATUS_MONITORS: StatusMonitorSeed[] = [
+  ...CORE_STATUS_MONITORS,
+  ...MORE_STATUS_MONITORS,
 ];

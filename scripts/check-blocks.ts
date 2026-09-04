@@ -135,10 +135,10 @@ if (
 console.log("OK  Mist / VideoStreamCanada embed parse and id handling.");
 
 const catalogSlugs = PUBLIC_STATUS_MONITORS.map((monitor) => monitor.slug);
-if (PUBLIC_STATUS_MONITORS.length < 40) {
+if (PUBLIC_STATUS_MONITORS.length < 140) {
   failures += 1;
   console.error(
-    `FAIL status catalog must list at least 40 public monitors, got ${PUBLIC_STATUS_MONITORS.length}`,
+    `FAIL status catalog must list at least 140 public monitors, got ${PUBLIC_STATUS_MONITORS.length}`,
   );
 }
 if (new Set(catalogSlugs).size !== catalogSlugs.length) {

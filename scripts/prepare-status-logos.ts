@@ -1,13 +1,14 @@
 /**
  * Download public marks for the network-status board and encode them as WebP.
  *
- * Sources, in order: explicit override, Google S2 favicon, DuckDuckGo icons,
- * then common files on the site origin. Failures leave that slug without a
- * file; the UI falls back to initials.
+ * Sources, in order: explicit override, homepage icon/apple-touch links,
+ * Google S2 favicon, DuckDuckGo icons, then common files on the site origin.
+ * Open Graph photos are ignored. Banner, photo, and blank images are skipped
+ * so the slug can fall through to a later candidate or initials.
  *
  *   npx tsx scripts/prepare-status-logos.ts
  */
-import { mkdir, writeFile } from "node:fs/promises";
+import { access, mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import sharp from "sharp";
@@ -70,7 +71,86 @@ const OVERRIDES: Record<string, string[]> = {
     "https://www.google.com/s2/favicons?domain=uwssmalgoma.ca&sz=128",
     "https://www.google.com/s2/favicons?domain=unitedway.ca&sz=128",
   ],
+  canada: [
+    "https://www.canada.ca/etc/designs/canada/wet-boew/assets/favicon-mobile.png",
+    "https://www.google.com/s2/favicons?domain=canada.ca&sz=128",
+  ],
+  ircc: [
+    "https://www.canada.ca/etc/designs/canada/wet-boew/assets/favicon-mobile.png",
+    "https://www.google.com/s2/favicons?domain=canada.ca&sz=128",
+  ],
+  "health-canada": [
+    "https://www.canada.ca/etc/designs/canada/wet-boew/assets/favicon-mobile.png",
+    "https://www.google.com/s2/favicons?domain=canada.ca&sz=128",
+  ],
+  "employment-insurance": [
+    "https://www.canada.ca/etc/designs/canada/wet-boew/assets/favicon-mobile.png",
+    "https://www.google.com/s2/favicons?domain=canada.ca&sz=128",
+  ],
+  cpp: [
+    "https://www.canada.ca/etc/designs/canada/wet-boew/assets/favicon-mobile.png",
+    "https://www.google.com/s2/favicons?domain=canada.ca&sz=128",
+  ],
+  passports: [
+    "https://www.canada.ca/etc/designs/canada/wet-boew/assets/favicon-mobile.png",
+    "https://www.google.com/s2/favicons?domain=canada.ca&sz=128",
+  ],
+  "transport-canada": [
+    "https://www.canada.ca/etc/designs/canada/wet-boew/assets/favicon-mobile.png",
+    "https://www.google.com/s2/favicons?domain=canada.ca&sz=128",
+  ],
+  cbc: [
+    "https://www.cbc.ca/premier/favicons/favicon-192x192.png",
+    "https://www.google.com/s2/favicons?domain=cbc.ca&sz=128",
+  ],
+  "radio-canada": [
+    "https://ici.radio-canada.ca/favicon.ico",
+    "https://www.google.com/s2/favicons?domain=ici.radio-canada.ca&sz=128",
+  ],
+  "ontario-parks": [
+    "https://www.google.com/s2/favicons?domain=ontarioparks.com&sz=128",
+  ],
+  "science-north": [
+    "https://www.google.com/s2/favicons?domain=sciencenorth.ca&sz=128",
+  ],
+  "prince-township": [
+    "https://www.google.com/s2/favicons?domain=princetownship.ca&sz=128",
+  ],
+  thessalon: [
+    "https://www.google.com/s2/favicons?domain=thessalon.ca&sz=128",
+  ],
+  sudbury: [
+    "https://www.google.com/s2/favicons?domain=greatersudbury.ca&sz=128",
+  ],
+  "algoma-legal-clinic": [
+    "https://www.google.com/s2/favicons?domain=algomalegalclinic.com&sz=128",
+  ],
+  eastlink: [
+    "https://www.google.com/s2/favicons?domain=eastlink.ca&sz=128",
+  ],
+  "go-transit": [
+    "https://www.google.com/s2/favicons?domain=gotransit.com&sz=128",
+  ],
+  wawa: [
+    "https://www.google.com/s2/favicons?domain=wawa.cc&sz=128",
+  ],
+  "blind-river": [
+    "https://www.google.com/s2/favicons?domain=blindriver.ca&sz=128",
+  ],
+  "elliot-lake": [
+    "https://www.google.com/s2/favicons?domain=elliotlake.ca&sz=128",
+  ],
 };
+
+/** Sites whose favicon/og fetch returns a blank or unrelated mark. */
+const INITIALS_ONLY = new Set([
+  "prince-township",
+  "sudbury",
+  "algoma-legal-clinic",
+  "eastlink",
+  "rcmp",
+  "ieso",
+]);
 
 function originOf(url: string): string {
   return new URL(url).origin;
@@ -120,7 +200,6 @@ async function iconsFromHomepage(websiteUrl: string): Promise<string[]> {
     const patterns = [
       /<link[^>]+rel=["'][^"']*apple-touch-icon[^"']*["'][^>]*>/gi,
       /<link[^>]+rel=["'][^"']*icon[^"']*["'][^>]*>/gi,
-      /<meta[^>]+property=["']og:image["'][^>]*>/gi,
     ];
     for (const pattern of patterns) {
       for (const tag of html.match(pattern) ?? []) {
@@ -161,12 +240,47 @@ async function fetchBuffer(url: string): Promise<Buffer | null> {
   }
 }
 
+async function looksLikeMark(input: Buffer): Promise<boolean> {
+  try {
+    const meta = await sharp(input, { animated: false, failOn: "none" }).metadata();
+    if (!meta.width || !meta.height) return false;
+    if (meta.width < 16 || meta.height < 16) return false;
+
+    const longest = Math.max(meta.width, meta.height);
+    const shortest = Math.min(meta.width, meta.height);
+    if (longest / shortest > 1.55) return false;
+
+    const format = (meta.format ?? "").toLowerCase();
+    if (
+      longest >= 400 &&
+      shortest >= 400 &&
+      (format === "jpeg" || format === "jpg")
+    ) {
+      return false;
+    }
+
+    const stats = await sharp(input, { animated: false, failOn: "none" }).stats();
+    const rgb = stats.channels.slice(0, 3);
+    if (rgb.length === 0) return false;
+    const meanStd =
+      rgb.reduce((sum, channel) => sum + channel.stdev, 0) / rgb.length;
+    const meanBright =
+      rgb.reduce((sum, channel) => sum + channel.mean, 0) / rgb.length;
+    if (meanStd < 10 || meanBright < 16) return false;
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function encodeWebp(input: Buffer): Promise<Buffer | null> {
   try {
+    if (!(await looksLikeMark(input))) return null;
+
     const image = sharp(input, { animated: false, failOn: "none" }).rotate();
     const meta = await image.metadata();
     if (!meta.width || !meta.height) return null;
-    if (meta.width < 16 || meta.height < 16) return null;
 
     return await image
       .resize(SIZE, SIZE, {
@@ -181,6 +295,14 @@ async function encodeWebp(input: Buffer): Promise<Buffer | null> {
 }
 
 async function encodeOne(slug: string, websiteUrl: string): Promise<boolean> {
+  if (INITIALS_ONLY.has(slug)) {
+    const forced = await initialsMark(slug);
+    if (forced) {
+      await writeFile(path.join(OUT_DIR, `${slug}.webp`), forced);
+      return true;
+    }
+  }
+
   const fromHtml = await iconsFromHomepage(websiteUrl);
   for (const url of candidateUrls(slug, websiteUrl, fromHtml)) {
     const raw = await fetchBuffer(url);
@@ -282,7 +404,9 @@ async function writeQaSheet(slugs: string[]): Promise<void> {
 async function main(): Promise<void> {
   await mkdir(OUT_DIR, { recursive: true });
 
-  const only = new Set(process.argv.slice(2));
+  const args = process.argv.slice(2);
+  const skipExisting = args.includes("--skip-existing");
+  const only = new Set(args.filter((arg) => arg !== "--skip-existing"));
   const monitors =
     only.size > 0
       ? PUBLIC_STATUS_MONITORS.filter((monitor) => only.has(monitor.slug))
@@ -292,6 +416,15 @@ async function main(): Promise<void> {
   const missing: string[] = [];
 
   for (const monitor of monitors) {
+    const outFile = path.join(OUT_DIR, `${monitor.slug}.webp`);
+    if (skipExisting) {
+      const already = await access(outFile).then(() => true).catch(() => false);
+      if (already) {
+        ok += 1;
+        process.stdout.write(`  skip ${monitor.slug}\n`);
+        continue;
+      }
+    }
     const written = await encodeOne(monitor.slug, monitor.websiteUrl);
     if (written) {
       ok += 1;
