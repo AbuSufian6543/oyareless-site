@@ -83,6 +83,7 @@ export function technicianTicketWhere(userId: string) {
   return {
     OR: [
       { assignedToId: userId },
+      { assignees: { some: { userId } } },
       { accessGrants: { some: { userId } } },
     ],
   };
@@ -119,6 +120,7 @@ export async function assertTicketAccess(
       status: true,
       reference: true,
       subject: true,
+      assignees: { select: { userId: true } },
       accessGrants: { select: { userId: true } },
     },
   });
@@ -129,6 +131,7 @@ export async function assertTicketAccess(
     technicianCanSeeTicket({
       userId: user.id,
       assignedToId: ticket.assignedToId,
+      assigneeIds: ticket.assignees.map((row) => row.userId),
       grantUserIds: ticket.accessGrants.map((grant) => grant.userId),
     })
   ) {

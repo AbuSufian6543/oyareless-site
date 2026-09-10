@@ -4,6 +4,7 @@ import { addTaskNoteAction, deleteTaskAction, updateTaskAction } from "@/app/adm
 import { Card, CardTitle, PageHeader, SelectField, TextAreaField, TextField } from "@/components/admin/ui";
 import { ConfirmSubmit } from "@/components/workdesk/confirm-submit";
 import { ActivityLog } from "@/components/workdesk/activity-log";
+import { AssigneeChecklist } from "@/components/workdesk/assignee-checklist";
 import { AttachmentField } from "@/components/workdesk/attachment-field";
 import { AttachmentList } from "@/components/workdesk/attachment-list";
 import { PriorityBadge, TaskStatusBadge } from "@/components/workdesk/badges";
@@ -119,25 +120,11 @@ export default async function AdminTaskPage({
               ]}
             />
             <TextField label="Due date" name="dueAt" type="date" defaultValue={dueValue} />
-            <fieldset>
-              <legend className="mb-2 text-sm font-medium text-navy-800">Assignees</legend>
-              <ul className="max-h-48 space-y-1 overflow-y-auto rounded-lg border border-slate-200 p-3">
-                {staff.map((person) => (
-                  <li key={person.id}>
-                    <label className="flex items-center gap-2 text-sm">
-                      <input
-                        type="checkbox"
-                        name="assigneeIds"
-                        value={person.id}
-                        defaultChecked={selected.has(person.id)}
-                        className="size-4"
-                      />
-                      {person.name}
-                    </label>
-                  </li>
-                ))}
-              </ul>
-            </fieldset>
+            <AssigneeChecklist
+              staff={staff}
+              selectedIds={[...selected]}
+              legend="Assignees"
+            />
             <button type="submit" className="w-full rounded-lg bg-brand-600 px-3 py-2 text-sm font-semibold text-white hover:bg-brand-700">
               Save
             </button>

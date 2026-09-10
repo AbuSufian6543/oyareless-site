@@ -3,6 +3,7 @@ import Link from "next/link";
 import { createStaffTicketAction, deleteTicketAction } from "@/app/admin/tickets/actions";
 import { PageHeader, SelectField, TextAreaField, TextField } from "@/components/admin/ui";
 import { ConfirmSubmit } from "@/components/workdesk/confirm-submit";
+import { AssigneeChecklist } from "@/components/workdesk/assignee-checklist";
 import { AttachmentField } from "@/components/workdesk/attachment-field";
 import { PriorityBadge, TicketStatusBadge } from "@/components/workdesk/badges";
 import { requireAdminRole } from "@/lib/admin-guard";
@@ -21,6 +22,7 @@ export default async function AdminTicketsPage() {
       include: {
         customer: { select: { name: true } },
         assignedTo: { select: { name: true } },
+        assignees: { include: { user: { select: { name: true } } } },
       },
     }),
     prisma.customer.findMany({
@@ -35,7 +37,7 @@ export default async function AdminTicketsPage() {
     <div>
       <PageHeader
         title="Tickets"
-        description="Customer support tickets. Internal notes never leave staff tools."
+        description="Customer support tickets. Assign one or more technicians; each person is emailed and notified in the site."
       />
 
       <form
@@ -50,11 +52,9 @@ export default async function AdminTicketsPage() {
           required
           options={customers.map((customer) => ({ value: customer.id, label: customer.name }))}
         />
-        <SelectField
-          label="Assign to"
-          name="assignedToId"
-          options={[{ value: "", label: "Unassigned" }, ...staff.map((person) => ({ value: person.id, label: `${person.name} (${person.role.toLowerCase()})` }))]}
-        />
+        <div className="sm:col-span-2">
+          <AssigneeChecklist staff={staff} legend="Assign to" />
+        </div>
         <TextField label="Subject" name="subject" required className="sm:col-span-2" />
         <SelectField
           label="Priority"
@@ -87,7 +87,7 @@ export default async function AdminTicketsPage() {
               <th className="px-4 py-3">Ref</th>
               <th className="px-4 py-3">Subject</th>
               <th className="px-4 py-3">Customer</th>
-              <th className="px-4 py-3">Assignee</th>
+              <th className="px-4 py-3">Assignees</th>
               <th className="px-4 py-3">Priority</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Opened</th>
@@ -104,7 +104,11 @@ export default async function AdminTicketsPage() {
                 </td>
                 <td className="px-4 py-3">{ticket.subject}</td>
                 <td className="px-4 py-3">{ticket.customer.name}</td>
-                <td className="px-4 py-3">{ticket.assignedTo?.name ?? "—"}</td>
+                <td className="px-4 py-3">
+                  {ticket.assignees.map((row) => row.user.name).join(", ") ||
+                    ticket.assignedTo?.name ||
+                    "—"}
+                </td>
                 <td className="px-4 py-3">
                   <PriorityBadge priority={ticket.priority} />
                 </td>

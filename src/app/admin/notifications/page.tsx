@@ -21,7 +21,7 @@ export default async function AdminNotificationsPage() {
     <div>
       <PageHeader
         title="Notifications"
-        description="Assignment and technician updates for tickets and tasks."
+        description="Assignment, technician, and customer updates for tickets and tasks. Each alert is also emailed to your staff login address."
         actions={
           <form action={markNotificationsReadAction}>
             <button type="submit" className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-50">

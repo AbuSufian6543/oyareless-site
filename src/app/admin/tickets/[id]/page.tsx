@@ -13,6 +13,7 @@ import {
 import { Card, CardTitle, PageHeader, SelectField, TextField } from "@/components/admin/ui";
 import { ConfirmSubmit } from "@/components/workdesk/confirm-submit";
 import { ActivityLog } from "@/components/workdesk/activity-log";
+import { AssigneeChecklist } from "@/components/workdesk/assignee-checklist";
 import { AttachmentField } from "@/components/workdesk/attachment-field";
 import { AttachmentList } from "@/components/workdesk/attachment-list";
 import { PriorityBadge, TicketStatusBadge } from "@/components/workdesk/badges";
@@ -37,6 +38,7 @@ export default async function AdminTicketPage({
       include: {
         customer: true,
         assignedTo: { select: { id: true, name: true } },
+        assignees: { include: { user: { select: { id: true, name: true } } } },
         accessGrants: { include: { user: { select: { id: true, name: true } } } },
         messages: {
           orderBy: { createdAt: "asc" },
@@ -54,9 +56,16 @@ export default async function AdminTicketPage({
   ]);
   if (!ticket) notFound();
 
+  const selectedAssigneeIds =
+    ticket.assignees.length > 0
+      ? ticket.assignees.map((row) => row.userId)
+      : ticket.assignedToId
+        ? [ticket.assignedToId]
+        : [];
+  const assignedIds = new Set(selectedAssigneeIds);
   const grantOptions = staff
     .filter((person) => person.role === "TECHNICIAN")
-    .filter((person) => person.id !== ticket.assignedToId)
+    .filter((person) => !assignedIds.has(person.id))
     .filter((person) => !ticket.accessGrants.some((grant) => grant.userId === person.id))
     .map((person) => ({
       value: person.id,
@@ -69,7 +78,11 @@ export default async function AdminTicketPage({
         <PageHeader
           breadcrumb={{ href: "/admin/tickets", label: "Tickets" }}
           title={`${ticket.reference}: ${ticket.subject}`}
-          description={`${ticket.customer.name} · ${ticket.category}`}
+          description={`${ticket.customer.name} · ${ticket.category} · ${
+            ticket.assignees.map((row) => row.user.name).join(", ") ||
+            ticket.assignedTo?.name ||
+            "Unassigned"
+          }`}
         />
         <div className="mb-4 flex flex-wrap gap-2">
           <TicketStatusBadge status={ticket.status} />
@@ -156,17 +169,10 @@ export default async function AdminTicketPage({
           </form>
           <form action={assignTicketAction} className="mt-4 space-y-2">
             <input type="hidden" name="ticketId" value={ticket.id} />
-            <SelectField
-              label="Assign technician"
-              name="assignedToId"
-              defaultValue={ticket.assignedToId ?? ""}
-              options={[
-                { value: "", label: "Unassigned" },
-                ...staff.map((person) => ({
-                  value: person.id,
-                  label: `${person.name} (${person.role.toLowerCase()})`,
-                })),
-              ]}
+            <AssigneeChecklist
+              staff={staff}
+              selectedIds={selectedAssigneeIds}
+              legend="Assign technicians"
             />
             <button type="submit" className="w-full rounded-lg bg-brand-600 px-3 py-2 text-sm font-semibold text-white hover:bg-brand-700">
               Save assignment
@@ -203,7 +209,7 @@ export default async function AdminTicketPage({
         </Card>
 
         <Card>
-          <CardTitle description="Extra technicians who can work this ticket besides the assignee.">
+          <CardTitle description="Technicians who can open this ticket without being assigned. Prefer assigning above so they get work notifications.">
             Additional access
           </CardTitle>
           <ul className="mb-3 space-y-2 text-sm">

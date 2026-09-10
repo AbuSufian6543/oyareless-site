@@ -12,7 +12,8 @@ import {
   technicianOrRedirect,
 } from "@/lib/workdesk/access";
 import { recordWorkdeskEvent } from "@/lib/workdesk/events";
-import { notifyAdminsOfTechnicianUpdate } from "@/lib/workdesk/notify";
+import { notifyWorkdeskUpdate } from "@/lib/workdesk/notify";
+import { revalidateWorkdesk } from "@/lib/workdesk/revalidate";
 import {
   technicianMaySetTaskStatus,
   technicianMaySetTicketStatus,
@@ -86,7 +87,7 @@ export async function techReplyTicketAction(formData: FormData): Promise<void> {
     });
   }
 
-  await notifyAdminsOfTechnicianUpdate({
+  await notifyWorkdeskUpdate({
     actorId: tech.id,
     title: `${ticket.reference} updated`,
     body: `${tech.name} ${isInternal ? "added a note" : "replied"} on ${ticket.subject}`,
@@ -94,9 +95,7 @@ export async function techReplyTicketAction(formData: FormData): Promise<void> {
     ticketId,
   });
 
-  revalidatePath(`/tech/tickets/${ticketId}`);
-  revalidatePath("/tech");
-  revalidatePath("/portal/tickets");
+  revalidateWorkdesk({ ticketId });
 }
 
 export async function techUpdateTicketStatusAction(formData: FormData): Promise<void> {
@@ -130,7 +129,7 @@ export async function techUpdateTicketStatusAction(formData: FormData): Promise<
     actorStaffId: tech.id,
   });
 
-  await notifyAdminsOfTechnicianUpdate({
+  await notifyWorkdeskUpdate({
     actorId: tech.id,
     title:
       status === "RESOLVED"
@@ -141,8 +140,7 @@ export async function techUpdateTicketStatusAction(formData: FormData): Promise<
     ticketId,
   });
 
-  revalidatePath(`/tech/tickets/${ticketId}`);
-  revalidatePath("/tech");
+  revalidateWorkdesk({ ticketId });
 }
 
 export async function techAddTaskNoteAction(formData: FormData): Promise<void> {
@@ -192,7 +190,7 @@ export async function techAddTaskNoteAction(formData: FormData): Promise<void> {
     actorStaffId: tech.id,
   });
 
-  await notifyAdminsOfTechnicianUpdate({
+  await notifyWorkdeskUpdate({
     actorId: tech.id,
     title: `${task.reference} updated`,
     body: `${tech.name} added a note on ${task.title}`,
@@ -200,8 +198,7 @@ export async function techAddTaskNoteAction(formData: FormData): Promise<void> {
     taskId,
   });
 
-  revalidatePath(`/tech/tasks/${taskId}`);
-  revalidatePath("/tech");
+  revalidateWorkdesk({ taskId });
 }
 
 export async function techUpdateTaskStatusAction(formData: FormData): Promise<void> {
@@ -235,7 +232,7 @@ export async function techUpdateTaskStatusAction(formData: FormData): Promise<vo
     actorStaffId: tech.id,
   });
 
-  await notifyAdminsOfTechnicianUpdate({
+  await notifyWorkdeskUpdate({
     actorId: tech.id,
     title:
       status === "COMPLETED"
@@ -246,8 +243,7 @@ export async function techUpdateTaskStatusAction(formData: FormData): Promise<vo
     taskId,
   });
 
-  revalidatePath(`/tech/tasks/${taskId}`);
-  revalidatePath("/tech");
+  revalidateWorkdesk({ taskId });
 }
 
 export async function techMarkNotificationsReadAction(): Promise<void> {

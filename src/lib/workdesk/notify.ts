@@ -5,6 +5,9 @@ import { env } from "@/lib/env";
 import { sendMail } from "@/lib/mail";
 import { prisma } from "@/lib/prisma";
 import { workdeskHref } from "@/lib/workdesk/access";
+import { listTaskAssigneeIds, listTicketAssigneeIds } from "@/lib/workdesk/staff";
+
+const WORKDESK_MANAGER_ROLES = ["EDITOR", "ADMIN", "SUPERADMIN"] as const;
 
 function escapeHtml(value: string): string {
   return value
@@ -80,7 +83,9 @@ export async function emailStaffAssignment(input: {
        <p style="margin:0 0 16px;font-size:14px;color:#3c4e63;line-height:1.6;">${escapeHtml(input.detail)}</p>
        <p style="margin:0;"><a href="${escapeHtml(href)}" style="color:#0a5fae;">Open in WirelessCom</a></p>`,
     ),
-  }).catch(() => undefined);
+  }).catch((error) => {
+    console.error("[workdesk] assignment email failed:", error);
+  });
 }
 
 export async function emailAdminInbox(input: {
@@ -95,40 +100,58 @@ export async function emailAdminInbox(input: {
       `<p style="margin:0 0 16px;font-size:14px;color:#3c4e63;line-height:1.6;">${escapeHtml(input.detail)}</p>
        <p style="margin:0;"><a href="${escapeHtml(`${env.siteUrl}${input.href}`)}" style="color:#0a5fae;">Review in admin</a></p>`,
     ),
-  }).catch(() => undefined);
+  }).catch((error) => {
+    console.error("[workdesk] admin inbox email failed:", error);
+  });
 }
 
-export async function notifyAdminsOfTechnicianUpdate(input: {
-  actorId: string;
+export async function notifyStaff(input: {
+  userIds: string[];
+  excludeUserIds?: string[];
   title: string;
   body: string;
-  kind: WorkdeskNotificationKind;
+  kind?: WorkdeskNotificationKind;
   ticketId?: string;
   taskId?: string;
 }): Promise<void> {
-  const admins = await prisma.user.findMany({
-    where: {
-      isActive: true,
-      id: { not: input.actorId },
-      role: { in: ["EDITOR", "ADMIN", "SUPERADMIN"] },
-    },
-    select: { id: true },
-  });
-  await createWorkdeskNotifications({
-    userIds: admins.map((admin) => admin.id),
-    kind: input.kind,
-    title: input.title,
-    body: input.body,
-    ticketId: input.ticketId,
-    taskId: input.taskId,
-  });
-  await emailAdminInbox({
-    title: input.title,
-    detail: input.body,
-    href: input.taskId
-      ? `/admin/tasks/${input.taskId}`
-      : `/admin/tickets/${input.ticketId ?? ""}`,
-  });
+  try {
+    const excluded = new Set((input.excludeUserIds ?? []).filter(Boolean));
+    const requested = [...new Set(input.userIds.filter((id) => id && !excluded.has(id)))];
+    if (requested.length === 0) return;
+
+    const users = await prisma.user.findMany({
+      where: { id: { in: requested }, isActive: true },
+      select: { id: true, email: true, name: true, role: true },
+    });
+    if (users.length === 0) return;
+
+    try {
+      await createWorkdeskNotifications({
+        userIds: users.map((user) => user.id),
+        kind: input.kind ?? "ASSIGNMENT",
+        title: input.title,
+        body: input.body,
+        ticketId: input.ticketId,
+        taskId: input.taskId,
+      });
+    } catch (error) {
+      console.error("[workdesk] in-site notification failed:", error);
+    }
+
+    for (const user of users) {
+      await emailStaffAssignment({
+        to: user.email,
+        name: user.name,
+        role: user.role,
+        title: input.title,
+        detail: input.body,
+        ticketId: input.ticketId,
+        taskId: input.taskId,
+      });
+    }
+  } catch (error) {
+    console.error("[workdesk] staff notification failed:", error);
+  }
 }
 
 export async function notifyAssignee(input: {
@@ -137,30 +160,96 @@ export async function notifyAssignee(input: {
   body: string;
   ticketId?: string;
   taskId?: string;
-  kind?: "ASSIGNMENT" | "UPDATE" | "RESOLVED" | "MESSAGE";
+  kind?: WorkdeskNotificationKind;
 }): Promise<void> {
-  const user = await prisma.user.findUnique({
-    where: { id: input.userId },
-    select: { id: true, email: true, name: true, role: true, isActive: true },
-  });
-  if (!user?.isActive) return;
-  await createWorkdeskNotifications({
-    userIds: [user.id],
-    kind: input.kind ?? "ASSIGNMENT",
+  await notifyStaff({
+    userIds: [input.userId],
     title: input.title,
     body: input.body,
+    kind: input.kind ?? "ASSIGNMENT",
     ticketId: input.ticketId,
     taskId: input.taskId,
   });
-  await emailStaffAssignment({
-    to: user.email,
-    name: user.name,
-    role: user.role,
-    title: input.title,
-    detail: input.body,
-    ticketId: input.ticketId,
-    taskId: input.taskId,
+}
+
+export async function notifyAssignees(input: {
+  userIds: string[];
+  excludeUserIds?: string[];
+  title: string;
+  body: string;
+  ticketId?: string;
+  taskId?: string;
+  kind?: WorkdeskNotificationKind;
+}): Promise<void> {
+  await notifyStaff({
+    ...input,
+    kind: input.kind ?? "ASSIGNMENT",
   });
+}
+
+async function listWorkdeskManagerIds(excludeUserId?: string): Promise<string[]> {
+  const managers = await prisma.user.findMany({
+    where: {
+      isActive: true,
+      role: { in: [...WORKDESK_MANAGER_ROLES] },
+      ...(excludeUserId ? { id: { not: excludeUserId } } : {}),
+    },
+    select: { id: true },
+  });
+  return managers.map((manager) => manager.id);
+}
+
+/** In-site + personal email for managers and other assignees, plus the site notify inbox. */
+export async function notifyWorkdeskUpdate(input: {
+  actorId?: string;
+  title: string;
+  body: string;
+  kind: WorkdeskNotificationKind;
+  ticketId?: string;
+  taskId?: string;
+}): Promise<void> {
+  try {
+    const [managerIds, assigneeIds] = await Promise.all([
+      listWorkdeskManagerIds(input.actorId),
+      input.ticketId
+        ? listTicketAssigneeIds(input.ticketId)
+        : input.taskId
+          ? listTaskAssigneeIds(input.taskId)
+          : Promise.resolve([] as string[]),
+    ]);
+
+    await notifyStaff({
+      userIds: [...managerIds, ...assigneeIds],
+      excludeUserIds: input.actorId ? [input.actorId] : [],
+      title: input.title,
+      body: input.body,
+      kind: input.kind,
+      ticketId: input.ticketId,
+      taskId: input.taskId,
+    });
+
+    await emailAdminInbox({
+      title: input.title,
+      detail: input.body,
+      href: input.taskId
+        ? `/admin/tasks/${input.taskId}`
+        : `/admin/tickets/${input.ticketId ?? ""}`,
+    });
+  } catch (error) {
+    console.error("[workdesk] update notification failed:", error);
+  }
+}
+
+/** @deprecated Use notifyWorkdeskUpdate — kept so older imports keep working. */
+export async function notifyAdminsOfTechnicianUpdate(input: {
+  actorId: string;
+  title: string;
+  body: string;
+  kind: WorkdeskNotificationKind;
+  ticketId?: string;
+  taskId?: string;
+}): Promise<void> {
+  await notifyWorkdeskUpdate(input);
 }
 
 export async function unreadNotificationCount(userId: string): Promise<number> {

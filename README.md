@@ -88,8 +88,8 @@ and file uploads need `proxy_buffering off` and a raised `client_max_body_size`.
 | Redirects | Add 301s at any time without a deploy. |
 | Settings | Company details, contact info, announcement bar, social links, analytics snippet, cookie banner. |
 | Users | Create staff accounts across five roles, reset passwords, disable 2FA, and promote other super admins. |
-| Tickets | Customer support: assign, prioritize, reply, attachments, history, and close after review. |
-| Tasks | Internal jobs assigned to technicians, independent of customer tickets. |
+| Tickets | Customer support: assign one or more technicians, prioritize, reply, attachments, history, and close after review. |
+| Tasks | Internal jobs assigned to one or more technicians, independent of a customer ticket. |
 | Audit log | Who changed what, and when. |
 
 ### Roles

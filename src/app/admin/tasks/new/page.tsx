@@ -1,5 +1,6 @@
 import { createTaskAction } from "@/app/admin/tasks/actions";
 import { PageHeader, SelectField, TextAreaField, TextField } from "@/components/admin/ui";
+import { AssigneeChecklist } from "@/components/workdesk/assignee-checklist";
 import { AttachmentField } from "@/components/workdesk/attachment-field";
 import { requireAdminRole } from "@/lib/admin-guard";
 import { listAssignableStaff } from "@/lib/workdesk/staff";
@@ -34,20 +35,7 @@ export default async function NewTaskPage() {
           />
           <TextField label="Due date" name="dueAt" type="date" />
         </div>
-        <fieldset>
-          <legend className="mb-2 text-sm font-medium text-navy-800">Assign technicians</legend>
-          <ul className="max-h-56 space-y-1.5 overflow-y-auto rounded-lg border border-slate-200 p-3">
-            {staff.map((person) => (
-              <li key={person.id}>
-                <label className="flex items-center gap-2 text-sm">
-                  <input type="checkbox" name="assigneeIds" value={person.id} className="size-4" />
-                  {person.name}
-                  <span className="text-xs text-slate-500">({person.role.toLowerCase()})</span>
-                </label>
-              </li>
-            ))}
-          </ul>
-        </fieldset>
+        <AssigneeChecklist staff={staff} legend="Assign technicians" />
         <AttachmentField />
         <button type="submit" className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">
           Create task

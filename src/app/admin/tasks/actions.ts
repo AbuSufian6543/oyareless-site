@@ -1,6 +1,5 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 import { prisma } from "@/lib/prisma";
@@ -9,26 +8,16 @@ import { saveWorkdeskUploads } from "@/lib/workdesk/attachments";
 import { workdeskAdminOrRedirect } from "@/lib/workdesk/access";
 import { dateInputValue, parseDateInput } from "@/lib/workdesk/dates";
 import { recordWorkdeskEvent } from "@/lib/workdesk/events";
-import { notifyAssignee } from "@/lib/workdesk/notify";
+import { notifyAssignees } from "@/lib/workdesk/notify";
 import { nextTaskReference } from "@/lib/workdesk/references";
+import { revalidateWorkdesk } from "@/lib/workdesk/revalidate";
 import { workdeskAdminMaySetTaskStatus } from "@/lib/workdesk/rules";
 import { PRIORITY_LABELS, TASK_STATUS_LABELS } from "@/lib/workdesk/labels";
-
-function assigneeIdsFrom(formData: FormData): string[] {
-  return formData
-    .getAll("assigneeIds")
-    .map((value) => String(value))
-    .filter(Boolean);
-}
-
-async function activeAssigneeIds(ids: string[]): Promise<string[]> {
-  if (ids.length === 0) return [];
-  const staff = await prisma.user.findMany({
-    where: { id: { in: ids }, isActive: true, role: { not: "VIEWER" } },
-    select: { id: true },
-  });
-  return staff.map((row) => row.id);
-}
+import {
+  activeAssigneeIds,
+  assigneeIdsFrom,
+  listTaskAssigneeIds,
+} from "@/lib/workdesk/staff";
 
 export async function createTaskAction(formData: FormData): Promise<void> {
   const staff = await workdeskAdminOrRedirect();
@@ -77,14 +66,6 @@ export async function createTaskAction(formData: FormData): Promise<void> {
     actorStaffId: staff.id,
   });
 
-  for (const userId of assignees) {
-    await notifyAssignee({
-      userId,
-      title: `Task ${task.reference} assigned to you`,
-      body: task.title,
-      taskId: task.id,
-    });
-  }
   if (assignees.length > 0) {
     await recordWorkdeskEvent({
       kind: "ASSIGNED",
@@ -92,9 +73,16 @@ export async function createTaskAction(formData: FormData): Promise<void> {
       taskId: task.id,
       actorStaffId: staff.id,
     });
+    await notifyAssignees({
+      userIds: assignees,
+      excludeUserIds: [staff.id],
+      title: `Task ${task.reference} assigned to you`,
+      body: task.title,
+      taskId: task.id,
+    });
   }
 
-  revalidatePath("/admin/tasks");
+  revalidateWorkdesk({ taskId: task.id });
   redirect(`/admin/tasks/${task.id}`);
 }
 
@@ -185,17 +173,15 @@ export async function updateTaskAction(formData: FormData): Promise<void> {
     });
   }
 
-  for (const userId of next) {
-    if (!previous.has(userId)) {
-      await notifyAssignee({
-        userId,
-        title: `Task ${task.reference} assigned to you`,
-        body: task.title,
-        taskId,
-      });
-    }
-  }
-  if ([...next].some((id) => !previous.has(id)) || [...previous].some((id) => !next.has(id))) {
+  const added = [...next].filter((id) => !previous.has(id));
+  await notifyAssignees({
+    userIds: added,
+    excludeUserIds: [staff.id],
+    title: `Task ${task.reference} assigned to you`,
+    body: task.title,
+    taskId,
+  });
+  if (added.length > 0 || [...previous].some((id) => !next.has(id))) {
     await recordWorkdeskEvent({
       kind: "REASSIGNED",
       summary: `${staff.name} updated assignees`,
@@ -203,9 +189,21 @@ export async function updateTaskAction(formData: FormData): Promise<void> {
       actorStaffId: staff.id,
     });
   }
+  if (task.status !== status) {
+    await notifyAssignees({
+      userIds: assignees.filter((id) => !added.includes(id)),
+      excludeUserIds: [staff.id],
+      title:
+        status === "COMPLETED" || status === "CLOSED"
+          ? `${task.reference} marked ${TASK_STATUS_LABELS[status] ?? status}`
+          : `${task.reference} status updated`,
+      body: `${staff.name} set ${task.reference} to ${TASK_STATUS_LABELS[status] ?? status}`,
+      kind: status === "COMPLETED" || status === "CLOSED" ? "RESOLVED" : "UPDATE",
+      taskId,
+    });
+  }
 
-  revalidatePath(`/admin/tasks/${taskId}`);
-  revalidatePath("/admin/tasks");
+  revalidateWorkdesk({ taskId });
 }
 
 export async function addTaskNoteAction(formData: FormData): Promise<void> {
@@ -246,7 +244,22 @@ export async function addTaskNoteAction(formData: FormData): Promise<void> {
     actorStaffId: staff.id,
   });
 
-  revalidatePath(`/admin/tasks/${taskId}`);
+  const task = await prisma.internalTask.findUnique({
+    where: { id: taskId },
+    select: { reference: true, title: true },
+  });
+  if (task) {
+    await notifyAssignees({
+      userIds: await listTaskAssigneeIds(taskId),
+      excludeUserIds: [staff.id],
+      title: `${task.reference} updated`,
+      body: `${staff.name} added a note on ${task.title}`,
+      kind: "UPDATE",
+      taskId,
+    });
+  }
+
+  revalidateWorkdesk({ taskId });
 }
 
 export async function deleteTaskAction(formData: FormData): Promise<void> {
@@ -264,8 +277,6 @@ export async function deleteTaskAction(formData: FormData): Promise<void> {
   await prisma.workdeskNotification.deleteMany({ where: { taskId } });
   await prisma.internalTask.delete({ where: { id: taskId } });
 
-  revalidatePath("/admin/tasks");
-  revalidatePath("/admin");
-  revalidatePath("/tech");
+  revalidateWorkdesk({ taskId });
   redirect("/admin/tasks");
 }

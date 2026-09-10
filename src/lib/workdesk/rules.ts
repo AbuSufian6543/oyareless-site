@@ -62,10 +62,12 @@ export const CUSTOMER_VISIBLE_EVENT_KINDS = [
 export function technicianCanSeeTicket(input: {
   userId: string;
   assignedToId: string | null;
+  assigneeIds?: string[];
   grantUserIds: string[];
 }): boolean {
   return (
     input.assignedToId === input.userId ||
+    (input.assigneeIds ?? []).includes(input.userId) ||
     input.grantUserIds.includes(input.userId)
   );
 }

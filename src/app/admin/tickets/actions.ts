@@ -13,10 +13,17 @@ import type { TicketPriority, TicketStatus } from "@/generated/prisma/client";
 import { saveWorkdeskUploads } from "@/lib/workdesk/attachments";
 import { workdeskAdminOrRedirect } from "@/lib/workdesk/access";
 import { recordWorkdeskEvent } from "@/lib/workdesk/events";
-import { notifyAssignee } from "@/lib/workdesk/notify";
+import { notifyAssignees, notifyAssignee } from "@/lib/workdesk/notify";
 import { nextTicketReference } from "@/lib/workdesk/references";
+import { revalidateWorkdesk } from "@/lib/workdesk/revalidate";
 import { workdeskAdminMaySetTicketStatus } from "@/lib/workdesk/rules";
 import { PRIORITY_LABELS, TICKET_CATEGORIES, TICKET_STATUS_LABELS } from "@/lib/workdesk/labels";
+import {
+  activeAssigneeIds,
+  assigneeIdsFrom,
+  listTicketAssigneeIds,
+  replaceTicketAssignees,
+} from "@/lib/workdesk/staff";
 
 export async function invitePortalUserAction(formData: FormData): Promise<void> {
   await requireRole("ADMIN");
@@ -76,19 +83,12 @@ export async function createStaffTicketAction(formData: FormData): Promise<void>
   const subject = String(formData.get("subject") ?? "").trim();
   const body = String(formData.get("body") ?? "").trim();
   const priority = String(formData.get("priority") ?? "NORMAL") as TicketPriority;
-  const assignedToId = String(formData.get("assignedToId") ?? "") || null;
+  const assigneeIds = await activeAssigneeIds(assigneeIdsFrom(formData));
   if (!customerId || subject.length < 3 || body.length < 5) {
     redirect("/admin/tickets?error=invalid");
   }
 
-  let assigneeId = assignedToId;
-  if (assigneeId) {
-    const assignee = await prisma.user.findUnique({
-      where: { id: assigneeId },
-      select: { isActive: true, role: true },
-    });
-    if (!assignee?.isActive || assignee.role === "VIEWER") assigneeId = null;
-  }
+  const primaryId = assigneeIds[0] ?? null;
 
   const ticket = await prisma.ticket.create({
     data: {
@@ -98,8 +98,11 @@ export async function createStaffTicketAction(formData: FormData): Promise<void>
       priority: ["LOW", "NORMAL", "HIGH", "EMERGENCY"].includes(priority)
         ? priority
         : "NORMAL",
-      assignedToId: assigneeId,
-      status: assigneeId ? "OPEN" : "NEW",
+      assignedToId: primaryId,
+      status: primaryId ? "OPEN" : "NEW",
+      assignees: {
+        create: assigneeIds.map((userId) => ({ userId })),
+      },
       messages: {
         create: {
           body: body.slice(0, 8000),
@@ -121,22 +124,27 @@ export async function createStaffTicketAction(formData: FormData): Promise<void>
     actorStaffId: staff.id,
   });
 
-  if (assigneeId) {
+  if (assigneeIds.length > 0) {
+    const names = await prisma.user.findMany({
+      where: { id: { in: assigneeIds } },
+      select: { name: true },
+    });
     await recordWorkdeskEvent({
       kind: "ASSIGNED",
-      summary: `${staff.name} assigned ${ticket.reference}`,
+      summary: `${staff.name} assigned ${ticket.reference} to ${names.map((row) => row.name).join(", ")}`,
       ticketId: ticket.id,
       actorStaffId: staff.id,
     });
-    await notifyAssignee({
-      userId: assigneeId,
+    await notifyAssignees({
+      userIds: assigneeIds,
+      excludeUserIds: [staff.id],
       title: `Ticket ${ticket.reference} assigned to you`,
       body: ticket.subject,
       ticketId: ticket.id,
     });
   }
 
-  revalidatePath("/admin/tickets");
+  revalidateWorkdesk({ ticketId: ticket.id });
   redirect(`/admin/tickets/${ticket.id}`);
 }
 
@@ -191,8 +199,16 @@ export async function replyStaffTicketAction(formData: FormData): Promise<void> 
     });
   }
 
-  revalidatePath(`/admin/tickets/${ticketId}`);
-  revalidatePath("/portal/tickets");
+  await notifyAssignees({
+    userIds: await listTicketAssigneeIds(ticketId),
+    excludeUserIds: [staff.id],
+    title: `${ticket.reference} updated`,
+    body: `${staff.name} ${isInternal ? "added a note" : "replied"} on ${ticket.subject}`,
+    kind: "UPDATE",
+    ticketId,
+  });
+
+  revalidateWorkdesk({ ticketId });
 }
 
 export async function updateTicketStatusAction(formData: FormData): Promise<void> {
@@ -229,8 +245,19 @@ export async function updateTicketStatusAction(formData: FormData): Promise<void
     meta: { from: ticket.status, to: status },
   });
 
-  revalidatePath(`/admin/tickets/${ticketId}`);
-  revalidatePath("/admin/tickets");
+  await notifyAssignees({
+    userIds: await listTicketAssigneeIds(ticketId),
+    excludeUserIds: [staff.id],
+    title:
+      status === "RESOLVED" || status === "CLOSED"
+        ? `${ticket.reference} marked ${TICKET_STATUS_LABELS[status] ?? status}`
+        : `${ticket.reference} status updated`,
+    body: `${staff.name} set ${ticket.reference} to ${TICKET_STATUS_LABELS[status] ?? status}`,
+    kind: status === "RESOLVED" || status === "CLOSED" ? "RESOLVED" : "UPDATE",
+    ticketId,
+  });
+
+  revalidateWorkdesk({ ticketId });
 }
 
 export async function updateTicketPriorityAction(formData: FormData): Promise<void> {
@@ -250,61 +277,78 @@ export async function updateTicketPriorityAction(formData: FormData): Promise<vo
     ticketId,
     actorStaffId: staff.id,
   });
-  revalidatePath(`/admin/tickets/${ticketId}`);
-  revalidatePath("/admin/tickets");
+  revalidateWorkdesk({ ticketId });
 }
 
 export async function assignTicketAction(formData: FormData): Promise<void> {
   const staff = await workdeskAdminOrRedirect();
 
   const ticketId = String(formData.get("ticketId") ?? "");
-  const assignedToId = String(formData.get("assignedToId") ?? "") || null;
   if (!ticketId) return;
 
-  const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
+  const ticket = await prisma.ticket.findUnique({
+    where: { id: ticketId },
+    include: { assignees: { select: { userId: true } } },
+  });
   if (!ticket) return;
-  if (ticket.assignedToId === assignedToId) return;
 
-  if (assignedToId) {
-    const assignee = await prisma.user.findUnique({
-      where: { id: assignedToId },
-      select: { isActive: true, role: true },
-    });
-    if (!assignee?.isActive || assignee.role === "VIEWER") return;
-  }
+  const previous = new Set([
+    ...ticket.assignees.map((row) => row.userId),
+    ...(ticket.assignedToId ? [ticket.assignedToId] : []),
+  ]);
+  const nextIds = await activeAssigneeIds(assigneeIdsFrom(formData));
+  const next = new Set(nextIds);
+  const primaryId = nextIds[0] ?? null;
+  const unchanged =
+    previous.size === next.size && [...previous].every((id) => next.has(id));
+
+  if (unchanged && ticket.assignedToId === primaryId) return;
+
+  await replaceTicketAssignees(ticketId, nextIds);
 
   await prisma.ticket.update({
     where: { id: ticketId },
     data: {
-      assignedToId,
-      status: assignedToId && ticket.status === "NEW" ? "OPEN" : ticket.status,
+      assignedToId: primaryId,
+      status: primaryId && ticket.status === "NEW" ? "OPEN" : ticket.status,
     },
   });
 
-  const assignee = assignedToId
-    ? await prisma.user.findUnique({ where: { id: assignedToId }, select: { name: true } })
-    : null;
+  if (nextIds.length > 0) {
+    await prisma.ticketAccessGrant.deleteMany({
+      where: { ticketId, userId: { in: nextIds } },
+    });
+  }
+
+  const names =
+    nextIds.length > 0
+      ? (
+          await prisma.user.findMany({
+            where: { id: { in: nextIds } },
+            select: { name: true },
+          })
+        ).map((row) => row.name)
+      : [];
 
   await recordWorkdeskEvent({
-    kind: ticket.assignedToId ? "REASSIGNED" : "ASSIGNED",
-    summary: assignedToId
-      ? `${staff.name} assigned the ticket to ${assignee?.name ?? "a technician"}`
-      : `${staff.name} unassigned the ticket`,
+    kind: previous.size > 0 ? "REASSIGNED" : "ASSIGNED",
+    summary:
+      nextIds.length > 0
+        ? `${staff.name} assigned the ticket to ${names.join(", ")}`
+        : `${staff.name} unassigned the ticket`,
     ticketId,
     actorStaffId: staff.id,
   });
 
-  if (assignedToId) {
-    await notifyAssignee({
-      userId: assignedToId,
-      title: `Ticket ${ticket.reference} assigned to you`,
-      body: ticket.subject,
-      ticketId,
-    });
-  }
+  await notifyAssignees({
+    userIds: nextIds.filter((id) => !previous.has(id)),
+    excludeUserIds: [staff.id],
+    title: `Ticket ${ticket.reference} assigned to you`,
+    body: ticket.subject,
+    ticketId,
+  });
 
-  revalidatePath(`/admin/tickets/${ticketId}`);
-  revalidatePath("/admin/tickets");
+  revalidateWorkdesk({ ticketId });
 }
 
 export async function grantTicketAccessAction(formData: FormData): Promise<void> {
@@ -347,7 +391,7 @@ export async function grantTicketAccessAction(formData: FormData): Promise<void>
     body: ticket.subject,
     ticketId,
   });
-  revalidatePath(`/admin/tickets/${ticketId}`);
+  revalidateWorkdesk({ ticketId });
 }
 
 export async function revokeTicketAccessAction(formData: FormData): Promise<void> {
@@ -369,7 +413,7 @@ export async function revokeTicketAccessAction(formData: FormData): Promise<void
     ticketId,
     actorStaffId: staff.id,
   });
-  revalidatePath(`/admin/tickets/${ticketId}`);
+  revalidateWorkdesk({ ticketId });
 }
 
 export async function updateTicketDetailsAction(formData: FormData): Promise<void> {
@@ -413,9 +457,7 @@ export async function updateTicketDetailsAction(formData: FormData): Promise<voi
     });
   }
 
-  revalidatePath(`/admin/tickets/${ticketId}`);
-  revalidatePath("/admin/tickets");
-  revalidatePath("/portal/tickets");
+  revalidateWorkdesk({ ticketId });
 }
 
 export async function deleteTicketAction(formData: FormData): Promise<void> {
@@ -433,10 +475,7 @@ export async function deleteTicketAction(formData: FormData): Promise<void> {
   await prisma.workdeskNotification.deleteMany({ where: { ticketId } });
   await prisma.ticket.delete({ where: { id: ticketId } });
 
-  revalidatePath("/admin/tickets");
-  revalidatePath("/admin");
-  revalidatePath("/tech");
-  revalidatePath("/portal/tickets");
+  revalidateWorkdesk({ ticketId });
   redirect("/admin/tickets");
 }
 

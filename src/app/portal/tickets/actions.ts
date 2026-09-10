@@ -2,15 +2,18 @@
 
 import { redirect } from "next/navigation";
 
-import { sendMail } from "@/lib/mail";
 import { prisma } from "@/lib/prisma";
 import { requirePortalUser } from "@/lib/portal-auth";
 import { scopeToCustomer } from "@/lib/portal-scope";
-import { env } from "@/lib/env";
 import { saveWorkdeskUploads } from "@/lib/workdesk/attachments";
 import { recordWorkdeskEvent } from "@/lib/workdesk/events";
-import { createWorkdeskNotifications, notifyAssignee } from "@/lib/workdesk/notify";
+import {
+  emailAdminInbox,
+  notifyStaff,
+  notifyWorkdeskUpdate,
+} from "@/lib/workdesk/notify";
 import { nextTicketReference } from "@/lib/workdesk/references";
+import { revalidateWorkdesk } from "@/lib/workdesk/revalidate";
 import { TICKET_CATEGORIES } from "@/lib/workdesk/labels";
 
 async function attachFiles(messageId: string, formData: FormData) {
@@ -74,19 +77,20 @@ export async function createTicketAction(formData: FormData): Promise<void> {
     where: { isActive: true, role: { in: ["EDITOR", "ADMIN", "SUPERADMIN"] } },
     select: { id: true },
   });
-  await createWorkdeskNotifications({
+  await notifyStaff({
     userIds: admins.map((admin) => admin.id),
-    kind: "MESSAGE",
     title: `New ticket ${ticket.reference}`,
     body: `${user.name} opened ${ticket.subject}`,
+    kind: "MESSAGE",
     ticketId: ticket.id,
   });
+  await emailAdminInbox({
+    title: `New ticket ${ticket.reference}: ${ticket.subject}`,
+    detail: `${user.name} (${user.email}) opened ${ticket.reference}. ${body}`,
+    href: `/admin/tickets/${ticket.id}`,
+  });
 
-  await sendMail({
-    subject: `New ticket ${ticket.reference}: ${ticket.subject}`,
-    html: `<p>${user.name} (${user.email}) opened ${ticket.reference}.</p><p>${body}</p><p><a href="${env.siteUrl}/admin/tickets/${ticket.id}">Open in admin</a></p>`,
-  }).catch(() => undefined);
-
+  revalidateWorkdesk({ ticketId: ticket.id });
   redirect(`/portal/tickets/${ticket.id}`);
 }
 
@@ -124,27 +128,13 @@ export async function replyTicketAction(formData: FormData): Promise<void> {
     });
   }
 
-  if (ticket.assignedToId) {
-    await notifyAssignee({
-      userId: ticket.assignedToId,
-      title: `${ticket.reference}: customer reply`,
-      body: ticket.subject,
-      ticketId,
-      kind: "MESSAGE",
-    });
-  }
-
-  const admins = await prisma.user.findMany({
-    where: { isActive: true, role: { in: ["EDITOR", "ADMIN", "SUPERADMIN"] } },
-    select: { id: true },
-  });
-  await createWorkdeskNotifications({
-    userIds: admins.map((admin) => admin.id),
-    kind: "MESSAGE",
+  await notifyWorkdeskUpdate({
     title: `${ticket.reference}: customer reply`,
     body: `${user.name} replied on ${ticket.subject}`,
+    kind: "MESSAGE",
     ticketId,
   });
 
+  revalidateWorkdesk({ ticketId });
   redirect(`/portal/tickets/${ticketId}`);
 }

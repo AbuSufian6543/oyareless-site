@@ -32,17 +32,26 @@ assert("admin still qualifies as editor", roleMeetsMinimum("ADMIN", "EDITOR"));
 const assigned = {
   userId: "tech-1",
   assignedToId: "tech-1",
+  assigneeIds: ["tech-1"],
   grantUserIds: [] as string[],
 };
 const someoneElse = {
   userId: "tech-1",
   assignedToId: "tech-2",
+  assigneeIds: ["tech-2"],
   grantUserIds: [] as string[],
 };
 const extraGrant = {
   userId: "tech-1",
   assignedToId: "tech-2",
+  assigneeIds: ["tech-2"],
   grantUserIds: ["tech-1"],
+};
+const coAssigned = {
+  userId: "tech-1",
+  assignedToId: "tech-2",
+  assigneeIds: ["tech-1", "tech-2"],
+  grantUserIds: [] as string[],
 };
 
 assert("technician can see a ticket assigned to them", technicianCanSeeTicket(assigned));
@@ -50,6 +59,10 @@ assert("technician cannot see another technician's ticket", !technicianCanSeeTic
 assert(
   "technician can see a ticket after an admin grant",
   technicianCanSeeTicket(extraGrant),
+);
+assert(
+  "technician can see a ticket they are co-assigned on",
+  technicianCanSeeTicket(coAssigned),
 );
 
 assert(

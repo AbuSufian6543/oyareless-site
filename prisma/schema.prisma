@@ -56,6 +56,7 @@ model User {
   auditLogs         AuditLog[]
   assignedSubmissions FormSubmission[] @relation("SubmissionAssignee")
   assignedTickets   Ticket[]         @relation("TicketAssignee")
+  ticketAssignments TicketAssignee[] @relation("TicketStaffAssignment")
   ticketReplies     TicketMessage[]  @relation("TicketStaffAuthor")
   ticketAccessGrants TicketAccessGrant[]
   createdTasks      InternalTask[]   @relation("TaskCreator")
@@ -992,6 +993,7 @@ model Ticket {
   messages       TicketMessage[]
   events         WorkdeskEvent[]
   accessGrants   TicketAccessGrant[]
+  assignees      TicketAssignee[]
 
   @@index([customerId, status])
   @@index([status, priority, createdAt])
@@ -1010,6 +1012,18 @@ model TicketAccessGrant {
 
   @@unique([ticketId, userId])
   @@index([userId])
+}
+
+/// First-class ticket assignment. Multiple technicians can own one ticket.
+model TicketAssignee {
+  ticketId  String
+  ticket    Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation("TicketStaffAssignment", fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([ticketId, userId])
+  @@index([userId, ticketId])
 }
 
 model TicketMessage {

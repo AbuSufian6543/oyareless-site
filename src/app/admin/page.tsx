@@ -16,13 +16,16 @@ import {
 
 import { Alert, Badge, Card, CardTitle, EmptyState, PageHeader } from "@/components/admin/ui";
 import { env } from "@/lib/env";
+import { getCurrentUser } from "@/lib/auth";
 import { getResolvedMail } from "@/lib/mail-settings";
 import { prisma } from "@/lib/prisma";
 import { formatDateTime } from "@/lib/utils";
+import { workdeskHref } from "@/lib/workdesk/access";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboard() {
+  const user = await getCurrentUser();
   const [
     publishedPages,
     draftPages,
@@ -35,6 +38,7 @@ export default async function AdminDashboard() {
     mail,
     openTickets,
     openTasks,
+    recentNotifications,
   ] = await Promise.all([
     prisma.page.count({ where: { status: "PUBLISHED" } }).catch(() => 0),
     prisma.page.count({ where: { status: "DRAFT" } }).catch(() => 0),
@@ -51,6 +55,15 @@ export default async function AdminDashboard() {
     })),
     prisma.ticket.count({ where: { status: { not: "CLOSED" } } }).catch(() => 0),
     prisma.internalTask.count({ where: { status: { not: "CLOSED" } } }).catch(() => 0),
+    user
+      ? prisma.workdeskNotification
+          .findMany({
+            where: { userId: user.id },
+            orderBy: { createdAt: "desc" },
+            take: 6,
+          })
+          .catch(() => [])
+      : Promise.resolve([]),
   ]);
 
   const stats = [
@@ -192,6 +205,42 @@ export default async function AdminDashboard() {
         </div>
 
         <div className="space-y-6">
+          <Card>
+            <CardTitle description="Technician and customer updates on tickets and tasks.">
+              Workdesk updates
+            </CardTitle>
+            {recentNotifications.length === 0 ? (
+              <p className="text-sm text-slate-500">No notifications yet.</p>
+            ) : (
+              <ul className="divide-y divide-slate-100">
+                {recentNotifications.map((item) => (
+                  <li key={item.id}>
+                    <Link
+                      href={user ? workdeskHref(user.role, item) : "/admin/notifications"}
+                      className="-mx-2 block rounded-lg px-2 py-2.5 hover:bg-slate-50"
+                    >
+                      <span className={`block truncate text-sm font-semibold ${item.readAt ? "text-navy-800" : "text-navy-900"}`}>
+                        {item.title}
+                      </span>
+                      <span className="mt-0.5 block truncate text-xs text-slate-500">
+                        {item.body}
+                      </span>
+                      <span className="mt-0.5 block text-xs text-slate-400">
+                        {formatDateTime(item.createdAt)}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <Link
+              href="/admin/notifications"
+              className="mt-3 inline-block text-sm font-semibold text-brand-700 hover:underline"
+            >
+              All notifications
+            </Link>
+          </Card>
+
           <Card>
             <CardTitle>Quick actions</CardTitle>
             <div className="space-y-2">
