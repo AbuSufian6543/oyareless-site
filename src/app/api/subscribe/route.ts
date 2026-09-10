@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
-import { env } from "@/lib/env";
 import { randomToken } from "@/lib/crypto";
 import { sendMail, subscriberConfirmEmail } from "@/lib/mail";
 import { prisma } from "@/lib/prisma";
+import { publicUrl } from "@/lib/public-url";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 const schema = z.object({
@@ -69,7 +69,9 @@ export async function POST(request: Request) {
     );
   }
 
-  const confirmUrl = `${env.siteUrl}/api/subscribe/confirm?token=${confirmToken}`;
+  const confirmUrl = publicUrl(
+    `/api/subscribe/confirm?token=${encodeURIComponent(confirmToken)}`,
+  );
   const mail = subscriberConfirmEmail({ confirmUrl });
   const sent = await sendMail({
     to: email,

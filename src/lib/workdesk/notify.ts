@@ -1,9 +1,9 @@
 import "server-only";
 
 import type { Role, WorkdeskNotificationKind } from "@/generated/prisma/client";
-import { env } from "@/lib/env";
 import { sendMail } from "@/lib/mail";
 import { prisma } from "@/lib/prisma";
+import { publicUrl } from "@/lib/public-url";
 import { workdeskHref } from "@/lib/workdesk/access";
 import { listTaskAssigneeIds, listTicketAssigneeIds } from "@/lib/workdesk/staff";
 
@@ -73,7 +73,7 @@ export async function emailStaffAssignment(input: {
   ticketId?: string;
   taskId?: string;
 }): Promise<void> {
-  const href = `${env.siteUrl}${workdeskHref(input.role, input)}`;
+  const href = publicUrl(workdeskHref(input.role, input));
   await sendMail({
     to: input.to,
     subject: input.title,
@@ -98,7 +98,7 @@ export async function emailAdminInbox(input: {
     html: emailLayout(
       input.title,
       `<p style="margin:0 0 16px;font-size:14px;color:#3c4e63;line-height:1.6;">${escapeHtml(input.detail)}</p>
-       <p style="margin:0;"><a href="${escapeHtml(`${env.siteUrl}${input.href}`)}" style="color:#0a5fae;">Review in admin</a></p>`,
+       <p style="margin:0;"><a href="${escapeHtml(publicUrl(input.href))}" style="color:#0a5fae;">Review in admin</a></p>`,
     ),
   }).catch((error) => {
     console.error("[workdesk] admin inbox email failed:", error);

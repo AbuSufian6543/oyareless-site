@@ -1,7 +1,4 @@
-/**
- * Central place for reading environment configuration so that missing values
- * fail loudly at startup instead of at the first request.
- */
+import { resolvePublicOrigin } from "@/lib/public-url";
 
 function required(name: string): string {
   const value = process.env[name];
@@ -33,17 +30,9 @@ export const env = {
   get encryptionKey() {
     return process.env.ENCRYPTION_KEY?.trim() || required("AUTH_SECRET");
   },
+  /** Public HTTPS origin. Production always returns https://wirelesscom.ca. */
   get siteUrl() {
-    const raw = optional("NEXT_PUBLIC_SITE_URL", "http://localhost:3000").replace(
-      /\/$/,
-      "",
-    );
-    try {
-      new URL(raw);
-      return raw;
-    } catch {
-      return "http://localhost:3000";
-    }
+    return resolvePublicOrigin(optional("NEXT_PUBLIC_SITE_URL", "http://localhost:3000"));
   },
   get allowInsecureCookies() {
     return bool("ALLOW_INSECURE_COOKIES", false);

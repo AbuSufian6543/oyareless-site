@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 
-import { env } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
+import { publicUrl } from "@/lib/public-url";
 
 export async function GET(request: Request) {
   const token = new URL(request.url).searchParams.get("token");
 
   if (!token) {
-    return NextResponse.redirect(`${env.siteUrl}/subscription?status=invalid`);
+    return NextResponse.redirect(publicUrl("/subscription?status=invalid"));
   }
 
   const subscriber = await prisma.subscriber
@@ -15,7 +15,7 @@ export async function GET(request: Request) {
     .catch(() => null);
 
   if (!subscriber) {
-    return NextResponse.redirect(`${env.siteUrl}/subscription?status=invalid`);
+    return NextResponse.redirect(publicUrl("/subscription?status=invalid"));
   }
 
   await prisma.subscriber
@@ -29,5 +29,5 @@ export async function GET(request: Request) {
     })
     .catch(() => undefined);
 
-  return NextResponse.redirect(`${env.siteUrl}/subscription?status=confirmed`);
+  return NextResponse.redirect(publicUrl("/subscription?status=confirmed"));
 }

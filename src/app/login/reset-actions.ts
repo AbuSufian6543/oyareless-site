@@ -6,11 +6,11 @@ import { redirect } from "next/navigation";
 import { recordAudit } from "@/lib/audit";
 import { revokeAllSessions } from "@/lib/auth";
 import { hashToken, randomToken } from "@/lib/crypto";
-import { env } from "@/lib/env";
 import { passwordResetEmail, sendMail } from "@/lib/mail";
 import { getResolvedMail } from "@/lib/mail-settings";
 import { hashPassword, validatePasswordStrength } from "@/lib/passwords";
 import { prisma } from "@/lib/prisma";
+import { publicUrl } from "@/lib/public-url";
 import { rateLimit } from "@/lib/rate-limit";
 
 const RESET_TTL_MS = 60 * 60 * 1000;
@@ -76,9 +76,11 @@ export async function requestPasswordResetAction(
     },
   });
 
+  // Links are built from the canonical https://wirelesscom.ca origin, never
+  // from the request Host header (that would allow reset-link poisoning).
   const message = passwordResetEmail({
     name: user.name,
-    resetUrl: `${env.siteUrl}/login/reset?token=${encodeURIComponent(token)}`,
+    resetUrl: publicUrl(`/login/reset?token=${encodeURIComponent(token)}`),
   });
 
   await sendMail({

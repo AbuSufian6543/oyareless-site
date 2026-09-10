@@ -127,6 +127,8 @@ prints a `DATABASE_URL` you can paste into `.env`.
 | `npm run build` | Production build |
 | `npm run typecheck` | TypeScript, no emit |
 | `npm run check:blocks` | Validate every block type and all seed content — no database needed |
+| `npm run check:workdesk` | Technician/admin authorization rules for tickets and tasks |
+| `npm run check:public-url` | Email and public links always use https://wirelesscom.ca, never a server IP |
 | `npm run check:smoke -- http://127.0.0.1:3000 admin@example.com 'password'` | Sign in and request every public and admin route against a running server |
 | `npm run seed` | Insert any missing seed content |
 

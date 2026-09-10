@@ -2,6 +2,12 @@ import type { Metadata } from "next";
 
 import { env } from "@/lib/env";
 import {
+  isCanonicalPublicHost,
+  isIpHostname,
+  isLoopbackHost,
+  publicUrl,
+} from "@/lib/public-url";
+import {
   DEFAULT_SETTINGS,
   formattedAddress,
   type SiteSettings,
@@ -12,11 +18,27 @@ export const WEBSITE_ID = `${env.siteUrl}/#website`;
 
 export type Crumb = { name: string; href: string };
 
-/** Resolves a site path or existing URL against NEXT_PUBLIC_SITE_URL. */
+/** Resolves a site path against the public HTTPS origin. Foreign http URLs are dropped. */
 export function absoluteUrl(path = "/"): string {
-  if (/^https?:\/\//i.test(path)) return path;
-  const normalized = path.startsWith("/") ? path : `/${path}`;
-  return `${env.siteUrl}${normalized}`;
+  const trimmed = path.trim();
+  if (/^https:\/\//i.test(trimmed)) {
+    try {
+      const url = new URL(trimmed);
+      if (
+        isIpHostname(url.hostname) ||
+        isCanonicalPublicHost(url.hostname) ||
+        isLoopbackHost(url.hostname)
+      ) {
+        return publicUrl(trimmed);
+      }
+      url.username = "";
+      url.password = "";
+      return url.toString();
+    } catch {
+      return publicUrl("/");
+    }
+  }
+  return publicUrl(trimmed);
 }
 
 export function ogImage(

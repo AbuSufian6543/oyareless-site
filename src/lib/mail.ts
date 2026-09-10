@@ -1,8 +1,12 @@
 import "server-only";
 
 import nodemailer, { type Transporter } from "nodemailer";
-import { env } from "@/lib/env";
 import { getResolvedMail, type ResolvedMail } from "@/lib/mail-settings";
+import {
+  publicHostLabel,
+  publicUrl,
+  sanitizeEmailHtml,
+} from "@/lib/public-url";
 
 let cached: { key: string; transporter: Transporter; config: ResolvedMail } | null = null;
 
@@ -56,12 +60,13 @@ export async function sendMail(input: {
   }
 
   try {
+    const html = sanitizeEmailHtml(input.html);
     await client.transporter.sendMail({
       from: client.config.from,
       to: input.to ?? client.config.notifyEmails.join(", "),
       subject: input.subject,
-      html: input.html,
-      text: input.text ?? htmlToText(input.html),
+      html,
+      text: input.text ?? htmlToText(html),
       replyTo: input.replyTo,
     });
     return { ok: true };
@@ -137,7 +142,7 @@ function layout(title: string, body: string): string {
           <tr>
             <td style="background:#f5f7fa;padding:18px 28px;color:#5a6b80;font-size:12px;line-height:1.6;border-top:1px solid #e3e9f0;">
               WirelessCom.Ca Inc. &middot; 97 White Oak Drive East, Sault Ste. Marie, ON P6B 4J7<br />
-              Phone: 1-800-705-3189 &middot; <a href="${env.siteUrl}" style="color:#0a5fae;">${env.siteUrl.replace(/^https?:\/\//, "")}</a>
+              Phone: 1-800-705-3189 &middot; <a href="${publicUrl()}" style="color:#0a5fae;">${publicHostLabel()}</a>
             </td>
           </tr>
         </table>
@@ -212,7 +217,7 @@ export function submissionNotificationEmail(input: {
       ])}
     </table>
     <p style="margin:20px 0 0;">
-      <a href="${env.siteUrl}${input.adminPath ?? `/admin/submissions/${input.submissionId}`}"
+      <a href="${publicUrl(input.adminPath ?? `/admin/submissions/${input.submissionId}`)}"
          style="display:inline-block;background:#0a5fae;color:#ffffff;padding:11px 20px;border-radius:6px;text-decoration:none;font-size:14px;font-weight:600;">
         Open in admin
       </a>
@@ -260,7 +265,7 @@ export function subscriberConfirmEmail(input: {
       service updates, technology news, and promotions.
     </p>
     <p style="margin:0 0 20px;">
-      <a href="${input.confirmUrl}"
+      <a href="${escapeHtml(input.confirmUrl)}"
          style="display:inline-block;background:#6fc04a;color:#08331a;padding:12px 22px;border-radius:6px;text-decoration:none;font-size:15px;font-weight:700;">
         Confirm subscription
       </a>
@@ -296,7 +301,7 @@ export function newUserInviteEmail(input: {
       You will be asked to choose a new password the first time you sign in.
     </p>
     <p style="margin:18px 0 0;">
-      <a href="${env.siteUrl}/login"
+      <a href="${publicUrl("/login")}"
          style="display:inline-block;background:#0a5fae;color:#ffffff;padding:11px 20px;border-radius:6px;text-decoration:none;font-size:14px;font-weight:600;">
         Sign in
       </a>

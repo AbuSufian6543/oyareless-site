@@ -140,6 +140,25 @@ detect_public_ip() {
   printf '%s' "$ip"
 }
 
+# Email, sitemap, and canonical URLs always use the company HTTPS hostname.
+# The public IP is never written into NEXT_PUBLIC_SITE_URL.
+canonical_site_url() {
+  local domain
+  domain="$(primary_domain)"
+  domain="${domain:-wirelesscom.ca}"
+  domain="${domain#www.}"
+  domain="$(printf '%s' "$domain" | tr '[:upper:]' '[:lower:]')"
+  printf 'https://%s' "$domain"
+}
+
+if [[ ${#DOMAINS[@]} -gt 0 ]]; then
+  for domain in "${DOMAINS[@]}"; do
+    if [[ "$domain" =~ ^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$ || "$domain" == *:* ]]; then
+      die "--domain must be a hostname such as wirelesscom.ca, not an IP address ($domain)."
+    fi
+  done
+fi
+
 # ===========================================================================
 step "Checking the host"
 
@@ -204,6 +223,25 @@ read_env() {
   printf '%s' "${value:-$2}"
 }
 
+sync_public_site_url() {
+  local canonical current
+  [[ -f "$ENV_FILE" ]] || return 0
+  canonical="$(canonical_site_url)"
+  current="$(read_env NEXT_PUBLIC_SITE_URL "")"
+  if [[ "$current" == "$canonical" ]]; then
+    return 0
+  fi
+  info "Setting NEXT_PUBLIC_SITE_URL to ${canonical} so email never uses a server IP"
+  if grep -q '^NEXT_PUBLIC_SITE_URL=' "$ENV_FILE"; then
+    as_root sed -i "s|^NEXT_PUBLIC_SITE_URL=.*|NEXT_PUBLIC_SITE_URL=${canonical}|" "$ENV_FILE"
+  else
+    printf '\nNEXT_PUBLIC_SITE_URL=%s\n' "$canonical" | as_root tee -a "$ENV_FILE" >/dev/null
+  fi
+  if grep -q '^ALLOW_INSECURE_COOKIES=true' "$ENV_FILE"; then
+    as_root sed -i 's|^ALLOW_INSECURE_COOKIES=true|ALLOW_INSECURE_COOKIES=false|' "$ENV_FILE"
+  fi
+}
+
 if [[ -f "$ENV_FILE" ]]; then
   # Guard against someone copying .env.example into place and deploying with
   # the documented placeholder secrets, which would be trivially forgeable.
@@ -220,7 +258,8 @@ if [[ -f "$ENV_FILE" ]]; then
     die "Replace them with real secrets (openssl rand -base64 48), or delete .env and re-run to have them generated."
   fi
 
-  ok ".env already exists — leaving it untouched"
+  ok ".env already exists — leaving secrets untouched"
+  sync_public_site_url
   APP_PORT="$(read_env APP_PORT "$APP_PORT")"
   APP_BIND="$(read_env APP_BIND "$APP_BIND")"
   SUPERADMIN_EMAIL="$(read_env SUPERADMIN_EMAIL "$SUPERADMIN_EMAIL")"
@@ -241,22 +280,10 @@ else
   auth_secret="$(random_secret)"
   encryption_key="$(random_secret)"
 
-  site_url=""
-  if [[ -n "$(primary_domain)" ]]; then
-    if [[ "$CONFIGURE_TLS" -eq 1 ]]; then
-      site_url="https://$(primary_domain)"
-    else
-      site_url="http://$(primary_domain)"
-    fi
-  else
-    detected_ip="$(detect_public_ip)"
-    site_url="http://${detected_ip:-localhost}"
-  fi
+  site_url="$(canonical_site_url)"
 
-  # Cookies must drop the Secure flag when the site is reachable over plain
-  # HTTP, otherwise nobody can log in over a bare IP address.
-  insecure_cookies="true"
-  [[ "$site_url" == https://* ]] && insecure_cookies="false"
+  # Public links are HTTPS, so session cookies can stay Secure.
+  insecure_cookies="false"
 
   info "Writing .env"
   umask 077
