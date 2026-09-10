@@ -39,6 +39,17 @@ const PLATFORMS = [
   },
 ] as const;
 
+const MORE_LINKS = [
+  { href: "/ev-charging-solutions", label: "EV Charging" },
+  { href: "/fleet-vehicle-tracking", label: "Fleet Tracking" },
+  { href: "/web-development", label: "Web Development" },
+  { href: "/video-services", label: "Video & Broadcasting" },
+  { href: "/two-way-radios", label: "Two-Way Radios" },
+  { href: "/data-cabling-fiber-optic", label: "Data Cabling & Fiber" },
+  { href: "/network-status", label: "Network Status" },
+  { href: "/live", label: "Live Streams" },
+] as const;
+
 const INDUSTRIES = [
   "Small and medium business",
   "Professional offices",
@@ -144,6 +155,27 @@ export function FallbackHome() {
                   <span className="mt-5 text-sm font-semibold text-brand-700">
                     Learn more
                   </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section className="border-t border-slate-100 bg-white py-12 lg:py-16">
+        <div className="container-page">
+          <p className="eyebrow text-brand-700">More services and tools</p>
+          <h2 className="mt-2 max-w-2xl text-2xl font-bold tracking-tight text-navy-900">
+            EV charging, fleet tracking, web work, status, and live streams
+          </h2>
+          <ul className="mt-6 flex flex-wrap gap-2">
+            {MORE_LINKS.map((link) => (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-3.5 py-1.5 text-sm font-medium text-navy-800 transition-colors hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
+                >
+                  {link.label}
                 </Link>
               </li>
             ))}

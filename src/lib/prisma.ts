@@ -3,14 +3,29 @@ import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "@/generated/prisma/client";
 
-/** Fail fast when Postgres is down so public pages still render. */
-const QUERY_TIMEOUT_MS = 2_000;
-const DB_COOLDOWN_MS = 20_000;
+/** Give Postgres time to connect; do not treat a slow query as a total outage. */
+const QUERY_TIMEOUT_MS = 8_000;
+const CONNECT_TIMEOUT_MS = 10_000;
+const DB_COOLDOWN_MS = 5_000;
 
 let dbDownUntil = 0;
 
 function markDbDown() {
   dbDownUntil = Date.now() + DB_COOLDOWN_MS;
+}
+
+export function isTransientDbError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return /timeout|ECONNREFUSED|ENOTFOUND|ECONNRESET|unreachable|connect|Database unreachable|DATABASE_URL/i.test(
+    message,
+  );
+}
+
+function isHardDbOutage(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return /ECONNREFUSED|ENOTFOUND|ECONNRESET|unreachable|Database unreachable/i.test(
+    message,
+  );
 }
 
 export function withTimeout<T>(promise: Promise<T>, ms = QUERY_TIMEOUT_MS): Promise<T> {
@@ -20,7 +35,6 @@ export function withTimeout<T>(promise: Promise<T>, ms = QUERY_TIMEOUT_MS): Prom
 
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => {
-      markDbDown();
       reject(new Error(`Database query timed out after ${ms}ms`));
     }, ms);
     promise.then(
@@ -30,10 +44,7 @@ export function withTimeout<T>(promise: Promise<T>, ms = QUERY_TIMEOUT_MS): Prom
       },
       (error) => {
         clearTimeout(timer);
-        const message = error instanceof Error ? error.message : String(error);
-        if (/timeout|ECONNREFUSED|ENOTFOUND|ECONNRESET|unreachable|connect/i.test(message)) {
-          markDbDown();
-        }
+        if (isHardDbOutage(error)) markDbDown();
         reject(error);
       },
     );
@@ -49,7 +60,7 @@ function createClient(): PrismaClient {
   return new PrismaClient({
     adapter: new PrismaPg({
       connectionString,
-      connectionTimeoutMillis: QUERY_TIMEOUT_MS,
+      connectionTimeoutMillis: CONNECT_TIMEOUT_MS,
       idleTimeoutMillis: 10_000,
     }),
     log:

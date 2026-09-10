@@ -180,7 +180,7 @@ export function SiteHeader({
 
                   {openDropdown === item.id && (
                     <div className="absolute left-0 top-full z-50 w-72 pt-2">
-                      <div className="overflow-hidden rounded-xl border border-slate-200 bg-white py-1.5 shadow-lift">
+                      <div className="max-h-[min(70vh,32rem)] overflow-y-auto rounded-xl border border-slate-200 bg-white py-1.5 shadow-lift">
                         {item.children.map((child) => (
                           <NavLink
                             key={child.id}

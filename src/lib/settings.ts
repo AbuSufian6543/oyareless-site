@@ -1,7 +1,8 @@
 import "server-only";
 
 import { cache } from "react";
-import { prisma, withTimeout } from "@/lib/prisma";
+import { unstable_noStore as noStore } from "next/cache";
+import { isTransientDbError, prisma, withTimeout } from "@/lib/prisma";
 import {
   DEFAULT_SETTINGS,
   type SettingKey,
@@ -29,9 +30,10 @@ export const getSettings = cache(async (): Promise<SiteSettings> => {
       }
     }
     return merged as SiteSettings;
-  } catch {
+  } catch (error) {
     // The public site should still render if the database is briefly
-    // unavailable (e.g. during a rolling restart).
+    // unavailable (e.g. during a rolling restart). Do not cache that miss.
+    if (isTransientDbError(error)) noStore();
     return { ...DEFAULT_SETTINGS };
   }
 });

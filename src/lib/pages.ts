@@ -2,10 +2,11 @@ import "server-only";
 
 import { cache } from "react";
 import type { Metadata } from "next";
+import { unstable_noStore as noStore } from "next/cache";
 
 import { parseBlocks, type Block } from "@/lib/blocks";
 import { parseSlideshow, type SlideshowItem } from "@/lib/slideshow";
-import { prisma, withTimeout } from "@/lib/prisma";
+import { isTransientDbError, prisma, withTimeout } from "@/lib/prisma";
 import {
   absoluteUrl,
   isServiceSlug,
@@ -31,26 +32,53 @@ export type RenderablePage = {
 
 export const getPublishedPage = cache(
   async (slug: string): Promise<RenderablePage | null> => {
-    const page = await withTimeout(
-      prisma.page.findFirst({ where: { slug, status: "PUBLISHED" } }),
-    ).catch(() => null);
+    try {
+      const page = await withTimeout(
+        prisma.page.findFirst({ where: { slug, status: "PUBLISHED" } }),
+      );
 
-    if (!page) return null;
+      if (!page) return null;
 
-    return {
-      id: page.id,
-      slug: page.slug,
-      title: page.title,
-      blocks: parseBlocks(page.blocks),
-      slideshow: parseSlideshow(page.slideshow),
-      metaTitle: page.metaTitle,
-      metaDescription: page.metaDescription,
-      ogImageUrl: page.ogImageUrl,
-      noIndex: page.noIndex,
-      updatedAt: page.updatedAt,
-    };
+      return {
+        id: page.id,
+        slug: page.slug,
+        title: page.title,
+        blocks: parseBlocks(page.blocks),
+        slideshow: parseSlideshow(page.slideshow),
+        metaTitle: page.metaTitle,
+        metaDescription: page.metaDescription,
+        ogImageUrl: page.ogImageUrl,
+        noIndex: page.noIndex,
+        updatedAt: page.updatedAt,
+      };
+    } catch (error) {
+      // Unpublished pages return null above. Timeouts and a down database
+      // should still show the shipped copy of that page, not a 404.
+      if (!isTransientDbError(error)) return null;
+      noStore();
+      return seedFallbackPage(slug);
+    }
   },
 );
+
+async function seedFallbackPage(slug: string): Promise<RenderablePage | null> {
+  const { buildBlocks, SEED_PAGES } = await import("../../prisma/seed-content");
+  const seed = SEED_PAGES.find((page) => page.slug === slug);
+  if (!seed) return null;
+
+  return {
+    id: `seed-fallback-${slug}`,
+    slug: seed.slug,
+    title: seed.title,
+    blocks: buildBlocks(seed.blocks, seed.slug),
+    slideshow: [],
+    metaTitle: seed.metaTitle ?? null,
+    metaDescription: seed.metaDescription,
+    ogImageUrl: null,
+    noIndex: false,
+    updatedAt: new Date(0),
+  };
+}
 
 /** Derives a description from page content when the editor left it blank. */
 function inferDescription(page: RenderablePage): string {

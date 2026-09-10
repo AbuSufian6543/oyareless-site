@@ -1,7 +1,13 @@
 import "server-only";
 
 import { cache } from "react";
-import { prisma, withTimeout } from "@/lib/prisma";
+import { unstable_noStore as noStore } from "next/cache";
+
+import { isTransientDbError, prisma, withTimeout } from "@/lib/prisma";
+import {
+  defaultNavNodes,
+  mergeNavWithDefaults,
+} from "@/lib/nav-defaults";
 import type { NavLocation } from "@/generated/prisma/client";
 
 export type NavNode = {
@@ -12,10 +18,14 @@ export type NavNode = {
   children: NavNode[];
 };
 
+const FALLBACK_HEADER = defaultNavNodes("HEADER");
+const FALLBACK_FOOTER = defaultNavNodes("FOOTER");
+
 /**
- * Navigation is admin-managed via NavItem. If an admin has not configured it
- * yet, published pages flagged `showInHeaderNav` are used instead so the site
- * is never left without a menu.
+ * Navigation is admin-managed via NavItem. Missing shipped links are filled
+ * from the canonical menu so a slow query or an older seed cannot hide
+ * services, tools, or support. If Postgres does not answer, the same full
+ * menu is used and the response is not cached.
  */
 async function loadNav(location: NavLocation): Promise<NavNode[]> {
   const items = await withTimeout(
@@ -69,67 +79,22 @@ async function loadNav(location: NavLocation): Promise<NavNode[]> {
   }));
 }
 
-/**
- * Shown when Postgres is unreachable so the public header is never empty.
- * Live navigation still comes from NavItem once the database answers.
- */
-const FALLBACK_HEADER: NavNode[] = [
-  {
-    id: "services",
-    label: "Services",
-    href: "/it-services",
-    openInNewTab: false,
-    children: [
-      { id: "it", label: "IT Services", href: "/it-services", openInNewTab: false, children: [] },
-      { id: "cyber", label: "Cybersecurity", href: "/cybersecurity", openInNewTab: false, children: [] },
-      { id: "firewalls", label: "Firewalls", href: "/firewalls", openInNewTab: false, children: [] },
-      { id: "ai", label: "AI cameras & phones", href: "/ai-services", openInNewTab: false, children: [] },
-      { id: "security", label: "Security Systems", href: "/security-services", openInNewTab: false, children: [] },
-      { id: "alarms", label: "Alarm Systems", href: "/alarm-systems", openInNewTab: false, children: [] },
-      { id: "intercom", label: "Door Intercom", href: "/door-intercom", openInNewTab: false, children: [] },
-      { id: "panic", label: "Panic Buttons", href: "/panic-buttons", openInNewTab: false, children: [] },
-      { id: "access", label: "Access Control", href: "/access-control", openInNewTab: false, children: [] },
-      { id: "phone", label: "Telephone (VoIP)", href: "/telephone-services", openInNewTab: false, children: [] },
-      { id: "internet", label: "Internet Services", href: "/internet-services", openInNewTab: false, children: [] },
-    ],
-  },
-  {
-    id: "tools",
-    label: "Tools",
-    href: "/speed-test",
-    openInNewTab: false,
-    children: [
-      { id: "speed", label: "Internet Speed Test", href: "/speed-test", openInNewTab: false, children: [] },
-      { id: "net-tools", label: "Network Tools", href: "/network-tools", openInNewTab: false, children: [] },
-      { id: "sec-tools", label: "Cybersecurity Tools", href: "/cybersecurity-tools", openInNewTab: false, children: [] },
-    ],
-  },
-  {
-    id: "support",
-    label: "Support",
-    href: "/support",
-    openInNewTab: false,
-    children: [
-      { id: "remote", label: "Remote Support", href: "/remote-support", openInNewTab: false, children: [] },
-      { id: "faq", label: "FAQ", href: "/faq", openInNewTab: false, children: [] },
-      { id: "contact", label: "Contact", href: "/contact", openInNewTab: false, children: [] },
-    ],
-  },
-];
-
 export const getHeaderNav = cache(async (): Promise<NavNode[]> => {
   try {
     const nav = await loadNav("HEADER");
-    return nav.length > 0 ? nav : FALLBACK_HEADER;
-  } catch {
+    return mergeNavWithDefaults(nav, FALLBACK_HEADER);
+  } catch (error) {
+    if (isTransientDbError(error)) noStore();
     return FALLBACK_HEADER;
   }
 });
 
 export const getFooterNav = cache(async (): Promise<NavNode[]> => {
   try {
-    return await loadNav("FOOTER");
-  } catch {
-    return [];
+    const nav = await loadNav("FOOTER");
+    return mergeNavWithDefaults(nav, FALLBACK_FOOTER);
+  } catch (error) {
+    if (isTransientDbError(error)) noStore();
+    return FALLBACK_FOOTER;
   }
 });
