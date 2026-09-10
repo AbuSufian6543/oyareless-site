@@ -3,6 +3,7 @@ import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
 import { sendMail, submissionAckEmail, submissionNotificationEmail } from "@/lib/mail";
+import { getResolvedMail } from "@/lib/mail-settings";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
@@ -63,6 +64,8 @@ export async function POST(request: Request) {
     select: { reference: true, id: true },
   });
 
+  const mail = await getResolvedMail();
+
   await Promise.all([
     sendMail({
       ...submissionNotificationEmail({
@@ -73,11 +76,18 @@ export async function POST(request: Request) {
         company: parsed.data.companyName,
         subject: `Quote ${quote.reference}`,
         message: parsed.data.details,
-        extra: { areas: parsed.data.serviceAreas.join(", ") },
+        extra: {
+          reference: quote.reference,
+          siteAddress: parsed.data.siteAddress,
+          timeframe: parsed.data.timeframe,
+          budgetRange: parsed.data.budgetRange,
+          serviceAreas: parsed.data.serviceAreas.join(", "),
+        },
         submissionId: quote.id,
         adminPath: `/admin/quotes/${quote.id}`,
       }),
-      to: undefined,
+      to: mail.quoteNotifyEmails.join(", "),
+      replyTo: parsed.data.email,
     }).catch(() => undefined),
     sendMail({
       ...submissionAckEmail({

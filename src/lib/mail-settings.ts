@@ -2,13 +2,16 @@ import "server-only";
 
 import { decryptSecret, encryptSecret } from "@/lib/crypto";
 import { env } from "@/lib/env";
+import { parseNotifyEmails } from "@/lib/notify-emails";
 import { prisma, withTimeout } from "@/lib/prisma";
+
+export { parseNotifyEmails } from "@/lib/notify-emails";
 
 /**
  * SMTP and notification inboxes live in SiteSetting so an admin can set them
  * from the dashboard. They are deliberately kept out of getSettings() — that
- * object is rendered into public pages, and the SMTP password must not travel
- * with it.
+ * object is rendered into public pages, and neither the SMTP password nor the
+ * quote/office inbox lists must travel with it.
  */
 
 export const MAIL_SETTING_KEYS = [
@@ -19,6 +22,7 @@ export const MAIL_SETTING_KEYS = [
   "smtpPassword",
   "smtpFrom",
   "notifyEmails",
+  "quoteNotifyEmails",
 ] as const;
 
 export type MailSettingKey = (typeof MAIL_SETTING_KEYS)[number];
@@ -31,6 +35,7 @@ export type MailSettings = {
   smtpPassword: string;
   smtpFrom: string;
   notifyEmails: string;
+  quoteNotifyEmails: string;
 };
 
 export type ResolvedMail = {
@@ -41,6 +46,9 @@ export type ResolvedMail = {
   password: string;
   from: string;
   notifyEmails: string[];
+  quoteNotifyEmails: string[];
+  /** True when Site Settings has a dedicated quote inbox list. */
+  hasQuoteNotifyList: boolean;
   isConfigured: boolean;
   passwordIsSet: boolean;
 };
@@ -53,21 +61,8 @@ const MAIL_DEFAULTS: MailSettings = {
   smtpPassword: "",
   smtpFrom: "WirelessCom.Ca Inc. <no-reply@wirelesscom.ca>",
   notifyEmails: "service@wirelesscom.ca",
+  quoteNotifyEmails: "",
 };
-
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-export function parseNotifyEmails(raw: string): string[] {
-  const seen = new Set<string>();
-  const list: string[] = [];
-  for (const part of raw.split(/[,;\n]+/)) {
-    const email = part.trim().toLowerCase();
-    if (!email || !EMAIL_RE.test(email) || seen.has(email)) continue;
-    seen.add(email);
-    list.push(email);
-  }
-  return list;
-}
 
 function asString(value: unknown, fallback: string): string {
   if (typeof value === "string") return value;
@@ -144,6 +139,10 @@ export async function getResolvedMail(): Promise<ResolvedMail> {
     notifyFromStore.length > 0
       ? notifyFromStore
       : parseNotifyEmails(env.smtp.to);
+  const officeEmails =
+    notifyEmails.length > 0 ? notifyEmails : ["service@wirelesscom.ca"];
+
+  const quoteFromStore = parseNotifyEmails(stored.quoteNotifyEmails);
 
   return {
     host,
@@ -152,7 +151,10 @@ export async function getResolvedMail(): Promise<ResolvedMail> {
     user,
     password,
     from,
-    notifyEmails: notifyEmails.length > 0 ? notifyEmails : ["service@wirelesscom.ca"],
+    notifyEmails: officeEmails,
+    quoteNotifyEmails:
+      quoteFromStore.length > 0 ? quoteFromStore : officeEmails,
+    hasQuoteNotifyList: quoteFromStore.length > 0,
     isConfigured: Boolean(host),
     passwordIsSet: Boolean(password),
   };

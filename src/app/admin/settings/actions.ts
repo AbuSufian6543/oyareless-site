@@ -59,12 +59,26 @@ export async function saveSettingsAction(formData: FormData): Promise<void> {
       smtpUser: String(formData.get("smtpUser") ?? "").trim(),
       smtpFrom: String(formData.get("smtpFrom") ?? "").trim(),
       notifyEmails: String(formData.get("notifyEmails") ?? "").trim(),
+      quoteNotifyEmails: String(formData.get("quoteNotifyEmails") ?? "").trim(),
     };
     const nextPassword = String(formData.get("smtpPassword") ?? "");
     if (nextPassword.trim()) {
       mail.smtpPassword = nextPassword.trim();
     }
     await updateMailSettings(mail);
+  } else if (formData.has("quoteNotifyEmails") || formData.has("notifyEmails")) {
+    await updateMailSettings({
+      ...(formData.has("notifyEmails")
+        ? { notifyEmails: String(formData.get("notifyEmails") ?? "").trim() }
+        : {}),
+      ...(formData.has("quoteNotifyEmails")
+        ? {
+            quoteNotifyEmails: String(
+              formData.get("quoteNotifyEmails") ?? "",
+            ).trim(),
+          }
+        : {}),
+    });
   }
 
   await recordAudit({
@@ -90,7 +104,7 @@ export async function testSmtpAction(): Promise<void> {
     to: user.email,
     subject: "SMTP test — WirelessCom.Ca Inc.",
     html: `<p>This is a test from the WirelessCom.Ca website. If you received it, SMTP is working.</p>
-           <p>Office notifications will also use the addresses listed under Site Settings → Email.</p>`,
+           <p>Office and quote notification addresses are listed under Site Settings.</p>`,
   });
 
   if (!sent.ok) {

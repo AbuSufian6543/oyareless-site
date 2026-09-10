@@ -1,9 +1,10 @@
-import { CircleCheck, TriangleAlert } from "lucide-react";
+import { CircleCheck, Mails, TriangleAlert } from "lucide-react";
 
 import {
   saveSettingsAction,
   testSmtpAction,
 } from "@/app/admin/settings/actions";
+import { NotifyEmailListField } from "@/components/admin/notify-email-list-field";
 import {
   Alert,
   Card,
@@ -37,7 +38,7 @@ export default async function SettingsPage({
     <div className="max-w-3xl">
       <PageHeader
         title="Site settings"
-        description="Company details, outbound email, and the office inboxes that receive quotes and support requests."
+        description="Company details, outbound email, and the inboxes that receive quote requests and other site mail."
       />
 
       {params.saved && (
@@ -85,13 +86,17 @@ export default async function SettingsPage({
             <span>
               {resolved.isConfigured ? (
                 <>
-                  Email is configured. Quote requests, support forms and
-                  password-reset messages go through{" "}
+                  Email is configured through{" "}
                   <strong>
                     {resolved.host}:{resolved.port}
                   </strong>
-                  . Office copies are sent to{" "}
-                  <strong>{resolved.notifyEmails.join(", ")}</strong>.
+                  . Contact and support copies go to{" "}
+                  <strong>{resolved.notifyEmails.join(", ")}</strong>
+                  . Quote requests go to{" "}
+                  <strong>{resolved.quoteNotifyEmails.join(", ")}</strong>
+                  {resolved.hasQuoteNotifyList
+                    ? "."
+                    : " (the office inboxes, until you add quote-specific addresses below)."}
                 </>
               ) : (
                 <>
@@ -113,8 +118,34 @@ export default async function SettingsPage({
         <input type="hidden" name="present:cookieBannerEnabled" value="1" />
         <input type="hidden" name="present:showLiveChatCta" value="1" />
 
+        <Card className="overflow-hidden">
+          <div className="-mx-5 -mt-5 mb-5 border-b border-brand-100 bg-gradient-to-r from-brand-50 to-white px-5 py-4 lg:-mx-6 lg:-mt-6 lg:px-6">
+            <div className="flex items-start gap-3">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white text-brand-700 shadow-sm ring-1 ring-brand-100">
+                <Mails className="size-5" aria-hidden="true" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="font-bold text-navy-900">Quote request notifications</h2>
+                <p className="mt-1 text-sm leading-relaxed text-slate-600">
+                  When someone submits a quote on the website, each address
+                  below gets a copy. The visitor still receives their own
+                  confirmation.
+                </p>
+              </div>
+            </div>
+          </div>
+          <NotifyEmailListField
+            name="quoteNotifyEmails"
+            label="Quote notification emails"
+            defaultValue={mail.quoteNotifyEmails}
+            placeholder="quotes@wirelesscom.ca"
+            emptyHint="No quote-specific inboxes yet. Until you add some, new quote requests are sent to the office addresses:"
+            fallbackEmails={resolved.notifyEmails}
+          />
+        </Card>
+
         <Card>
-          <CardTitle description="Used for password resets, quote requests, and other mail the site sends. The password is stored encrypted and is never shown again.">
+          <CardTitle description="Used for password resets, quote notifications, and other mail the site sends. The password is stored encrypted and is never shown again.">
             Email (SMTP)
           </CardTitle>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -164,15 +195,6 @@ export default async function SettingsPage({
               className="sm:col-span-2"
               hint="What visitors see in the From field."
             />
-            <TextAreaField
-              label="Office email addresses"
-              name="notifyEmails"
-              rows={3}
-              defaultValue={mail.notifyEmails}
-              placeholder={"service@wirelesscom.ca\nquotes@wirelesscom.ca"}
-              className="sm:col-span-2"
-              hint="One address per line. Quote requests and support forms are delivered here."
-            />
           </div>
           <div className="mt-4">
             <CheckboxField
@@ -180,6 +202,15 @@ export default async function SettingsPage({
               name="smtpSecure"
               defaultChecked={mail.smtpSecure}
               description="Turn this on for port 465. Leave it off for port 587 (STARTTLS), which most Office 365 and Google Workspace accounts use."
+            />
+          </div>
+          <div className="mt-5 border-t border-slate-100 pt-5">
+            <NotifyEmailListField
+              name="notifyEmails"
+              label="Office email addresses"
+              defaultValue={mail.notifyEmails}
+              placeholder="service@wirelesscom.ca"
+              description="Contact forms, support requests, and other staff mail. Quote requests use the list above when it is filled in."
             />
           </div>
         </Card>
