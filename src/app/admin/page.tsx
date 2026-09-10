@@ -75,6 +75,7 @@ export default async function AdminDashboard() {
     posts,
     jobs,
     newSubmissions,
+    newQuotes,
     subscribers,
     recentSubmissions,
     mail,
@@ -132,6 +133,7 @@ export default async function AdminDashboard() {
     prisma.post.count({ where: { status: "PUBLISHED" } }).catch(() => 0),
     prisma.jobPosting.count({ where: { status: "PUBLISHED" } }).catch(() => 0),
     prisma.formSubmission.count({ where: { status: "NEW" } }).catch(() => 0),
+    prisma.quoteRequest.count({ where: { status: "NEW" } }).catch(() => 0),
     prisma.subscriber.count({ where: { status: "CONFIRMED" } }).catch(() => 0),
     prisma.formSubmission
       .findMany({ orderBy: { createdAt: "desc" }, take: 5 })
@@ -216,6 +218,7 @@ export default async function AdminDashboard() {
     { label: "News", value: posts, href: "/admin/posts", Icon: Newspaper },
     { label: "Jobs", value: jobs, href: "/admin/jobs", Icon: Briefcase },
     { label: "New inquiries", value: newSubmissions, href: "/admin/submissions", Icon: Inbox },
+    { label: "New quotes", value: newQuotes, href: "/admin/quotes", Icon: FileText },
   ];
 
   return (

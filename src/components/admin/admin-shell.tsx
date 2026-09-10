@@ -99,6 +99,7 @@ function collectionEntries(group: CollectionGroup): NavEntry[] {
 export function AdminShell({
   user,
   newSubmissions,
+  newQuotes = 0,
   unreadNotifications = 0,
   openTickets = 0,
   openTasks = 0,
@@ -108,6 +109,7 @@ export function AdminShell({
 }: {
   user: SessionUser;
   newSubmissions: number;
+  newQuotes?: number;
   unreadNotifications?: number;
   openTickets?: number;
   openTasks?: number;
@@ -164,7 +166,7 @@ export function AdminShell({
           badge: newSubmissions,
         },
         { href: "/admin/subscribers", label: "Subscribers", Icon: Users },
-        { href: "/admin/quotes", label: "Quotes", Icon: FileText },
+        { href: "/admin/quotes", label: "Quotes", Icon: FileText, badge: newQuotes },
         { href: "/admin/portal-users", label: "Portal users", Icon: Building2, minRank: 3 },
       ],
     },

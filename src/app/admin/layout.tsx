@@ -36,8 +36,9 @@ export default async function AdminLayout({
   if (user.role === "VIEWER") redirect("/");
   if (user.role === "TECHNICIAN") redirect("/tech");
 
-  const [newSubmissions, settings, unreadNotifications, openTickets, openTasks] = await Promise.all([
+  const [newSubmissions, newQuotes, settings, unreadNotifications, openTickets, openTasks] = await Promise.all([
     prisma.formSubmission.count({ where: { status: "NEW" } }).catch(() => 0),
+    prisma.quoteRequest.count({ where: { status: "NEW" } }).catch(() => 0),
     getSettings(),
     unreadNotificationCount(user.id).catch(() => 0),
     prisma.ticket
@@ -54,6 +55,7 @@ export default async function AdminLayout({
     <AdminShell
       user={user}
       newSubmissions={newSubmissions}
+      newQuotes={newQuotes}
       unreadNotifications={unreadNotifications}
       openTickets={openTickets}
       openTasks={openTasks}

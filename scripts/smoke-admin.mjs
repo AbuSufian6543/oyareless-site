@@ -172,6 +172,7 @@ for (const path of [
   "/admin/tasks",
   "/admin/notifications",
   "/admin/quotes",
+  "/admin/quotes/new",
   "/admin/portal-users",
   "/admin/collections/brands",
   "/admin/collections/faq",
@@ -192,6 +193,7 @@ for (const [listPath, prefix] of [
   ["/admin/streams", "/admin/streams"],
   ["/admin/jobs", "/admin/jobs"],
   ["/admin/submissions", "/admin/submissions"],
+  ["/admin/quotes", "/admin/quotes"],
 ]) {
   const body = await (await request(listPath)).text();
   const pattern = new RegExp(`${prefix}/([a-z0-9]{20,})`, "g");

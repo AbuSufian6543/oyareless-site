@@ -56,6 +56,7 @@ export default async function AuditPage({
     { value: "page.", label: "Pages" },
     { value: "post.", label: "Articles" },
     { value: "stream.", label: "Streams" },
+    { value: "quote.", label: "Quotes" },
     { value: "media.", label: "Media" },
     { value: "settings.", label: "Settings" },
   ];

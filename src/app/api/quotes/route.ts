@@ -4,6 +4,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { sendMail, submissionAckEmail, submissionNotificationEmail } from "@/lib/mail";
 import { getResolvedMail } from "@/lib/mail-settings";
+import { allocateQuoteReference } from "@/lib/quotes";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
@@ -43,8 +44,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Thank you." });
   }
 
-  const count = await prisma.quoteRequest.count().catch(() => 0);
-  const reference = `Q-${String(count + 1).padStart(4, "0")}`;
+  const reference = await allocateQuoteReference();
 
   const quote = await prisma.quoteRequest.create({
     data: {

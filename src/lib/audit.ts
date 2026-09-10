@@ -40,7 +40,10 @@ export type AuditAction =
   | "testimonial.updated"
   | "collection.created"
   | "collection.updated"
-  | "collection.deleted";
+  | "collection.deleted"
+  | "quote.created"
+  | "quote.updated"
+  | "quote.deleted";
 
 /**
  * Append-only trail of privileged actions. Useful for a security company both
