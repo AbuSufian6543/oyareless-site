@@ -1,30 +1,87 @@
 import Link from "next/link";
 
-import { deleteTaskAction } from "@/app/admin/tasks/actions";
 import { PageHeader } from "@/components/admin/ui";
-import { ConfirmSubmit } from "@/components/workdesk/confirm-submit";
-import { PriorityBadge, TaskStatusBadge } from "@/components/workdesk/badges";
+import { ViewFilter } from "@/components/workdesk/view-filter";
+import { WorkItem, WorkList } from "@/components/workdesk/work-item";
 import { requireAdminRole } from "@/lib/admin-guard";
 import { prisma } from "@/lib/prisma";
-import { formatDate, formatDateTime } from "@/lib/utils";
+import {
+  OPEN_TASK,
+  taskAssignedTo,
+  taskAssignedToOthers,
+  taskUnassigned,
+} from "@/lib/workdesk/board";
+import { isOverdue, startOfToday } from "@/lib/workdesk/dates";
 
 export const metadata = { title: "Tasks" };
 
-export default async function AdminTasksPage() {
-  await requireAdminRole("EDITOR");
-  const tasks = await prisma.internalTask.findMany({
-    orderBy: [{ status: "asc" }, { dueAt: "asc" }, { createdAt: "desc" }],
-    take: 200,
-    include: {
-      assignees: { include: { user: { select: { name: true } } } },
-    },
-  });
+const VIEWS = ["mine", "team", "unassigned", "overdue", "all"] as const;
+type TaskView = (typeof VIEWS)[number];
+
+const TASK_DONE = ["COMPLETED", "CLOSED"] as const;
+
+function parseView(value: string | undefined): TaskView {
+  return VIEWS.includes(value as TaskView) ? (value as TaskView) : "mine";
+}
+
+export default async function AdminTasksPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ view?: string }>;
+}) {
+  const user = await requireAdminRole("EDITOR");
+  const params = await searchParams;
+  const view = parseView(params.view);
+  const today = startOfToday();
+
+  const mineFilter = { ...OPEN_TASK, ...taskAssignedTo(user.id) };
+  const teamFilter = { ...OPEN_TASK, ...taskAssignedToOthers(user.id) };
+  const unassignedFilter = { ...OPEN_TASK, ...taskUnassigned() };
+  const overdueFilter = { ...OPEN_TASK, dueAt: { lt: today } };
+
+  const where =
+    view === "mine"
+      ? mineFilter
+      : view === "team"
+        ? teamFilter
+        : view === "unassigned"
+          ? unassignedFilter
+          : view === "overdue"
+            ? overdueFilter
+            : undefined;
+
+  const [tasks, mineCount, teamCount, unassignedCount, overdueCount, allCount] = await Promise.all([
+    prisma.internalTask.findMany({
+      where,
+      orderBy: [{ status: "asc" }, { dueAt: "asc" }, { createdAt: "desc" }],
+      take: 200,
+      include: {
+        assignees: { include: { user: { select: { id: true, name: true } } } },
+      },
+    }),
+    prisma.internalTask.count({ where: mineFilter }),
+    prisma.internalTask.count({ where: teamFilter }),
+    prisma.internalTask.count({ where: unassignedFilter }),
+    prisma.internalTask.count({ where: overdueFilter }),
+    prisma.internalTask.count(),
+  ]);
+
+  const empty =
+    view === "mine"
+      ? "No open tasks are assigned to you."
+      : view === "team"
+        ? "No open tasks are assigned to other staff."
+        : view === "unassigned"
+          ? "Every open task has an assignee."
+          : view === "overdue"
+            ? "Nothing is overdue."
+            : "No internal tasks yet.";
 
   return (
     <div>
       <PageHeader
         title="Internal tasks"
-        description="Work that is independent of a customer ticket."
+        description="Open a card to update status, reassign, or add a note. Overdue work is highlighted."
         actions={
           <Link
             href="/admin/tasks/new"
@@ -34,70 +91,33 @@ export default async function AdminTasksPage() {
           </Link>
         }
       />
-      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
-        <table className="w-full text-left text-sm">
-          <thead>
-            <tr className="border-b text-xs uppercase tracking-wide text-slate-500">
-              <th className="px-4 py-3">Ref</th>
-              <th className="px-4 py-3">Title</th>
-              <th className="px-4 py-3">Assignees</th>
-              <th className="px-4 py-3">Priority</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Due</th>
-              <th className="px-4 py-3">Created</th>
-              <th className="px-4 py-3">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tasks.map((task) => (
-              <tr key={task.id} className="border-b border-slate-100">
-                <td className="px-4 py-3 font-mono text-xs">
-                  <Link href={`/admin/tasks/${task.id}`} className="font-semibold text-brand-700 hover:underline">
-                    {task.reference}
-                  </Link>
-                </td>
-                <td className="px-4 py-3">{task.title}</td>
-                <td className="px-4 py-3">
-                  {task.assignees.map((row) => row.user.name).join(", ") || "—"}
-                </td>
-                <td className="px-4 py-3">
-                  <PriorityBadge priority={task.priority} />
-                </td>
-                <td className="px-4 py-3">
-                  <TaskStatusBadge status={task.status} />
-                </td>
-                <td className="px-4 py-3 text-xs text-slate-500">
-                  {task.dueAt ? formatDate(task.dueAt) : "—"}
-                </td>
-                <td className="px-4 py-3 text-xs text-slate-500">{formatDateTime(task.createdAt)}</td>
-                <td className="px-4 py-3">
-                  <div className="flex items-center gap-3">
-                    <Link href={`/admin/tasks/${task.id}`} className="text-xs font-semibold text-brand-700 hover:underline">
-                      Edit
-                    </Link>
-                    <form action={deleteTaskAction}>
-                      <input type="hidden" name="taskId" value={task.id} />
-                      <ConfirmSubmit
-                        message={`Delete ${task.reference}? This cannot be undone.`}
-                        className="text-xs font-semibold text-red-600 hover:underline"
-                      >
-                        Delete
-                      </ConfirmSubmit>
-                    </form>
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {tasks.length === 0 && (
-              <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-slate-500">
-                  No internal tasks yet.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      <ViewFilter
+        items={[
+          { href: "/admin/tasks", label: "Assigned to me", active: view === "mine", count: mineCount },
+          { href: "/admin/tasks?view=team", label: "Assigned to others", active: view === "team", count: teamCount },
+          { href: "/admin/tasks?view=unassigned", label: "Unassigned", active: view === "unassigned", count: unassignedCount },
+          { href: "/admin/tasks?view=overdue", label: "Overdue", active: view === "overdue", count: overdueCount },
+          { href: "/admin/tasks?view=all", label: "All", active: view === "all", count: allCount },
+        ]}
+      />
+      <WorkList count={tasks.length} empty={empty}>
+        {tasks.map((task) => (
+          <WorkItem
+            key={task.id}
+            kind="task"
+            href={`/admin/tasks/${task.id}`}
+            reference={task.reference}
+            title={task.title}
+            status={task.status}
+            priority={task.priority}
+            dueAt={task.dueAt}
+            updatedAt={task.updatedAt}
+            overdue={isOverdue(task.dueAt, task.status, TASK_DONE)}
+            assignees={task.assignees.map((row) => row.user.name)}
+            you={user.name}
+          />
+        ))}
+      </WorkList>
     </div>
   );
 }

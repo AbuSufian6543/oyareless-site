@@ -6,9 +6,11 @@ import { ActivityLog } from "@/components/workdesk/activity-log";
 import { AttachmentField } from "@/components/workdesk/attachment-field";
 import { AttachmentList } from "@/components/workdesk/attachment-list";
 import { PriorityBadge, TicketStatusBadge } from "@/components/workdesk/badges";
+import { AssigneeAvatars } from "@/components/workdesk/work-item";
 import { prisma } from "@/lib/prisma";
 import { formatDateTime } from "@/lib/utils";
 import { assertTicketAccess, handleWorkdeskAuth, technicianOrRedirect } from "@/lib/workdesk/access";
+import { ticketAssigneeNames } from "@/lib/workdesk/board";
 import { workdeskFileHref } from "@/lib/workdesk/files";
 import { TICKET_STATUS_LABELS } from "@/lib/workdesk/labels";
 import { TECHNICIAN_TICKET_STATUSES } from "@/lib/workdesk/rules";
@@ -32,6 +34,8 @@ export default async function TechTicketPage({
     where: { id },
     include: {
       customer: { select: { name: true } },
+      assignedTo: { select: { name: true } },
+      assignees: { include: { user: { select: { name: true } } } },
       messages: { orderBy: { createdAt: "asc" }, include: { attachments: true } },
       events: { orderBy: { createdAt: "asc" } },
     },
@@ -79,7 +83,7 @@ export default async function TechTicketPage({
         {!closed && (
           <form action={techReplyTicketAction} encType="multipart/form-data" className="mt-6 space-y-3 rounded-xl border border-slate-200 bg-white p-5">
             <input type="hidden" name="ticketId" value={ticket.id} />
-            <textarea name="body" required rows={5} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            <textarea name="body" required rows={5} placeholder="Reply to the customer or add an internal note" className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
             <AttachmentField />
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" name="isInternal" className="size-4" />
@@ -92,6 +96,10 @@ export default async function TechTicketPage({
         )}
       </div>
       <aside className="space-y-4">
+        <Card>
+          <CardTitle>Assigned to</CardTitle>
+          <AssigneeAvatars names={ticketAssigneeNames(ticket)} you={user.name} />
+        </Card>
         {!closed && (
           <Card>
             <CardTitle>Status</CardTitle>

@@ -12,3 +12,20 @@ export function dateInputValue(value: Date | null | undefined): string {
   const day = String(value.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 }
+
+export function startOfToday(): Date {
+  const date = new Date();
+  date.setHours(0, 0, 0, 0);
+  return date;
+}
+
+export function isOverdue(
+  dueAt: Date | null | undefined,
+  status: string,
+  doneStatuses: readonly string[],
+): boolean {
+  if (!dueAt) return false;
+  if (doneStatuses.includes(status)) return false;
+  return dueAt < startOfToday();
+}
+

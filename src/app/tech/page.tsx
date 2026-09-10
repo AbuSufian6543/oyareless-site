@@ -8,18 +8,15 @@ import {
 } from "lucide-react";
 
 import { PageHeader } from "@/components/admin/ui";
-import { PriorityBadge, TaskStatusBadge, TicketStatusBadge } from "@/components/workdesk/badges";
+import { WorkItem, WorkList, WorkStatLink } from "@/components/workdesk/work-item";
 import { prisma } from "@/lib/prisma";
-import { cn, formatDate, formatDateTime } from "@/lib/utils";
 import { technicianOrRedirect, technicianTaskWhere, technicianTicketWhere } from "@/lib/workdesk/access";
+import { ticketAssigneeNames } from "@/lib/workdesk/board";
+import { isOverdue, startOfToday } from "@/lib/workdesk/dates";
 
 export const metadata = { title: "My work" };
 
-function startOfToday() {
-  const date = new Date();
-  date.setHours(0, 0, 0, 0);
-  return date;
-}
+const TASK_DONE = ["COMPLETED", "CLOSED"] as const;
 
 export default async function TechHomePage() {
   const user = await technicianOrRedirect();
@@ -63,35 +60,41 @@ export default async function TechHomePage() {
       where: { ...ticketWhere, status: { notIn: ["RESOLVED", "CLOSED"] } },
       orderBy: [{ priority: "desc" }, { updatedAt: "desc" }],
       take: 8,
-      include: { customer: { select: { name: true } } },
+      include: {
+        customer: { select: { name: true } },
+        assignedTo: { select: { name: true } },
+        assignees: { include: { user: { select: { name: true } } } },
+      },
     }),
     prisma.internalTask.findMany({
       where: { ...taskWhere, status: { notIn: ["COMPLETED", "CLOSED"] } },
       orderBy: [{ dueAt: "asc" }, { updatedAt: "desc" }],
       take: 8,
+      include: {
+        assignees: { include: { user: { select: { name: true } } } },
+      },
     }),
   ]);
 
   const firstName = user.name.split(" ")[0] || user.name;
   const stats = [
     {
-      label: "Assigned tickets",
-      value: ticketTotal,
-      hint: `${ticketOpen} open`,
+      label: "Open tickets",
+      value: ticketOpen,
+      hint: `${ticketTotal} assigned`,
       href: "/tech/tickets",
       Icon: Headset,
     },
     {
       label: "Completed tickets",
       value: ticketDone,
-      hint: ticketTotal === 0 ? "None assigned yet" : undefined,
       href: "/tech/tickets?view=done",
       Icon: CircleCheck,
     },
     {
-      label: "Assigned tasks",
-      value: taskTotal,
-      hint: `${taskOpen} open`,
+      label: "Open tasks",
+      value: taskOpen,
+      hint: `${taskTotal} assigned`,
       href: "/tech/tasks",
       Icon: ClipboardList,
     },
@@ -102,10 +105,10 @@ export default async function TechHomePage() {
       Icon: CircleCheck,
     },
     {
-      label: "Overdue",
+      label: "Overdue tasks",
       value: taskOverdue,
-      hint: taskOverdue > 0 ? "Due before today" : "Nothing overdue",
-      href: "/tech/tasks",
+      hint: taskOverdue > 0 ? "Needs attention today" : "Nothing overdue",
+      href: "/tech/tasks?view=overdue",
       Icon: taskOverdue > 0 ? TriangleAlert : Clock,
       alert: taskOverdue > 0,
     },
@@ -115,109 +118,64 @@ export default async function TechHomePage() {
     <div>
       <PageHeader
         title={`Hi, ${firstName}`}
-        description="Your assigned tickets and tasks. Counts include extra ticket access an admin granted you."
+        description="Your assigned tickets and tasks. Overdue work is highlighted so it is easy to see first."
       />
 
       <div className="mb-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         {stats.map((stat) => (
-          <Link
-            key={stat.label}
-            href={stat.href}
-            className={cn(
-              "rounded-xl border bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md",
-              stat.alert ? "border-amber-300" : "border-slate-200 hover:border-brand-200",
-            )}
-          >
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-slate-500">
-                  {stat.label}
-                </p>
-                <p className="mt-2 text-3xl font-extrabold tabular-nums text-navy-900">
-                  {stat.value}
-                </p>
-                {stat.hint && (
-                  <p className={cn("mt-1 text-xs", stat.alert ? "font-semibold text-amber-700" : "text-slate-500")}>
-                    {stat.hint}
-                  </p>
-                )}
-              </div>
-              <span
-                className={cn(
-                  "flex size-10 items-center justify-center rounded-lg",
-                  stat.alert ? "bg-amber-50 text-amber-700" : "bg-brand-50 text-brand-600",
-                )}
-              >
-                <stat.Icon className="size-5" aria-hidden="true" />
-              </span>
-            </div>
-          </Link>
+          <WorkStatLink key={stat.label} {...stat} />
         ))}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section className="rounded-xl border border-slate-200 bg-white p-5">
+        <section>
           <div className="mb-3 flex items-center justify-between gap-3">
             <h2 className="font-bold text-navy-900">Open tickets</h2>
-            <Link href="/tech/tickets" className="text-sm font-semibold text-brand-700">
+            <Link href="/tech/tickets" className="text-sm font-semibold text-brand-700 hover:underline">
               View all {ticketOpen}
             </Link>
           </div>
-          <ul className="divide-y divide-slate-100">
+          <WorkList count={tickets.length} empty="You are caught up. No open tickets.">
             {tickets.map((ticket) => (
-              <li key={ticket.id} className="py-3">
-                <Link href={`/tech/tickets/${ticket.id}`} className="block">
-                  <p className="font-semibold text-navy-900">
-                    {ticket.reference} — {ticket.subject}
-                  </p>
-                  <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500">
-                    <TicketStatusBadge status={ticket.status} />
-                    <PriorityBadge priority={ticket.priority} />
-                    <span>{ticket.customer.name}</span>
-                    <span>{formatDateTime(ticket.updatedAt)}</span>
-                  </p>
-                </Link>
-              </li>
+              <WorkItem
+                key={ticket.id}
+                kind="ticket"
+                href={`/tech/tickets/${ticket.id}`}
+                reference={ticket.reference}
+                title={ticket.subject}
+                status={ticket.status}
+                priority={ticket.priority}
+                subtitle={ticket.customer.name}
+                assignees={ticketAssigneeNames(ticket)}
+                you={user.name}
+              />
             ))}
-            {tickets.length === 0 && (
-              <li className="py-6 text-sm text-slate-500">You are caught up. No open tickets.</li>
-            )}
-          </ul>
+          </WorkList>
         </section>
-        <section className="rounded-xl border border-slate-200 bg-white p-5">
+        <section>
           <div className="mb-3 flex items-center justify-between gap-3">
             <h2 className="font-bold text-navy-900">Open tasks</h2>
-            <Link href="/tech/tasks" className="text-sm font-semibold text-brand-700">
+            <Link href="/tech/tasks" className="text-sm font-semibold text-brand-700 hover:underline">
               View all {taskOpen}
             </Link>
           </div>
-          <ul className="divide-y divide-slate-100">
-            {tasks.map((task) => {
-              const overdue = Boolean(task.dueAt && task.dueAt < today);
-              return (
-                <li key={task.id} className="py-3">
-                  <Link href={`/tech/tasks/${task.id}`} className="block">
-                    <p className="font-semibold text-navy-900">
-                      {task.reference} — {task.title}
-                    </p>
-                    <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500">
-                      <TaskStatusBadge status={task.status} />
-                      <PriorityBadge priority={task.priority} />
-                      {task.dueAt ? (
-                        <span className={overdue ? "font-semibold text-amber-700" : undefined}>
-                          {overdue ? "Overdue " : "Due "}
-                          {formatDate(task.dueAt)}
-                        </span>
-                      ) : null}
-                    </p>
-                  </Link>
-                </li>
-              );
-            })}
-            {tasks.length === 0 && (
-              <li className="py-6 text-sm text-slate-500">You are caught up. No open tasks.</li>
-            )}
-          </ul>
+          <WorkList count={tasks.length} empty="You are caught up. No open tasks.">
+            {tasks.map((task) => (
+              <WorkItem
+                key={task.id}
+                kind="task"
+                href={`/tech/tasks/${task.id}`}
+                reference={task.reference}
+                title={task.title}
+                status={task.status}
+                priority={task.priority}
+                dueAt={task.dueAt}
+                overdue={isOverdue(task.dueAt, task.status, TASK_DONE)}
+                assignees={task.assignees.map((row) => row.user.name)}
+                you={user.name}
+              />
+            ))}
+          </WorkList>
         </section>
       </div>
     </div>

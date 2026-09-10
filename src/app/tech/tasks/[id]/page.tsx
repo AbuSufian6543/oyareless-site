@@ -6,9 +6,11 @@ import { ActivityLog } from "@/components/workdesk/activity-log";
 import { AttachmentField } from "@/components/workdesk/attachment-field";
 import { AttachmentList } from "@/components/workdesk/attachment-list";
 import { PriorityBadge, TaskStatusBadge } from "@/components/workdesk/badges";
+import { AssigneeAvatars } from "@/components/workdesk/work-item";
 import { prisma } from "@/lib/prisma";
-import { formatDateTime } from "@/lib/utils";
+import { formatDate, formatDateTime } from "@/lib/utils";
 import { assertTaskAccess, handleWorkdeskAuth, technicianOrRedirect } from "@/lib/workdesk/access";
+import { isOverdue } from "@/lib/workdesk/dates";
 import { workdeskFileHref } from "@/lib/workdesk/files";
 import { TASK_STATUS_LABELS } from "@/lib/workdesk/labels";
 import { TECHNICIAN_TASK_STATUSES } from "@/lib/workdesk/rules";
@@ -34,10 +36,12 @@ export default async function TechTaskPage({
       notes: { orderBy: { createdAt: "asc" }, include: { attachments: true } },
       attachments: true,
       events: { orderBy: { createdAt: "asc" } },
+      assignees: { include: { user: { select: { name: true } } } },
     },
   });
   if (!task) notFound();
   const closed = task.status === "CLOSED";
+  const overdue = isOverdue(task.dueAt, task.status, ["COMPLETED", "CLOSED"]);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
@@ -45,10 +49,18 @@ export default async function TechTaskPage({
         <PageHeader
           breadcrumb={{ href: "/tech/tasks", label: "Tasks" }}
           title={`${task.reference}: ${task.title}`}
+          description={
+            task.dueAt
+              ? `${overdue ? "Overdue " : "Due "}${formatDate(task.dueAt)}`
+              : "No due date"
+          }
         />
-        <div className="mb-4 flex flex-wrap gap-2">
+        <div className="mb-4 flex flex-wrap items-center gap-2">
           <TaskStatusBadge status={task.status} />
           <PriorityBadge priority={task.priority} />
+          {overdue ? (
+            <span className="text-xs font-semibold text-amber-700">Needs attention</span>
+          ) : null}
         </div>
         {task.description && (
           <div className="mb-6 whitespace-pre-wrap rounded-xl border border-slate-200 bg-white p-5 text-sm">
@@ -79,7 +91,7 @@ export default async function TechTaskPage({
         {!closed && (
           <form action={techAddTaskNoteAction} encType="multipart/form-data" className="mt-6 space-y-3 rounded-xl border border-slate-200 bg-white p-5">
             <input type="hidden" name="taskId" value={task.id} />
-            <textarea name="body" required rows={4} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+            <textarea name="body" required rows={4} placeholder="Add a note for the team" className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
             <AttachmentField />
             <button type="submit" className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">
               Add note
@@ -88,6 +100,10 @@ export default async function TechTaskPage({
         )}
       </div>
       <aside className="space-y-4">
+        <Card>
+          <CardTitle>Assigned to</CardTitle>
+          <AssigneeAvatars names={task.assignees.map((row) => row.user.name)} you={user.name} />
+        </Card>
         {!closed && (
           <Card>
             <CardTitle>Status</CardTitle>

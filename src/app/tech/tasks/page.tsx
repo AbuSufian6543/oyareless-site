@@ -1,25 +1,14 @@
-import Link from "next/link";
-
 import { PageHeader } from "@/components/admin/ui";
-import { PriorityBadge, TaskStatusBadge } from "@/components/workdesk/badges";
+import { ViewFilter } from "@/components/workdesk/view-filter";
+import { WorkItem, WorkList } from "@/components/workdesk/work-item";
 import { prisma } from "@/lib/prisma";
 import type { TaskStatus } from "@/generated/prisma/client";
-import { cn, formatDate, formatDateTime } from "@/lib/utils";
 import { technicianOrRedirect, technicianTaskWhere } from "@/lib/workdesk/access";
+import { isOverdue, startOfToday } from "@/lib/workdesk/dates";
 
 export const metadata = { title: "My tasks" };
 
-const VIEWS = [
-  { id: "open", label: "Open", href: "/tech/tasks" },
-  { id: "done", label: "Completed", href: "/tech/tasks?view=done" },
-  { id: "all", label: "All", href: "/tech/tasks?view=all" },
-] as const;
-
-function startOfToday() {
-  const date = new Date();
-  date.setHours(0, 0, 0, 0);
-  return date;
-}
+const TASK_DONE = ["COMPLETED", "CLOSED"] as const;
 
 export default async function TechTasksPage({
   searchParams,
@@ -28,20 +17,29 @@ export default async function TechTasksPage({
 }) {
   const user = await technicianOrRedirect();
   const params = await searchParams;
-  const view = params.view === "done" || params.view === "all" ? params.view : "open";
+  const view =
+    params.view === "done" || params.view === "all" || params.view === "overdue"
+      ? params.view
+      : "open";
   const base = technicianTaskWhere(user.id);
+  const today = startOfToday();
   const doneStatuses: TaskStatus[] = ["COMPLETED", "CLOSED"];
   const where =
     view === "done"
       ? { ...base, status: { in: doneStatuses } }
       : view === "all"
         ? base
-        : { ...base, status: { notIn: doneStatuses } };
+        : view === "overdue"
+          ? { ...base, status: { notIn: doneStatuses }, dueAt: { lt: today } }
+          : { ...base, status: { notIn: doneStatuses } };
 
-  const [tasks, openCount, doneCount] = await Promise.all([
+  const [tasks, openCount, doneCount, overdueCount] = await Promise.all([
     prisma.internalTask.findMany({
       where,
       orderBy: [{ dueAt: "asc" }, { updatedAt: "desc" }],
+      include: {
+        assignees: { include: { user: { select: { name: true } } } },
+      },
     }),
     prisma.internalTask.count({
       where: { ...base, status: { notIn: ["COMPLETED", "CLOSED"] } },
@@ -49,63 +47,51 @@ export default async function TechTasksPage({
     prisma.internalTask.count({
       where: { ...base, status: { in: ["COMPLETED", "CLOSED"] } },
     }),
+    prisma.internalTask.count({
+      where: { ...base, status: { notIn: ["COMPLETED", "CLOSED"] }, dueAt: { lt: today } },
+    }),
   ]);
-  const today = startOfToday();
 
   return (
     <div>
       <PageHeader
         title="Assigned tasks"
-        description={`${openCount} open · ${doneCount} completed`}
+        description={`${openCount} open · ${overdueCount} overdue · ${doneCount} completed`}
       />
-      <div className="mb-4 flex flex-wrap gap-2">
-        {VIEWS.map((item) => (
-          <Link
-            key={item.id}
-            href={item.href}
-            className={cn(
-              "rounded-full px-3 py-1.5 text-sm font-semibold",
-              view === item.id
-                ? "bg-navy-900 text-white"
-                : "border border-slate-200 bg-white text-navy-800 hover:border-brand-300",
-            )}
-          >
-            {item.label}
-            {item.id === "open" ? ` (${openCount})` : item.id === "done" ? ` (${doneCount})` : ""}
-          </Link>
+      <ViewFilter
+        items={[
+          { href: "/tech/tasks", label: "Open", active: view === "open", count: openCount },
+          { href: "/tech/tasks?view=overdue", label: "Overdue", active: view === "overdue", count: overdueCount },
+          { href: "/tech/tasks?view=done", label: "Completed", active: view === "done", count: doneCount },
+          { href: "/tech/tasks?view=all", label: "All", active: view === "all" },
+        ]}
+      />
+      <WorkList
+        count={tasks.length}
+        empty={
+          view === "done"
+            ? "No completed tasks yet."
+            : view === "overdue"
+              ? "Nothing overdue. Nice work."
+              : "Nothing assigned in this view."
+        }
+      >
+        {tasks.map((task) => (
+          <WorkItem
+            key={task.id}
+            kind="task"
+            href={`/tech/tasks/${task.id}`}
+            reference={task.reference}
+            title={task.title}
+            status={task.status}
+            priority={task.priority}
+            dueAt={task.dueAt}
+            overdue={isOverdue(task.dueAt, task.status, TASK_DONE)}
+            assignees={task.assignees.map((row) => row.user.name)}
+            you={user.name}
+          />
         ))}
-      </div>
-      <ul className="divide-y divide-slate-200 rounded-xl border border-slate-200 bg-white">
-        {tasks.map((task) => {
-          const overdue =
-            Boolean(task.dueAt && task.dueAt < today) &&
-            task.status !== "COMPLETED" &&
-            task.status !== "CLOSED";
-          return (
-            <li key={task.id} className="px-4 py-3">
-              <Link href={`/tech/tasks/${task.id}`} className="font-semibold text-navy-900 hover:text-brand-700">
-                {task.reference} — {task.title}
-              </Link>
-              <p className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500">
-                <TaskStatusBadge status={task.status} />
-                <PriorityBadge priority={task.priority} />
-                {task.dueAt ? (
-                  <span className={overdue ? "font-semibold text-amber-700" : undefined}>
-                    {overdue ? "Overdue " : "Due "}
-                    {formatDate(task.dueAt)}
-                  </span>
-                ) : null}
-                <span>{formatDateTime(task.updatedAt)}</span>
-              </p>
-            </li>
-          );
-        })}
-        {tasks.length === 0 && (
-          <li className="px-4 py-8 text-sm text-slate-500">
-            {view === "done" ? "No completed tasks yet." : "Nothing assigned in this view."}
-          </li>
-        )}
-      </ul>
+      </WorkList>
     </div>
   );
 }

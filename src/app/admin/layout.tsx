@@ -5,6 +5,12 @@ import { AdminShell } from "@/components/admin/admin-shell";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getSettings } from "@/lib/settings";
+import {
+  OPEN_TASK,
+  OPEN_TICKET,
+  taskAssignedTo,
+  ticketAssignedTo,
+} from "@/lib/workdesk/board";
 import { unreadNotificationCount } from "@/lib/workdesk/notify";
 import "../globals.css";
 
@@ -27,10 +33,16 @@ export default async function AdminLayout({
   if (user.role === "VIEWER") redirect("/");
   if (user.role === "TECHNICIAN") redirect("/tech");
 
-  const [newSubmissions, settings, unreadNotifications] = await Promise.all([
+  const [newSubmissions, settings, unreadNotifications, openTickets, openTasks] = await Promise.all([
     prisma.formSubmission.count({ where: { status: "NEW" } }).catch(() => 0),
     getSettings(),
     unreadNotificationCount(user.id).catch(() => 0),
+    prisma.ticket
+      .count({ where: { ...OPEN_TICKET, ...ticketAssignedTo(user.id) } })
+      .catch(() => 0),
+    prisma.internalTask
+      .count({ where: { ...OPEN_TASK, ...taskAssignedTo(user.id) } })
+      .catch(() => 0),
   ]);
 
   return (
@@ -38,6 +50,8 @@ export default async function AdminLayout({
       user={user}
       newSubmissions={newSubmissions}
       unreadNotifications={unreadNotifications}
+      openTickets={openTickets}
+      openTasks={openTasks}
       logoUrl={settings.logoInverseUrl}
     >
       {children}

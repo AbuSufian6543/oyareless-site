@@ -8,10 +8,11 @@ import { AssigneeChecklist } from "@/components/workdesk/assignee-checklist";
 import { AttachmentField } from "@/components/workdesk/attachment-field";
 import { AttachmentList } from "@/components/workdesk/attachment-list";
 import { PriorityBadge, TaskStatusBadge } from "@/components/workdesk/badges";
+import { AssigneeAvatars } from "@/components/workdesk/work-item";
 import { requireAdminRole } from "@/lib/admin-guard";
 import { prisma } from "@/lib/prisma";
-import { formatDateTime } from "@/lib/utils";
-import { dateInputValue } from "@/lib/workdesk/dates";
+import { formatDate, formatDateTime } from "@/lib/utils";
+import { dateInputValue, isOverdue } from "@/lib/workdesk/dates";
 import { workdeskFileHref } from "@/lib/workdesk/files";
 import { ADMIN_TASK_STATUSES } from "@/lib/workdesk/rules";
 import { TASK_STATUS_LABELS } from "@/lib/workdesk/labels";
@@ -28,7 +29,7 @@ export default async function AdminTaskPage({
     prisma.internalTask.findUnique({
       where: { id },
       include: {
-        assignees: true,
+        assignees: { include: { user: { select: { id: true, name: true } } } },
         notes: {
           orderBy: { createdAt: "asc" },
           include: { attachments: true },
@@ -44,6 +45,8 @@ export default async function AdminTaskPage({
 
   const selected = new Set(task.assignees.map((row) => row.userId));
   const dueValue = dateInputValue(task.dueAt);
+  const assigneeNames = task.assignees.map((row) => row.user.name);
+  const overdue = isOverdue(task.dueAt, task.status, ["COMPLETED", "CLOSED"]);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
@@ -51,11 +54,18 @@ export default async function AdminTaskPage({
         <PageHeader
           breadcrumb={{ href: "/admin/tasks", label: "Tasks" }}
           title={`${task.reference}: ${task.title}`}
-          description={`Created by ${task.createdBy.name}`}
+          description={`${
+            assigneeNames.length > 0 ? assigneeNames.join(", ") : "Unassigned"
+          } · Created by ${task.createdBy.name}${
+            task.dueAt ? ` · ${overdue ? "Overdue " : "Due "}${formatDate(task.dueAt)}` : ""
+          }`}
         />
-        <div className="mb-4 flex flex-wrap gap-2">
+        <div className="mb-4 flex flex-wrap items-center gap-2">
           <TaskStatusBadge status={task.status} />
           <PriorityBadge priority={task.priority} />
+          {overdue ? (
+            <span className="text-xs font-semibold text-amber-700">Needs attention</span>
+          ) : null}
         </div>
         {task.description && (
           <div className="mb-6 whitespace-pre-wrap rounded-xl border border-slate-200 bg-white p-5 text-sm text-navy-900">
@@ -93,6 +103,10 @@ export default async function AdminTaskPage({
         </form>
       </div>
       <aside className="space-y-4">
+        <Card>
+          <CardTitle>Assigned to</CardTitle>
+          <AssigneeAvatars names={assigneeNames} />
+        </Card>
         <Card>
           <CardTitle>Manage</CardTitle>
           <form action={updateTaskAction} className="space-y-3">

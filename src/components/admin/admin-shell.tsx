@@ -98,12 +98,16 @@ export function AdminShell({
   user,
   newSubmissions,
   unreadNotifications = 0,
+  openTickets = 0,
+  openTasks = 0,
   logoUrl,
   children,
 }: {
   user: SessionUser;
   newSubmissions: number;
   unreadNotifications?: number;
+  openTickets?: number;
+  openTasks?: number;
   logoUrl?: string;
   children: React.ReactNode;
 }) {
@@ -113,9 +117,22 @@ export function AdminShell({
 
   const groups: Array<{ title: string; items: NavEntry[] }> = [
     {
-      title: "Content",
+      title: "Workdesk",
       items: [
         { href: "/admin", label: "Dashboard", Icon: LayoutDashboard },
+        { href: "/admin/tickets", label: "Tickets", Icon: Headset, badge: openTickets },
+        { href: "/admin/tasks", label: "Tasks", Icon: ClipboardList, badge: openTasks },
+        {
+          href: "/admin/notifications",
+          label: "Notifications",
+          Icon: Bell,
+          badge: unreadNotifications,
+        },
+      ],
+    },
+    {
+      title: "Content",
+      items: [
         { href: "/admin/pages", label: "Pages", Icon: FileText },
         { href: "/admin/streams", label: "Live Streams", Icon: Radio },
         { href: "/admin/posts", label: "News & Blog", Icon: Newspaper },
@@ -142,14 +159,6 @@ export function AdminShell({
           badge: newSubmissions,
         },
         { href: "/admin/subscribers", label: "Subscribers", Icon: Users },
-        { href: "/admin/tickets", label: "Tickets", Icon: Headset },
-        { href: "/admin/tasks", label: "Tasks", Icon: ClipboardList },
-        {
-          href: "/admin/notifications",
-          label: "Notifications",
-          Icon: Bell,
-          badge: unreadNotifications,
-        },
         { href: "/admin/quotes", label: "Quotes", Icon: FileText },
         { href: "/admin/portal-users", label: "Portal users", Icon: Building2, minRank: 3 },
       ],

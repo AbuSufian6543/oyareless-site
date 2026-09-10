@@ -70,7 +70,7 @@ export function TechShell({
       </div>
       <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="Technician">
         <p className="mb-1.5 px-3 text-[0.6875rem] font-bold uppercase tracking-wider text-navy-500">
-          Field work
+          My work
         </p>
         <ul className="space-y-0.5">
           {items.map((item) => (

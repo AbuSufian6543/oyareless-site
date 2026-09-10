@@ -17,9 +17,11 @@ import { AssigneeChecklist } from "@/components/workdesk/assignee-checklist";
 import { AttachmentField } from "@/components/workdesk/attachment-field";
 import { AttachmentList } from "@/components/workdesk/attachment-list";
 import { PriorityBadge, TicketStatusBadge } from "@/components/workdesk/badges";
+import { AssigneeAvatars } from "@/components/workdesk/work-item";
 import { requireAdminRole } from "@/lib/admin-guard";
 import { prisma } from "@/lib/prisma";
 import { formatDateTime } from "@/lib/utils";
+import { ticketAssigneeNames } from "@/lib/workdesk/board";
 import { ADMIN_TICKET_STATUSES } from "@/lib/workdesk/rules";
 import { workdeskFileHref } from "@/lib/workdesk/files";
 import { TICKET_CATEGORIES, TICKET_STATUS_LABELS } from "@/lib/workdesk/labels";
@@ -133,6 +135,10 @@ export default async function AdminTicketPage({
       </div>
 
       <aside className="space-y-4">
+        <Card>
+          <CardTitle>Assigned to</CardTitle>
+          <AssigneeAvatars names={ticketAssigneeNames(ticket)} />
+        </Card>
         <Card>
           <CardTitle>Manage</CardTitle>
           <form action={updateTicketStatusAction} className="space-y-2">
