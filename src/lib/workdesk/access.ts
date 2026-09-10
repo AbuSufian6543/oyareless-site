@@ -79,6 +79,19 @@ export async function requireTechnician(): Promise<SessionUser> {
   return user;
 }
 
+export function technicianTicketWhere(userId: string) {
+  return {
+    OR: [
+      { assignedToId: userId },
+      { accessGrants: { some: { userId } } },
+    ],
+  };
+}
+
+export function technicianTaskWhere(userId: string) {
+  return { assignees: { some: { userId } } };
+}
+
 export async function requireWorkdeskStaff(): Promise<SessionUser> {
   const user = await getCurrentUser();
   if (!user) throw new AuthError("UNAUTHENTICATED");

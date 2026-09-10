@@ -102,11 +102,14 @@ export async function updateTaskAction(formData: FormData): Promise<void> {
   const staff = await workdeskAdminOrRedirect();
 
   const taskId = String(formData.get("taskId") ?? "");
+  const title = String(formData.get("title") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim();
   const status = String(formData.get("status") ?? "") as TaskStatus;
   const priority = String(formData.get("priority") ?? "") as TicketPriority;
   const dueRaw = String(formData.get("dueAt") ?? "").trim();
   const assignees = await activeAssigneeIds(assigneeIdsFrom(formData));
   if (!taskId || !workdeskAdminMaySetTaskStatus(status)) return;
+  if (title.length < 3) return;
 
   const task = await prisma.internalTask.findUnique({
     where: { id: taskId },
@@ -123,6 +126,8 @@ export async function updateTaskAction(formData: FormData): Promise<void> {
   await prisma.internalTask.update({
     where: { id: taskId },
     data: {
+      title: title.slice(0, 200),
+      description: description.slice(0, 8000),
       status,
       priority: ["LOW", "NORMAL", "HIGH", "EMERGENCY"].includes(priority)
         ? priority
@@ -140,6 +145,14 @@ export async function updateTaskAction(formData: FormData): Promise<void> {
     });
   }
 
+  if (task.title !== title || task.description !== description) {
+    await recordWorkdeskEvent({
+      kind: "NOTE",
+      summary: `${staff.name} updated the task details`,
+      taskId,
+      actorStaffId: staff.id,
+    });
+  }
   if (task.status !== status) {
     await recordWorkdeskEvent({
       kind:
@@ -234,4 +247,25 @@ export async function addTaskNoteAction(formData: FormData): Promise<void> {
   });
 
   revalidatePath(`/admin/tasks/${taskId}`);
+}
+
+export async function deleteTaskAction(formData: FormData): Promise<void> {
+  await workdeskAdminOrRedirect();
+
+  const taskId = String(formData.get("taskId") ?? "");
+  if (!taskId) return;
+
+  const task = await prisma.internalTask.findUnique({
+    where: { id: taskId },
+    select: { id: true },
+  });
+  if (!task) return;
+
+  await prisma.workdeskNotification.deleteMany({ where: { taskId } });
+  await prisma.internalTask.delete({ where: { id: taskId } });
+
+  revalidatePath("/admin/tasks");
+  revalidatePath("/admin");
+  revalidatePath("/tech");
+  redirect("/admin/tasks");
 }

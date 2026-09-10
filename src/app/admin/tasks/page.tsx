@@ -1,6 +1,8 @@
 import Link from "next/link";
 
+import { deleteTaskAction } from "@/app/admin/tasks/actions";
 import { PageHeader } from "@/components/admin/ui";
+import { ConfirmSubmit } from "@/components/workdesk/confirm-submit";
 import { PriorityBadge, TaskStatusBadge } from "@/components/workdesk/badges";
 import { requireAdminRole } from "@/lib/admin-guard";
 import { prisma } from "@/lib/prisma";
@@ -43,6 +45,7 @@ export default async function AdminTasksPage() {
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Due</th>
               <th className="px-4 py-3">Created</th>
+              <th className="px-4 py-3">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -67,11 +70,27 @@ export default async function AdminTasksPage() {
                   {task.dueAt ? formatDate(task.dueAt) : "—"}
                 </td>
                 <td className="px-4 py-3 text-xs text-slate-500">{formatDateTime(task.createdAt)}</td>
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    <Link href={`/admin/tasks/${task.id}`} className="text-xs font-semibold text-brand-700 hover:underline">
+                      Edit
+                    </Link>
+                    <form action={deleteTaskAction}>
+                      <input type="hidden" name="taskId" value={task.id} />
+                      <ConfirmSubmit
+                        message={`Delete ${task.reference}? This cannot be undone.`}
+                        className="text-xs font-semibold text-red-600 hover:underline"
+                      >
+                        Delete
+                      </ConfirmSubmit>
+                    </form>
+                  </div>
+                </td>
               </tr>
             ))}
             {tasks.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
+                <td colSpan={8} className="px-4 py-8 text-center text-slate-500">
                   No internal tasks yet.
                 </td>
               </tr>

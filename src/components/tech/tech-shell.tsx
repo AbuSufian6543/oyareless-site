@@ -22,11 +22,15 @@ import { cn } from "@/lib/utils";
 export function TechShell({
   user,
   unreadNotifications,
+  openTickets = 0,
+  openTasks = 0,
   logoUrl,
   children,
 }: {
   user: SessionUser;
   unreadNotifications: number;
+  openTickets?: number;
+  openTasks?: number;
   logoUrl?: string;
   children: React.ReactNode;
 }) {
@@ -35,8 +39,8 @@ export function TechShell({
 
   const items = [
     { href: "/tech", label: "My work", Icon: LayoutDashboard },
-    { href: "/tech/tickets", label: "Tickets", Icon: Headset },
-    { href: "/tech/tasks", label: "Tasks", Icon: ClipboardList },
+    { href: "/tech/tickets", label: "Tickets", Icon: Headset, badge: openTickets },
+    { href: "/tech/tasks", label: "Tasks", Icon: ClipboardList, badge: openTasks },
     { href: "/tech/notifications", label: "Notifications", Icon: Bell, badge: unreadNotifications },
   ];
 

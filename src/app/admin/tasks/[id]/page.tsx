@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
 
-import { addTaskNoteAction, updateTaskAction } from "@/app/admin/tasks/actions";
-import { Card, CardTitle, PageHeader, SelectField, TextField } from "@/components/admin/ui";
+import { addTaskNoteAction, deleteTaskAction, updateTaskAction } from "@/app/admin/tasks/actions";
+import { Card, CardTitle, PageHeader, SelectField, TextAreaField, TextField } from "@/components/admin/ui";
+import { ConfirmSubmit } from "@/components/workdesk/confirm-submit";
 import { ActivityLog } from "@/components/workdesk/activity-log";
 import { AttachmentField } from "@/components/workdesk/attachment-field";
 import { AttachmentList } from "@/components/workdesk/attachment-list";
@@ -95,6 +96,8 @@ export default async function AdminTaskPage({
           <CardTitle>Manage</CardTitle>
           <form action={updateTaskAction} className="space-y-3">
             <input type="hidden" name="taskId" value={task.id} />
+            <TextField label="Title" name="title" required defaultValue={task.title} />
+            <TextAreaField label="Description" name="description" rows={5} defaultValue={task.description} />
             <SelectField
               label="Status"
               name="status"
@@ -143,6 +146,20 @@ export default async function AdminTaskPage({
         <Card>
           <CardTitle>History</CardTitle>
           <ActivityLog events={task.events} />
+        </Card>
+        <Card className="border-red-200">
+          <CardTitle description="Removes the task, notes, and files. Prefer Closed if you want to keep a record.">
+            Delete task
+          </CardTitle>
+          <form action={deleteTaskAction}>
+            <input type="hidden" name="taskId" value={task.id} />
+            <ConfirmSubmit
+              message={`Delete ${task.reference}? This cannot be undone.`}
+              className="w-full rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-100"
+            >
+              Delete task
+            </ConfirmSubmit>
+          </form>
         </Card>
       </aside>
     </div>

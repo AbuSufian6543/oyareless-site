@@ -16,7 +16,7 @@ import { recordWorkdeskEvent } from "@/lib/workdesk/events";
 import { notifyAssignee } from "@/lib/workdesk/notify";
 import { nextTicketReference } from "@/lib/workdesk/references";
 import { workdeskAdminMaySetTicketStatus } from "@/lib/workdesk/rules";
-import { PRIORITY_LABELS, TICKET_STATUS_LABELS } from "@/lib/workdesk/labels";
+import { PRIORITY_LABELS, TICKET_CATEGORIES, TICKET_STATUS_LABELS } from "@/lib/workdesk/labels";
 
 export async function invitePortalUserAction(formData: FormData): Promise<void> {
   await requireRole("ADMIN");
@@ -370,6 +370,74 @@ export async function revokeTicketAccessAction(formData: FormData): Promise<void
     actorStaffId: staff.id,
   });
   revalidatePath(`/admin/tickets/${ticketId}`);
+}
+
+export async function updateTicketDetailsAction(formData: FormData): Promise<void> {
+  const staff = await workdeskAdminOrRedirect();
+
+  const ticketId = String(formData.get("ticketId") ?? "");
+  const subject = String(formData.get("subject") ?? "").trim();
+  const categoryRaw = String(formData.get("category") ?? "General");
+  const customerId = String(formData.get("customerId") ?? "");
+  if (!ticketId || subject.length < 3 || !customerId) return;
+
+  const category = (TICKET_CATEGORIES as readonly string[]).includes(categoryRaw)
+    ? categoryRaw
+    : "General";
+
+  const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
+  if (!ticket) return;
+
+  const customer = await prisma.customer.findUnique({
+    where: { id: customerId },
+    select: { id: true, isActive: true },
+  });
+  if (!customer) return;
+  if (!customer.isActive && customerId !== ticket.customerId) return;
+
+  await prisma.ticket.update({
+    where: { id: ticketId },
+    data: { subject: subject.slice(0, 200), category, customerId },
+  });
+
+  const changes: string[] = [];
+  if (ticket.subject !== subject) changes.push("subject");
+  if (ticket.category !== category) changes.push("category");
+  if (ticket.customerId !== customerId) changes.push("customer");
+  if (changes.length > 0) {
+    await recordWorkdeskEvent({
+      kind: "NOTE",
+      summary: `${staff.name} updated the ${changes.join(", ")}`,
+      ticketId,
+      actorStaffId: staff.id,
+    });
+  }
+
+  revalidatePath(`/admin/tickets/${ticketId}`);
+  revalidatePath("/admin/tickets");
+  revalidatePath("/portal/tickets");
+}
+
+export async function deleteTicketAction(formData: FormData): Promise<void> {
+  await workdeskAdminOrRedirect();
+
+  const ticketId = String(formData.get("ticketId") ?? "");
+  if (!ticketId) return;
+
+  const ticket = await prisma.ticket.findUnique({
+    where: { id: ticketId },
+    select: { id: true },
+  });
+  if (!ticket) return;
+
+  await prisma.workdeskNotification.deleteMany({ where: { ticketId } });
+  await prisma.ticket.delete({ where: { id: ticketId } });
+
+  revalidatePath("/admin/tickets");
+  revalidatePath("/admin");
+  revalidatePath("/tech");
+  revalidatePath("/portal/tickets");
+  redirect("/admin/tickets");
 }
 
 export async function markNotificationsReadAction(): Promise<void> {

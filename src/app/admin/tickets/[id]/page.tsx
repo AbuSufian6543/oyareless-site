@@ -2,13 +2,16 @@ import { notFound } from "next/navigation";
 
 import {
   assignTicketAction,
+  deleteTicketAction,
   grantTicketAccessAction,
   replyStaffTicketAction,
   revokeTicketAccessAction,
+  updateTicketDetailsAction,
   updateTicketPriorityAction,
   updateTicketStatusAction,
 } from "@/app/admin/tickets/actions";
-import { Card, CardTitle, PageHeader, SelectField } from "@/components/admin/ui";
+import { Card, CardTitle, PageHeader, SelectField, TextField } from "@/components/admin/ui";
+import { ConfirmSubmit } from "@/components/workdesk/confirm-submit";
 import { ActivityLog } from "@/components/workdesk/activity-log";
 import { AttachmentField } from "@/components/workdesk/attachment-field";
 import { AttachmentList } from "@/components/workdesk/attachment-list";
@@ -18,7 +21,7 @@ import { prisma } from "@/lib/prisma";
 import { formatDateTime } from "@/lib/utils";
 import { ADMIN_TICKET_STATUSES } from "@/lib/workdesk/rules";
 import { workdeskFileHref } from "@/lib/workdesk/files";
-import { TICKET_STATUS_LABELS } from "@/lib/workdesk/labels";
+import { TICKET_CATEGORIES, TICKET_STATUS_LABELS } from "@/lib/workdesk/labels";
 import { listAssignableStaff } from "@/lib/workdesk/staff";
 
 export default async function AdminTicketPage({
@@ -28,7 +31,7 @@ export default async function AdminTicketPage({
 }) {
   await requireAdminRole("EDITOR");
   const { id } = await params;
-  const [ticket, staff] = await Promise.all([
+  const [ticket, staff, customers] = await Promise.all([
     prisma.ticket.findUnique({
       where: { id },
       include: {
@@ -43,6 +46,11 @@ export default async function AdminTicketPage({
       },
     }),
     listAssignableStaff(),
+    prisma.customer.findMany({
+      where: { isActive: true },
+      orderBy: { name: "asc" },
+      select: { id: true, name: true },
+    }),
   ]);
   if (!ticket) notFound();
 
@@ -167,6 +175,34 @@ export default async function AdminTicketPage({
         </Card>
 
         <Card>
+          <CardTitle>Edit ticket</CardTitle>
+          <form action={updateTicketDetailsAction} className="space-y-3">
+            <input type="hidden" name="ticketId" value={ticket.id} />
+            <TextField label="Subject" name="subject" required defaultValue={ticket.subject} />
+            <SelectField
+              label="Category"
+              name="category"
+              defaultValue={ticket.category}
+              options={TICKET_CATEGORIES.map((category) => ({ value: category, label: category }))}
+            />
+            <SelectField
+              label="Customer"
+              name="customerId"
+              defaultValue={ticket.customerId}
+              options={[
+                ...customers.map((customer) => ({ value: customer.id, label: customer.name })),
+                customers.some((customer) => customer.id === ticket.customerId)
+                  ? []
+                  : [{ value: ticket.customerId, label: ticket.customer.name }],
+              ].flat()}
+            />
+            <button type="submit" className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-50">
+              Save details
+            </button>
+          </form>
+        </Card>
+
+        <Card>
           <CardTitle description="Extra technicians who can work this ticket besides the assignee.">
             Additional access
           </CardTitle>
@@ -207,6 +243,21 @@ export default async function AdminTicketPage({
         <Card>
           <CardTitle>History</CardTitle>
           <ActivityLog events={ticket.events} />
+        </Card>
+
+        <Card className="border-red-200">
+          <CardTitle description="Removes the ticket, messages, and files. Prefer Closed if you want to keep a record.">
+            Delete ticket
+          </CardTitle>
+          <form action={deleteTicketAction}>
+            <input type="hidden" name="ticketId" value={ticket.id} />
+            <ConfirmSubmit
+              message={`Delete ${ticket.reference}? This cannot be undone.`}
+              className="w-full rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-100"
+            >
+              Delete ticket
+            </ConfirmSubmit>
+          </form>
         </Card>
       </aside>
     </div>

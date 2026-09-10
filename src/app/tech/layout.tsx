@@ -5,6 +5,8 @@ import { TechShell } from "@/components/tech/tech-shell";
 import { getCurrentUser, hasRole } from "@/lib/auth";
 import { getSettings } from "@/lib/settings";
 import { unreadNotificationCount } from "@/lib/workdesk/notify";
+import { technicianTaskWhere, technicianTicketWhere } from "@/lib/workdesk/access";
+import { prisma } from "@/lib/prisma";
 import "../globals.css";
 
 export const dynamic = "force-dynamic";
@@ -26,13 +28,35 @@ export default async function TechLayout({
     redirect("/");
   }
 
-  const [settings, unread] = await Promise.all([
+  const [settings, unread, openTickets, openTasks] = await Promise.all([
     getSettings(),
     unreadNotificationCount(user.id).catch(() => 0),
+    prisma.ticket
+      .count({
+        where: {
+          ...technicianTicketWhere(user.id),
+          status: { notIn: ["RESOLVED", "CLOSED"] },
+        },
+      })
+      .catch(() => 0),
+    prisma.internalTask
+      .count({
+        where: {
+          ...technicianTaskWhere(user.id),
+          status: { notIn: ["COMPLETED", "CLOSED"] },
+        },
+      })
+      .catch(() => 0),
   ]);
 
   return (
-    <TechShell user={user} unreadNotifications={unread} logoUrl={settings.logoInverseUrl}>
+    <TechShell
+      user={user}
+      unreadNotifications={unread}
+      openTickets={openTickets}
+      openTasks={openTasks}
+      logoUrl={settings.logoInverseUrl}
+    >
       {children}
     </TechShell>
   );

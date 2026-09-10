@@ -1,7 +1,8 @@
 import Link from "next/link";
 
-import { createStaffTicketAction } from "@/app/admin/tickets/actions";
+import { createStaffTicketAction, deleteTicketAction } from "@/app/admin/tickets/actions";
 import { PageHeader, SelectField, TextAreaField, TextField } from "@/components/admin/ui";
+import { ConfirmSubmit } from "@/components/workdesk/confirm-submit";
 import { AttachmentField } from "@/components/workdesk/attachment-field";
 import { PriorityBadge, TicketStatusBadge } from "@/components/workdesk/badges";
 import { requireAdminRole } from "@/lib/admin-guard";
@@ -90,6 +91,7 @@ export default async function AdminTicketsPage() {
               <th className="px-4 py-3">Priority</th>
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Opened</th>
+              <th className="px-4 py-3">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -110,11 +112,27 @@ export default async function AdminTicketsPage() {
                   <TicketStatusBadge status={ticket.status} />
                 </td>
                 <td className="px-4 py-3 text-xs text-slate-500">{formatDateTime(ticket.createdAt)}</td>
+                <td className="px-4 py-3">
+                  <div className="flex items-center gap-3">
+                    <Link href={`/admin/tickets/${ticket.id}`} className="text-xs font-semibold text-brand-700 hover:underline">
+                      Edit
+                    </Link>
+                    <form action={deleteTicketAction}>
+                      <input type="hidden" name="ticketId" value={ticket.id} />
+                      <ConfirmSubmit
+                        message={`Delete ${ticket.reference}? This cannot be undone.`}
+                        className="text-xs font-semibold text-red-600 hover:underline"
+                      >
+                        Delete
+                      </ConfirmSubmit>
+                    </form>
+                  </div>
+                </td>
               </tr>
             ))}
             {tickets.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
+                <td colSpan={8} className="px-4 py-8 text-center text-slate-500">
                   No tickets yet.
                 </td>
               </tr>
