@@ -31,6 +31,7 @@ import {
   Palette,
   Quote,
   Radio,
+  ScrollText,
   Settings,
   ShieldAlert,
   TriangleAlert,
@@ -124,6 +125,7 @@ export function AdminShell({
       items: [
         { href: "/admin", label: "Dashboard", Icon: LayoutDashboard },
         { href: "/admin/tickets", label: "Tickets", Icon: Headset, badge: openTickets },
+        { href: "/admin/tickets/audit", label: "Ticket audit", Icon: ScrollText },
         { href: "/admin/tasks", label: "Tasks", Icon: ClipboardList, badge: openTasks },
         {
           href: "/admin/notifications",
@@ -190,10 +192,16 @@ export function AdminShell({
   ];
 
   // /admin/collections/services must not also light up /admin/collections/service-categories.
-  const isActive = (href: string) =>
-    href === "/admin"
-      ? pathname === "/admin"
-      : pathname === href || pathname.startsWith(`${href}/`);
+  const isActive = (href: string) => {
+    if (href === "/admin") return pathname === "/admin";
+    if (href === "/admin/tickets") {
+      return (
+        pathname === "/admin/tickets" ||
+        (pathname.startsWith("/admin/tickets/") && pathname !== "/admin/tickets/audit")
+      );
+    }
+    return pathname === href || pathname.startsWith(`${href}/`);
+  };
 
   const sidebar = (
     <div className="flex h-full flex-col bg-navy-900">

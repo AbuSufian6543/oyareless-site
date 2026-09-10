@@ -13,6 +13,7 @@ import {
   technicianOrRedirect,
 } from "@/lib/workdesk/access";
 import { recordWorkdeskEvent } from "@/lib/workdesk/events";
+import { recordTicketAudit } from "@/lib/workdesk/ticket-audit";
 import { notifyWorkdeskUpdate } from "@/lib/workdesk/notify";
 import { revalidateWorkdesk } from "@/lib/workdesk/revalidate";
 import {
@@ -87,6 +88,16 @@ export async function techReplyTicketAction(formData: FormData): Promise<void> {
       actorStaffId: tech.id,
     });
   }
+  await recordTicketAudit({
+    action: isInternal ? "ticket.noted" : "ticket.replied",
+    ticketId,
+    ticketReference: ticket.reference,
+    summary: isInternal
+      ? `${tech.name} added an internal note on ${ticket.reference}`
+      : `${tech.name} replied on ${ticket.reference}`,
+    actor: { kind: "staff", id: tech.id, name: tech.name },
+    details: { internal: isInternal, attachments: files.length },
+  });
 
   await notifyWorkdeskUpdate({
     actorId: tech.id,
@@ -129,6 +140,14 @@ export async function techUpdateTicketStatusAction(formData: FormData): Promise<
     summary: `${tech.name} set status to ${TICKET_STATUS_LABELS[status] ?? status}`,
     ticketId,
     actorStaffId: tech.id,
+  });
+  await recordTicketAudit({
+    action: "ticket.status_changed",
+    ticketId,
+    ticketReference: ticket.reference,
+    summary: `${tech.name} set ${ticket.reference} to ${TICKET_STATUS_LABELS[status] ?? status}`,
+    actor: { kind: "staff", id: tech.id, name: tech.name },
+    details: { from: ticket.status, to: status },
   });
 
   await notifyWorkdeskUpdate({

@@ -54,6 +54,7 @@ model User {
   posts             Post[]
   media             MediaAsset[]
   auditLogs         AuditLog[]
+  ticketAuditLogs   TicketAuditLog[]
   assignedSubmissions FormSubmission[] @relation("SubmissionAssignee")
   assignedTickets   Ticket[]         @relation("TicketAssignee")
   ticketAssignments TicketAssignee[] @relation("TicketStaffAssignment")
@@ -895,6 +896,7 @@ model CustomerUser {
   ticketMessages     TicketMessage[]
   createdTickets     Ticket[]  @relation("TicketCreator")
   workdeskEvents     WorkdeskEvent[] @relation("WorkdeskEventCustomer")
+  ticketAuditLogs    TicketAuditLog[]
 
   @@index([customerId])
 }
@@ -1062,6 +1064,33 @@ model TicketAttachment {
   createdAt DateTime      @default(now())
 
   @@index([messageId])
+}
+
+/// Append-only ticket audit trail, separate from the CMS AuditLog and from
+/// WorkdeskEvent history. No foreign key to Ticket so deleting a ticket
+/// cannot erase who created, changed, or removed it.
+model TicketAuditLog {
+  id                  String   @id @default(cuid())
+  action              String
+  ticketId            String?
+  ticketReference     String
+  summary             String
+  details             Json?
+  actorKind           String
+  actorName           String
+  ipAddress           String?
+  userAgent           String?
+  createdAt           DateTime @default(now())
+
+  actorUserId         String?
+  actorUser           User?    @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
+  actorCustomerUserId String?
+  actorCustomerUser   CustomerUser? @relation(fields: [actorCustomerUserId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([ticketId, createdAt])
+  @@index([ticketReference, createdAt])
+  @@index([action, createdAt])
 }
 
 // ---------------------------------------------------------------------------

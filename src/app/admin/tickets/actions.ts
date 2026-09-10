@@ -13,6 +13,7 @@ import type { TicketPriority, TicketStatus } from "@/generated/prisma/client";
 import { saveWorkdeskUploads } from "@/lib/workdesk/attachments";
 import { workdeskAdminOrRedirect } from "@/lib/workdesk/access";
 import { recordWorkdeskEvent } from "@/lib/workdesk/events";
+import { recordTicketAudit } from "@/lib/workdesk/ticket-audit";
 import { notifyAssignees, notifyAssignee } from "@/lib/workdesk/notify";
 import { nextTicketReference } from "@/lib/workdesk/references";
 import { revalidateWorkdesk } from "@/lib/workdesk/revalidate";
@@ -127,6 +128,18 @@ export async function createStaffTicketAction(formData: FormData): Promise<void>
     ticketId: ticket.id,
     actorStaffId: staff.id,
   });
+  await recordTicketAudit({
+    action: "ticket.created",
+    ticketId: ticket.id,
+    ticketReference: ticket.reference,
+    summary: `${staff.name} opened ${ticket.reference}`,
+    actor: { kind: "staff", id: staff.id, name: staff.name },
+    details: {
+      subject: ticket.subject,
+      priority: ticket.priority,
+      assignees: assigneeIds.length,
+    },
+  });
 
   if (assigneeIds.length > 0) {
     const names = await prisma.user.findMany({
@@ -202,6 +215,20 @@ export async function replyStaffTicketAction(formData: FormData): Promise<void> 
       actorStaffId: staff.id,
     });
   }
+  await recordTicketAudit({
+    action: isInternal ? "ticket.noted" : "ticket.replied",
+    ticketId,
+    ticketReference: ticket.reference,
+    summary: isInternal
+      ? `${staff.name} added an internal note on ${ticket.reference}`
+      : `${staff.name} replied on ${ticket.reference}`,
+    actor: { kind: "staff", id: staff.id, name: staff.name },
+    details: {
+      internal: isInternal,
+      attachments: fileCount,
+      statusFrom: ticket.status,
+    },
+  });
 
   await notifyAssignees({
     userIds: await listTicketAssigneeIds(ticketId),
@@ -249,6 +276,14 @@ export async function updateTicketStatusAction(formData: FormData): Promise<void
     actorStaffId: staff.id,
     meta: { from: ticket.status, to: status },
   });
+  await recordTicketAudit({
+    action: "ticket.status_changed",
+    ticketId,
+    ticketReference: ticket.reference,
+    summary: `${staff.name} set ${ticket.reference} from ${TICKET_STATUS_LABELS[ticket.status] ?? ticket.status} to ${TICKET_STATUS_LABELS[status] ?? status}`,
+    actor: { kind: "staff", id: staff.id, name: staff.name },
+    details: { from: ticket.status, to: status },
+  });
 
   await notifyAssignees({
     userIds: await listTicketAssigneeIds(ticketId),
@@ -282,6 +317,14 @@ export async function updateTicketPriorityAction(formData: FormData): Promise<vo
     summary: `${staff.name} set priority to ${PRIORITY_LABELS[priority] ?? priority}`,
     ticketId,
     actorStaffId: staff.id,
+  });
+  await recordTicketAudit({
+    action: "ticket.priority_changed",
+    ticketId,
+    ticketReference: ticket.reference,
+    summary: `${staff.name} set ${ticket.reference} priority to ${PRIORITY_LABELS[priority] ?? priority}`,
+    actor: { kind: "staff", id: staff.id, name: staff.name },
+    details: { from: ticket.priority, to: priority },
   });
   await revalidateWorkdesk({ ticketId });
   redirect(`/admin/tickets/${ticketId}`);
@@ -346,6 +389,17 @@ export async function assignTicketAction(formData: FormData): Promise<void> {
     ticketId,
     actorStaffId: staff.id,
   });
+  await recordTicketAudit({
+    action: "ticket.assigned",
+    ticketId,
+    ticketReference: ticket.reference,
+    summary:
+      nextIds.length > 0
+        ? `${staff.name} assigned ${ticket.reference} to ${names.join(", ")}`
+        : `${staff.name} unassigned ${ticket.reference}`,
+    actor: { kind: "staff", id: staff.id, name: staff.name },
+    details: { assignees: names },
+  });
 
   await notifyAssignees({
     userIds: nextIds.filter((id) => !previous.has(id)),
@@ -393,6 +447,14 @@ export async function grantTicketAccessAction(formData: FormData): Promise<void>
     ticketId,
     actorStaffId: staff.id,
   });
+  await recordTicketAudit({
+    action: "ticket.access_granted",
+    ticketId,
+    ticketReference: ticket.reference,
+    summary: `${staff.name} granted extra access on ${ticket.reference} to ${granted?.name ?? "a technician"}`,
+    actor: { kind: "staff", id: staff.id, name: staff.name },
+    details: { grantedTo: granted?.name ?? userId },
+  });
   await notifyAssignee({
     userId,
     title: `You can now work on ticket ${ticket.reference}`,
@@ -412,7 +474,10 @@ export async function revokeTicketAccessAction(formData: FormData): Promise<void
 
   const grant = await prisma.ticketAccessGrant.findUnique({
     where: { id: grantId },
-    include: { user: { select: { name: true } } },
+    include: {
+      user: { select: { name: true } },
+      ticket: { select: { reference: true } },
+    },
   });
   if (!grant) return;
   await prisma.ticketAccessGrant.delete({ where: { id: grantId } });
@@ -421,6 +486,14 @@ export async function revokeTicketAccessAction(formData: FormData): Promise<void
     summary: `${staff.name} removed extra access for ${grant.user.name}`,
     ticketId,
     actorStaffId: staff.id,
+  });
+  await recordTicketAudit({
+    action: "ticket.access_revoked",
+    ticketId,
+    ticketReference: grant.ticket.reference,
+    summary: `${staff.name} removed extra access on ${grant.ticket.reference} for ${grant.user.name}`,
+    actor: { kind: "staff", id: staff.id, name: staff.name },
+    details: { revokedFrom: grant.user.name },
   });
   await revalidateWorkdesk({ ticketId });
   redirect(`/admin/tickets/${ticketId}`);
@@ -465,6 +538,14 @@ export async function updateTicketDetailsAction(formData: FormData): Promise<voi
       ticketId,
       actorStaffId: staff.id,
     });
+    await recordTicketAudit({
+      action: "ticket.updated",
+      ticketId,
+      ticketReference: ticket.reference,
+      summary: `${staff.name} updated ${ticket.reference} ${changes.join(", ")}`,
+      actor: { kind: "staff", id: staff.id, name: staff.name },
+      details: { fields: changes },
+    });
   }
 
   await revalidateWorkdesk({ ticketId });
@@ -472,16 +553,35 @@ export async function updateTicketDetailsAction(formData: FormData): Promise<voi
 }
 
 export async function deleteTicketAction(formData: FormData): Promise<void> {
-  await workdeskAdminOrRedirect();
+  const staff = await workdeskAdminOrRedirect();
 
   const ticketId = String(formData.get("ticketId") ?? "");
   if (!ticketId) return;
 
   const ticket = await prisma.ticket.findUnique({
     where: { id: ticketId },
-    select: { id: true },
+    select: {
+      id: true,
+      reference: true,
+      subject: true,
+      status: true,
+      priority: true,
+    },
   });
   if (!ticket) return;
+
+  await recordTicketAudit({
+    action: "ticket.deleted",
+    ticketId: ticket.id,
+    ticketReference: ticket.reference,
+    summary: `${staff.name} deleted ${ticket.reference}`,
+    actor: { kind: "staff", id: staff.id, name: staff.name },
+    details: {
+      subject: ticket.subject,
+      status: ticket.status,
+      priority: ticket.priority,
+    },
+  });
 
   await prisma.workdeskNotification.deleteMany({ where: { ticketId } });
   await prisma.ticket.delete({ where: { id: ticketId } });

@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 
 import {
   assignTicketAction,
@@ -255,6 +256,12 @@ export default async function AdminTicketPage({
         <Card>
           <CardTitle>History</CardTitle>
           <ActivityLog events={ticket.events} />
+          <Link
+            href={`/admin/tickets/audit?ticket=${encodeURIComponent(ticket.reference)}`}
+            className="mt-3 inline-block text-sm font-semibold text-brand-700 hover:underline"
+          >
+            Open ticket audit log
+          </Link>
         </Card>
 
         <Card className="border-red-200">

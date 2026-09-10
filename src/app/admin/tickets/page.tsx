@@ -1,4 +1,5 @@
 import { createStaffTicketAction } from "@/app/admin/tickets/actions";
+import Link from "next/link";
 import { PageHeader, SelectField, TextAreaField, TextField } from "@/components/admin/ui";
 import { AssigneeChecklist } from "@/components/workdesk/assignee-checklist";
 import { AttachmentField } from "@/components/workdesk/attachment-field";
@@ -79,6 +80,14 @@ export default async function AdminTicketsPage({
       <PageHeader
         title="Tickets"
         description="Customer tickets assigned to you, to the team, or still waiting for an owner. Open a card to reply or reassign."
+        actions={
+          <Link
+            href="/admin/tickets/audit"
+            className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-navy-800 hover:bg-slate-50"
+          >
+            Ticket audit log
+          </Link>
+        }
       />
 
       <details

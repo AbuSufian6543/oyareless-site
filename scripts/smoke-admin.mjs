@@ -168,6 +168,7 @@ for (const path of [
   "/admin/branding",
   "/admin/remote-support",
   "/admin/tickets",
+  "/admin/tickets/audit",
   "/admin/tasks",
   "/admin/notifications",
   "/admin/quotes",

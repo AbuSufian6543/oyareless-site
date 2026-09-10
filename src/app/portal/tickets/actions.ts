@@ -7,6 +7,7 @@ import { requirePortalUser } from "@/lib/portal-auth";
 import { scopeToCustomer } from "@/lib/portal-scope";
 import { saveWorkdeskUploads } from "@/lib/workdesk/attachments";
 import { recordWorkdeskEvent } from "@/lib/workdesk/events";
+import { recordTicketAudit } from "@/lib/workdesk/ticket-audit";
 import {
   emailAdminInbox,
   notifyStaff,
@@ -72,6 +73,14 @@ export async function createTicketAction(formData: FormData): Promise<void> {
       actorCustomerUserId: user.id,
     });
   }
+  await recordTicketAudit({
+    action: "ticket.created",
+    ticketId: ticket.id,
+    ticketReference: ticket.reference,
+    summary: `${user.name} opened ${ticket.reference}`,
+    actor: { kind: "customer", id: user.id, name: user.name },
+    details: { subject: ticket.subject, category, attachments: fileCount },
+  });
 
   const admins = await prisma.user.findMany({
     where: { isActive: true, role: { in: ["EDITOR", "ADMIN", "SUPERADMIN"] } },
@@ -127,6 +136,14 @@ export async function replyTicketAction(formData: FormData): Promise<void> {
       actorCustomerUserId: user.id,
     });
   }
+  await recordTicketAudit({
+    action: "ticket.replied",
+    ticketId,
+    ticketReference: ticket.reference,
+    summary: `${user.name} replied on ${ticket.reference}`,
+    actor: { kind: "customer", id: user.id, name: user.name },
+    details: { attachments: fileCount, statusTo: "OPEN", statusFrom: ticket.status },
+  });
 
   await notifyWorkdeskUpdate({
     title: `${ticket.reference}: customer reply`,

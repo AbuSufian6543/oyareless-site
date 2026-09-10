@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
+
 import {
   CUSTOMER_VISIBLE_EVENT_KINDS,
   roleMeetsMinimum,
@@ -95,6 +98,63 @@ assert(
   (CUSTOMER_VISIBLE_EVENT_KINDS as readonly string[]).includes("STATUS_CHANGED") &&
     (CUSTOMER_VISIBLE_EVENT_KINDS as readonly string[]).includes("MESSAGE") &&
     (CUSTOMER_VISIBLE_EVENT_KINDS as readonly string[]).includes("ATTACHMENT"),
+);
+
+const schema = readFileSync(path.join(process.cwd(), "prisma/schema.prisma"), "utf8");
+const ticketAuditModel = schema.slice(
+  schema.indexOf("model TicketAuditLog"),
+  schema.indexOf("model QuoteRequest"),
+);
+assert(
+  "ticket audit log is a separate model with no Ticket foreign key",
+  ticketAuditModel.includes("model TicketAuditLog") &&
+    !ticketAuditModel.includes("ticket   Ticket") &&
+    !ticketAuditModel.includes("Ticket   @relation"),
+);
+
+const cmsAudit = readFileSync(path.join(process.cwd(), "src/lib/audit.ts"), "utf8");
+assert(
+  "CMS audit log does not mix in ticket actions",
+  !cmsAudit.includes('"ticket.created"') && !cmsAudit.includes("| \"ticket."),
+);
+
+const writer = readFileSync(
+  path.join(process.cwd(), "src/lib/workdesk/ticket-audit.ts"),
+  "utf8",
+);
+assert(
+  "ticket audit writer never stores message bodies",
+  writer.includes("recordTicketAudit") && !writer.includes("body:"),
+);
+
+const adminTickets = readFileSync(
+  path.join(process.cwd(), "src/app/admin/tickets/actions.ts"),
+  "utf8",
+);
+const techTickets = readFileSync(path.join(process.cwd(), "src/app/tech/actions.ts"), "utf8");
+const portalTickets = readFileSync(
+  path.join(process.cwd(), "src/app/portal/tickets/actions.ts"),
+  "utf8",
+);
+assert(
+  "admin ticket create, update, and delete write the ticket audit log",
+  adminTickets.includes("ticket.created") &&
+    adminTickets.includes("ticket.deleted") &&
+    adminTickets.includes("ticket.status_changed") &&
+    adminTickets.includes("ticket.assigned") &&
+    adminTickets.includes("recordTicketAudit"),
+);
+assert(
+  "technician ticket replies and status changes write the ticket audit log",
+  techTickets.includes("recordTicketAudit") &&
+    techTickets.includes("ticket.replied") &&
+    techTickets.includes("ticket.status_changed"),
+);
+assert(
+  "customer portal ticket create and replies write the ticket audit log",
+  portalTickets.includes("recordTicketAudit") &&
+    portalTickets.includes("ticket.created") &&
+    portalTickets.includes("ticket.replied"),
 );
 
 process.exit(failed === 0 ? 0 : 1);
