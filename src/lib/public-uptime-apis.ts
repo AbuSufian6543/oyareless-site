@@ -16,14 +16,23 @@ const JSON_HEADERS = {
   "User-Agent": UA,
 } as const;
 
+/** Country code for Canadian vantage points when the live node list cannot be loaded. */
+const FALLBACK_CANADA_REGION = ["CA"];
+const LEGACY_CANADA_NODES = ["ca1.node.check-host.net"];
+
+let canadaRegionCache: { names: string[]; at: number } | null = null;
+let canadaLegacyCache: { names: string[]; at: number } | null = null;
+let busyUntil = 0;
+
 /**
- * Ask well-known free public APIs whether a homepage is answering.
+ * Ask independent HTTP checkers whether a homepage is answering.
  *
- * Runs only on the server. Company-owned hosts are never sent to a third
- * party — callers should fall back to a local probe for those.
+ * Prefers a Canadian vantage point, then a second Canadian path, then a
+ * last-resort checker so a first check is not stuck forever. Company-owned
+ * hosts are never sent out. Returns null when no checker answered so callers
+ * can retry later instead of inventing a status.
  *
- * Returns `null` when every API is unavailable or rate-limited so the caller
- * can check from this server instead of inventing a status.
+ * Provider names stay in this server module. They are not shown on the site.
  */
 export async function checkViaPublicUptimeApis(
   target: string,
@@ -34,15 +43,15 @@ export async function checkViaPublicUptimeApis(
   const url = normalizeHttpUrl(target);
   if (!url) return null;
 
-  const budget = Math.max(2_000, Math.min(options.timeoutMs, 8_000));
+  const budget = Math.max(2_000, Math.min(options.timeoutMs, 7_000));
 
-  const fromCheckHost = await checkHostHttp(url, budget, options.expectStatus);
-  if (fromCheckHost) return fromCheckHost;
+  const fromCanada = await checkFromCanada(url, budget, options.expectStatus);
+  if (fromCanada) return fromCanada;
 
-  const fromIsItUp = await isItUp(url, budget, options.expectStatus);
-  if (fromIsItUp) return fromIsItUp;
+  const fromLegacyCanada = await checkHostLegacyCanada(url, budget, options.expectStatus);
+  if (fromLegacyCanada) return fromLegacyCanada;
 
-  return null;
+  return isItUp(url, Math.min(2_500, budget), options.expectStatus);
 }
 
 function normalizeHttpUrl(target: string): URL | null {
@@ -55,17 +64,31 @@ function normalizeHttpUrl(target: string): URL | null {
   }
 }
 
+function checkersBusy(): boolean {
+  return Date.now() < busyUntil;
+}
+
+function markBusy(ms = 20_000): void {
+  busyUntil = Math.max(busyUntil, Date.now() + ms);
+}
+
 async function fetchJson(
   url: string,
   timeoutMs: number,
+  init: RequestInit = {},
 ): Promise<unknown | null> {
   try {
     const response = await fetch(url, {
       method: "GET",
-      headers: JSON_HEADERS,
+      ...init,
+      headers: { ...JSON_HEADERS, ...(init.headers as Record<string, string> | undefined) },
       redirect: "follow",
       signal: AbortSignal.timeout(timeoutMs),
     });
+    if (response.status === 429) {
+      markBusy();
+      return null;
+    }
     if (!response.ok) return null;
     const type = (response.headers.get("content-type") ?? "").toLowerCase();
     if (!type.includes("json")) return null;
@@ -75,37 +98,72 @@ async function fetchJson(
   }
 }
 
+async function canadaRegions(): Promise<string[]> {
+  if (canadaRegionCache && Date.now() - canadaRegionCache.at < 6 * 60 * 60 * 1000) {
+    return canadaRegionCache.names;
+  }
+
+  const raw = await fetchJson("https://api.check-host.cc/locations", 2_500);
+  const names: string[] = [];
+  if (raw && typeof raw === "object" && "locationlist" in raw) {
+    const list = (raw as { locationlist?: unknown }).locationlist;
+    if (Array.isArray(list)) {
+      for (const entry of list) {
+        if (!entry || typeof entry !== "object") continue;
+        const row = entry as { countryCode?: unknown; locationname?: unknown };
+        if (String(row.countryCode ?? "").toUpperCase() !== "CA") continue;
+        const name = String(row.locationname ?? "").trim();
+        if (name) names.push(name);
+      }
+    }
+  }
+
+  const list = names.length > 0 ? names.slice(0, 2) : FALLBACK_CANADA_REGION;
+  canadaRegionCache = { names: list, at: Date.now() };
+  return list;
+}
+
 /**
- * Check-Host: start an HTTP check on one public node, then poll the result.
- * https://check-host.net/about/api
+ * HTTP check from Canadian nodes (Montreal and any other live CA vantage).
+ * https://api.check-host.cc
  */
-async function checkHostHttp(
+async function checkFromCanada(
   url: URL,
   timeoutMs: number,
   expectStatus: number,
 ): Promise<PublicUptimeResult | null> {
+  if (checkersBusy()) return null;
+
   const started = Date.now();
-  const startUrl =
-    "https://check-host.net/check-http?" +
-    new URLSearchParams({ host: url.toString(), max_nodes: "1" }).toString();
-  const startedCheck = await fetchJson(startUrl, Math.min(4_000, timeoutMs));
-  if (!startedCheck || typeof startedCheck !== "object") return null;
+  const region = await canadaRegions();
+  const created = await fetchJson("https://api.check-host.cc/http", Math.min(3_000, timeoutMs), {
+    method: "POST",
+    headers: {
+      ...JSON_HEADERS,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ target: url.toString(), region }),
+  });
+  if (!created || typeof created !== "object") return null;
 
-  const payload = startedCheck as Record<string, unknown>;
-  if (payload.ok === 0 || payload.error) return null;
-  const requestId = String(payload.request_id ?? "").trim();
-  if (!requestId || !/^[a-zA-Z0-9_-]+$/.test(requestId)) return null;
+  const payload = created as Record<string, unknown>;
+  if (payload.success === false) return null;
+  const uuid = String(payload.uuid ?? "").trim();
+  if (!uuid || !/^[0-9a-f-]{36}$/i.test(uuid)) return null;
 
-  const resultUrl = `https://check-host.net/check-result/${requestId}`;
+  const resultUrl = `https://api.check-host.cc/report/${uuid}`;
   const deadline = Date.now() + timeoutMs;
 
+  await sleep(500);
   while (Date.now() < deadline) {
-    await sleep(400);
     const remaining = deadline - Date.now();
     if (remaining < 200) break;
-    const raw = await fetchJson(resultUrl, Math.min(3_000, remaining));
-    const parsed = parseCheckHostHttp(raw, expectStatus);
-    if (parsed === "pending") continue;
+    const raw = await fetchJson(resultUrl, Math.min(2_500, remaining));
+    const parsed = parseCanadaHttp(raw, expectStatus);
+    if (parsed === "pending") {
+      await sleep(400);
+      continue;
+    }
     if (!parsed) return null;
     return {
       ...parsed,
@@ -116,7 +174,121 @@ async function checkHostHttp(
   return null;
 }
 
-function parseCheckHostHttp(
+function parseCanadaHttp(
+  raw: unknown,
+  expectStatus: number,
+): PublicUptimeResult | "pending" | null {
+  if (!raw || typeof raw !== "object") return "pending";
+  const payload = raw as Record<string, unknown>;
+  if (payload.success === false) return null;
+  const data = payload.data;
+  if (!data || typeof data !== "object") return "pending";
+
+  const nodes = Object.values(data as Record<string, unknown>);
+  if (nodes.length === 0) return "pending";
+
+  let best: PublicUptimeResult | null = null;
+
+  for (const node of nodes) {
+    if (!node || typeof node !== "object") continue;
+    const checks = (node as { checks?: unknown }).checks;
+    if (!Array.isArray(checks) || checks.length === 0) continue;
+    const row = checks[0];
+    if (!row || typeof row !== "object") continue;
+
+    const httpStatus = Number((row as { http_status?: unknown }).http_status);
+    const connectionTime = Number((row as { connectiontime?: unknown }).connectiontime);
+    const flag = Number((row as { status?: unknown }).status);
+    const code = Number.isFinite(httpStatus) ? httpStatus : null;
+    const latencyMs = Number.isFinite(connectionTime) ? Math.round(connectionTime) : null;
+    const ok = flag === 1 && code !== null ? httpStatusIsHealthy(code, expectStatus) : false;
+
+    const candidate: PublicUptimeResult = {
+      ok,
+      statusCode: code,
+      latencyMs,
+      error: ok ? null : "This homepage is not answering.",
+    };
+
+    if (candidate.ok) return candidate;
+    best = candidate;
+  }
+
+  return best ?? "pending";
+}
+
+async function legacyCanadaNodes(): Promise<string[]> {
+  if (canadaLegacyCache && Date.now() - canadaLegacyCache.at < 6 * 60 * 60 * 1000) {
+    return canadaLegacyCache.names;
+  }
+
+  const raw = await fetchJson("https://check-host.net/nodes/hosts", 2_500);
+  const names: string[] = [];
+  if (raw && typeof raw === "object" && "nodes" in raw) {
+    const nodes = (raw as { nodes?: Record<string, { location?: unknown }> }).nodes ?? {};
+    for (const [name, info] of Object.entries(nodes)) {
+      const location = info?.location;
+      const country = Array.isArray(location) ? String(location[0] ?? "").toLowerCase() : "";
+      if (country === "ca") names.push(name);
+    }
+  }
+
+  const list = names.length > 0 ? names : LEGACY_CANADA_NODES;
+  canadaLegacyCache = { names: list, at: Date.now() };
+  return list;
+}
+
+/**
+ * Older Canadian-node HTTP check, used only when the Montreal path is busy.
+ * https://check-host.net/about/api
+ */
+async function checkHostLegacyCanada(
+  url: URL,
+  timeoutMs: number,
+  expectStatus: number,
+): Promise<PublicUptimeResult | null> {
+  if (checkersBusy()) return null;
+
+  const started = Date.now();
+  const nodes = await legacyCanadaNodes();
+  const params = new URLSearchParams({ host: url.toString() });
+  for (const node of nodes.slice(0, 2)) params.append("node", node);
+
+  const startedCheck = await fetchJson(
+    `https://check-host.net/check-http?${params.toString()}`,
+    Math.min(3_000, timeoutMs),
+  );
+  if (!startedCheck || typeof startedCheck !== "object") return null;
+
+  const payload = startedCheck as Record<string, unknown>;
+  if (payload.ok === 0 || payload.error) return null;
+  const requestId = String(payload.request_id ?? "").trim();
+  if (!requestId || !/^[a-zA-Z0-9_-]+$/.test(requestId)) return null;
+
+  const resultUrl = `https://check-host.net/check-result/${requestId}`;
+  const deadline = Date.now() + timeoutMs;
+
+  await sleep(600);
+  while (Date.now() < deadline) {
+    const remaining = deadline - Date.now();
+    if (remaining < 200) break;
+    const raw = await fetchJson(resultUrl, Math.min(2_500, remaining));
+    const parsed = parseLegacyHttp(raw, expectStatus);
+    if (parsed === "pending") {
+      await sleep(450);
+      continue;
+    }
+    if (!parsed) return null;
+    return {
+      ...parsed,
+      latencyMs: parsed.latencyMs ?? Date.now() - started,
+    };
+  }
+
+  return null;
+}
+
+function parseLegacyHttp(
   raw: unknown,
   expectStatus: number,
 ): PublicUptimeResult | "pending" | null {
@@ -150,7 +322,7 @@ function parseCheckHostHttp(
       ok,
       statusCode: code,
       latencyMs,
-      error: ok ? null : "Public API reported this homepage is not answering.",
+      error: ok ? null : "This homepage is not answering.",
     };
 
     if (candidate.ok) return candidate;
@@ -161,7 +333,7 @@ function parseCheckHostHttp(
 }
 
 /**
- * Is It Up?: domain-level JSON check. No API key.
+ * Domain-level JSON check used only when Canadian vantage points do not answer.
  * https://isitup.org/
  */
 async function isItUp(
@@ -191,7 +363,7 @@ async function isItUp(
       ok: false,
       statusCode,
       latencyMs,
-      error: "Public API reported this homepage is not answering.",
+      error: "This homepage is not answering.",
     };
   }
   if (flag !== 1) return null;
@@ -201,7 +373,7 @@ async function isItUp(
     ok,
     statusCode,
     latencyMs,
-    error: ok ? null : "Public API reported this homepage is not answering.",
+    error: ok ? null : "This homepage is not answering.",
   };
 }
 

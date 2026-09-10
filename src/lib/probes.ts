@@ -12,6 +12,7 @@ import {
   resolvePublicTarget,
   withTimeout,
 } from "@/lib/net-guard";
+import { isCompanyStatusHost } from "@/lib/company-status-hosts";
 import { httpStatusIsHealthy } from "@/lib/http-health";
 import { checkViaPublicUptimeApis } from "@/lib/public-uptime-apis";
 import { prisma } from "@/lib/prisma";
@@ -33,7 +34,13 @@ export async function probeEndpoint(endpoint: {
   port: number | null;
   expectStatus: number;
   timeoutMs: number;
-}): Promise<{ ok: boolean; latencyMs: number | null; statusCode: number | null; error: string | null }> {
+}): Promise<{
+  ok: boolean;
+  latencyMs: number | null;
+  statusCode: number | null;
+  error: string | null;
+  skipped?: boolean;
+}> {
   const started = Date.now();
   try {
     if (endpoint.kind === "HTTP") {
@@ -79,7 +86,13 @@ async function probeHttp(endpoint: {
   target: string;
   expectStatus: number;
   timeoutMs: number;
-}): Promise<{ ok: boolean; statusCode: number | null; error: string | null; latencyMs?: number }> {
+}): Promise<{
+  ok: boolean;
+  statusCode: number | null;
+  error: string | null;
+  latencyMs?: number;
+  skipped?: boolean;
+}> {
   const url = endpoint.target.includes("://")
     ? new URL(endpoint.target)
     : new URL(`https://${endpoint.target}`);
@@ -98,6 +111,12 @@ async function probeHttp(endpoint: {
       error: fromPublicApi.error,
       latencyMs: fromPublicApi.latencyMs ?? undefined,
     };
+  }
+
+  // Third-party homepages are never fetched from this server. Only
+  // company-owned hosts may be checked locally, and those stay off the board.
+  if (!isCompanyStatusHost(url.toString())) {
+    return { ok: false, statusCode: null, error: null, skipped: true };
   }
 
   const resolved = await resolvePublicTarget(url.hostname);
@@ -137,6 +156,16 @@ function connect(address: string, port: number): Promise<void> {
   });
 }
 
+const ENDPOINT_SELECT = {
+  id: true,
+  kind: true,
+  target: true,
+  port: true,
+  expectStatus: true,
+  timeoutMs: true,
+  intervalSec: true,
+} as const;
+
 /** Probes enabled endpoints whose last check is older than their interval. */
 export async function refreshStaleProbes(
   options: { limit?: number; concurrency?: number } = {},
@@ -144,34 +173,40 @@ export async function refreshStaleProbes(
   const limit = options.limit ?? 12;
   const concurrency = Math.max(1, options.concurrency ?? 3);
 
-  const endpoints = await prisma.monitoredEndpoint
+  const neverChecked = await prisma.monitoredEndpoint
     .findMany({
-      where: { enabled: true },
-      select: {
-        id: true,
-        kind: true,
-        target: true,
-        port: true,
-        expectStatus: true,
-        timeoutMs: true,
-        intervalSec: true,
-        checks: {
-          orderBy: { checkedAt: "desc" },
-          take: 1,
-          select: { checkedAt: true },
-        },
-      },
+      where: { enabled: true, checks: { none: {} } },
+      orderBy: { createdAt: "asc" },
+      take: limit,
+      select: ENDPOINT_SELECT,
     })
     .catch(() => []);
 
-  const now = Date.now();
-  const stale = endpoints.filter((endpoint) => {
-    const last = endpoint.checks[0]?.checkedAt;
-    if (!last) return true;
-    return now - last.getTime() > endpoint.intervalSec * 1000;
-  });
+  let batch = neverChecked;
+  if (batch.length < limit) {
+    const rest = await prisma.monitoredEndpoint
+      .findMany({
+        where: { enabled: true, checks: { some: {} } },
+        select: {
+          ...ENDPOINT_SELECT,
+          checks: {
+            orderBy: { checkedAt: "desc" },
+            take: 1,
+            select: { checkedAt: true },
+          },
+        },
+        take: 80,
+      })
+      .catch(() => []);
+    const now = Date.now();
+    const stale = rest.filter((endpoint) => {
+      const last = endpoint.checks[0]?.checkedAt;
+      if (!last) return true;
+      return now - last.getTime() > endpoint.intervalSec * 1000;
+    });
+    batch = [...batch, ...stale.slice(0, limit - batch.length)];
+  }
 
-  const batch = stale.slice(0, limit);
   let next = 0;
 
   async function worker(): Promise<void> {
@@ -180,6 +215,7 @@ export async function refreshStaleProbes(
       next += 1;
       if (!endpoint) return;
       const result = await probeEndpoint(endpoint);
+      if (result.skipped) continue;
       await prisma.statusCheck
         .create({
           data: {

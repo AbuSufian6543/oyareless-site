@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   ArrowUpRight,
   CircleCheck,
@@ -36,8 +37,16 @@ export function NetworkStatusBoard({
   uptime24h: number | null;
   lastCheckedAt: string | null;
 }) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All");
+  const stillChecking = services.some((service) => service.operational === null);
+
+  useEffect(() => {
+    if (!stillChecking) return;
+    const id = window.setInterval(() => router.refresh(), 45_000);
+    return () => window.clearInterval(id);
+  }, [stillChecking, router]);
 
   const categories = useMemo(() => {
     const present = new Set(services.map((service) => service.category || "Other"));
@@ -89,9 +98,8 @@ export function NetworkStatusBoard({
         <div>
           <h2 className="text-lg font-bold text-navy-900">Monitored services</h2>
           <p className="mt-1 max-w-2xl text-sm text-slate-500">
-            Each card is a live check of a public homepage. We ask a free
-            public uptime API first; if that API is busy we check from our
-            own servers. Latency is that check, not your connection.
+            Each card is a live check of a public homepage. Latency is that
+            check, not your connection.
             {uptime24h !== null
               ? ` ${uptime24h.toFixed(1)}% of checks succeeded in the last 24 hours.`
               : ""}

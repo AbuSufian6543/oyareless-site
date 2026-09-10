@@ -9,10 +9,12 @@ import { prisma } from "@/lib/prisma";
 import { publicMetadata } from "@/lib/seo";
 import { cn } from "@/lib/utils";
 
+export const revalidate = 30;
+
 export const metadata: Metadata = publicMetadata({
   title: "Network Status",
   description:
-    "Live checks of public services people in Sault Ste. Marie rely on — city hall, hospitals, schools, news, and the sites we all use every day. Figures come from public uptime APIs and our own servers, never placeholders.",
+    "Live checks of public services people in Sault Ste. Marie rely on — city hall, hospitals, schools, news, and the sites we all use every day. Nothing on this page is invented.",
   path: "/network-status",
 });
 
@@ -54,13 +56,13 @@ export default async function NetworkStatusPage() {
       <PageHero
         eyebrow="Sault Ste. Marie"
         title="Network Status"
-        description="Independent checks of public websites the city relies on — municipal services, hospitals, schools, newsrooms, and everyday platforms. We ask a free public uptime API first, then our own servers if that API is busy. Nothing on this page is invented."
+        description="Independent checks of public websites the city relies on — municipal services, hospitals, schools, newsrooms, and everyday platforms. Nothing on this page is invented."
       >
         {summary && (
           <dl className="mt-8 grid max-w-3xl grid-cols-2 gap-3 sm:grid-cols-4">
             <HeroStat label="Responding" value={String(up)} tone="up" />
             <HeroStat label="Not responding" value={String(down)} tone={down > 0 ? "down" : "neutral"} />
-            <HeroStat label="First check pending" value={String(pending)} tone="neutral" />
+            <HeroStat label="Still checking" value={String(pending)} tone="neutral" />
             <HeroStat
               label="Open incidents"
               value={String(summary.openIncidents)}
@@ -141,9 +143,7 @@ export default async function NetworkStatusPage() {
           </div>
 
           <p className="text-sm text-slate-500">
-            Homepage checks use the free Check-Host and IsItUp APIs from our
-            server, then a direct check if those APIs are busy. Application
-            health for this website is on{" "}
+            Application health for this website is on{" "}
             <Link href="/system-status" className="font-semibold text-brand-700 hover:underline">
               system status
             </Link>

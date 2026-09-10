@@ -14,6 +14,7 @@ import {
 
 import { savePageAction } from "@/app/admin/pages/actions";
 import { BlockCanvas } from "@/components/admin/block-canvas";
+import { emitFlash } from "@/lib/flash-client";
 import { FieldEditor, type EditorContext } from "@/components/admin/field-editor";
 import { SlideshowEditor } from "@/components/admin/slideshow-editor";
 import { Alert, inputClass, Label } from "@/components/admin/ui";
@@ -98,6 +99,7 @@ export function PageEditor({
     if (result.ok) {
       setDirty(false);
       setForm((current) => ({ ...current, slug: result.slug }));
+      emitFlash("saved");
       setMessage({ tone: "success", text: "Page saved." });
       setTimeout(() => setMessage(null), 3500);
     } else {

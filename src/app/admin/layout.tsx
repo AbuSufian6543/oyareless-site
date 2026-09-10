@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
+import { cookies } from "next/headers";
+
 import { AdminShell } from "@/components/admin/admin-shell";
 import { getCurrentUser } from "@/lib/auth";
+import { FLASH_COOKIE } from "@/lib/flash-client";
 import { prisma } from "@/lib/prisma";
 import { getSettings } from "@/lib/settings";
 import {
@@ -45,6 +48,8 @@ export default async function AdminLayout({
       .catch(() => 0),
   ]);
 
+  const flash = (await cookies()).get(FLASH_COOKIE)?.value ?? null;
+
   return (
     <AdminShell
       user={user}
@@ -53,6 +58,7 @@ export default async function AdminLayout({
       openTickets={openTickets}
       openTasks={openTasks}
       logoUrl={settings.logoInverseUrl}
+      flash={flash}
     >
       {children}
     </AdminShell>

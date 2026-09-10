@@ -1,13 +1,16 @@
-import DOMPurify from "isomorphic-dompurify";
+import sanitizeHtml from "sanitize-html";
 
 /**
  * Rich-text blocks are authored by signed-in staff, but sanitising still
  * matters: it contains the blast radius if an editor account is compromised
  * and stops malformed markup from breaking the layout.
+ *
+ * Uses a Node HTML parser rather than a browser DOM so public pages do not
+ * stall (or crash) while a document implementation boots.
  */
 export function sanitizeRichText(html: string): string {
-  return DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: [
+  return sanitizeHtml(html, {
+    allowedTags: [
       "p", "br", "strong", "b", "em", "i", "u", "s", "sub", "sup",
       "ul", "ol", "li",
       "h2", "h3", "h4", "h5", "h6",
@@ -15,9 +18,14 @@ export function sanitizeRichText(html: string): string {
       "table", "thead", "tbody", "tr", "th", "td",
       "span", "div", "img", "figure", "figcaption",
     ],
-    ALLOWED_ATTR: ["href", "title", "target", "rel", "src", "alt", "width", "height", "class"],
-    ALLOWED_URI_REGEXP: /^(?:https?:|mailto:|tel:|\/|#)/i,
-    ADD_ATTR: ["target"],
+    allowedAttributes: {
+      a: ["href", "title", "target", "rel"],
+      img: ["src", "alt", "width", "height", "class"],
+      "*": ["class"],
+    },
+    allowedSchemes: ["http", "https", "mailto", "tel"],
+    allowProtocolRelative: false,
+    allowedSchemesAppliedToAttributes: ["href", "src"],
   });
 }
 
@@ -45,18 +53,25 @@ const EMBED_HOST_ALLOWLIST = [
 ];
 
 export function sanitizeEmbed(html: string): string {
-  const clean = DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: [
+  const clean = sanitizeHtml(html, {
+    allowedTags: [
       "iframe", "video", "source", "div", "p", "a", "span", "br", "img", "figure", "figcaption",
     ],
-    ALLOWED_ATTR: [
-      "src", "srcdoc", "width", "height", "frameborder", "allow", "allowfullscreen",
-      "title", "loading", "referrerpolicy", "class", "style", "controls", "autoplay",
-      "muted", "loop", "playsinline", "poster", "type", "href", "target", "rel", "alt",
-    ],
-    ALLOWED_URI_REGEXP: /^(?:https?:|\/)/i,
-    FORBID_TAGS: ["script", "object", "embed", "form", "input", "link", "meta", "style"],
-    FORBID_ATTR: ["onload", "onerror", "onclick", "onmouseover", "formaction"],
+    allowedAttributes: {
+      iframe: [
+        "src", "srcdoc", "width", "height", "frameborder", "allow", "allowfullscreen",
+        "title", "loading", "referrerpolicy", "class", "style",
+      ],
+      video: ["src", "width", "height", "controls", "autoplay", "muted", "loop", "playsinline", "poster", "class"],
+      source: ["src", "type"],
+      a: ["href", "target", "rel", "class"],
+      img: ["src", "alt", "width", "height", "class"],
+      "*": ["class", "style"],
+    },
+    allowedSchemes: ["http", "https"],
+    allowProtocolRelative: false,
+    allowedSchemesAppliedToAttributes: ["href", "src"],
+    disallowedTagsMode: "discard",
   });
 
   // Drop iframes pointing at hosts outside the allowlist.

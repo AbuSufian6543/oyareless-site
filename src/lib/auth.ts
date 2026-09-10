@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import { SignJWT, jwtVerify } from "jose";
 import { cookies, headers } from "next/headers";
 import { generateSecret, generateURI, verify as verifyTotp } from "otplib";
@@ -116,7 +117,7 @@ export async function createSession(userId: string): Promise<void> {
   });
 }
 
-export async function getCurrentUser(): Promise<SessionUser | null> {
+export const getCurrentUser = cache(async (): Promise<SessionUser | null> => {
   const cookieStore = await cookies();
   const raw = cookieStore.get(SESSION_COOKIE)?.value;
   if (!raw) return null;
@@ -151,7 +152,7 @@ export async function getCurrentUser(): Promise<SessionUser | null> {
     mustChangePassword: user.mustChangePassword,
     twoFactorEnabled: user.twoFactorEnabled,
   };
-}
+});
 
 export async function destroySession(): Promise<void> {
   const cookieStore = await cookies();

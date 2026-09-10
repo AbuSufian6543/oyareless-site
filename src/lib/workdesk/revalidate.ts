@@ -1,9 +1,15 @@
 import { revalidatePath } from "next/cache";
 
-export function revalidateWorkdesk(input: {
+import { setFlash, type FlashKind } from "@/lib/flash";
+
+export async function revalidateWorkdesk(input: {
   ticketId?: string;
   taskId?: string;
-}): void {
+  flash?: FlashKind | false;
+}): Promise<void> {
+  if (input.flash !== false) {
+    await setFlash(input.flash ?? "saved");
+  }
   revalidatePath("/admin");
   revalidatePath("/admin/notifications");
   revalidatePath("/tech");

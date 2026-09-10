@@ -6,6 +6,7 @@ import { z } from "zod";
 
 import { recordAudit } from "@/lib/audit";
 import { requireRole } from "@/lib/auth";
+import { setFlash } from "@/lib/flash";
 import { blocksSchema } from "@/lib/blocks";
 import { prisma } from "@/lib/prisma";
 import { normaliseSlideshow } from "@/lib/slideshow";
@@ -142,6 +143,7 @@ export async function savePageAction(
   revalidatePath("/");
   revalidatePath(`/${slug}`);
   revalidatePath("/admin/pages");
+  await setFlash("saved");
 
   return { ok: true, slug };
 }
@@ -179,6 +181,7 @@ export async function createPageAction(formData: FormData): Promise<void> {
     summary: `${title} (/${slug})`,
   });
 
+  await setFlash("created");
   redirect(`/admin/pages/${page.id}`);
 }
 
@@ -243,6 +246,7 @@ export async function duplicatePageAction(formData: FormData): Promise<void> {
     summary: `Duplicated ${page.title}`,
   });
 
+  await setFlash("created");
   redirect(`/admin/pages/${copy.id}`);
 }
 

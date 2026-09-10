@@ -7,11 +7,10 @@ import { getStatusSummary, type ServiceHealth } from "@/lib/monitoring";
 import { cn } from "@/lib/utils";
 
 /**
- * Live service health, read from probes this application runs itself.
+ * Live service health from independent availability checks.
  *
  * There is deliberately no fallback data. If no endpoints are configured, or
- * the probe has not run yet, the strip says "not yet reporting" instead of
- * inventing an uptime figure.
+ * a check has not finished yet, the strip says so instead of inventing figures.
  */
 export async function StatusStripBlock({
   block,

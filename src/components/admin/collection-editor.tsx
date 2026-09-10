@@ -13,6 +13,7 @@ import {
 
 import { saveCollectionRecordAction } from "@/app/admin/collections/actions";
 import { BlockCanvas } from "@/components/admin/block-canvas";
+import { emitFlash } from "@/lib/flash-client";
 import { FieldEditor, type EditorContext } from "@/components/admin/field-editor";
 import { Alert, Card, CardTitle, inputClass, Label } from "@/components/admin/ui";
 import type { CollectionDefinition, CollectionField } from "@/lib/admin-collections";
@@ -90,6 +91,7 @@ export function CollectionEditor({
     }
 
     setDirty(false);
+    emitFlash(recordId ? "saved" : "created");
     setMessage({ tone: "success", text: `${collection.label} saved.` });
 
     if (!recordId) {

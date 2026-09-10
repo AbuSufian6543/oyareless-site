@@ -148,7 +148,7 @@ export async function createStaffTicketAction(formData: FormData): Promise<void>
     });
   }
 
-  revalidateWorkdesk({ ticketId: ticket.id });
+  await revalidateWorkdesk({ ticketId: ticket.id, flash: "created" });
   redirect(`/admin/tickets/${ticket.id}`);
 }
 
@@ -212,7 +212,8 @@ export async function replyStaffTicketAction(formData: FormData): Promise<void> 
     ticketId,
   });
 
-  revalidateWorkdesk({ ticketId });
+  await revalidateWorkdesk({ ticketId });
+  redirect(`/admin/tickets/${ticketId}`);
 }
 
 export async function updateTicketStatusAction(formData: FormData): Promise<void> {
@@ -261,7 +262,8 @@ export async function updateTicketStatusAction(formData: FormData): Promise<void
     ticketId,
   });
 
-  revalidateWorkdesk({ ticketId });
+  await revalidateWorkdesk({ ticketId });
+  redirect(`/admin/tickets/${ticketId}`);
 }
 
 export async function updateTicketPriorityAction(formData: FormData): Promise<void> {
@@ -281,7 +283,8 @@ export async function updateTicketPriorityAction(formData: FormData): Promise<vo
     ticketId,
     actorStaffId: staff.id,
   });
-  revalidateWorkdesk({ ticketId });
+  await revalidateWorkdesk({ ticketId });
+  redirect(`/admin/tickets/${ticketId}`);
 }
 
 export async function assignTicketAction(formData: FormData): Promise<void> {
@@ -352,7 +355,8 @@ export async function assignTicketAction(formData: FormData): Promise<void> {
     ticketId,
   });
 
-  revalidateWorkdesk({ ticketId });
+  await revalidateWorkdesk({ ticketId });
+  redirect(`/admin/tickets/${ticketId}`);
 }
 
 export async function grantTicketAccessAction(formData: FormData): Promise<void> {
@@ -395,7 +399,8 @@ export async function grantTicketAccessAction(formData: FormData): Promise<void>
     body: ticket.subject,
     ticketId,
   });
-  revalidateWorkdesk({ ticketId });
+  await revalidateWorkdesk({ ticketId });
+  redirect(`/admin/tickets/${ticketId}`);
 }
 
 export async function revokeTicketAccessAction(formData: FormData): Promise<void> {
@@ -417,7 +422,8 @@ export async function revokeTicketAccessAction(formData: FormData): Promise<void
     ticketId,
     actorStaffId: staff.id,
   });
-  revalidateWorkdesk({ ticketId });
+  await revalidateWorkdesk({ ticketId });
+  redirect(`/admin/tickets/${ticketId}`);
 }
 
 export async function updateTicketDetailsAction(formData: FormData): Promise<void> {
@@ -461,7 +467,8 @@ export async function updateTicketDetailsAction(formData: FormData): Promise<voi
     });
   }
 
-  revalidateWorkdesk({ ticketId });
+  await revalidateWorkdesk({ ticketId });
+  redirect(`/admin/tickets/${ticketId}`);
 }
 
 export async function deleteTicketAction(formData: FormData): Promise<void> {
@@ -479,7 +486,7 @@ export async function deleteTicketAction(formData: FormData): Promise<void> {
   await prisma.workdeskNotification.deleteMany({ where: { ticketId } });
   await prisma.ticket.delete({ where: { id: ticketId } });
 
-  revalidateWorkdesk({ ticketId });
+  await revalidateWorkdesk({ ticketId, flash: "deleted" });
   redirect("/admin/tickets");
 }
 

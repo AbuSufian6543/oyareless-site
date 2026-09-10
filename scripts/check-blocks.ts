@@ -202,7 +202,11 @@ const probesSource = readFileSync(
 );
 if (!probesSource.includes("checkViaPublicUptimeApis")) {
   failures += 1;
-  console.error("FAIL HTTP monitors must try a public uptime API before a local fetch");
+  console.error("FAIL HTTP monitors must try a public availability check before any local fetch");
+}
+if (!probesSource.includes("isCompanyStatusHost") || !probesSource.includes("skipped")) {
+  failures += 1;
+  console.error("FAIL third-party homepages must not be fetched from this server");
 }
 
 const publicApiSource = readFileSync(
@@ -210,12 +214,27 @@ const publicApiSource = readFileSync(
   "utf8",
 );
 if (
-  !publicApiSource.includes("check-host.net") ||
+  !publicApiSource.includes("api.check-host.cc") ||
+  !publicApiSource.includes('["CA"]') ||
+  !publicApiSource.includes("ca1.node.check-host.net") ||
   !publicApiSource.includes("isitup.org") ||
   !publicApiSource.includes("isCompanyStatusHost")
 ) {
   failures += 1;
-  console.error("FAIL public uptime APIs must stay server-side and skip company hosts");
+  console.error("FAIL public checks must stay server-side, skip company hosts, and use a Canadian vantage");
+}
+
+const sanitizeSource = readFileSync(
+  path.join(process.cwd(), "src/lib/sanitize.ts"),
+  "utf8",
+);
+if (
+  sanitizeSource.includes("isomorphic-dompurify") ||
+  sanitizeSource.includes("jsdom") ||
+  !sanitizeSource.includes("sanitize-html")
+) {
+  failures += 1;
+  console.error("FAIL HTML sanitiser must not load jsdom on public pages");
 }
 
 if (failures === 0) {

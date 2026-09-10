@@ -8,7 +8,7 @@ import { getPublishedPage, pageJsonLd, pageMetadata } from "@/lib/pages";
 import { crumbs } from "@/lib/seo";
 import { prisma } from "@/lib/prisma";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 type Props = { params: Promise<{ slug: string }> };
 

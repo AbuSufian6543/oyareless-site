@@ -13,6 +13,7 @@ import {
 
 import { savePostAction } from "@/app/admin/posts/actions";
 import { BlockCanvas } from "@/components/admin/block-canvas";
+import { emitFlash } from "@/lib/flash-client";
 import { FieldEditor, type EditorContext } from "@/components/admin/field-editor";
 import { Alert, inputClass, Label } from "@/components/admin/ui";
 import type { Block } from "@/lib/blocks";
@@ -78,6 +79,7 @@ export function PostEditor({
     if (result.ok) {
       setDirty(false);
       setForm((current) => ({ ...current, slug: result.slug }));
+      emitFlash("saved");
       setMessage({ tone: "success", text: "Article saved." });
       setTimeout(() => setMessage(null), 3500);
     } else {

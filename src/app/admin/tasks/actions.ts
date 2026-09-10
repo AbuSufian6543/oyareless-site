@@ -82,7 +82,7 @@ export async function createTaskAction(formData: FormData): Promise<void> {
     });
   }
 
-  revalidateWorkdesk({ taskId: task.id });
+  await revalidateWorkdesk({ taskId: task.id, flash: "created" });
   redirect(`/admin/tasks/${task.id}`);
 }
 
@@ -203,7 +203,8 @@ export async function updateTaskAction(formData: FormData): Promise<void> {
     });
   }
 
-  revalidateWorkdesk({ taskId });
+  await revalidateWorkdesk({ taskId });
+  redirect(`/admin/tasks/${taskId}`);
 }
 
 export async function addTaskNoteAction(formData: FormData): Promise<void> {
@@ -259,7 +260,8 @@ export async function addTaskNoteAction(formData: FormData): Promise<void> {
     });
   }
 
-  revalidateWorkdesk({ taskId });
+  await revalidateWorkdesk({ taskId });
+  redirect(`/admin/tasks/${taskId}`);
 }
 
 export async function deleteTaskAction(formData: FormData): Promise<void> {
@@ -277,6 +279,6 @@ export async function deleteTaskAction(formData: FormData): Promise<void> {
   await prisma.workdeskNotification.deleteMany({ where: { taskId } });
   await prisma.internalTask.delete({ where: { id: taskId } });
 
-  revalidateWorkdesk({ taskId });
+  await revalidateWorkdesk({ taskId, flash: "deleted" });
   redirect("/admin/tasks");
 }

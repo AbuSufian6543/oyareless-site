@@ -18,7 +18,7 @@ import { formatDate } from "@/lib/utils";
 import { JsonLd } from "@/components/site/json-ld";
 import { collectionPageJsonLd, publicMetadata } from "@/lib/seo";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 export const metadata: Metadata = publicMetadata({
   title: "Careers",

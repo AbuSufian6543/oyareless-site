@@ -18,7 +18,7 @@ import {
 import { getSettings } from "@/lib/settings";
 import { formatDate } from "@/lib/utils";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 type Props = { params: Promise<{ slug: string }> };
 

@@ -89,4 +89,7 @@ export const env = {
       return optional("SUPERADMIN_NAME", "Super Admin");
     },
   },
+  get cronSecret() {
+    return optional("CRON_SECRET");
+  },
 };

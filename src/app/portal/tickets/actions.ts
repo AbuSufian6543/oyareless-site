@@ -90,7 +90,7 @@ export async function createTicketAction(formData: FormData): Promise<void> {
     href: `/admin/tickets/${ticket.id}`,
   });
 
-  revalidateWorkdesk({ ticketId: ticket.id });
+  await revalidateWorkdesk({ ticketId: ticket.id, flash: false });
   redirect(`/portal/tickets/${ticket.id}`);
 }
 
@@ -135,6 +135,6 @@ export async function replyTicketAction(formData: FormData): Promise<void> {
     ticketId,
   });
 
-  revalidateWorkdesk({ ticketId });
+  await revalidateWorkdesk({ ticketId, flash: false });
   redirect(`/portal/tickets/${ticketId}`);
 }

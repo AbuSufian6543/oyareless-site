@@ -11,7 +11,7 @@ import { cache } from "react";
  * latency numbers or incident counts are ever produced.
  *
  * Probe targets never leave the server. Company-owned hosts are dropped even
- * when a row is marked public.
+ * when a row is marked public. Page render never waits on live checks.
  */
 
 export type ServiceHealth = {
@@ -37,18 +37,19 @@ export type StatusSummary = {
 };
 
 export const getStatusSummary = cache(async (): Promise<StatusSummary | null> => {
-  const { refreshStaleProbes } = await import("@/lib/probes");
-  await refreshStaleProbes({ limit: 6, concurrency: 2 }).catch(() => undefined);
+  const { loadStatusSummary } = await import("@/lib/monitoring-store");
+  const summary = await loadStatusSummary();
 
   try {
     const { after } = await import("next/server");
     after(() => {
-      void refreshStaleProbes({ limit: 12, concurrency: 2 });
+      void import("@/lib/probes").then(({ refreshStaleProbes }) =>
+        refreshStaleProbes({ limit: 36, concurrency: 4 }).catch(() => undefined),
+      );
     });
   } catch {
     // `after` is only valid during a request. Seeded or background callers skip it.
   }
 
-  const { loadStatusSummary } = await import("@/lib/monitoring-store");
-  return loadStatusSummary();
+  return summary;
 });

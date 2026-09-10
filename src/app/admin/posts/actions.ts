@@ -8,6 +8,7 @@ import { recordAudit } from "@/lib/audit";
 import { requireRole } from "@/lib/auth";
 import { blocksSchema } from "@/lib/blocks";
 import { prisma } from "@/lib/prisma";
+import { setFlash } from "@/lib/flash";
 import { readingMinutes, slugify, stripHtml } from "@/lib/utils";
 
 const postPayload = z.object({
@@ -98,6 +99,7 @@ export async function savePostAction(
 
   revalidatePath("/news");
   revalidatePath(`/news/${slug}`);
+  await setFlash("saved");
 
   return { ok: true, slug };
 }
@@ -141,6 +143,7 @@ export async function createPostAction(formData: FormData): Promise<void> {
     summary: title,
   });
 
+  await setFlash("created");
   redirect(`/admin/posts/${post.id}`);
 }
 

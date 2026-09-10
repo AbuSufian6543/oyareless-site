@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { TechShell } from "@/components/tech/tech-shell";
 import { getCurrentUser, hasRole } from "@/lib/auth";
+import { FLASH_COOKIE } from "@/lib/flash-client";
 import { getSettings } from "@/lib/settings";
 import { unreadNotificationCount } from "@/lib/workdesk/notify";
 import { technicianTaskWhere, technicianTicketWhere } from "@/lib/workdesk/access";
@@ -49,6 +51,8 @@ export default async function TechLayout({
       .catch(() => 0),
   ]);
 
+  const flash = (await cookies()).get(FLASH_COOKIE)?.value ?? null;
+
   return (
     <TechShell
       user={user}
@@ -56,6 +60,7 @@ export default async function TechLayout({
       openTickets={openTickets}
       openTasks={openTasks}
       logoUrl={settings.logoInverseUrl}
+      flash={flash}
     >
       {children}
     </TechShell>

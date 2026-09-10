@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 
 import { prisma } from "@/lib/prisma";
 import type { TaskStatus, TicketStatus } from "@/generated/prisma/client";
@@ -95,7 +96,8 @@ export async function techReplyTicketAction(formData: FormData): Promise<void> {
     ticketId,
   });
 
-  revalidateWorkdesk({ ticketId });
+  await revalidateWorkdesk({ ticketId });
+  redirect(`/tech/tickets/${ticketId}`);
 }
 
 export async function techUpdateTicketStatusAction(formData: FormData): Promise<void> {
@@ -140,7 +142,8 @@ export async function techUpdateTicketStatusAction(formData: FormData): Promise<
     ticketId,
   });
 
-  revalidateWorkdesk({ ticketId });
+  await revalidateWorkdesk({ ticketId });
+  redirect(`/tech/tickets/${ticketId}`);
 }
 
 export async function techAddTaskNoteAction(formData: FormData): Promise<void> {
@@ -198,7 +201,8 @@ export async function techAddTaskNoteAction(formData: FormData): Promise<void> {
     taskId,
   });
 
-  revalidateWorkdesk({ taskId });
+  await revalidateWorkdesk({ taskId });
+  redirect(`/tech/tasks/${taskId}`);
 }
 
 export async function techUpdateTaskStatusAction(formData: FormData): Promise<void> {
@@ -243,7 +247,8 @@ export async function techUpdateTaskStatusAction(formData: FormData): Promise<vo
     taskId,
   });
 
-  revalidateWorkdesk({ taskId });
+  await revalidateWorkdesk({ taskId });
+  redirect(`/tech/tasks/${taskId}`);
 }
 
 export async function techMarkNotificationsReadAction(): Promise<void> {

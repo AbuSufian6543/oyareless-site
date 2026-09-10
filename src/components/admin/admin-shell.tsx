@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import {
   Activity,
   Bell,
@@ -41,6 +41,7 @@ import {
 } from "lucide-react";
 
 import { logoutAction } from "@/app/login/actions";
+import { SavedToast } from "@/components/admin/saved-toast";
 import {
   collectionsInGroup,
   type CollectionGroup,
@@ -101,6 +102,7 @@ export function AdminShell({
   openTickets = 0,
   openTasks = 0,
   logoUrl,
+  flash,
   children,
 }: {
   user: SessionUser;
@@ -109,6 +111,7 @@ export function AdminShell({
   openTickets?: number;
   openTasks?: number;
   logoUrl?: string;
+  flash?: string | null;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -335,6 +338,9 @@ export function AdminShell({
           <div className="mx-auto max-w-6xl">{children}</div>
         </main>
       </div>
+      <Suspense fallback={null}>
+        <SavedToast flash={flash} />
+      </Suspense>
     </div>
   );
 }

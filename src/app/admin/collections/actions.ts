@@ -12,6 +12,7 @@ import {
   validateRecord,
 } from "@/lib/admin-collections.server";
 import { requireRole } from "@/lib/auth";
+import { setFlash } from "@/lib/flash";
 
 export type SaveResult =
   | { ok: true; id: string }
@@ -67,6 +68,7 @@ export async function saveCollectionRecordAction(
 
   // Catalogue and knowledge content is read by public pages and the sitemap.
   revalidatePath("/", "layout");
+  await setFlash("saved");
 
   return { ok: true, id: savedId };
 }
