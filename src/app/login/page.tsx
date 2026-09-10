@@ -5,6 +5,7 @@ import { CircleCheck } from "lucide-react";
 import { LoginForm } from "@/app/login/login-form";
 import { LoginFrame } from "@/app/login/login-frame";
 import { getCurrentUser } from "@/lib/auth";
+import { staffHomePath } from "@/lib/workdesk/access";
 
 export const dynamic = "force-dynamic";
 
@@ -19,14 +20,14 @@ export default async function LoginPage({
   searchParams: Promise<{ reset?: string }>;
 }) {
   const user = await getCurrentUser();
-  if (user) redirect("/admin");
+  if (user) redirect(staffHomePath(user));
 
   const params = await searchParams;
 
   return (
     <LoginFrame
       title="Staff sign in"
-      description="Access the content management system."
+      description="Access your WirelessCom staff account."
     >
       {params.reset && (
         <div className="mb-5 flex items-start gap-2.5 rounded-lg border border-emerald-200 bg-emerald-50 p-3.5 text-sm text-emerald-900">

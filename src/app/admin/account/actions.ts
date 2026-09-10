@@ -17,6 +17,7 @@ import {
 } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
+import { staffAccountPath } from "@/lib/workdesk/access";
 
 export async function updateProfileAction(formData: FormData): Promise<void> {
   const user = await getCurrentUser();
@@ -30,7 +31,7 @@ export async function updateProfileAction(formData: FormData): Promise<void> {
     data: { name: name || user.name, phone: phone || null },
   });
 
-  redirect("/admin/account?saved=1");
+  redirect(`${staffAccountPath(user.role)}?saved=1`);
 }
 
 export async function changePasswordAction(formData: FormData): Promise<void> {
@@ -45,10 +46,10 @@ export async function changePasswordAction(formData: FormData): Promise<void> {
   if (!record) redirect("/login");
 
   if (!(await verifyPassword(current, record.passwordHash))) {
-    redirect("/admin/account?error=wrongpassword");
+    redirect(`${staffAccountPath(user.role)}?error=wrongpassword`);
   }
-  if (next !== confirm) redirect("/admin/account?error=mismatch");
-  if (validatePasswordStrength(next)) redirect("/admin/account?error=weak");
+  if (next !== confirm) redirect(`${staffAccountPath(user.role)}?error=mismatch`);
+  if (validatePasswordStrength(next)) redirect(`${staffAccountPath(user.role)}?error=weak`);
 
   await prisma.user.update({
     where: { id: user.id },
@@ -86,7 +87,7 @@ export async function beginTwoFactorSetupAction(): Promise<void> {
     data: { twoFactorSecret: storeTotpSecret(secret), twoFactorEnabled: false },
   });
 
-  redirect(`/admin/account?setup=${encodeURIComponent(secret)}`);
+  redirect(`${staffAccountPath(user.role)}?setup=${encodeURIComponent(secret)}`);
 }
 
 export async function confirmTwoFactorAction(
@@ -101,10 +102,10 @@ export async function confirmTwoFactorAction(
     where: { id: user.id },
     select: { twoFactorSecret: true },
   });
-  if (!record?.twoFactorSecret) redirect("/admin/account?error=nosetup");
+  if (!record?.twoFactorSecret) redirect(`${staffAccountPath(user.role)}?error=nosetup`);
 
   if (!(await verifyTotpToken(record.twoFactorSecret, token))) {
-    redirect("/admin/account?error=badcode");
+    redirect(`${staffAccountPath(user.role)}?error=badcode`);
   }
 
   const codes = generateRecoveryCodes();
@@ -124,7 +125,7 @@ export async function confirmTwoFactorAction(
     entityId: user.id,
   });
 
-  redirect(`/admin/account?codes=${encodeURIComponent(codes.join(","))}`);
+  redirect(`${staffAccountPath(user.role)}?codes=${encodeURIComponent(codes.join(","))}`);
 }
 
 export async function disableOwnTwoFactorAction(
@@ -138,7 +139,7 @@ export async function disableOwnTwoFactorAction(
   if (!record) redirect("/login");
 
   if (!(await verifyPassword(password, record.passwordHash))) {
-    redirect("/admin/account?error=wrongpassword");
+    redirect(`${staffAccountPath(user.role)}?error=wrongpassword`);
   }
 
   await prisma.user.update({
@@ -158,5 +159,5 @@ export async function disableOwnTwoFactorAction(
     summary: "Disabled their own two-factor",
   });
 
-  redirect("/admin/account?twooff=1");
+  redirect(`${staffAccountPath(user.role)}?twooff=1`);
 }

@@ -1,0 +1,237 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+
+import { prisma } from "@/lib/prisma";
+import type { TaskStatus, TicketPriority } from "@/generated/prisma/client";
+import { saveWorkdeskUploads } from "@/lib/workdesk/attachments";
+import { workdeskAdminOrRedirect } from "@/lib/workdesk/access";
+import { dateInputValue, parseDateInput } from "@/lib/workdesk/dates";
+import { recordWorkdeskEvent } from "@/lib/workdesk/events";
+import { notifyAssignee } from "@/lib/workdesk/notify";
+import { nextTaskReference } from "@/lib/workdesk/references";
+import { workdeskAdminMaySetTaskStatus } from "@/lib/workdesk/rules";
+import { PRIORITY_LABELS, TASK_STATUS_LABELS } from "@/lib/workdesk/labels";
+
+function assigneeIdsFrom(formData: FormData): string[] {
+  return formData
+    .getAll("assigneeIds")
+    .map((value) => String(value))
+    .filter(Boolean);
+}
+
+async function activeAssigneeIds(ids: string[]): Promise<string[]> {
+  if (ids.length === 0) return [];
+  const staff = await prisma.user.findMany({
+    where: { id: { in: ids }, isActive: true, role: { not: "VIEWER" } },
+    select: { id: true },
+  });
+  return staff.map((row) => row.id);
+}
+
+export async function createTaskAction(formData: FormData): Promise<void> {
+  const staff = await workdeskAdminOrRedirect();
+
+  const title = String(formData.get("title") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim();
+  const priority = String(formData.get("priority") ?? "NORMAL") as TicketPriority;
+  const dueRaw = String(formData.get("dueAt") ?? "").trim();
+  const assignees = await activeAssigneeIds(assigneeIdsFrom(formData));
+  if (title.length < 3) redirect("/admin/tasks/new?error=invalid");
+
+  const task = await prisma.internalTask.create({
+    data: {
+      reference: await nextTaskReference(),
+      title: title.slice(0, 200),
+      description: description.slice(0, 8000),
+      priority: ["LOW", "NORMAL", "HIGH", "EMERGENCY"].includes(priority)
+        ? priority
+        : "NORMAL",
+      dueAt: parseDateInput(dueRaw),
+      createdById: staff.id,
+      assignees: {
+        create: assignees.map((userId) => ({ userId })),
+      },
+    },
+  });
+
+  const files = await saveWorkdeskUploads(formData);
+  if (files.length > 0) {
+    await prisma.internalTaskAttachment.createMany({
+      data: files.map((file) => ({
+        taskId: task.id,
+        uploadedById: staff.id,
+        filename: file.filename.split("/").pop() ?? file.filename,
+        url: file.url,
+        mimeType: file.mimeType,
+        sizeBytes: file.sizeBytes,
+      })),
+    });
+  }
+
+  await recordWorkdeskEvent({
+    kind: "CREATED",
+    summary: `${staff.name} created ${task.reference}`,
+    taskId: task.id,
+    actorStaffId: staff.id,
+  });
+
+  for (const userId of assignees) {
+    await notifyAssignee({
+      userId,
+      title: `Task ${task.reference} assigned to you`,
+      body: task.title,
+      taskId: task.id,
+    });
+  }
+  if (assignees.length > 0) {
+    await recordWorkdeskEvent({
+      kind: "ASSIGNED",
+      summary: `${staff.name} assigned ${task.reference}`,
+      taskId: task.id,
+      actorStaffId: staff.id,
+    });
+  }
+
+  revalidatePath("/admin/tasks");
+  redirect(`/admin/tasks/${task.id}`);
+}
+
+export async function updateTaskAction(formData: FormData): Promise<void> {
+  const staff = await workdeskAdminOrRedirect();
+
+  const taskId = String(formData.get("taskId") ?? "");
+  const status = String(formData.get("status") ?? "") as TaskStatus;
+  const priority = String(formData.get("priority") ?? "") as TicketPriority;
+  const dueRaw = String(formData.get("dueAt") ?? "").trim();
+  const assignees = await activeAssigneeIds(assigneeIdsFrom(formData));
+  if (!taskId || !workdeskAdminMaySetTaskStatus(status)) return;
+
+  const task = await prisma.internalTask.findUnique({
+    where: { id: taskId },
+    include: { assignees: true },
+  });
+  if (!task) return;
+
+  const previous = new Set(task.assignees.map((row) => row.userId));
+  const next = new Set(assignees);
+  const nextDue = parseDateInput(dueRaw);
+  const previousDue = task.dueAt ? dateInputValue(task.dueAt) : "";
+  const nextDueLabel = nextDue ? dateInputValue(nextDue) : "";
+
+  await prisma.internalTask.update({
+    where: { id: taskId },
+    data: {
+      status,
+      priority: ["LOW", "NORMAL", "HIGH", "EMERGENCY"].includes(priority)
+        ? priority
+        : task.priority,
+      dueAt: nextDue,
+      completedAt: status === "COMPLETED" ? new Date() : task.completedAt,
+      closedAt: status === "CLOSED" ? new Date() : status === "OPEN" ? null : task.closedAt,
+    },
+  });
+
+  await prisma.internalTaskAssignee.deleteMany({ where: { taskId } });
+  if (assignees.length > 0) {
+    await prisma.internalTaskAssignee.createMany({
+      data: assignees.map((userId) => ({ taskId, userId })),
+    });
+  }
+
+  if (task.status !== status) {
+    await recordWorkdeskEvent({
+      kind:
+        status === "CLOSED"
+          ? "CLOSED"
+          : status === "COMPLETED"
+            ? "COMPLETED"
+            : "STATUS_CHANGED",
+      summary: `${staff.name} set status to ${TASK_STATUS_LABELS[status] ?? status}`,
+      taskId,
+      actorStaffId: staff.id,
+    });
+  }
+  if (task.priority !== priority) {
+    await recordWorkdeskEvent({
+      kind: "PRIORITY_CHANGED",
+      summary: `${staff.name} set priority to ${PRIORITY_LABELS[priority] ?? priority}`,
+      taskId,
+      actorStaffId: staff.id,
+    });
+  }
+  if (previousDue !== nextDueLabel) {
+    await recordWorkdeskEvent({
+      kind: "DUE_DATE_CHANGED",
+      summary: nextDueLabel
+        ? `${staff.name} set the due date to ${nextDueLabel}`
+        : `${staff.name} cleared the due date`,
+      taskId,
+      actorStaffId: staff.id,
+    });
+  }
+
+  for (const userId of next) {
+    if (!previous.has(userId)) {
+      await notifyAssignee({
+        userId,
+        title: `Task ${task.reference} assigned to you`,
+        body: task.title,
+        taskId,
+      });
+    }
+  }
+  if ([...next].some((id) => !previous.has(id)) || [...previous].some((id) => !next.has(id))) {
+    await recordWorkdeskEvent({
+      kind: "REASSIGNED",
+      summary: `${staff.name} updated assignees`,
+      taskId,
+      actorStaffId: staff.id,
+    });
+  }
+
+  revalidatePath(`/admin/tasks/${taskId}`);
+  revalidatePath("/admin/tasks");
+}
+
+export async function addTaskNoteAction(formData: FormData): Promise<void> {
+  const staff = await workdeskAdminOrRedirect();
+
+  const taskId = String(formData.get("taskId") ?? "");
+  const body = String(formData.get("body") ?? "").trim();
+  if (!taskId || body.length < 2) return;
+
+  const note = await prisma.internalTaskNote.create({
+    data: {
+      taskId,
+      authorStaffId: staff.id,
+      authorName: staff.name,
+      body: body.slice(0, 8000),
+    },
+  });
+
+  const files = await saveWorkdeskUploads(formData);
+  if (files.length > 0) {
+    await prisma.internalTaskAttachment.createMany({
+      data: files.map((file) => ({
+        taskId,
+        noteId: note.id,
+        uploadedById: staff.id,
+        filename: file.filename.split("/").pop() ?? file.filename,
+        url: file.url,
+        mimeType: file.mimeType,
+        sizeBytes: file.sizeBytes,
+      })),
+    });
+  }
+
+  await recordWorkdeskEvent({
+    kind: "NOTE",
+    summary: `${staff.name} added a note`,
+    taskId,
+    actorStaffId: staff.id,
+  });
+
+  revalidatePath(`/admin/tasks/${taskId}`);
+}

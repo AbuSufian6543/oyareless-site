@@ -12,6 +12,7 @@ import type { Role } from "@/generated/prisma/client";
 export async function requireAdminRole(minimum: Role): Promise<SessionUser> {
   const user = await getCurrentUser();
   if (!user) redirect("/login");
+  if (user.role === "TECHNICIAN") redirect("/tech");
   if (!hasRole(user, minimum)) redirect("/admin?denied=1");
   return user;
 }

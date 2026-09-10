@@ -20,6 +20,8 @@ enum Role {
   ADMIN
   EDITOR
   VIEWER
+  /// Field technicians. They can only use /tech for assigned tickets and tasks.
+  TECHNICIAN
 }
 
 model User {
@@ -55,6 +57,13 @@ model User {
   assignedSubmissions FormSubmission[] @relation("SubmissionAssignee")
   assignedTickets   Ticket[]         @relation("TicketAssignee")
   ticketReplies     TicketMessage[]  @relation("TicketStaffAuthor")
+  ticketAccessGrants TicketAccessGrant[]
+  createdTasks      InternalTask[]   @relation("TaskCreator")
+  taskAssignments   InternalTaskAssignee[]
+  taskNotes         InternalTaskNote[]
+  taskUploads       InternalTaskAttachment[] @relation("TaskAttachmentUploader")
+  workdeskEvents    WorkdeskEvent[]  @relation("WorkdeskEventStaff")
+  workdeskNotifications WorkdeskNotification[]
   passwordResets    PasswordResetToken[]
 
   @@index([role])
@@ -884,6 +893,7 @@ model CustomerUser {
   sessions           CustomerSession[]
   ticketMessages     TicketMessage[]
   createdTickets     Ticket[]  @relation("TicketCreator")
+  workdeskEvents     WorkdeskEvent[] @relation("WorkdeskEventCustomer")
 
   @@index([customerId])
 }
@@ -980,10 +990,26 @@ model Ticket {
   updatedAt      DateTime       @updatedAt
 
   messages       TicketMessage[]
+  events         WorkdeskEvent[]
+  accessGrants   TicketAccessGrant[]
 
   @@index([customerId, status])
   @@index([status, priority, createdAt])
   @@index([assignedToId, status])
+}
+
+/// Extra technicians an admin has allowed onto a ticket besides assignedTo.
+model TicketAccessGrant {
+  id          String   @id @default(cuid())
+  ticketId    String
+  ticket      Ticket   @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  grantedById String?
+  createdAt   DateTime @default(now())
+
+  @@unique([ticketId, userId])
+  @@index([userId])
 }
 
 model TicketMessage {
@@ -1088,4 +1114,146 @@ model QuoteAttachment {
   createdAt DateTime     @default(now())
 
   @@index([quoteId])
+}
+
+// ---------------------------------------------------------------------------
+// Internal tasks + workdesk activity / notifications
+//
+// Isolated from CMS tables. Technicians never receive relations into pages,
+// customers, billing, or settings — only tickets/tasks they are assigned.
+// ---------------------------------------------------------------------------
+
+enum TaskStatus {
+  OPEN
+  IN_PROGRESS
+  WAITING
+  COMPLETED
+  CLOSED
+}
+
+enum WorkdeskEventKind {
+  CREATED
+  ASSIGNED
+  REASSIGNED
+  STATUS_CHANGED
+  PRIORITY_CHANGED
+  DUE_DATE_CHANGED
+  MESSAGE
+  NOTE
+  ATTACHMENT
+  COMPLETED
+  CLOSED
+  REOPENED
+  GRANT_ADDED
+  GRANT_REMOVED
+}
+
+enum WorkdeskNotificationKind {
+  ASSIGNMENT
+  UPDATE
+  RESOLVED
+  MESSAGE
+}
+
+model InternalTask {
+  id          String         @id @default(cuid())
+  reference   String         @unique
+  title       String
+  description String         @default("")
+  status      TaskStatus     @default(OPEN)
+  priority    TicketPriority @default(NORMAL)
+  dueAt       DateTime?
+
+  createdById String
+  createdBy   User     @relation("TaskCreator", fields: [createdById], references: [id], onDelete: Restrict)
+
+  completedAt DateTime?
+  closedAt    DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  assignees   InternalTaskAssignee[]
+  notes       InternalTaskNote[]
+  attachments InternalTaskAttachment[]
+  events      WorkdeskEvent[]
+
+  @@index([status, priority, dueAt])
+  @@index([createdById, status])
+}
+
+model InternalTaskAssignee {
+  taskId    String
+  task      InternalTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime     @default(now())
+
+  @@id([taskId, userId])
+  @@index([userId, taskId])
+}
+
+model InternalTaskNote {
+  id            String       @id @default(cuid())
+  taskId        String
+  task          InternalTask @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  authorStaffId String
+  authorStaff   User         @relation(fields: [authorStaffId], references: [id], onDelete: Restrict)
+  authorName    String
+  body          String
+  createdAt     DateTime     @default(now())
+  attachments   InternalTaskAttachment[]
+
+  @@index([taskId, createdAt])
+}
+
+model InternalTaskAttachment {
+  id           String            @id @default(cuid())
+  taskId       String
+  task         InternalTask      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  noteId       String?
+  note         InternalTaskNote? @relation(fields: [noteId], references: [id], onDelete: SetNull)
+  uploadedById String
+  uploadedBy   User              @relation("TaskAttachmentUploader", fields: [uploadedById], references: [id], onDelete: Restrict)
+  filename     String
+  url          String
+  mimeType     String
+  sizeBytes    Int
+  createdAt    DateTime          @default(now())
+
+  @@index([taskId])
+  @@index([noteId])
+}
+
+model WorkdeskEvent {
+  id                  String            @id @default(cuid())
+  ticketId            String?
+  ticket              Ticket?           @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  taskId              String?
+  task                InternalTask?     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  kind                WorkdeskEventKind
+  summary             String
+  meta                Json?
+  actorStaffId        String?
+  actorStaff          User?             @relation("WorkdeskEventStaff", fields: [actorStaffId], references: [id], onDelete: SetNull)
+  actorCustomerUserId String?
+  actorCustomer       CustomerUser?     @relation("WorkdeskEventCustomer", fields: [actorCustomerUserId], references: [id], onDelete: SetNull)
+  createdAt           DateTime          @default(now())
+
+  @@index([ticketId, createdAt])
+  @@index([taskId, createdAt])
+}
+
+model WorkdeskNotification {
+  id        String                    @id @default(cuid())
+  userId    String
+  user      User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind      WorkdeskNotificationKind
+  title     String
+  body      String
+  ticketId  String?
+  taskId    String?
+  readAt    DateTime?
+  createdAt DateTime                  @default(now())
+
+  @@index([userId, readAt, createdAt])
 }

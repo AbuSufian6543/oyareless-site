@@ -8,6 +8,7 @@ import { env } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
 import { decryptSecret, encryptSecret, hashToken, randomToken } from "@/lib/crypto";
 import type { Role, User } from "@/generated/prisma/client";
+import { STAFF_ROLE_RANK } from "@/lib/workdesk/rules";
 
 export {
   hashPassword,
@@ -24,12 +25,7 @@ export const TWO_FACTOR_COOKIE = "wc_2fa";
 const SESSION_DAYS = 7;
 
 /** Role ranking used for "at least this role" checks. */
-const ROLE_RANK: Record<Role, number> = {
-  VIEWER: 1,
-  EDITOR: 2,
-  ADMIN: 3,
-  SUPERADMIN: 4,
-};
+const ROLE_RANK: Record<Role, number> = STAFF_ROLE_RANK;
 
 export type SessionUser = {
   id: string;

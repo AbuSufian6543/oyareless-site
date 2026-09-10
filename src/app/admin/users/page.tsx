@@ -34,6 +34,7 @@ const ROLE_OPTIONS = [
   { value: "ADMIN", label: "Admin — all content plus site configuration" },
   { value: "EDITOR", label: "Editor — creates and publishes content" },
   { value: "VIEWER", label: "Viewer — read-only reports" },
+  { value: "TECHNICIAN", label: "Technician — assigned tickets and tasks only" },
 ];
 
 const ROLE_TONES = {
@@ -41,6 +42,7 @@ const ROLE_TONES = {
   ADMIN: "info",
   EDITOR: "success",
   VIEWER: "neutral",
+  TECHNICIAN: "warning",
 } as const;
 
 const MESSAGES: Record<string, { tone: "success" | "danger"; text: string }> = {

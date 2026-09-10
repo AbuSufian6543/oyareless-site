@@ -7,24 +7,79 @@ import { prisma } from "@/lib/prisma";
 import { requirePortalUser } from "@/lib/portal-auth";
 import { scopeToCustomer } from "@/lib/portal-scope";
 import { env } from "@/lib/env";
+import { saveWorkdeskUploads } from "@/lib/workdesk/attachments";
+import { recordWorkdeskEvent } from "@/lib/workdesk/events";
+import { createWorkdeskNotifications, notifyAssignee } from "@/lib/workdesk/notify";
+import { nextTicketReference } from "@/lib/workdesk/references";
+import { TICKET_CATEGORIES } from "@/lib/workdesk/labels";
+
+async function attachFiles(messageId: string, formData: FormData) {
+  const files = await saveWorkdeskUploads(formData);
+  if (files.length === 0) return 0;
+  await prisma.ticketAttachment.createMany({
+    data: files.map((file) => ({
+      messageId,
+      filename: file.filename.split("/").pop() ?? file.filename,
+      url: file.url,
+      mimeType: file.mimeType,
+      sizeBytes: file.sizeBytes,
+    })),
+  });
+  return files.length;
+}
 
 export async function createTicketAction(formData: FormData): Promise<void> {
   const user = await requirePortalUser();
   const subject = String(formData.get("subject") ?? "").trim();
   const body = String(formData.get("body") ?? "").trim();
+  const categoryRaw = String(formData.get("category") ?? "General");
+  const category = (TICKET_CATEGORIES as readonly string[]).includes(categoryRaw)
+    ? categoryRaw
+    : "General";
   if (subject.length < 3 || body.length < 5) redirect("/portal/tickets");
 
-  const count = await prisma.ticket.count();
   const ticket = await prisma.ticket.create({
     data: {
-      reference: `WC-${String(count + 1).padStart(4, "0")}`,
+      reference: await nextTicketReference(),
       subject: subject.slice(0, 200),
+      category,
       customerId: user.customerId,
       createdById: user.id,
       messages: {
         create: { body: body.slice(0, 8000), authorCustomerUserId: user.id },
       },
     },
+    include: { messages: true },
+  });
+
+  const first = ticket.messages[0];
+  const fileCount = first ? await attachFiles(first.id, formData) : 0;
+
+  await recordWorkdeskEvent({
+    kind: "CREATED",
+    summary: `${user.name} opened ${ticket.reference}`,
+    ticketId: ticket.id,
+    actorCustomerUserId: user.id,
+  });
+  if (fileCount > 0) {
+    await recordWorkdeskEvent({
+      kind: "ATTACHMENT",
+      summary: `${user.name} attached ${fileCount} file${fileCount === 1 ? "" : "s"}`,
+      ticketId: ticket.id,
+      actorCustomerUserId: user.id,
+    });
+  }
+
+  const admins = await prisma.user.findMany({
+    where: { isActive: true, role: { in: ["EDITOR", "ADMIN", "SUPERADMIN"] } },
+    select: { id: true },
+  });
+  await createWorkdeskNotifications({
+    userIds: admins.map((admin) => admin.id),
+    kind: "MESSAGE",
+    title: `New ticket ${ticket.reference}`,
+    body: `${user.name} opened ${ticket.subject}`,
+    ticketId: ticket.id,
   });
 
   await sendMail({
@@ -41,14 +96,55 @@ export async function replyTicketAction(formData: FormData): Promise<void> {
   const body = String(formData.get("body") ?? "").trim();
   const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
   scopeToCustomer(ticket, user.customerId);
-  if (body.length < 2) redirect(`/portal/tickets/${ticketId}`);
+  if (!ticket || body.length < 2) redirect(`/portal/tickets/${ticketId}`);
+  if (ticket.status === "CLOSED") redirect(`/portal/tickets/${ticketId}`);
 
-  await prisma.ticketMessage.create({
+  const message = await prisma.ticketMessage.create({
     data: { ticketId, body: body.slice(0, 8000), authorCustomerUserId: user.id },
   });
+  const fileCount = await attachFiles(message.id, formData);
+
   await prisma.ticket.update({
     where: { id: ticketId },
     data: { status: "OPEN" },
   });
+
+  await recordWorkdeskEvent({
+    kind: "MESSAGE",
+    summary: `${user.name} replied`,
+    ticketId,
+    actorCustomerUserId: user.id,
+  });
+  if (fileCount > 0) {
+    await recordWorkdeskEvent({
+      kind: "ATTACHMENT",
+      summary: `${user.name} attached files`,
+      ticketId,
+      actorCustomerUserId: user.id,
+    });
+  }
+
+  if (ticket.assignedToId) {
+    await notifyAssignee({
+      userId: ticket.assignedToId,
+      title: `${ticket.reference}: customer reply`,
+      body: ticket.subject,
+      ticketId,
+      kind: "MESSAGE",
+    });
+  }
+
+  const admins = await prisma.user.findMany({
+    where: { isActive: true, role: { in: ["EDITOR", "ADMIN", "SUPERADMIN"] } },
+    select: { id: true },
+  });
+  await createWorkdeskNotifications({
+    userIds: admins.map((admin) => admin.id),
+    kind: "MESSAGE",
+    title: `${ticket.reference}: customer reply`,
+    body: `${user.name} replied on ${ticket.subject}`,
+    ticketId,
+  });
+
   redirect(`/portal/tickets/${ticketId}`);
 }

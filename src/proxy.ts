@@ -49,6 +49,11 @@ const LEGACY_CAMERA_SLUGS = new Set([
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
+  // Ticket and task files are served only through /api/workdesk/attachments.
+  if (pathname.startsWith("/uploads/private/")) {
+    return new NextResponse(null, { status: 404 });
+  }
+
   const explicit = EXPLICIT_REDIRECTS[pathname.toLowerCase()];
   if (explicit) {
     return NextResponse.redirect(new URL(`${explicit}${search}`, request.url), 301);
@@ -73,6 +78,7 @@ export function proxy(request: NextRequest) {
 export const config = {
   // Only inspect paths that could be legacy URLs; skip assets and API routes.
   matcher: [
+    "/uploads/private/:path*",
     "/((?!api|_next/static|_next/image|brand|uploads|favicon|apple-icon|apple-touch-icon|icon\\.png|icon-192|robots.txt|sitemap.xml|manifest).*)",
   ],
 };

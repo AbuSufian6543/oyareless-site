@@ -87,7 +87,9 @@ and file uploads need `proxy_buffering off` and a raised `client_max_body_size`.
 | Navigation | Header, footer and utility menus with drag-free ordering and nested children. |
 | Redirects | Add 301s at any time without a deploy. |
 | Settings | Company details, contact info, announcement bar, social links, analytics snippet, cookie banner. |
-| Users | Create staff accounts across four roles, reset passwords, disable 2FA, and promote other super admins. |
+| Users | Create staff accounts across five roles, reset passwords, disable 2FA, and promote other super admins. |
+| Tickets | Customer support: assign, prioritize, reply, attachments, history, and close after review. |
+| Tasks | Internal jobs assigned to technicians, independent of customer tickets. |
 | Audit log | Who changed what, and when. |
 
 ### Roles
@@ -98,6 +100,7 @@ and file uploads need `proxy_buffering off` and a raised `client_max_body_size`.
 | `EDITOR` | Edit content, media and submissions |
 | `ADMIN` | Everything above plus settings, navigation, redirects and deletions |
 | `SUPERADMIN` | Everything, including user management and creating other super admins |
+| `TECHNICIAN` | Assigned tickets and internal tasks only (`/tech`). No CMS, customers, billing, or settings. |
 
 ---
 

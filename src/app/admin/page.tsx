@@ -2,7 +2,9 @@ import Link from "next/link";
 import {
   Briefcase,
   CircleCheck,
+  ClipboardList,
   FileText,
+  Headset,
   Inbox,
   Mail,
   Newspaper,
@@ -31,6 +33,8 @@ export default async function AdminDashboard() {
     subscribers,
     recentSubmissions,
     mail,
+    openTickets,
+    openTasks,
   ] = await Promise.all([
     prisma.page.count({ where: { status: "PUBLISHED" } }).catch(() => 0),
     prisma.page.count({ where: { status: "DRAFT" } }).catch(() => 0),
@@ -45,6 +49,8 @@ export default async function AdminDashboard() {
     getResolvedMail().catch((): { isConfigured: boolean } => ({
       isConfigured: false,
     })),
+    prisma.ticket.count({ where: { status: { not: "CLOSED" } } }).catch(() => 0),
+    prisma.internalTask.count({ where: { status: { not: "CLOSED" } } }).catch(() => 0),
   ]);
 
   const stats = [
@@ -59,6 +65,8 @@ export default async function AdminDashboard() {
     { label: "News articles", value: posts, href: "/admin/posts", Icon: Newspaper },
     { label: "Open positions", value: jobs, href: "/admin/jobs", Icon: Briefcase },
     { label: "New inquiries", value: newSubmissions, href: "/admin/submissions", Icon: Inbox },
+    { label: "Open tickets", value: openTickets, href: "/admin/tickets", Icon: Headset },
+    { label: "Open tasks", value: openTasks, href: "/admin/tasks", Icon: ClipboardList },
     { label: "Subscribers", value: subscribers, href: "/admin/subscribers", Icon: Users },
   ];
 
@@ -66,7 +74,7 @@ export default async function AdminDashboard() {
     <>
       <PageHeader
         title="Dashboard"
-        description="Overview of site content and recent customer inquiries."
+        description="Overview of site content, support tickets, internal tasks, and recent inquiries."
         actions={
           <Link
             href="/admin/pages/new"
@@ -191,6 +199,8 @@ export default async function AdminDashboard() {
                 { href: "/admin/pages/new", label: "Create a page", Icon: FileText },
                 { href: "/admin/streams/new", label: "Add a live stream", Icon: Radio },
                 { href: "/admin/posts/new", label: "Write an article", Icon: Newspaper },
+                { href: "/admin/tickets", label: "Review tickets", Icon: Headset },
+                { href: "/admin/tasks/new", label: "Create an internal task", Icon: ClipboardList },
                 { href: "/admin/jobs/new", label: "Post a job", Icon: Briefcase },
                 { href: "/admin/settings", label: "Edit contact details", Icon: Mail },
               ].map((action) => (

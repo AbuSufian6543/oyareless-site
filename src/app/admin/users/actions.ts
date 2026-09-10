@@ -14,7 +14,7 @@ import { newUserInviteEmail, sendMail } from "@/lib/mail";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
 
-const ROLES = ["SUPERADMIN", "ADMIN", "EDITOR", "VIEWER"] as const;
+const ROLES = ["SUPERADMIN", "ADMIN", "EDITOR", "VIEWER", "TECHNICIAN"] as const;
 type RoleName = (typeof ROLES)[number];
 
 const createSchema = z.object({

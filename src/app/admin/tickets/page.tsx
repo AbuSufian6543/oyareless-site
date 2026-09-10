@@ -1,46 +1,127 @@
 import Link from "next/link";
 
-import { PageHeader } from "@/components/admin/ui";
+import { createStaffTicketAction } from "@/app/admin/tickets/actions";
+import { PageHeader, SelectField, TextAreaField, TextField } from "@/components/admin/ui";
+import { AttachmentField } from "@/components/workdesk/attachment-field";
+import { PriorityBadge, TicketStatusBadge } from "@/components/workdesk/badges";
 import { requireAdminRole } from "@/lib/admin-guard";
 import { prisma } from "@/lib/prisma";
+import { formatDateTime } from "@/lib/utils";
+import { listAssignableStaff } from "@/lib/workdesk/staff";
 
 export const metadata = { title: "Tickets" };
 
 export default async function AdminTicketsPage() {
   await requireAdminRole("EDITOR");
-  const tickets = await prisma.ticket.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 100,
-    include: { customer: { select: { name: true } } },
-  });
+  const [tickets, customers, staff] = await Promise.all([
+    prisma.ticket.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 200,
+      include: {
+        customer: { select: { name: true } },
+        assignedTo: { select: { name: true } },
+      },
+    }),
+    prisma.customer.findMany({
+      where: { isActive: true },
+      orderBy: { name: "asc" },
+      select: { id: true, name: true },
+    }),
+    listAssignableStaff(),
+  ]);
 
   return (
     <div>
-      <PageHeader title="Tickets" description="Customer portal tickets. Internal notes never leave /admin." />
-      <table className="w-full text-left text-sm">
-        <thead>
-          <tr className="border-b text-xs uppercase text-slate-500">
-            <th className="py-2">Ref</th>
-            <th>Subject</th>
-            <th>Customer</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          {tickets.map((ticket) => (
-            <tr key={ticket.id} className="border-b border-slate-100">
-              <td className="py-2 font-mono text-xs">
-                <Link href={`/admin/tickets/${ticket.id}`} className="text-brand-700 hover:underline">
-                  {ticket.reference}
-                </Link>
-              </td>
-              <td>{ticket.subject}</td>
-              <td>{ticket.customer.name}</td>
-              <td>{ticket.status}</td>
+      <PageHeader
+        title="Tickets"
+        description="Customer support tickets. Internal notes never leave staff tools."
+      />
+
+      <form
+        action={createStaffTicketAction}
+        encType="multipart/form-data"
+        className="mb-8 grid gap-3 rounded-xl border border-slate-200 bg-white p-5 sm:grid-cols-2"
+      >
+        <h2 className="sm:col-span-2 font-bold text-navy-900">Open a ticket for a customer</h2>
+        <SelectField
+          label="Customer"
+          name="customerId"
+          required
+          options={customers.map((customer) => ({ value: customer.id, label: customer.name }))}
+        />
+        <SelectField
+          label="Assign to"
+          name="assignedToId"
+          options={[{ value: "", label: "Unassigned" }, ...staff.map((person) => ({ value: person.id, label: `${person.name} (${person.role.toLowerCase()})` }))]}
+        />
+        <TextField label="Subject" name="subject" required className="sm:col-span-2" />
+        <SelectField
+          label="Priority"
+          name="priority"
+          defaultValue="NORMAL"
+          options={[
+            { value: "LOW", label: "Low" },
+            { value: "NORMAL", label: "Normal" },
+            { value: "HIGH", label: "High" },
+            { value: "EMERGENCY", label: "Emergency" },
+          ]}
+        />
+        <div className="sm:col-span-2">
+          <TextAreaField label="Message" name="body" rows={4} required />
+        </div>
+        <div className="sm:col-span-2">
+          <AttachmentField />
+        </div>
+        <div className="sm:col-span-2">
+          <button type="submit" className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">
+            Create ticket
+          </button>
+        </div>
+      </form>
+
+      <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+        <table className="w-full text-left text-sm">
+          <thead>
+            <tr className="border-b text-xs uppercase tracking-wide text-slate-500">
+              <th className="px-4 py-3">Ref</th>
+              <th className="px-4 py-3">Subject</th>
+              <th className="px-4 py-3">Customer</th>
+              <th className="px-4 py-3">Assignee</th>
+              <th className="px-4 py-3">Priority</th>
+              <th className="px-4 py-3">Status</th>
+              <th className="px-4 py-3">Opened</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {tickets.map((ticket) => (
+              <tr key={ticket.id} className="border-b border-slate-100">
+                <td className="px-4 py-3 font-mono text-xs">
+                  <Link href={`/admin/tickets/${ticket.id}`} className="font-semibold text-brand-700 hover:underline">
+                    {ticket.reference}
+                  </Link>
+                </td>
+                <td className="px-4 py-3">{ticket.subject}</td>
+                <td className="px-4 py-3">{ticket.customer.name}</td>
+                <td className="px-4 py-3">{ticket.assignedTo?.name ?? "—"}</td>
+                <td className="px-4 py-3">
+                  <PriorityBadge priority={ticket.priority} />
+                </td>
+                <td className="px-4 py-3">
+                  <TicketStatusBadge status={ticket.status} />
+                </td>
+                <td className="px-4 py-3 text-xs text-slate-500">{formatDateTime(ticket.createdAt)}</td>
+              </tr>
+            ))}
+            {tickets.length === 0 && (
+              <tr>
+                <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
+                  No tickets yet.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

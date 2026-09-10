@@ -5,6 +5,7 @@ import { AdminShell } from "@/components/admin/admin-shell";
 import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getSettings } from "@/lib/settings";
+import { unreadNotificationCount } from "@/lib/workdesk/notify";
 import "../globals.css";
 
 export const dynamic = "force-dynamic";
@@ -22,18 +23,21 @@ export default async function AdminLayout({
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  // VIEWER exists for future read-only reporting access; it has no admin UI yet.
+  // VIEWER has no admin UI. Technicians are confined to /tech.
   if (user.role === "VIEWER") redirect("/");
+  if (user.role === "TECHNICIAN") redirect("/tech");
 
-  const [newSubmissions, settings] = await Promise.all([
+  const [newSubmissions, settings, unreadNotifications] = await Promise.all([
     prisma.formSubmission.count({ where: { status: "NEW" } }).catch(() => 0),
     getSettings(),
+    unreadNotificationCount(user.id).catch(() => 0),
   ]);
 
   return (
     <AdminShell
       user={user}
       newSubmissions={newSubmissions}
+      unreadNotifications={unreadNotifications}
       logoUrl={settings.logoInverseUrl}
     >
       {children}

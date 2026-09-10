@@ -1,9 +1,25 @@
 import { notFound } from "next/navigation";
 
-import { replyStaffTicketAction } from "@/app/admin/tickets/actions";
-import { PageHeader } from "@/components/admin/ui";
+import {
+  assignTicketAction,
+  grantTicketAccessAction,
+  replyStaffTicketAction,
+  revokeTicketAccessAction,
+  updateTicketPriorityAction,
+  updateTicketStatusAction,
+} from "@/app/admin/tickets/actions";
+import { Card, CardTitle, PageHeader, SelectField } from "@/components/admin/ui";
+import { ActivityLog } from "@/components/workdesk/activity-log";
+import { AttachmentField } from "@/components/workdesk/attachment-field";
+import { AttachmentList } from "@/components/workdesk/attachment-list";
+import { PriorityBadge, TicketStatusBadge } from "@/components/workdesk/badges";
 import { requireAdminRole } from "@/lib/admin-guard";
 import { prisma } from "@/lib/prisma";
+import { formatDateTime } from "@/lib/utils";
+import { ADMIN_TICKET_STATUSES } from "@/lib/workdesk/rules";
+import { workdeskFileHref } from "@/lib/workdesk/files";
+import { TICKET_STATUS_LABELS } from "@/lib/workdesk/labels";
+import { listAssignableStaff } from "@/lib/workdesk/staff";
 
 export default async function AdminTicketPage({
   params,
@@ -12,50 +28,187 @@ export default async function AdminTicketPage({
 }) {
   await requireAdminRole("EDITOR");
   const { id } = await params;
-  const ticket = await prisma.ticket.findUnique({
-    where: { id },
-    include: {
-      customer: true,
-      messages: { orderBy: { createdAt: "asc" } },
-    },
-  });
+  const [ticket, staff] = await Promise.all([
+    prisma.ticket.findUnique({
+      where: { id },
+      include: {
+        customer: true,
+        assignedTo: { select: { id: true, name: true } },
+        accessGrants: { include: { user: { select: { id: true, name: true } } } },
+        messages: {
+          orderBy: { createdAt: "asc" },
+          include: { attachments: true },
+        },
+        events: { orderBy: { createdAt: "asc" } },
+      },
+    }),
+    listAssignableStaff(),
+  ]);
   if (!ticket) notFound();
 
+  const grantOptions = staff
+    .filter((person) => person.role === "TECHNICIAN")
+    .filter((person) => person.id !== ticket.assignedToId)
+    .filter((person) => !ticket.accessGrants.some((grant) => grant.userId === person.id))
+    .map((person) => ({
+      value: person.id,
+      label: person.name,
+    }));
+
   return (
-    <div className="max-w-3xl">
-      <PageHeader
-        title={`${ticket.reference}: ${ticket.subject}`}
-        description={`${ticket.customer.name} · ${ticket.status} · ${ticket.priority}`}
-      />
-      <ol className="space-y-3">
-        {ticket.messages.map((message) => (
-          <li
-            key={message.id}
-            className={
-              message.isInternal
-                ? "rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm"
-                : "rounded-lg border border-slate-200 bg-white p-4 text-sm"
-            }
-          >
-            <p className="text-xs text-slate-500">
-              {message.isInternal ? "Internal · " : ""}
-              {message.authorStaffName || "Customer"} · {message.createdAt.toLocaleString("en-CA")}
-            </p>
-            <p className="mt-2 whitespace-pre-wrap">{message.body}</p>
-          </li>
-        ))}
-      </ol>
-      <form action={replyStaffTicketAction} className="mt-6 space-y-3">
-        <input type="hidden" name="ticketId" value={ticket.id} />
-        <textarea name="body" required rows={5} className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" name="isInternal" className="size-4" />
-          Internal note (not shown in the portal)
-        </label>
-        <button type="submit" className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white">
-          Send
-        </button>
-      </form>
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
+      <div>
+        <PageHeader
+          breadcrumb={{ href: "/admin/tickets", label: "Tickets" }}
+          title={`${ticket.reference}: ${ticket.subject}`}
+          description={`${ticket.customer.name} · ${ticket.category}`}
+        />
+        <div className="mb-4 flex flex-wrap gap-2">
+          <TicketStatusBadge status={ticket.status} />
+          <PriorityBadge priority={ticket.priority} />
+        </div>
+        <ol className="space-y-3">
+          {ticket.messages.map((message) => (
+            <li
+              key={message.id}
+              className={
+                message.isInternal
+                  ? "rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm"
+                  : "rounded-lg border border-slate-200 bg-white p-4 text-sm"
+              }
+            >
+              <p className="text-xs text-slate-500">
+                {message.isInternal ? "Internal · " : ""}
+                {message.authorStaffName || "Customer"} · {formatDateTime(message.createdAt)}
+              </p>
+              <p className="mt-2 whitespace-pre-wrap">{message.body}</p>
+              <AttachmentList
+                files={message.attachments.map((file) => ({
+                  ...file,
+                  url: workdeskFileHref("ticket", file.id),
+                }))}
+              />
+            </li>
+          ))}
+        </ol>
+        <form action={replyStaffTicketAction} encType="multipart/form-data" className="mt-6 space-y-3 rounded-xl border border-slate-200 bg-white p-5">
+          <input type="hidden" name="ticketId" value={ticket.id} />
+          <textarea
+            name="body"
+            required
+            rows={5}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+            placeholder="Reply or add a note"
+          />
+          <AttachmentField />
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" name="isInternal" className="size-4" />
+            Internal note (not shown in the portal)
+          </label>
+          <button type="submit" className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">
+            Send
+          </button>
+        </form>
+      </div>
+
+      <aside className="space-y-4">
+        <Card>
+          <CardTitle>Manage</CardTitle>
+          <form action={updateTicketStatusAction} className="space-y-2">
+            <input type="hidden" name="ticketId" value={ticket.id} />
+            <SelectField
+              label="Status"
+              name="status"
+              defaultValue={ticket.status}
+              options={ADMIN_TICKET_STATUSES.map((status) => ({
+                value: status,
+                label: TICKET_STATUS_LABELS[status],
+              }))}
+            />
+            <button type="submit" className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-50">
+              Update status
+            </button>
+          </form>
+          <form action={updateTicketPriorityAction} className="mt-4 space-y-2">
+            <input type="hidden" name="ticketId" value={ticket.id} />
+            <SelectField
+              label="Priority"
+              name="priority"
+              defaultValue={ticket.priority}
+              options={[
+                { value: "LOW", label: "Low" },
+                { value: "NORMAL", label: "Normal" },
+                { value: "HIGH", label: "High" },
+                { value: "EMERGENCY", label: "Emergency" },
+              ]}
+            />
+            <button type="submit" className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-50">
+              Update priority
+            </button>
+          </form>
+          <form action={assignTicketAction} className="mt-4 space-y-2">
+            <input type="hidden" name="ticketId" value={ticket.id} />
+            <SelectField
+              label="Assign technician"
+              name="assignedToId"
+              defaultValue={ticket.assignedToId ?? ""}
+              options={[
+                { value: "", label: "Unassigned" },
+                ...staff.map((person) => ({
+                  value: person.id,
+                  label: `${person.name} (${person.role.toLowerCase()})`,
+                })),
+              ]}
+            />
+            <button type="submit" className="w-full rounded-lg bg-brand-600 px-3 py-2 text-sm font-semibold text-white hover:bg-brand-700">
+              Save assignment
+            </button>
+          </form>
+        </Card>
+
+        <Card>
+          <CardTitle description="Extra technicians who can work this ticket besides the assignee.">
+            Additional access
+          </CardTitle>
+          <ul className="mb-3 space-y-2 text-sm">
+            {ticket.accessGrants.map((grant) => (
+              <li key={grant.id} className="flex items-center justify-between gap-2">
+                <span>{grant.user.name}</span>
+                <form action={revokeTicketAccessAction}>
+                  <input type="hidden" name="grantId" value={grant.id} />
+                  <input type="hidden" name="ticketId" value={ticket.id} />
+                  <button type="submit" className="text-xs font-semibold text-red-600 hover:underline">
+                    Remove
+                  </button>
+                </form>
+              </li>
+            ))}
+            {ticket.accessGrants.length === 0 && (
+              <li className="text-slate-500">None yet.</li>
+            )}
+          </ul>
+          {grantOptions.length > 0 ? (
+          <form action={grantTicketAccessAction} className="space-y-2">
+            <input type="hidden" name="ticketId" value={ticket.id} />
+            <SelectField
+              label="Grant access"
+              name="userId"
+              options={grantOptions}
+            />
+            <button type="submit" className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-50">
+              Grant
+            </button>
+          </form>
+          ) : (
+            <p className="text-xs text-slate-500">All technicians already have access, or none are available.</p>
+          )}
+        </Card>
+
+        <Card>
+          <CardTitle>History</CardTitle>
+          <ActivityLog events={ticket.events} />
+        </Card>
+      </aside>
     </div>
   );
 }

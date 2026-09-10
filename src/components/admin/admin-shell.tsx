@@ -6,12 +6,14 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
   Activity,
+  Bell,
   BookOpen,
   Boxes,
   Briefcase,
   Building2,
   CalendarClock,
   CircleHelp,
+  ClipboardList,
   Code,
   ExternalLink,
   FileText,
@@ -76,6 +78,7 @@ type NavEntry = {
 };
 
 const ROLE_RANK: Record<string, number> = {
+  TECHNICIAN: 0,
   VIEWER: 1,
   EDITOR: 2,
   ADMIN: 3,
@@ -94,11 +97,13 @@ function collectionEntries(group: CollectionGroup): NavEntry[] {
 export function AdminShell({
   user,
   newSubmissions,
+  unreadNotifications = 0,
   logoUrl,
   children,
 }: {
   user: SessionUser;
   newSubmissions: number;
+  unreadNotifications?: number;
   logoUrl?: string;
   children: React.ReactNode;
 }) {
@@ -138,6 +143,13 @@ export function AdminShell({
         },
         { href: "/admin/subscribers", label: "Subscribers", Icon: Users },
         { href: "/admin/tickets", label: "Tickets", Icon: Headset },
+        { href: "/admin/tasks", label: "Tasks", Icon: ClipboardList },
+        {
+          href: "/admin/notifications",
+          label: "Notifications",
+          Icon: Bell,
+          badge: unreadNotifications,
+        },
         { href: "/admin/quotes", label: "Quotes", Icon: FileText },
         { href: "/admin/portal-users", label: "Portal users", Icon: Building2, minRank: 3 },
       ],

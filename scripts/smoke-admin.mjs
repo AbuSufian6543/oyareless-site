@@ -168,6 +168,8 @@ for (const path of [
   "/admin/branding",
   "/admin/remote-support",
   "/admin/tickets",
+  "/admin/tasks",
+  "/admin/notifications",
   "/admin/quotes",
   "/admin/portal-users",
   "/admin/collections/brands",
