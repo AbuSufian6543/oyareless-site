@@ -13,7 +13,7 @@ import type { TicketPriority, TicketStatus } from "@/generated/prisma/client";
 import { saveWorkdeskUploads } from "@/lib/workdesk/attachments";
 import { workdeskAdminOrRedirect } from "@/lib/workdesk/access";
 import { recordWorkdeskEvent } from "@/lib/workdesk/events";
-import { recordTicketAudit } from "@/lib/workdesk/ticket-audit";
+import { recordTicketAudit } from "@/lib/workdesk/audit";
 import { notifyAssignees, notifyAssignee } from "@/lib/workdesk/notify";
 import { nextTicketReference } from "@/lib/workdesk/references";
 import { revalidateWorkdesk } from "@/lib/workdesk/revalidate";

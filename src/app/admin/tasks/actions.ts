@@ -8,6 +8,7 @@ import { saveWorkdeskUploads } from "@/lib/workdesk/attachments";
 import { workdeskAdminOrRedirect } from "@/lib/workdesk/access";
 import { dateInputValue, parseDateInput } from "@/lib/workdesk/dates";
 import { recordWorkdeskEvent } from "@/lib/workdesk/events";
+import { recordTaskAudit } from "@/lib/workdesk/audit";
 import { notifyAssignees } from "@/lib/workdesk/notify";
 import { nextTaskReference } from "@/lib/workdesk/references";
 import { revalidateWorkdesk } from "@/lib/workdesk/revalidate";
@@ -82,6 +83,20 @@ export async function createTaskAction(formData: FormData): Promise<void> {
     });
   }
 
+  await recordTaskAudit({
+    action: "task.created",
+    taskId: task.id,
+    taskReference: task.reference,
+    summary: `${staff.name} created ${task.reference}`,
+    actor: staff,
+    details: {
+      title: task.title,
+      priority: task.priority,
+      assignees: assignees.length,
+      attachments: files.length,
+    },
+  });
+
   await revalidateWorkdesk({ taskId: task.id, flash: "created" });
   redirect(`/admin/tasks/${task.id}`);
 }
@@ -140,6 +155,17 @@ export async function updateTaskAction(formData: FormData): Promise<void> {
       taskId,
       actorStaffId: staff.id,
     });
+    await recordTaskAudit({
+      action: "task.updated",
+      taskId,
+      taskReference: task.reference,
+      summary: `${staff.name} updated details on ${task.reference}`,
+      actor: staff,
+      details: {
+        titleChanged: task.title !== title,
+        descriptionChanged: task.description !== description,
+      },
+    });
   }
   if (task.status !== status) {
     await recordWorkdeskEvent({
@@ -153,6 +179,14 @@ export async function updateTaskAction(formData: FormData): Promise<void> {
       taskId,
       actorStaffId: staff.id,
     });
+    await recordTaskAudit({
+      action: "task.status_changed",
+      taskId,
+      taskReference: task.reference,
+      summary: `${staff.name} set ${task.reference} from ${TASK_STATUS_LABELS[task.status] ?? task.status} to ${TASK_STATUS_LABELS[status] ?? status}`,
+      actor: staff,
+      details: { from: task.status, to: status },
+    });
   }
   if (task.priority !== priority) {
     await recordWorkdeskEvent({
@@ -160,6 +194,14 @@ export async function updateTaskAction(formData: FormData): Promise<void> {
       summary: `${staff.name} set priority to ${PRIORITY_LABELS[priority] ?? priority}`,
       taskId,
       actorStaffId: staff.id,
+    });
+    await recordTaskAudit({
+      action: "task.priority_changed",
+      taskId,
+      taskReference: task.reference,
+      summary: `${staff.name} set ${task.reference} priority to ${PRIORITY_LABELS[priority] ?? priority}`,
+      actor: staff,
+      details: { from: task.priority, to: priority },
     });
   }
   if (previousDue !== nextDueLabel) {
@@ -170,6 +212,16 @@ export async function updateTaskAction(formData: FormData): Promise<void> {
         : `${staff.name} cleared the due date`,
       taskId,
       actorStaffId: staff.id,
+    });
+    await recordTaskAudit({
+      action: "task.due_changed",
+      taskId,
+      taskReference: task.reference,
+      summary: nextDueLabel
+        ? `${staff.name} set ${task.reference} due date to ${nextDueLabel}`
+        : `${staff.name} cleared the due date on ${task.reference}`,
+      actor: staff,
+      details: { from: previousDue || null, to: nextDueLabel || null },
     });
   }
 
@@ -187,6 +239,14 @@ export async function updateTaskAction(formData: FormData): Promise<void> {
       summary: `${staff.name} updated assignees`,
       taskId,
       actorStaffId: staff.id,
+    });
+    await recordTaskAudit({
+      action: "task.assigned",
+      taskId,
+      taskReference: task.reference,
+      summary: `${staff.name} updated assignees on ${task.reference}`,
+      actor: staff,
+      details: { added: added.length, removed: [...previous].filter((id) => !next.has(id)).length },
     });
   }
   if (task.status !== status) {
@@ -250,6 +310,14 @@ export async function addTaskNoteAction(formData: FormData): Promise<void> {
     select: { reference: true, title: true },
   });
   if (task) {
+    await recordTaskAudit({
+      action: "task.noted",
+      taskId,
+      taskReference: task.reference,
+      summary: `${staff.name} added a note on ${task.reference}`,
+      actor: staff,
+      details: { attachments: files.length },
+    });
     await notifyAssignees({
       userIds: await listTaskAssigneeIds(taskId),
       excludeUserIds: [staff.id],
@@ -265,16 +333,29 @@ export async function addTaskNoteAction(formData: FormData): Promise<void> {
 }
 
 export async function deleteTaskAction(formData: FormData): Promise<void> {
-  await workdeskAdminOrRedirect();
+  const staff = await workdeskAdminOrRedirect();
 
   const taskId = String(formData.get("taskId") ?? "");
   if (!taskId) return;
 
   const task = await prisma.internalTask.findUnique({
     where: { id: taskId },
-    select: { id: true },
+    select: { id: true, reference: true, title: true, status: true, priority: true },
   });
   if (!task) return;
+
+  await recordTaskAudit({
+    action: "task.deleted",
+    taskId: task.id,
+    taskReference: task.reference,
+    summary: `${staff.name} deleted ${task.reference}`,
+    actor: staff,
+    details: {
+      title: task.title,
+      status: task.status,
+      priority: task.priority,
+    },
+  });
 
   await prisma.workdeskNotification.deleteMany({ where: { taskId } });
   await prisma.internalTask.delete({ where: { id: taskId } });

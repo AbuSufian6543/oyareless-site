@@ -54,7 +54,6 @@ model User {
   posts             Post[]
   media             MediaAsset[]
   auditLogs         AuditLog[]
-  ticketAuditLogs   TicketAuditLog[]
   assignedSubmissions FormSubmission[] @relation("SubmissionAssignee")
   assignedTickets   Ticket[]         @relation("TicketAssignee")
   ticketAssignments TicketAssignee[] @relation("TicketStaffAssignment")
@@ -470,6 +469,9 @@ model Redirect {
   @@index([isActive])
 }
 
+/// Append-only trail for CMS, quotes, tickets, and tasks. No foreign key to
+/// those entities, so deleting a record cannot erase who changed it. IP and
+/// user-agent are stored on every write when request headers are present.
 model AuditLog {
   id         String   @id @default(cuid())
   action     String
@@ -477,6 +479,7 @@ model AuditLog {
   entityId   String?
   summary    String?
   details    Json?
+  /// Caller IP from X-Forwarded-For or X-Real-IP. Kept after the actor account is removed.
   ipAddress  String?
   userAgent  String?
   createdAt  DateTime @default(now())
@@ -487,6 +490,7 @@ model AuditLog {
   @@index([createdAt])
   @@index([userId, createdAt])
   @@index([entityType, entityId])
+  @@index([action, createdAt])
 }
 
 // ---------------------------------------------------------------------------
@@ -896,7 +900,6 @@ model CustomerUser {
   ticketMessages     TicketMessage[]
   createdTickets     Ticket[]  @relation("TicketCreator")
   workdeskEvents     WorkdeskEvent[] @relation("WorkdeskEventCustomer")
-  ticketAuditLogs    TicketAuditLog[]
 
   @@index([customerId])
 }
@@ -1064,33 +1067,6 @@ model TicketAttachment {
   createdAt DateTime      @default(now())
 
   @@index([messageId])
-}
-
-/// Append-only ticket audit trail, separate from the CMS AuditLog and from
-/// WorkdeskEvent history. No foreign key to Ticket so deleting a ticket
-/// cannot erase who created, changed, or removed it.
-model TicketAuditLog {
-  id                  String   @id @default(cuid())
-  action              String
-  ticketId            String?
-  ticketReference     String
-  summary             String
-  details             Json?
-  actorKind           String
-  actorName           String
-  ipAddress           String?
-  userAgent           String?
-  createdAt           DateTime @default(now())
-
-  actorUserId         String?
-  actorUser           User?    @relation(fields: [actorUserId], references: [id], onDelete: SetNull)
-  actorCustomerUserId String?
-  actorCustomerUser   CustomerUser? @relation(fields: [actorCustomerUserId], references: [id], onDelete: SetNull)
-
-  @@index([createdAt])
-  @@index([ticketId, createdAt])
-  @@index([ticketReference, createdAt])
-  @@index([action, createdAt])
 }
 
 // ---------------------------------------------------------------------------

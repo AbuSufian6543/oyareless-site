@@ -6,6 +6,7 @@ import { AttachmentField } from "@/components/workdesk/attachment-field";
 import { ViewFilter } from "@/components/workdesk/view-filter";
 import { WorkItem, WorkList } from "@/components/workdesk/work-item";
 import { requireAdminRole } from "@/lib/admin-guard";
+import { hasRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
   OPEN_TICKET,
@@ -81,12 +82,14 @@ export default async function AdminTicketsPage({
         title="Tickets"
         description="Customer tickets assigned to you, to the team, or still waiting for an owner. Open a card to reply or reassign."
         actions={
-          <Link
-            href="/admin/tickets/audit"
-            className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-navy-800 hover:bg-slate-50"
-          >
-            Ticket audit log
-          </Link>
+          hasRole(user, "SUPERADMIN") ? (
+            <Link
+              href="/admin/audit?action=ticket."
+              className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-navy-800 hover:bg-slate-50"
+            >
+              Audit log
+            </Link>
+          ) : undefined
         }
       />
 

@@ -20,6 +20,7 @@ import { AttachmentList } from "@/components/workdesk/attachment-list";
 import { PriorityBadge, TicketStatusBadge } from "@/components/workdesk/badges";
 import { AssigneeAvatars } from "@/components/workdesk/work-item";
 import { requireAdminRole } from "@/lib/admin-guard";
+import { hasRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatDateTime } from "@/lib/utils";
 import { ticketAssigneeNames } from "@/lib/workdesk/board";
@@ -33,7 +34,7 @@ export default async function AdminTicketPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireAdminRole("EDITOR");
+  const user = await requireAdminRole("EDITOR");
   const { id } = await params;
   const [ticket, staff, customers] = await Promise.all([
     prisma.ticket.findUnique({
@@ -256,12 +257,14 @@ export default async function AdminTicketPage({
         <Card>
           <CardTitle>History</CardTitle>
           <ActivityLog events={ticket.events} />
-          <Link
-            href={`/admin/tickets/audit?ticket=${encodeURIComponent(ticket.reference)}`}
-            className="mt-3 inline-block text-sm font-semibold text-brand-700 hover:underline"
-          >
-            Open ticket audit log
-          </Link>
+          {hasRole(user, "SUPERADMIN") ? (
+            <Link
+              href={`/admin/audit?action=ticket.&q=${encodeURIComponent(ticket.reference)}`}
+              className="mt-3 inline-block text-sm font-semibold text-brand-700 hover:underline"
+            >
+              Open in audit log
+            </Link>
+          ) : null}
         </Card>
 
         <Card className="border-red-200">

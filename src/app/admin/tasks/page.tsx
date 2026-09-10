@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/admin/ui";
 import { ViewFilter } from "@/components/workdesk/view-filter";
 import { WorkItem, WorkList } from "@/components/workdesk/work-item";
 import { requireAdminRole } from "@/lib/admin-guard";
+import { hasRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
   OPEN_TASK,
@@ -83,12 +84,22 @@ export default async function AdminTasksPage({
         title="Internal tasks"
         description="Open a card to update status, reassign, or add a note. Overdue work is highlighted."
         actions={
-          <Link
-            href="/admin/tasks/new"
-            className="rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-700"
-          >
-            New task
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            {hasRole(user, "SUPERADMIN") ? (
+              <Link
+                href="/admin/audit?action=task."
+                className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-navy-800 hover:bg-slate-50"
+              >
+                Audit log
+              </Link>
+            ) : null}
+            <Link
+              href="/admin/tasks/new"
+              className="rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-700"
+            >
+              New task
+            </Link>
+          </div>
         }
       />
       <ViewFilter

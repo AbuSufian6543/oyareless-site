@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { addTaskNoteAction, deleteTaskAction, updateTaskAction } from "@/app/admin/tasks/actions";
@@ -10,6 +11,7 @@ import { AttachmentList } from "@/components/workdesk/attachment-list";
 import { PriorityBadge, TaskStatusBadge } from "@/components/workdesk/badges";
 import { AssigneeAvatars } from "@/components/workdesk/work-item";
 import { requireAdminRole } from "@/lib/admin-guard";
+import { hasRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatDate, formatDateTime } from "@/lib/utils";
 import { dateInputValue, isOverdue } from "@/lib/workdesk/dates";
@@ -23,7 +25,7 @@ export default async function AdminTaskPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  await requireAdminRole("EDITOR");
+  const user = await requireAdminRole("EDITOR");
   const { id } = await params;
   const [task, staff] = await Promise.all([
     prisma.internalTask.findUnique({
@@ -147,6 +149,14 @@ export default async function AdminTaskPage({
         <Card>
           <CardTitle>History</CardTitle>
           <ActivityLog events={task.events} />
+          {hasRole(user, "SUPERADMIN") ? (
+            <Link
+              href={`/admin/audit?action=task.&q=${encodeURIComponent(task.reference)}`}
+              className="mt-3 inline-block text-sm font-semibold text-brand-700 hover:underline"
+            >
+              Open in audit log
+            </Link>
+          ) : null}
         </Card>
         <Card className="border-red-200">
           <CardTitle description="Removes the task, notes, and files. Prefer Closed if you want to keep a record.">

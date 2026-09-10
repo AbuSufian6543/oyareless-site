@@ -13,7 +13,7 @@ import {
   technicianOrRedirect,
 } from "@/lib/workdesk/access";
 import { recordWorkdeskEvent } from "@/lib/workdesk/events";
-import { recordTicketAudit } from "@/lib/workdesk/ticket-audit";
+import { recordTaskAudit, recordTicketAudit } from "@/lib/workdesk/audit";
 import { notifyWorkdeskUpdate } from "@/lib/workdesk/notify";
 import { revalidateWorkdesk } from "@/lib/workdesk/revalidate";
 import {
@@ -95,7 +95,7 @@ export async function techReplyTicketAction(formData: FormData): Promise<void> {
     summary: isInternal
       ? `${tech.name} added an internal note on ${ticket.reference}`
       : `${tech.name} replied on ${ticket.reference}`,
-    actor: { kind: "staff", id: tech.id, name: tech.name },
+    actor: { kind: "staff", id: tech.id, name: tech.name, email: tech.email },
     details: { internal: isInternal, attachments: files.length },
   });
 
@@ -146,7 +146,7 @@ export async function techUpdateTicketStatusAction(formData: FormData): Promise<
     ticketId,
     ticketReference: ticket.reference,
     summary: `${tech.name} set ${ticket.reference} to ${TICKET_STATUS_LABELS[status] ?? status}`,
-    actor: { kind: "staff", id: tech.id, name: tech.name },
+    actor: { kind: "staff", id: tech.id, name: tech.name, email: tech.email },
     details: { from: ticket.status, to: status },
   });
 
@@ -211,6 +211,14 @@ export async function techAddTaskNoteAction(formData: FormData): Promise<void> {
     taskId,
     actorStaffId: tech.id,
   });
+  await recordTaskAudit({
+    action: "task.noted",
+    taskId,
+    taskReference: task.reference,
+    summary: `${tech.name} added a note on ${task.reference}`,
+    actor: tech,
+    details: { attachments: files.length },
+  });
 
   await notifyWorkdeskUpdate({
     actorId: tech.id,
@@ -253,6 +261,14 @@ export async function techUpdateTaskStatusAction(formData: FormData): Promise<vo
     summary: `${tech.name} set status to ${TASK_STATUS_LABELS[status] ?? status}`,
     taskId,
     actorStaffId: tech.id,
+  });
+  await recordTaskAudit({
+    action: "task.status_changed",
+    taskId,
+    taskReference: task.reference,
+    summary: `${tech.name} set ${task.reference} from ${TASK_STATUS_LABELS[task.status] ?? task.status} to ${TASK_STATUS_LABELS[status] ?? status}`,
+    actor: tech,
+    details: { from: task.status, to: status },
   });
 
   await notifyWorkdeskUpdate({

@@ -101,34 +101,45 @@ assert(
 );
 
 const schema = readFileSync(path.join(process.cwd(), "prisma/schema.prisma"), "utf8");
-const ticketAuditModel = schema.slice(
-  schema.indexOf("model TicketAuditLog"),
-  schema.indexOf("model QuoteRequest"),
-);
+const auditStart = schema.indexOf("model AuditLog");
+const auditEnd = schema.indexOf("\nmodel ", auditStart + 1);
+const auditModel = schema.slice(auditStart, auditEnd === -1 ? undefined : auditEnd);
+assert("ticket audit is not a separate Prisma model", !schema.includes("model TicketAuditLog"));
 assert(
-  "ticket audit log is a separate model with no Ticket foreign key",
-  ticketAuditModel.includes("model TicketAuditLog") &&
-    !ticketAuditModel.includes("ticket   Ticket") &&
-    !ticketAuditModel.includes("Ticket   @relation"),
+  "unified AuditLog stores IP and user-agent and has no Ticket or Task foreign key",
+  auditModel.includes("ipAddress") &&
+    auditModel.includes("userAgent") &&
+    !auditModel.includes("Ticket") &&
+    !auditModel.includes("InternalTask"),
 );
 
 const cmsAudit = readFileSync(path.join(process.cwd(), "src/lib/audit.ts"), "utf8");
 assert(
-  "CMS audit log does not mix in ticket actions",
-  !cmsAudit.includes('"ticket.created"') && !cmsAudit.includes("| \"ticket."),
+  "unified audit writer records ticket and task actions with IP",
+  cmsAudit.includes('"ticket.created"') &&
+    cmsAudit.includes('"task.created"') &&
+    cmsAudit.includes('"task.deleted"') &&
+    cmsAudit.includes("ipAddress") &&
+    cmsAudit.includes("requestAuditTrace"),
 );
 
 const writer = readFileSync(
-  path.join(process.cwd(), "src/lib/workdesk/ticket-audit.ts"),
+  path.join(process.cwd(), "src/lib/workdesk/audit.ts"),
   "utf8",
 );
 assert(
-  "ticket audit writer never stores message bodies",
-  writer.includes("recordTicketAudit") && !writer.includes("body:"),
+  "workdesk audit wrappers never store message bodies",
+  writer.includes("recordTicketAudit") &&
+    writer.includes("recordTaskAudit") &&
+    !writer.includes("body:"),
 );
 
 const adminTickets = readFileSync(
   path.join(process.cwd(), "src/app/admin/tickets/actions.ts"),
+  "utf8",
+);
+const adminTasks = readFileSync(
+  path.join(process.cwd(), "src/app/admin/tasks/actions.ts"),
   "utf8",
 );
 const techTickets = readFileSync(path.join(process.cwd(), "src/app/tech/actions.ts"), "utf8");
@@ -137,7 +148,7 @@ const portalTickets = readFileSync(
   "utf8",
 );
 assert(
-  "admin ticket create, update, and delete write the ticket audit log",
+  "admin ticket create, update, and delete write the unified audit log",
   adminTickets.includes("ticket.created") &&
     adminTickets.includes("ticket.deleted") &&
     adminTickets.includes("ticket.status_changed") &&
@@ -145,13 +156,24 @@ assert(
     adminTickets.includes("recordTicketAudit"),
 );
 assert(
-  "technician ticket replies and status changes write the ticket audit log",
-  techTickets.includes("recordTicketAudit") &&
-    techTickets.includes("ticket.replied") &&
-    techTickets.includes("ticket.status_changed"),
+  "admin task create, update, and delete write the unified audit log",
+  adminTasks.includes("recordTaskAudit") &&
+    adminTasks.includes("task.created") &&
+    adminTasks.includes("task.deleted") &&
+    adminTasks.includes("task.status_changed") &&
+    adminTasks.includes("task.assigned"),
 );
 assert(
-  "customer portal ticket create and replies write the ticket audit log",
+  "technician ticket and task changes write the unified audit log",
+  techTickets.includes("recordTicketAudit") &&
+    techTickets.includes("ticket.replied") &&
+    techTickets.includes("ticket.status_changed") &&
+    techTickets.includes("recordTaskAudit") &&
+    techTickets.includes("task.noted") &&
+    techTickets.includes("task.status_changed"),
+);
+assert(
+  "customer portal ticket create and replies write the unified audit log",
   portalTickets.includes("recordTicketAudit") &&
     portalTickets.includes("ticket.created") &&
     portalTickets.includes("ticket.replied"),

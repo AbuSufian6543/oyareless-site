@@ -7,7 +7,7 @@ import { requirePortalUser } from "@/lib/portal-auth";
 import { scopeToCustomer } from "@/lib/portal-scope";
 import { saveWorkdeskUploads } from "@/lib/workdesk/attachments";
 import { recordWorkdeskEvent } from "@/lib/workdesk/events";
-import { recordTicketAudit } from "@/lib/workdesk/ticket-audit";
+import { recordTicketAudit } from "@/lib/workdesk/audit";
 import {
   emailAdminInbox,
   notifyStaff,
@@ -78,7 +78,7 @@ export async function createTicketAction(formData: FormData): Promise<void> {
     ticketId: ticket.id,
     ticketReference: ticket.reference,
     summary: `${user.name} opened ${ticket.reference}`,
-    actor: { kind: "customer", id: user.id, name: user.name },
+    actor: { kind: "customer", id: user.id, name: user.name, email: user.email },
     details: { subject: ticket.subject, category, attachments: fileCount },
   });
 
@@ -141,7 +141,7 @@ export async function replyTicketAction(formData: FormData): Promise<void> {
     ticketId,
     ticketReference: ticket.reference,
     summary: `${user.name} replied on ${ticket.reference}`,
-    actor: { kind: "customer", id: user.id, name: user.name },
+    actor: { kind: "customer", id: user.id, name: user.name, email: user.email },
     details: { attachments: fileCount, statusTo: "OPEN", statusFrom: ticket.status },
   });
 

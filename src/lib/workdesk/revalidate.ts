@@ -12,12 +12,12 @@ export async function revalidateWorkdesk(input: {
   }
   revalidatePath("/admin");
   revalidatePath("/admin/notifications");
+  revalidatePath("/admin/audit");
   revalidatePath("/tech");
   revalidatePath("/tech/notifications");
 
   if (input.ticketId) {
     revalidatePath("/admin/tickets");
-    revalidatePath("/admin/tickets/audit");
     revalidatePath(`/admin/tickets/${input.ticketId}`);
     revalidatePath("/tech/tickets");
     revalidatePath(`/tech/tickets/${input.ticketId}`);
