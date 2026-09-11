@@ -65,6 +65,22 @@ export function assignmentNotice(input: {
   return { title: clip(title, 200), body: clip(body, 500) };
 }
 
+/** Short intro for a task edit email. The HTML card carries the full current task. */
+export function taskChangeNotice(input: {
+  actorName: string;
+  reference: string;
+  changes: string[];
+}): { title: string; body: string } {
+  const what = input.changes.length > 0 ? joinStaffNames(input.changes) : "updated this task";
+  return {
+    title: clip(`${input.reference} updated`, 200),
+    body: clip(
+      `${input.actorName} changed ${input.reference}: ${what}. The current task details are below.`,
+      500,
+    ),
+  };
+}
+
 export function reminderNotice(input: {
   actorName: string;
   reference: string;

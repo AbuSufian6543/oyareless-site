@@ -9,8 +9,8 @@ import { workdeskAdminOrRedirect } from "@/lib/workdesk/access";
 import { dateInputValue, parseDateInput } from "@/lib/workdesk/dates";
 import { recordWorkdeskEvent } from "@/lib/workdesk/events";
 import { recordTaskAudit } from "@/lib/workdesk/audit";
-import { notifyAssignees, notifyNewWork, sendWorkdeskReminder } from "@/lib/workdesk/notify";
-import { assignmentNotice, joinStaffNames } from "@/lib/workdesk/notice";
+import { emailAdminInbox, notifyAssignees, notifyNewWork, sendWorkdeskReminder } from "@/lib/workdesk/notify";
+import { assignmentNotice, joinStaffNames, taskChangeNotice } from "@/lib/workdesk/notice";
 import { nextTaskReference } from "@/lib/workdesk/references";
 import { revalidateWorkdesk } from "@/lib/workdesk/revalidate";
 import { taskReturnPath, withQuery } from "@/lib/workdesk/return-path";
@@ -233,26 +233,19 @@ export async function updateTaskAction(formData: FormData): Promise<void> {
   }
 
   const added = [...next].filter((id) => !previous.has(id));
+  const removed = [...previous].filter((id) => !next.has(id));
   const allNames = await staffNamesFor(assignees);
   const addedNames = await staffNamesFor(added);
-  if (added.length > 0) {
-    const notice = assignmentNotice({
-      actorName: staff.name,
-      reference: task.reference,
-      subject: title.slice(0, 200),
-      addedNames,
-      allNames,
-      kind: "task",
-      previousCount: previous.size,
-    });
-    await notifyAssignees({
-      userIds: added,
-      title: notice.title,
-      body: notice.body,
-      taskId,
-    });
-  }
-  if (added.length > 0 || [...previous].some((id) => !next.has(id))) {
+  const nextTitle = title.slice(0, 200);
+  const nextDescription = description.slice(0, 8000);
+  const titleChanged = task.title !== nextTitle;
+  const descriptionChanged = task.description !== nextDescription;
+  const statusChanged = task.status !== status;
+  const priorityChanged = task.priority !== priority;
+  const dueChanged = previousDue !== nextDueLabel;
+  const assigneesChanged = added.length > 0 || removed.length > 0;
+
+  if (assigneesChanged) {
     await recordWorkdeskEvent({
       kind: previous.size > 0 ? "REASSIGNED" : "ASSIGNED",
       summary:
@@ -274,22 +267,66 @@ export async function updateTaskAction(formData: FormData): Promise<void> {
       details: {
         assignees: allNames,
         added: added.length,
-        removed: [...previous].filter((id) => !next.has(id)).length,
+        removed: removed.length,
       },
     });
   }
-  if (task.status !== status) {
+
+  const changes: string[] = [];
+  if (titleChanged) changes.push("updated the title");
+  if (descriptionChanged) changes.push("updated the description");
+  if (statusChanged) changes.push(`set status to ${TASK_STATUS_LABELS[status] ?? status}`);
+  if (priorityChanged) changes.push(`set priority to ${PRIORITY_LABELS[priority] ?? priority}`);
+  if (dueChanged) {
+    changes.push(nextDueLabel ? `set the due date to ${nextDueLabel}` : "cleared the due date");
+  }
+  if (added.length > 0) changes.push(`assigned ${joinStaffNames(addedNames)}`);
+  else if (removed.length > 0 && assignees.length > 0) changes.push("changed who is assigned");
+  else if (removed.length > 0) changes.push("removed all assignees");
+
+  if (changes.length > 0) {
+    const changeNotice = taskChangeNotice({
+      actorName: staff.name,
+      reference: task.reference,
+      changes,
+    });
+    const assignNotice =
+      added.length > 0
+        ? assignmentNotice({
+            actorName: staff.name,
+            reference: task.reference,
+            subject: nextTitle,
+            addedNames,
+            allNames,
+            kind: "task",
+            previousCount: previous.size,
+          })
+        : null;
+    const done = status === "COMPLETED" || status === "CLOSED";
+    const mailTitle =
+      assignNotice?.title ??
+      (statusChanged && done
+        ? `${task.reference} marked ${TASK_STATUS_LABELS[status] ?? status}`
+        : changeNotice.title);
+    const kind =
+      statusChanged && done ? "RESOLVED" : added.length > 0 ? "ASSIGNMENT" : "UPDATE";
+    const recipients = assignees.length > 0 ? assignees : [...previous];
     await notifyAssignees({
-      userIds: assignees.filter((id) => !added.includes(id)),
+      userIds: recipients,
       excludeUserIds: [staff.id],
-      title:
-        status === "COMPLETED" || status === "CLOSED"
-          ? `${task.reference} marked ${TASK_STATUS_LABELS[status] ?? status}`
-          : `${task.reference} status updated`,
-      body: `${staff.name} set ${task.reference} to ${TASK_STATUS_LABELS[status] ?? status}`,
-      kind: status === "COMPLETED" || status === "CLOSED" ? "RESOLVED" : "UPDATE",
+      title: mailTitle,
+      body: changeNotice.body,
+      kind,
       taskId,
     });
+    if (assignees.length === 0) {
+      await emailAdminInbox({
+        title: mailTitle,
+        detail: changeNotice.body,
+        href: `/admin/tasks/${taskId}`,
+        taskId,
+      });
+    }
   }
 
   await revalidateWorkdesk({ taskId });

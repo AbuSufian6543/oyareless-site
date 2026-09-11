@@ -16,9 +16,11 @@ import {
   assignmentNotice,
   joinStaffNames,
   reminderNotice,
+  taskChangeNotice,
   unassignedCreateNotice,
   WORKDESK_NOTIFY_CHANNELS,
 } from "../src/lib/workdesk/notice";
+import { renderTaskEmailCard } from "../src/lib/workdesk/task-mail";
 import {
   formatLoggedDuration,
   parseLoggedMinutes,
@@ -298,6 +300,51 @@ assert(
     reminder.body.includes("Printer offline"),
 );
 
+const taskEdit = taskChangeNotice({
+  actorName: "Abu",
+  reference: "WT-12",
+  changes: ["updated the description", "set the due date to 2026-09-12"],
+});
+assert(
+  "task edit notice points to the full details below",
+  taskEdit.title.includes("WT-12") &&
+    taskEdit.body.includes("updated the description") &&
+    taskEdit.body.includes("The current task details are below"),
+);
+
+const taskCard = renderTaskEmailCard({
+  reference: "WT-12",
+  title: "Replace the north tower radio",
+  description: "Climb the tower and swap the radio. <script>alert(1)</script>",
+  status: "IN_PROGRESS",
+  statusLabel: "In progress",
+  priority: "HIGH",
+  priorityLabel: "High",
+  dueLabel: "September 12, 2026",
+  assigneeNames: ["Sarah Chen"],
+  createdByName: "Abu",
+  createdAtLabel: "Sep 11, 2026, 1:00 p.m.",
+  attachmentNames: ["photos.zip"],
+  hoursLogged: "1h 30m",
+  productLines: ["1 each Spare radio"],
+  recentNotes: [
+    { authorName: "Sarah Chen", at: "Sep 11, 2026, 9:15 a.m.", body: "Heading to site." },
+  ],
+});
+assert(
+  "task email card includes the live details and escapes HTML",
+  taskCard.includes("WT-12") &&
+    taskCard.includes("Replace the north tower radio") &&
+    taskCard.includes("Climb the tower and swap the radio") &&
+    taskCard.includes("Description") &&
+    taskCard.includes("Due date") &&
+    taskCard.includes("Assigned to") &&
+    taskCard.includes("Sarah Chen") &&
+    taskCard.includes("photos.zip") &&
+    taskCard.includes("Heading to site") &&
+    !taskCard.includes("<script>alert(1)</script>"),
+);
+
 const grant = accessGrantNotice({
   actorName: "Abu",
   grantedName: "Mike Tech",
@@ -341,8 +388,9 @@ assert(
     adminTickets.includes("ticket.notified"),
 );
 assert(
-  "admin task assign and create use named assignment notices",
+  "admin task assign, create, and edit use named notices",
   adminTasks.includes("assignmentNotice") &&
+    adminTasks.includes("taskChangeNotice") &&
     adminTasks.includes("notifyTaskStaffAction") &&
     adminTasks.includes("task.notified"),
 );
@@ -465,7 +513,9 @@ assert(
   workdeskMail.includes("See task") &&
     workdeskMail.includes("Open ticket") &&
     workdeskMail.includes("Open admin") &&
-    workdeskMail.includes("emailActionLink"),
+    workdeskMail.includes("emailActionLink") &&
+    workdeskMail.includes("staffEmailDocument") &&
+    workdeskMail.includes("renderTaskEmailCard"),
 );
 
 assert(
@@ -507,6 +557,18 @@ const techTicketDetail = readFileSync(
 const techTaskDetail = readFileSync(
   path.join(process.cwd(), "src/app/tech/tasks/[id]/page.tsx"),
   "utf8",
+);
+const newTaskPage = readFileSync(
+  path.join(process.cwd(), "src/app/admin/tasks/new/page.tsx"),
+  "utf8",
+);
+assert(
+  "task create, edit, and reminder screens mention the full-detail email",
+  newTaskPage.includes("TaskEmailHint") &&
+    newTaskPage.includes("TaskEmailPreview") &&
+    adminTaskDetail.includes("TaskEmailHint") &&
+    adminTaskDetail.includes("includesFullTask") &&
+    notifyMenu.includes("Email includes full task details"),
 );
 assert(
   "admin and technician ticket/task pages show the work log",

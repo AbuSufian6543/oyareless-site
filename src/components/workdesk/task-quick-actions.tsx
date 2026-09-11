@@ -21,6 +21,7 @@ export function TaskQuickActions({
         action={notifyTaskStaffAction}
         hiddenFields={{ taskId, returnTo }}
         disabled={!canNotify}
+        includesFullTask
         compact
       />
       {canDelete ? (

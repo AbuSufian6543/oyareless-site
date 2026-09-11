@@ -138,6 +138,11 @@ export function emailActionLink(href: string, label: string): string {
     </p>`;
 }
 
+/** Shared branded wrapper for staff emails (workdesk, invites, forms). */
+export function staffEmailDocument(title: string, body: string): string {
+  return layout(title, body);
+}
+
 function layout(title: string, body: string): string {
   return `<!doctype html>
 <html lang="en">

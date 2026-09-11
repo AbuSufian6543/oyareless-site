@@ -1,10 +1,13 @@
 import "server-only";
 
 import type { Role, WorkdeskNotificationKind } from "@/generated/prisma/client";
-import { emailActionLink, sendMail } from "@/lib/mail";
+import { emailActionLink, sendMail, staffEmailDocument } from "@/lib/mail";
 import { prisma } from "@/lib/prisma";
 import { publicUrl } from "@/lib/public-url";
+import { formatDate, formatDateTime } from "@/lib/utils";
 import { workdeskHref } from "@/lib/workdesk/access";
+import { formatLoggedDuration, formatProductQuantity } from "@/lib/workdesk/hours";
+import { PRIORITY_LABELS, TASK_STATUS_LABELS } from "@/lib/workdesk/labels";
 import {
   assignmentNotice,
   reminderNotice,
@@ -16,6 +19,7 @@ import {
   listTicketAssigneeIds,
   staffNamesFor,
 } from "@/lib/workdesk/staff";
+import { renderTaskEmailCard, type TaskMailSnapshot } from "@/lib/workdesk/task-mail";
 
 function escapeHtml(value: string): string {
   return value
@@ -25,29 +29,59 @@ function escapeHtml(value: string): string {
     .replace(/"/g, "&quot;");
 }
 
-function emailLayout(title: string, body: string): string {
-  return `<!doctype html>
-<html lang="en">
-  <body style="margin:0;padding:0;background:#eef2f7;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#eef2f7;padding:28px 12px;">
-      <tr><td align="center">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:620px;background:#ffffff;border-radius:12px;overflow:hidden;">
-          <tr>
-            <td style="background:#0a2a4e;padding:20px 28px;">
-              <span style="color:#ffffff;font-size:18px;font-weight:700;">WirelessCom<span style="color:#6fc04a;">.Ca</span> Inc.</span>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:28px;">
-              <h1 style="margin:0 0 18px;font-size:19px;color:#0a2a4e;">${escapeHtml(title)}</h1>
-              ${body}
-            </td>
-          </tr>
-        </table>
-      </td></tr>
-    </table>
-  </body>
-</html>`;
+async function loadTaskMailSnapshot(taskId: string): Promise<TaskMailSnapshot | null> {
+  const task = await prisma.internalTask.findUnique({
+    where: { id: taskId },
+    include: {
+      createdBy: { select: { name: true } },
+      assignees: { include: { user: { select: { name: true } } } },
+      attachments: { select: { filename: true } },
+      notes: {
+        orderBy: { createdAt: "desc" },
+        take: 5,
+        select: { authorName: true, body: true, createdAt: true },
+      },
+      timeEntries: { select: { minutes: true } },
+      productUsages: { select: { name: true, sku: true, quantity: true, unit: true } },
+    },
+  });
+  if (!task) return null;
+  const minutes = task.timeEntries.reduce((sum, row) => sum + row.minutes, 0);
+  return {
+    reference: task.reference,
+    title: task.title,
+    description: task.description.slice(0, 8000),
+    status: task.status,
+    statusLabel: TASK_STATUS_LABELS[task.status] ?? task.status,
+    priority: task.priority,
+    priorityLabel: PRIORITY_LABELS[task.priority] ?? task.priority,
+    dueLabel: task.dueAt ? formatDate(task.dueAt) : "No due date",
+    assigneeNames: task.assignees.map((row) => row.user.name),
+    createdByName: task.createdBy.name,
+    createdAtLabel: formatDateTime(task.createdAt),
+    attachmentNames: task.attachments.map((file) => file.filename),
+    hoursLogged: minutes > 0 ? formatLoggedDuration(minutes) : "",
+    productLines: task.productUsages.map((row) => {
+      const sku = row.sku ? ` (${row.sku})` : "";
+      return `${formatProductQuantity(row.quantity, row.unit)} ${row.name}${sku}`;
+    }),
+    recentNotes: [...task.notes].reverse().map((note) => ({
+      authorName: note.authorName,
+      at: formatDateTime(note.createdAt),
+      body: note.body,
+    })),
+  };
+}
+
+async function taskEmailCard(taskId?: string | null): Promise<string> {
+  if (!taskId) return "";
+  try {
+    const snapshot = await loadTaskMailSnapshot(taskId);
+    return snapshot ? renderTaskEmailCard(snapshot) : "";
+  } catch (error) {
+    console.error("[workdesk] task email card failed:", error);
+    return "";
+  }
 }
 
 export async function createWorkdeskNotifications(input: {
@@ -80,16 +114,19 @@ export async function emailStaffAssignment(input: {
   detail: string;
   ticketId?: string;
   taskId?: string;
+  emailCard?: string;
 }): Promise<void> {
   const href = publicUrl(workdeskHref(input.role, input));
   const ctaLabel = input.taskId ? "See task" : input.ticketId ? "Open ticket" : "Open admin";
+  const emailCard = input.emailCard ?? (await taskEmailCard(input.taskId));
   await sendMail({
     to: input.to,
     subject: input.title,
-    html: emailLayout(
+    html: staffEmailDocument(
       input.title,
-      `<p style="margin:0 0 16px;font-size:14px;color:#3c4e63;line-height:1.6;">Hello ${escapeHtml(input.name)},</p>
-       <p style="margin:0 0 16px;font-size:14px;color:#3c4e63;line-height:1.6;">${escapeHtml(input.detail)}</p>
+      `<p style="margin:0 0 16px;font-size:15px;color:#3c4e63;line-height:1.65;">Hello ${escapeHtml(input.name)},</p>
+       <p style="margin:0 0 16px;font-size:15px;color:#3c4e63;line-height:1.65;">${escapeHtml(input.detail)}</p>
+       ${emailCard}
        ${emailActionLink(href, ctaLabel)}`,
     ),
   }).catch((error) => {
@@ -101,12 +138,16 @@ export async function emailAdminInbox(input: {
   title: string;
   detail: string;
   href: string;
+  taskId?: string;
+  emailCard?: string;
 }): Promise<void> {
+  const card = input.emailCard ?? (await taskEmailCard(input.taskId));
   await sendMail({
     subject: input.title,
-    html: emailLayout(
+    html: staffEmailDocument(
       input.title,
-      `<p style="margin:0 0 16px;font-size:14px;color:#3c4e63;line-height:1.6;">${escapeHtml(input.detail)}</p>
+      `<p style="margin:0 0 16px;font-size:15px;color:#3c4e63;line-height:1.65;">${escapeHtml(input.detail)}</p>
+       ${card}
        ${emailActionLink(publicUrl(input.href), "Open admin")}`,
     ),
   }).catch((error) => {
@@ -122,6 +163,7 @@ export async function notifyStaff(input: {
   kind?: WorkdeskNotificationKind;
   ticketId?: string;
   taskId?: string;
+  emailCard?: string;
 }): Promise<void> {
   try {
     const excluded = new Set((input.excludeUserIds ?? []).filter(Boolean));
@@ -147,6 +189,7 @@ export async function notifyStaff(input: {
       console.error("[workdesk] in-site notification failed:", error);
     }
 
+    const emailCard = input.emailCard ?? (await taskEmailCard(input.taskId));
     for (const user of users) {
       await emailStaffAssignment({
         to: user.email,
@@ -156,6 +199,7 @@ export async function notifyStaff(input: {
         detail: input.body,
         ticketId: input.ticketId,
         taskId: input.taskId,
+        emailCard,
       });
     }
   } catch (error) {
@@ -219,6 +263,7 @@ export async function notifyNewWork(input: {
   taskId?: string;
 }): Promise<void> {
   const href = adminHref(input);
+  const emailCard = await taskEmailCard(input.taskId);
 
   if (input.assigneeIds.length > 0) {
     const names = await staffNamesFor(input.assigneeIds);
@@ -238,11 +283,14 @@ export async function notifyNewWork(input: {
       kind: "ASSIGNMENT",
       ticketId: input.ticketId,
       taskId: input.taskId,
+      emailCard,
     });
     await emailAdminInbox({
       title: notice.title,
       detail: notice.body,
       href,
+      taskId: input.taskId,
+      emailCard,
     });
     return;
   }
@@ -261,11 +309,14 @@ export async function notifyNewWork(input: {
     kind: "ASSIGNMENT",
     ticketId: input.ticketId,
     taskId: input.taskId,
+    emailCard,
   });
   await emailAdminInbox({
     title: notice.title,
     detail: notice.body,
     href,
+    taskId: input.taskId,
+    emailCard,
   });
 }
 
@@ -300,6 +351,7 @@ export async function notifyWorkdeskUpdate(input: {
           : Promise.resolve([] as string[]),
     ]);
 
+    const emailCard = await taskEmailCard(input.taskId);
     await notifyStaff({
       userIds: [...managerIds, ...assigneeIds],
       excludeUserIds: input.actorId ? [input.actorId] : [],
@@ -308,6 +360,7 @@ export async function notifyWorkdeskUpdate(input: {
       kind: input.kind,
       ticketId: input.ticketId,
       taskId: input.taskId,
+      emailCard,
     });
 
     await emailAdminInbox({
@@ -316,6 +369,8 @@ export async function notifyWorkdeskUpdate(input: {
       href: input.taskId
         ? `/admin/tasks/${input.taskId}`
         : `/admin/tickets/${input.ticketId ?? ""}`,
+      taskId: input.taskId,
+      emailCard,
     });
   } catch (error) {
     console.error("[workdesk] update notification failed:", error);
@@ -396,7 +451,7 @@ export async function sendWorkdeskReminder(input: {
     await notifyStaff({
       userIds,
       title: notice.title,
-      body: notice.body,
+      body: `${notice.body} The current task details are below.`,
       kind: "UPDATE",
       taskId: task.id,
     });

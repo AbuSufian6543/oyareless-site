@@ -9,7 +9,7 @@ import { AssigneeChecklist } from "@/components/workdesk/assignee-checklist";
 import { AttachmentField } from "@/components/workdesk/attachment-field";
 import { AttachmentList } from "@/components/workdesk/attachment-list";
 import { PriorityBadge, TaskStatusBadge } from "@/components/workdesk/badges";
-import { EmailStaffButton, WorkdeskNotifyMenu } from "@/components/workdesk/notify-menu";
+import { EmailStaffButton, TaskEmailHint, WorkdeskNotifyMenu } from "@/components/workdesk/notify-menu";
 import { WorkLog, WorkLogSummary } from "@/components/workdesk/work-log";
 import { AssigneeAvatars } from "@/components/workdesk/work-item";
 import { requireAdminRole } from "@/lib/admin-guard";
@@ -79,6 +79,7 @@ export default async function AdminTaskPage({
                 action={notifyTaskStaffAction}
                 hiddenFields={{ taskId: task.id, returnTo: `/admin/tasks/${task.id}` }}
                 disabled={assigneeNames.length === 0}
+                includesFullTask
               />
               {task.status === "COMPLETED" || task.status === "CLOSED" ? (
                 <form action={deleteTaskAction}>
@@ -165,9 +166,12 @@ export default async function AdminTaskPage({
           action={notifyTaskStaffAction}
           hiddenFields={{ taskId: task.id }}
           hasRecipients={assigneeNames.length > 0}
+          includesFullTask
         />
         <Card>
-          <CardTitle>Manage</CardTitle>
+          <CardTitle description="Everyone assigned is emailed the full current task when you save.">
+            Manage
+          </CardTitle>
           <form action={updateTaskAction} className="space-y-3">
             <input type="hidden" name="taskId" value={task.id} />
             <TextField label="Title" name="title" required defaultValue={task.title} />
@@ -198,8 +202,9 @@ export default async function AdminTaskPage({
               selectedIds={[...selected]}
               legend="Assignees"
             />
-            <button type="submit" className="w-full rounded-lg bg-brand-600 px-3 py-2 text-sm font-semibold text-white hover:bg-brand-700">
-              Save
+            <TaskEmailHint tone="save" />
+            <button type="submit" className="w-full rounded-lg bg-brand-600 px-3 py-2.5 text-sm font-semibold text-white hover:bg-brand-700">
+              Save and email staff
             </button>
           </form>
         </Card>
