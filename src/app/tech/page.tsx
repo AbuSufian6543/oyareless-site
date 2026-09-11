@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {
   CircleCheck,
   ClipboardList,
@@ -8,7 +7,7 @@ import {
 } from "lucide-react";
 
 import { PageHeader } from "@/components/admin/ui";
-import { WorkItem, WorkList, WorkStatLink } from "@/components/workdesk/work-item";
+import { WorkItem, WorkList, WorkSection, WorkStatLink } from "@/components/workdesk/work-item";
 import { prisma } from "@/lib/prisma";
 import { technicianOrRedirect, technicianTaskWhere, technicianTicketWhere } from "@/lib/workdesk/access";
 import { ticketAssigneeNames } from "@/lib/workdesk/board";
@@ -128,13 +127,7 @@ export default async function TechHomePage() {
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <section>
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <h2 className="font-bold text-navy-900">Open tickets</h2>
-            <Link href="/tech/tickets" className="text-sm font-semibold text-brand-700 hover:underline">
-              View all {ticketOpen}
-            </Link>
-          </div>
+        <WorkSection title="Open tickets" href="/tech/tickets" countLabel={`View all ${ticketOpen}`}>
           <WorkList count={tickets.length} empty="You are caught up. No open tickets.">
             {tickets.map((ticket) => (
               <WorkItem
@@ -151,14 +144,8 @@ export default async function TechHomePage() {
               />
             ))}
           </WorkList>
-        </section>
-        <section>
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <h2 className="font-bold text-navy-900">Open tasks</h2>
-            <Link href="/tech/tasks" className="text-sm font-semibold text-brand-700 hover:underline">
-              View all {taskOpen}
-            </Link>
-          </div>
+        </WorkSection>
+        <WorkSection title="Open tasks" href="/tech/tasks" countLabel={`View all ${taskOpen}`}>
           <WorkList count={tasks.length} empty="You are caught up. No open tasks.">
             {tasks.map((task) => (
               <WorkItem
@@ -176,7 +163,7 @@ export default async function TechHomePage() {
               />
             ))}
           </WorkList>
-        </section>
+        </WorkSection>
       </div>
     </div>
   );

@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 
 import { Alert, Badge, Card, CardTitle, EmptyState } from "@/components/admin/ui";
-import { WorkItem, WorkList, WorkStatLink } from "@/components/workdesk/work-item";
+import { WorkItem, WorkList, WorkSection, WorkStatLink } from "@/components/workdesk/work-item";
 import { env } from "@/lib/env";
 import { getCurrentUser, hasRole } from "@/lib/auth";
 import { getResolvedMail } from "@/lib/mail-settings";
@@ -329,7 +329,7 @@ export default async function AdminDashboard({
       )}
 
       <section className="mb-8">
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-wider text-slate-500">At a glance</h2>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-[0.16em] text-slate-400">At a glance</h2>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {taskStats.map((stat) => (
             <WorkStatLink key={stat.label} {...stat} />
@@ -338,7 +338,7 @@ export default async function AdminDashboard({
       </section>
 
       <section className="mb-8">
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-wider text-slate-500">Tickets</h2>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-[0.16em] text-slate-400">Tickets</h2>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {ticketStats.map((stat) => (
             <WorkStatLink key={stat.label} {...stat} />
@@ -347,13 +347,11 @@ export default async function AdminDashboard({
       </section>
 
       <div className="mb-8 grid gap-6 lg:grid-cols-2">
-        <section>
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <h2 className="font-bold text-navy-900">Today&apos;s tasks</h2>
-            <Link href="/admin/tasks?view=today" className="text-sm font-semibold text-brand-700 hover:underline">
-              {dueTodayCount} due today
-            </Link>
-          </div>
+        <WorkSection
+          title="Today's tasks"
+          href="/admin/tasks?view=today"
+          countLabel={`${dueTodayCount} due today`}
+        >
           <WorkList count={dueTodayTasks.length} empty="Nothing is due today. Upcoming work is listed next.">
             {dueTodayTasks.map((task) => (
               <WorkItem
@@ -371,15 +369,13 @@ export default async function AdminDashboard({
               />
             ))}
           </WorkList>
-        </section>
+        </WorkSection>
 
-        <section>
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <h2 className="font-bold text-navy-900">Upcoming tasks</h2>
-            <Link href="/admin/tasks?view=upcoming" className="text-sm font-semibold text-brand-700 hover:underline">
-              {upcomingCount} scheduled
-            </Link>
-          </div>
+        <WorkSection
+          title="Upcoming tasks"
+          href="/admin/tasks?view=upcoming"
+          countLabel={`${upcomingCount} scheduled`}
+        >
           <WorkList count={upcomingTasks.length} empty="No future due dates yet. Add a date when you create or edit a task.">
             {upcomingTasks.map((task) => (
               <WorkItem
@@ -397,17 +393,16 @@ export default async function AdminDashboard({
               />
             ))}
           </WorkList>
-        </section>
+        </WorkSection>
       </div>
 
       {overdueTaskItems.length > 0 && (
-        <section className="mb-8">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <h2 className="font-bold text-navy-900">Overdue</h2>
-            <Link href="/admin/tasks?view=overdue" className="text-sm font-semibold text-amber-700 hover:underline">
-              View all {overdueTasks}
-            </Link>
-          </div>
+        <WorkSection
+          className="mb-8"
+          title="Overdue"
+          href="/admin/tasks?view=overdue"
+          countLabel={`View all ${overdueTasks}`}
+        >
           <WorkList count={overdueTaskItems.length} empty="">
             {overdueTaskItems.map((task) => (
               <WorkItem
@@ -425,17 +420,11 @@ export default async function AdminDashboard({
               />
             ))}
           </WorkList>
-        </section>
+        </WorkSection>
       )}
 
       <div className="mb-8 grid gap-6 lg:grid-cols-2">
-        <section>
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <h2 className="font-bold text-navy-900">Assigned to me</h2>
-            <Link href="/admin/tasks" className="text-sm font-semibold text-brand-700 hover:underline">
-              View all {myOpenTasks}
-            </Link>
-          </div>
+        <WorkSection title="Assigned to me" href="/admin/tasks" countLabel={`View all ${myOpenTasks}`}>
           <WorkList count={myTasks.length} empty="Nothing assigned to you. Create a task or pick one up from the team list.">
             {myTasks.map((task) => (
               <WorkItem
@@ -453,15 +442,13 @@ export default async function AdminDashboard({
               />
             ))}
           </WorkList>
-        </section>
+        </WorkSection>
 
-        <section>
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <h2 className="font-bold text-navy-900">Assigned to others</h2>
-            <Link href="/admin/tasks?view=team" className="text-sm font-semibold text-brand-700 hover:underline">
-              View all {teamOpenTasks}
-            </Link>
-          </div>
+        <WorkSection
+          title="Assigned to others"
+          href="/admin/tasks?view=team"
+          countLabel={`View all ${teamOpenTasks}`}
+        >
           <WorkList count={othersTasks.length} empty="No open tasks are assigned to other staff.">
             {othersTasks.map((task) => (
               <WorkItem
@@ -478,17 +465,16 @@ export default async function AdminDashboard({
               />
             ))}
           </WorkList>
-        </section>
+        </WorkSection>
       </div>
 
       {waitingTasks.length > 0 && (
-        <section className="mb-8">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <h2 className="font-bold text-navy-900">Unassigned tasks</h2>
-            <Link href="/admin/tasks?view=unassigned" className="text-sm font-semibold text-brand-700 hover:underline">
-              Assign these
-            </Link>
-          </div>
+        <WorkSection
+          className="mb-8"
+          title="Unassigned tasks"
+          href="/admin/tasks?view=unassigned"
+          countLabel="Assign these"
+        >
           <WorkList count={waitingTasks.length} empty="">
             {waitingTasks.map((task) => (
               <WorkItem
@@ -505,17 +491,15 @@ export default async function AdminDashboard({
               />
             ))}
           </WorkList>
-        </section>
+        </WorkSection>
       )}
 
       <div className="mb-8 grid gap-6 lg:grid-cols-2">
-        <section>
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <h2 className="font-bold text-navy-900">Tickets assigned to me</h2>
-            <Link href="/admin/tickets?view=mine" className="text-sm font-semibold text-brand-700 hover:underline">
-              View all {myOpenTickets}
-            </Link>
-          </div>
+        <WorkSection
+          title="Tickets assigned to me"
+          href="/admin/tickets?view=mine"
+          countLabel={`View all ${myOpenTickets}`}
+        >
           <WorkList count={myTickets.length} empty="No open tickets are assigned to you.">
             {myTickets.map((ticket) => (
               <WorkItem
@@ -532,15 +516,13 @@ export default async function AdminDashboard({
               />
             ))}
           </WorkList>
-        </section>
+        </WorkSection>
 
-        <section>
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <h2 className="font-bold text-navy-900">Tickets assigned to others</h2>
-            <Link href="/admin/tickets?view=team" className="text-sm font-semibold text-brand-700 hover:underline">
-              View all {teamOpenTickets}
-            </Link>
-          </div>
+        <WorkSection
+          title="Tickets assigned to others"
+          href="/admin/tickets?view=team"
+          countLabel={`View all ${teamOpenTickets}`}
+        >
           <WorkList count={othersTickets.length} empty="No open tickets are assigned to other staff.">
             {othersTickets.map((ticket) => (
               <WorkItem
@@ -556,17 +538,16 @@ export default async function AdminDashboard({
               />
             ))}
           </WorkList>
-        </section>
+        </WorkSection>
       </div>
 
       {waitingTickets.length > 0 && (
-        <section className="mb-8">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <h2 className="font-bold text-navy-900">Unassigned tickets</h2>
-            <Link href="/admin/tickets?view=unassigned" className="text-sm font-semibold text-brand-700 hover:underline">
-              Assign these
-            </Link>
-          </div>
+        <WorkSection
+          className="mb-8"
+          title="Unassigned tickets"
+          href="/admin/tickets?view=unassigned"
+          countLabel="Assign these"
+        >
           <WorkList count={waitingTickets.length} empty="">
             {waitingTickets.map((ticket) => (
               <WorkItem
@@ -582,7 +563,7 @@ export default async function AdminDashboard({
               />
             ))}
           </WorkList>
-        </section>
+        </WorkSection>
       )}
 
       <div className="mb-8">

@@ -16,6 +16,7 @@ import {
   assignmentNotice,
   joinStaffNames,
   reminderNotice,
+  unassignedCreateNotice,
   WORKDESK_NOTIFY_CHANNELS,
 } from "../src/lib/workdesk/notice";
 import {
@@ -309,6 +310,22 @@ assert(
 );
 
 assert(
+  "unassigned create copy asks an employee or admin to pick the item up",
+  unassignedCreateNotice({
+    actorName: "Abu",
+    reference: "WC-1042",
+    subject: "Printer offline",
+    kind: "ticket",
+  }).title.includes("needs an owner") &&
+    unassignedCreateNotice({
+      actorName: "Abu",
+      reference: "WC-1042",
+      subject: "Printer offline",
+      kind: "ticket",
+    }).body.includes("no one assigned"),
+);
+
+assert(
   "email is the only live notify channel for now",
   WORKDESK_NOTIFY_CHANNELS.filter((channel) => channel.enabled).map((channel) => channel.id).join() ===
     "email" &&
@@ -335,8 +352,42 @@ const notifyMenu = readFileSync(
   "utf8",
 );
 assert(
-  "notify menu offers Send notification and disabled chat apps",
-  notifyMenu.includes("Send notification") &&
+  "admin ticket create emails assignees without waiting for a reminder",
+  (() => {
+    const start = adminTickets.indexOf("export async function createStaffTicketAction");
+    const end = adminTickets.indexOf("export async function replyStaffTicketAction");
+    const create = adminTickets.slice(start, end);
+    return (
+      create.includes("notifyNewWork") &&
+      !create.includes("excludeUserIds") &&
+      create.includes("assigneeIds")
+    );
+  })(),
+);
+assert(
+  "admin task create emails assignees without waiting for a reminder",
+  (() => {
+    const start = adminTasks.indexOf("export async function createTaskAction");
+    const end = adminTasks.indexOf("export async function updateTaskAction");
+    const create = adminTasks.slice(start, end);
+    return create.includes("notifyNewWork") && !create.includes("excludeUserIds");
+  })(),
+);
+
+const notifyLib = readFileSync(
+  path.join(process.cwd(), "src/lib/workdesk/notify.ts"),
+  "utf8",
+);
+assert(
+  "new work emails assignees and the office inbox",
+  notifyLib.includes("export async function notifyNewWork") &&
+    notifyLib.includes("emailAdminInbox") &&
+    notifyLib.includes("unassignedCreateNotice"),
+);
+
+assert(
+  "notify menu offers Send reminder and disabled chat apps",
+  notifyMenu.includes("Send reminder") &&
     notifyMenu.includes("Telegram") &&
     notifyMenu.includes("Discord") &&
     notifyMenu.includes("Slack") &&

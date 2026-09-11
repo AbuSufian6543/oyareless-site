@@ -16,9 +16,9 @@ export default async function NewTaskPage() {
       <PageHeader
         breadcrumb={{ href: "/admin/tasks", label: "Tasks" }}
         title="New internal task"
-        description="Assign one or more technicians. They are emailed and notified in the site."
+        description="Assign the people who should do this work. They are emailed automatically. You can send a reminder later from the task."
       />
-      <form action={createTaskAction} encType="multipart/form-data" className="space-y-4 rounded-xl border border-slate-200 bg-white p-5">
+      <form action={createTaskAction} encType="multipart/form-data" className="space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_1px_2px_rgba(15,42,73,0.05)] sm:p-6">
         <TextField label="Title" name="title" required />
         <TextAreaField label="Description" name="description" rows={6} />
         <div className="grid gap-4 sm:grid-cols-2">
@@ -35,7 +35,7 @@ export default async function NewTaskPage() {
           />
           <TextField label="Due date" name="dueAt" type="date" />
         </div>
-        <AssigneeChecklist staff={staff} legend="Assign technicians" />
+        <AssigneeChecklist staff={staff} legend="Assign to" />
         <AttachmentField />
         <button type="submit" className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">
           Create task

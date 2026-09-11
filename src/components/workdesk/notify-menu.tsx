@@ -31,7 +31,7 @@ export function EmailStaffButton({
             : "inline-flex w-full items-center justify-center rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500 sm:w-auto",
         )}
       >
-        Send notification
+        Send reminder
       </button>
     </form>
   );
@@ -50,7 +50,7 @@ export function WorkdeskNotifyMenu({
 
   return (
     <Card>
-      <CardTitle description="Assignment already emails people you add. Send notification pings everyone currently on this item. Chat apps show up here once connected.">
+      <CardTitle description="Creating or assigning already emails people. Send reminder pings everyone currently on this item. Chat apps show up here once connected.">
         Notify
       </CardTitle>
       <EmailStaffButton

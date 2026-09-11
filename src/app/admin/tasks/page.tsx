@@ -142,7 +142,7 @@ export default async function AdminTasksPage({
     <div>
       <PageHeader
         title="Internal tasks"
-        description="Open a card to update status, reassign, or add a note. Use Send notification to email assignees again. Completed and closed work can be deleted from those tabs."
+        description="Open a card to update status, reassign, or add a note. Assigned staff are emailed when you create or assign. Use Send reminder to ping them again. Completed and closed work can be deleted from those tabs."
         actions={
           <div className="flex flex-wrap gap-2">
             {canManage ? (

@@ -5,7 +5,11 @@ import { emailActionLink, sendMail } from "@/lib/mail";
 import { prisma } from "@/lib/prisma";
 import { publicUrl } from "@/lib/public-url";
 import { workdeskHref } from "@/lib/workdesk/access";
-import { reminderNotice } from "@/lib/workdesk/notice";
+import {
+  assignmentNotice,
+  reminderNotice,
+  unassignedCreateNotice,
+} from "@/lib/workdesk/notice";
 import { WORKDESK_MANAGER_ROLES } from "@/lib/workdesk/rules";
 import {
   listTaskAssigneeIds,
@@ -189,6 +193,79 @@ export async function notifyAssignees(input: {
   await notifyStaff({
     ...input,
     kind: input.kind ?? "ASSIGNMENT",
+  });
+}
+
+function adminHref(input: { ticketId?: string; taskId?: string }): string {
+  if (input.taskId) return `/admin/tasks/${input.taskId}`;
+  if (input.ticketId) return `/admin/tickets/${input.ticketId}`;
+  return "/admin";
+}
+
+/**
+ * Email + in-site notice when a ticket or task is created.
+ * Assignees always get mail (including the person who created it).
+ * If nobody is assigned, other employees/admins are pinged so the item is not silent.
+ * The office inbox also gets a copy, same as a customer opening a portal ticket.
+ */
+export async function notifyNewWork(input: {
+  actorId: string;
+  actorName: string;
+  reference: string;
+  subject: string;
+  kind: "ticket" | "task";
+  assigneeIds: string[];
+  ticketId?: string;
+  taskId?: string;
+}): Promise<void> {
+  const href = adminHref(input);
+
+  if (input.assigneeIds.length > 0) {
+    const names = await staffNamesFor(input.assigneeIds);
+    const notice = assignmentNotice({
+      actorName: input.actorName,
+      reference: input.reference,
+      subject: input.subject,
+      addedNames: names,
+      allNames: names,
+      kind: input.kind,
+      previousCount: 0,
+    });
+    await notifyStaff({
+      userIds: input.assigneeIds,
+      title: notice.title,
+      body: notice.body,
+      kind: "ASSIGNMENT",
+      ticketId: input.ticketId,
+      taskId: input.taskId,
+    });
+    await emailAdminInbox({
+      title: notice.title,
+      detail: notice.body,
+      href,
+    });
+    return;
+  }
+
+  const notice = unassignedCreateNotice({
+    actorName: input.actorName,
+    reference: input.reference,
+    subject: input.subject,
+    kind: input.kind,
+  });
+  const managerIds = await listWorkdeskManagerIds(input.actorId);
+  await notifyStaff({
+    userIds: managerIds,
+    title: notice.title,
+    body: notice.body,
+    kind: "ASSIGNMENT",
+    ticketId: input.ticketId,
+    taskId: input.taskId,
+  });
+  await emailAdminInbox({
+    title: notice.title,
+    detail: notice.body,
+    href,
   });
 }
 

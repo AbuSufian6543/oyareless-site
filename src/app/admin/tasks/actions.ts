@@ -9,7 +9,7 @@ import { workdeskAdminOrRedirect } from "@/lib/workdesk/access";
 import { dateInputValue, parseDateInput } from "@/lib/workdesk/dates";
 import { recordWorkdeskEvent } from "@/lib/workdesk/events";
 import { recordTaskAudit } from "@/lib/workdesk/audit";
-import { notifyAssignees, sendWorkdeskReminder } from "@/lib/workdesk/notify";
+import { notifyAssignees, notifyNewWork, sendWorkdeskReminder } from "@/lib/workdesk/notify";
 import { assignmentNotice, joinStaffNames } from "@/lib/workdesk/notice";
 import { nextTaskReference } from "@/lib/workdesk/references";
 import { revalidateWorkdesk } from "@/lib/workdesk/revalidate";
@@ -78,23 +78,17 @@ export async function createTaskAction(formData: FormData): Promise<void> {
       taskId: task.id,
       actorStaffId: staff.id,
     });
-    const notice = assignmentNotice({
-      actorName: staff.name,
-      reference: task.reference,
-      subject: task.title,
-      addedNames: names,
-      allNames: names,
-      kind: "task",
-      previousCount: 0,
-    });
-    await notifyAssignees({
-      userIds: assignees,
-      excludeUserIds: [staff.id],
-      title: notice.title,
-      body: notice.body,
-      taskId: task.id,
-    });
   }
+
+  await notifyNewWork({
+    actorId: staff.id,
+    actorName: staff.name,
+    reference: task.reference,
+    subject: task.title,
+    kind: "task",
+    assigneeIds: assignees,
+    taskId: task.id,
+  });
 
   await recordTaskAudit({
     action: "task.created",
@@ -253,7 +247,6 @@ export async function updateTaskAction(formData: FormData): Promise<void> {
     });
     await notifyAssignees({
       userIds: added,
-      excludeUserIds: [staff.id],
       title: notice.title,
       body: notice.body,
       taskId,

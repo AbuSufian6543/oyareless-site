@@ -26,6 +26,22 @@ function clip(value: string, max: number): string {
   return `${trimmed.slice(0, Math.max(0, max - 1)).trimEnd()}…`;
 }
 
+export function unassignedCreateNotice(input: {
+  actorName: string;
+  reference: string;
+  subject: string;
+  kind: "ticket" | "task";
+}): { title: string; body: string } {
+  const noun = input.kind === "ticket" ? "ticket" : "task";
+  return {
+    title: clip(`${input.reference} needs an owner`, 200),
+    body: clip(
+      `${input.actorName} created this ${noun} with no one assigned. ${input.subject}`,
+      500,
+    ),
+  };
+}
+
 export function assignmentNotice(input: {
   actorName: string;
   reference: string;

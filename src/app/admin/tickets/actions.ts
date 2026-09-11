@@ -14,7 +14,7 @@ import { saveWorkdeskUploads } from "@/lib/workdesk/attachments";
 import { workdeskAdminOrRedirect } from "@/lib/workdesk/access";
 import { recordWorkdeskEvent } from "@/lib/workdesk/events";
 import { recordTicketAudit } from "@/lib/workdesk/audit";
-import { notifyAssignees, notifyAssignee, sendWorkdeskReminder } from "@/lib/workdesk/notify";
+import { notifyAssignees, notifyAssignee, notifyNewWork, sendWorkdeskReminder } from "@/lib/workdesk/notify";
 import { accessGrantNotice, assignmentNotice, joinStaffNames } from "@/lib/workdesk/notice";
 import { nextTicketReference } from "@/lib/workdesk/references";
 import { revalidateWorkdesk } from "@/lib/workdesk/revalidate";
@@ -151,23 +151,17 @@ export async function createStaffTicketAction(formData: FormData): Promise<void>
       ticketId: ticket.id,
       actorStaffId: staff.id,
     });
-    const notice = assignmentNotice({
-      actorName: staff.name,
-      reference: ticket.reference,
-      subject: ticket.subject,
-      addedNames: names,
-      allNames: names,
-      kind: "ticket",
-      previousCount: 0,
-    });
-    await notifyAssignees({
-      userIds: assigneeIds,
-      excludeUserIds: [staff.id],
-      title: notice.title,
-      body: notice.body,
-      ticketId: ticket.id,
-    });
   }
+
+  await notifyNewWork({
+    actorId: staff.id,
+    actorName: staff.name,
+    reference: ticket.reference,
+    subject: ticket.subject,
+    kind: "ticket",
+    assigneeIds,
+    ticketId: ticket.id,
+  });
 
   await revalidateWorkdesk({ ticketId: ticket.id, flash: "created" });
   redirect(`/admin/tickets/${ticket.id}`);
@@ -415,7 +409,6 @@ export async function assignTicketAction(formData: FormData): Promise<void> {
     });
     await notifyAssignees({
       userIds: addedIds,
-      excludeUserIds: [staff.id],
       title: notice.title,
       body: notice.body,
       ticketId,

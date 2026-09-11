@@ -83,12 +83,12 @@ export default async function AdminTicketsPage({
     <div>
       <PageHeader
         title="Tickets"
-        description="Customer tickets assigned to you, to the team, or still waiting for an owner. Open a card to reply or reassign."
+        description="Customer tickets assigned to you, to the team, or still waiting for an owner. Assigned staff are emailed when you create or assign. Open a card to reply or reassign."
         actions={
           hasRole(user, "EMPLOYEE") ? (
             <Link
               href="/admin/audit?action=ticket."
-              className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-navy-800 hover:bg-slate-50"
+              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-semibold text-navy-800 shadow-sm hover:bg-slate-50"
             >
               Audit log
             </Link>
@@ -97,10 +97,10 @@ export default async function AdminTicketsPage({
       />
 
       <details
-        className="mb-6 rounded-xl border border-slate-200 bg-white open:shadow-sm"
+        className="mb-6 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,42,73,0.05)] open:shadow-md"
         open={createOpen || undefined}
       >
-        <summary className="cursor-pointer px-5 py-4 text-sm font-bold text-navy-900">
+        <summary className="cursor-pointer bg-gradient-to-r from-navy-50 to-white px-5 py-4 text-sm font-bold text-navy-900">
           Open a ticket for a customer
         </summary>
         <form
@@ -108,6 +108,9 @@ export default async function AdminTicketsPage({
           encType="multipart/form-data"
           className="grid gap-3 border-t border-slate-100 p-5 sm:grid-cols-2"
         >
+          <p className="sm:col-span-2 text-xs text-slate-500">
+            Assigned people get an email as soon as you create this ticket. You can send a reminder later from the ticket.
+          </p>
           <SelectField
             label="Customer"
             name="customerId"
@@ -136,7 +139,7 @@ export default async function AdminTicketsPage({
             <AttachmentField />
           </div>
           <div className="sm:col-span-2">
-            <button type="submit" className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">
+            <button type="submit" className="rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-brand-700">
               Create ticket
             </button>
           </div>
