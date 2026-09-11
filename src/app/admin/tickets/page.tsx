@@ -5,6 +5,7 @@ import { AssigneeChecklist } from "@/components/workdesk/assignee-checklist";
 import { AttachmentField } from "@/components/workdesk/attachment-field";
 import { ViewFilter } from "@/components/workdesk/view-filter";
 import { WorkItem, WorkList } from "@/components/workdesk/work-item";
+import { WorkLogSummary } from "@/components/workdesk/work-log";
 import { requireAdminRole } from "@/lib/admin-guard";
 import { hasRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -16,6 +17,7 @@ import {
   ticketUnassigned,
 } from "@/lib/workdesk/board";
 import { listAssignableStaff } from "@/lib/workdesk/staff";
+import { WORK_LOG_LIST_INCLUDE, workLogTotals } from "@/lib/workdesk/work-log-query";
 
 export const metadata = { title: "Tickets" };
 
@@ -61,6 +63,7 @@ export default async function AdminTicketsPage({
           customer: { select: { name: true } },
           assignedTo: { select: { id: true, name: true } },
           assignees: { include: { user: { select: { id: true, name: true } } } },
+          ...WORK_LOG_LIST_INCLUDE,
         },
       }),
       prisma.customer.findMany({
@@ -162,7 +165,9 @@ export default async function AdminTicketsPage({
                 : "No tickets in this view."
         }
       >
-        {tickets.map((ticket) => (
+        {tickets.map((ticket) => {
+          const log = workLogTotals(ticket);
+          return (
           <WorkItem
             key={ticket.id}
             kind="ticket"
@@ -175,8 +180,12 @@ export default async function AdminTicketsPage({
             updatedAt={ticket.updatedAt}
             assignees={ticketAssigneeNames(ticket)}
             you={user.name}
+            meta={
+              <WorkLogSummary hideEmpty minutes={log.minutes} productCount={log.productCount} />
+            }
           />
-        ))}
+          );
+        })}
       </WorkList>
     </div>
   );

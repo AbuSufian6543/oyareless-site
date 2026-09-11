@@ -1,7 +1,7 @@
 export const FLASH_COOKIE = "wc_flash";
 export const FLASH_EVENT = "wc-flash";
 
-export type FlashKind = "saved" | "created" | "deleted" | "updated" | "notified";
+export type FlashKind = "saved" | "created" | "deleted" | "updated" | "notified" | "logged";
 
 export const FLASH_MESSAGES: Record<FlashKind, string> = {
   saved: "Saved.",
@@ -9,6 +9,7 @@ export const FLASH_MESSAGES: Record<FlashKind, string> = {
   deleted: "Deleted.",
   updated: "Updated.",
   notified: "Notification sent.",
+  logged: "Work log updated.",
 };
 
 export function parseFlashValue(value: string | undefined | null): FlashKind | null {
@@ -19,7 +20,8 @@ export function parseFlashValue(value: string | undefined | null): FlashKind | n
     kind === "created" ||
     kind === "deleted" ||
     kind === "updated" ||
-    kind === "notified"
+    kind === "notified" ||
+    kind === "logged"
   ) {
     return kind;
   }

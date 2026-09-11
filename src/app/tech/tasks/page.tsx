@@ -1,10 +1,12 @@
 import { PageHeader } from "@/components/admin/ui";
 import { ViewFilter } from "@/components/workdesk/view-filter";
 import { WorkItem, WorkList } from "@/components/workdesk/work-item";
+import { WorkLogSummary } from "@/components/workdesk/work-log";
 import { prisma } from "@/lib/prisma";
 import type { TaskStatus } from "@/generated/prisma/client";
 import { technicianOrRedirect, technicianTaskWhere } from "@/lib/workdesk/access";
 import { isOverdue, startOfToday } from "@/lib/workdesk/dates";
+import { WORK_LOG_LIST_INCLUDE, workLogTotals } from "@/lib/workdesk/work-log-query";
 
 export const metadata = { title: "My tasks" };
 
@@ -39,6 +41,7 @@ export default async function TechTasksPage({
       orderBy: [{ dueAt: "asc" }, { updatedAt: "desc" }],
       include: {
         assignees: { include: { user: { select: { name: true } } } },
+        ...WORK_LOG_LIST_INCLUDE,
       },
     }),
     prisma.internalTask.count({
@@ -76,7 +79,9 @@ export default async function TechTasksPage({
               : "Nothing assigned in this view."
         }
       >
-        {tasks.map((task) => (
+        {tasks.map((task) => {
+          const log = workLogTotals(task);
+          return (
           <WorkItem
             key={task.id}
             kind="task"
@@ -89,8 +94,12 @@ export default async function TechTasksPage({
             overdue={isOverdue(task.dueAt, task.status, TASK_DONE)}
             assignees={task.assignees.map((row) => row.user.name)}
             you={user.name}
+            meta={
+              <WorkLogSummary hideEmpty minutes={log.minutes} productCount={log.productCount} />
+            }
           />
-        ))}
+          );
+        })}
       </WorkList>
     </div>
   );

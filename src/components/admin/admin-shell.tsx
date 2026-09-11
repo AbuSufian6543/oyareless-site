@@ -117,6 +117,7 @@ export function AdminShell({
     { href: "/admin", label: "Dashboard", Icon: LayoutDashboard },
     { href: "/admin/tickets", label: "Tickets", Icon: Headset, badge: openTickets },
     { href: "/admin/tasks", label: "Tasks", Icon: ClipboardList, badge: openTasks },
+    { href: "/admin/products", label: "Products", Icon: Boxes },
     {
       href: "/admin/notifications",
       label: "Notifications",

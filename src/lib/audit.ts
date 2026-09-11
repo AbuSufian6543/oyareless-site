@@ -55,6 +55,10 @@ export type AuditAction =
   | "ticket.access_revoked"
   | "ticket.notified"
   | "ticket.deleted"
+  | "ticket.time_logged"
+  | "ticket.time_removed"
+  | "ticket.product_used"
+  | "ticket.product_removed"
   | "task.created"
   | "task.updated"
   | "task.noted"
@@ -63,7 +67,13 @@ export type AuditAction =
   | "task.due_changed"
   | "task.assigned"
   | "task.notified"
-  | "task.deleted";
+  | "task.deleted"
+  | "task.time_logged"
+  | "task.time_removed"
+  | "task.product_used"
+  | "task.product_removed"
+  | "product.created"
+  | "product.updated";
 
 const ACTION_LABELS: Record<string, string> = {
   "user.login": "Signed in",
@@ -80,6 +90,10 @@ const ACTION_LABELS: Record<string, string> = {
   "ticket.access_revoked": "Ticket access revoked",
   "ticket.notified": "Ticket notification",
   "ticket.deleted": "Ticket deleted",
+  "ticket.time_logged": "Ticket time logged",
+  "ticket.time_removed": "Ticket time removed",
+  "ticket.product_used": "Ticket product used",
+  "ticket.product_removed": "Ticket product removed",
   "task.created": "Task created",
   "task.updated": "Task details",
   "task.noted": "Task note",
@@ -89,6 +103,12 @@ const ACTION_LABELS: Record<string, string> = {
   "task.assigned": "Task assignment",
   "task.notified": "Task notification",
   "task.deleted": "Task deleted",
+  "task.time_logged": "Task time logged",
+  "task.time_removed": "Task time removed",
+  "task.product_used": "Task product used",
+  "task.product_removed": "Task product removed",
+  "product.created": "Product added",
+  "product.updated": "Product updated",
 };
 
 const BLOCKED_DETAIL_KEYS = new Set([

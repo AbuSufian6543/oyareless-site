@@ -31,3 +31,30 @@ export const TICKET_CATEGORIES = [
   "Billing",
   "On-site",
 ] as const;
+
+export const TIME_ENTRY_KIND_LABELS: Record<string, string> = {
+  REMOTE: "Remote",
+  ONSITE: "On-site",
+  TRAVEL: "Travel",
+  BENCH: "Bench / shop",
+  OTHER: "Other",
+};
+
+export const TIME_ENTRY_KINDS = [
+  "REMOTE",
+  "ONSITE",
+  "TRAVEL",
+  "BENCH",
+  "OTHER",
+] as const;
+
+export const WORK_PRODUCT_CATEGORIES = [
+  "General",
+  "Cabling",
+  "Internet",
+  "Phone",
+  "Radio",
+  "Security",
+] as const;
+
+export const WORK_PRODUCT_UNITS = ["each", "m", "pack", "box", "roll"] as const;

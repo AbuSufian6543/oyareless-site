@@ -68,6 +68,8 @@ model User {
   workdeskEvents    WorkdeskEvent[]  @relation("WorkdeskEventStaff")
   workdeskNotifications WorkdeskNotification[]
   passwordResets    PasswordResetToken[]
+  workTimeEntries   WorkTimeEntry[]
+  workProductUsages WorkProductUsage[] @relation("WorkProductUsageAuthor")
 
   @@index([role])
   @@index([email])
@@ -1001,6 +1003,8 @@ model Ticket {
   events         WorkdeskEvent[]
   accessGrants   TicketAccessGrant[]
   assignees      TicketAssignee[]
+  timeEntries    WorkTimeEntry[]
+  productUsages  WorkProductUsage[]
 
   @@index([customerId, status])
   @@index([status, priority, createdAt])
@@ -1167,6 +1171,10 @@ enum WorkdeskEventKind {
   REOPENED
   GRANT_ADDED
   GRANT_REMOVED
+  TIME_LOGGED
+  TIME_REMOVED
+  PRODUCT_USED
+  PRODUCT_REMOVED
 }
 
 enum WorkdeskNotificationKind {
@@ -1193,10 +1201,12 @@ model InternalTask {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  assignees   InternalTaskAssignee[]
-  notes       InternalTaskNote[]
-  attachments InternalTaskAttachment[]
-  events      WorkdeskEvent[]
+  assignees     InternalTaskAssignee[]
+  notes         InternalTaskNote[]
+  attachments   InternalTaskAttachment[]
+  events        WorkdeskEvent[]
+  timeEntries   WorkTimeEntry[]
+  productUsages WorkProductUsage[]
 
   @@index([status, priority, dueAt])
   @@index([createdById, status])
@@ -1277,4 +1287,80 @@ model WorkdeskNotification {
   createdAt DateTime                  @default(now())
 
   @@index([userId, readAt, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Work log — time and products used on a ticket or internal task.
+//
+// Modelled the way MSP platforms (ConnectWise, Autotask, Halo, Syncro) do it:
+// a log of entries, not a single "hours" field, so more than one person can
+// record work and parts on the same job. This is operational history, not
+// invoicing or warehouse stock.
+// ---------------------------------------------------------------------------
+
+enum TimeEntryKind {
+  REMOTE
+  ONSITE
+  TRAVEL
+  BENCH
+  OTHER
+}
+
+model WorkProduct {
+  id        String   @id @default(cuid())
+  name      String
+  sku       String?  @unique
+  category  String   @default("General")
+  unit      String   @default("each")
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  usages    WorkProductUsage[]
+
+  @@index([isActive, name])
+}
+
+model WorkTimeEntry {
+  id        String        @id @default(cuid())
+  ticketId  String?
+  ticket    Ticket?       @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  taskId    String?
+  task      InternalTask? @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Restrict)
+  /// Duration stored in minutes. The UI shows hours and minutes.
+  minutes   Int
+  kind      TimeEntryKind @default(ONSITE)
+  workedOn  DateTime
+  note      String        @default("")
+  createdAt DateTime      @default(now())
+
+  @@index([ticketId, workedOn])
+  @@index([taskId, workedOn])
+  @@index([userId, workedOn])
+}
+
+model WorkProductUsage {
+  id        String        @id @default(cuid())
+  ticketId  String?
+  ticket    Ticket?       @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  taskId    String?
+  task      InternalTask? @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  productId String?
+  product   WorkProduct?  @relation(fields: [productId], references: [id], onDelete: SetNull)
+  /// Snapshot so a later catalog rename does not rewrite job history.
+  name      String
+  sku       String?
+  quantity  Float
+  unit      String        @default("each")
+  note      String        @default("")
+
+  addedById String
+  addedBy   User          @relation("WorkProductUsageAuthor", fields: [addedById], references: [id], onDelete: Restrict)
+  createdAt DateTime      @default(now())
+
+  @@index([ticketId, createdAt])
+  @@index([taskId, createdAt])
 }

@@ -7,6 +7,7 @@ import { AttachmentField } from "@/components/workdesk/attachment-field";
 import { AttachmentList } from "@/components/workdesk/attachment-list";
 import { PriorityBadge, TaskStatusBadge } from "@/components/workdesk/badges";
 import { AssigneeAvatars } from "@/components/workdesk/work-item";
+import { WorkLog, WorkLogSummary } from "@/components/workdesk/work-log";
 import { prisma } from "@/lib/prisma";
 import { formatDate, formatDateTime } from "@/lib/utils";
 import { assertTaskAccess, handleWorkdeskAuth, technicianOrRedirect } from "@/lib/workdesk/access";
@@ -14,6 +15,7 @@ import { isOverdue } from "@/lib/workdesk/dates";
 import { workdeskFileHref } from "@/lib/workdesk/files";
 import { TASK_STATUS_LABELS } from "@/lib/workdesk/labels";
 import { TECHNICIAN_TASK_STATUSES } from "@/lib/workdesk/rules";
+import { WORK_LOG_INCLUDE } from "@/lib/workdesk/work-log-query";
 
 export const metadata = { title: "Task" };
 
@@ -30,15 +32,23 @@ export default async function TechTaskPage({
     handleWorkdeskAuth(error, "/tech/tasks");
   }
 
-  const task = await prisma.internalTask.findUnique({
-    where: { id },
-    include: {
-      notes: { orderBy: { createdAt: "asc" }, include: { attachments: true } },
-      attachments: true,
-      events: { orderBy: { createdAt: "asc" } },
-      assignees: { include: { user: { select: { name: true } } } },
-    },
-  });
+  const [task, catalog] = await Promise.all([
+    prisma.internalTask.findUnique({
+      where: { id },
+      include: {
+        notes: { orderBy: { createdAt: "asc" }, include: { attachments: true } },
+        attachments: true,
+        events: { orderBy: { createdAt: "asc" } },
+        assignees: { include: { user: { select: { name: true } } } },
+        ...WORK_LOG_INCLUDE,
+      },
+    }),
+    prisma.workProduct.findMany({
+      where: { isActive: true },
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, sku: true, unit: true, category: true },
+    }),
+  ]);
   if (!task) notFound();
   const closed = task.status === "CLOSED";
   const overdue = isOverdue(task.dueAt, task.status, ["COMPLETED", "CLOSED"]);
@@ -61,6 +71,10 @@ export default async function TechTaskPage({
           {overdue ? (
             <span className="text-xs font-semibold text-amber-700">Needs attention</span>
           ) : null}
+          <WorkLogSummary
+            minutes={task.timeEntries.reduce((sum, row) => sum + row.minutes, 0)}
+            productCount={task.productUsages.length}
+          />
         </div>
         {task.description && (
           <div className="mb-6 whitespace-pre-wrap rounded-xl border border-slate-200 bg-white p-5 text-sm">
@@ -71,6 +85,16 @@ export default async function TechTaskPage({
           files={task.attachments
             .filter((file) => !file.noteId)
             .map((file) => ({ ...file, url: workdeskFileHref("task", file.id) }))}
+        />
+        <WorkLog
+          taskId={task.id}
+          timeEntries={task.timeEntries}
+          productUsages={task.productUsages}
+          catalog={catalog}
+          currentUserId={user.id}
+          canManageAll={false}
+          canEdit={!closed}
+          canSaveToCatalog={false}
         />
         <ol className="mt-6 space-y-3">
           {task.notes.map((note) => (

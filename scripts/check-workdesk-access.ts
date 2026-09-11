@@ -18,6 +18,11 @@ import {
   reminderNotice,
   WORKDESK_NOTIFY_CHANNELS,
 } from "../src/lib/workdesk/notice";
+import {
+  formatLoggedDuration,
+  parseLoggedMinutes,
+  parseProductQuantity,
+} from "../src/lib/workdesk/hours";
 
 let failed = 0;
 
@@ -111,6 +116,20 @@ assert(
     (CUSTOMER_VISIBLE_EVENT_KINDS as readonly string[]).includes("MESSAGE") &&
     (CUSTOMER_VISIBLE_EVENT_KINDS as readonly string[]).includes("ATTACHMENT"),
 );
+assert(
+  "customers do not see time or product log events",
+  !(CUSTOMER_VISIBLE_EVENT_KINDS as readonly string[]).includes("TIME_LOGGED") &&
+    !(CUSTOMER_VISIBLE_EVENT_KINDS as readonly string[]).includes("PRODUCT_USED"),
+);
+
+assert("1h 30m parses from hours and minutes fields", parseLoggedMinutes("1", "30") === 90);
+assert("30 minutes alone is accepted", parseLoggedMinutes("0", "30") === 30);
+assert("empty duration is rejected", parseLoggedMinutes("", "") === null);
+assert("more than 24 hours is rejected", parseLoggedMinutes("25", "0") === null);
+assert("duration formats as 1h 30m", formatLoggedDuration(90) === "1h 30m");
+assert("45m formats without hours", formatLoggedDuration(45) === "45m");
+assert("product quantity keeps two decimals", parseProductQuantity("12.5") === 12.5);
+assert("zero product quantity is rejected", parseProductQuantity("0") === null);
 
 const schema = readFileSync(path.join(process.cwd(), "prisma/schema.prisma"), "utf8");
 const auditStart = schema.indexOf("model AuditLog");
@@ -396,6 +415,75 @@ assert(
     workdeskMail.includes("Open ticket") &&
     workdeskMail.includes("Open admin") &&
     workdeskMail.includes("emailActionLink"),
+);
+
+assert(
+  "schema has work time entries and a product catalog",
+  schema.includes("model WorkTimeEntry") &&
+    schema.includes("model WorkProduct") &&
+    schema.includes("model WorkProductUsage") &&
+    schema.includes("TIME_LOGGED"),
+);
+
+const workLogUi = readFileSync(
+  path.join(process.cwd(), "src/components/workdesk/work-log.tsx"),
+  "utf8",
+);
+const workLogForms = readFileSync(
+  path.join(process.cwd(), "src/components/workdesk/work-log-forms.tsx"),
+  "utf8",
+);
+assert(
+  "work log UI records time and products",
+  workLogUi.includes("Work log") &&
+    workLogForms.includes("Log time") &&
+    workLogForms.includes("Add product") &&
+    workLogForms.includes("Quick duration"),
+);
+
+const adminTicketDetail = readFileSync(
+  path.join(process.cwd(), "src/app/admin/tickets/[id]/page.tsx"),
+  "utf8",
+);
+const adminTaskDetail = readFileSync(
+  path.join(process.cwd(), "src/app/admin/tasks/[id]/page.tsx"),
+  "utf8",
+);
+const techTicketDetail = readFileSync(
+  path.join(process.cwd(), "src/app/tech/tickets/[id]/page.tsx"),
+  "utf8",
+);
+const techTaskDetail = readFileSync(
+  path.join(process.cwd(), "src/app/tech/tasks/[id]/page.tsx"),
+  "utf8",
+);
+assert(
+  "admin and technician ticket/task pages show the work log",
+  adminTicketDetail.includes("<WorkLog") &&
+    adminTaskDetail.includes("<WorkLog") &&
+    techTicketDetail.includes("<WorkLog") &&
+    techTaskDetail.includes("<WorkLog"),
+);
+
+const portalTicket = readFileSync(
+  path.join(process.cwd(), "src/app/portal/tickets/[id]/page.tsx"),
+  "utf8",
+);
+assert(
+  "customer portal tickets do not show the work log",
+  !portalTicket.includes("WorkLog") &&
+    portalTicket.includes("CUSTOMER_VISIBLE_EVENT_KINDS"),
+);
+
+assert(
+  "workdesk audit includes time and product actions",
+  cmsAudit.includes('"ticket.time_logged"') &&
+    cmsAudit.includes('"task.product_used"'),
+);
+
+assert(
+  "admin nav includes the job product list",
+  shell.includes("/admin/products") && shell.includes("Products"),
 );
 
 process.exit(failed === 0 ? 0 : 1);

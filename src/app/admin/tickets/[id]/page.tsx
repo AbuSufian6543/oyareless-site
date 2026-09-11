@@ -20,6 +20,7 @@ import { AttachmentField } from "@/components/workdesk/attachment-field";
 import { AttachmentList } from "@/components/workdesk/attachment-list";
 import { PriorityBadge, TicketStatusBadge } from "@/components/workdesk/badges";
 import { EmailStaffButton, WorkdeskNotifyMenu } from "@/components/workdesk/notify-menu";
+import { WorkLog, WorkLogSummary } from "@/components/workdesk/work-log";
 import { AssigneeAvatars } from "@/components/workdesk/work-item";
 import { requireAdminRole } from "@/lib/admin-guard";
 import { hasRole } from "@/lib/auth";
@@ -30,6 +31,7 @@ import { ADMIN_TICKET_STATUSES } from "@/lib/workdesk/rules";
 import { workdeskFileHref } from "@/lib/workdesk/files";
 import { TICKET_CATEGORIES, TICKET_STATUS_LABELS } from "@/lib/workdesk/labels";
 import { listAssignableStaff } from "@/lib/workdesk/staff";
+import { WORK_LOG_INCLUDE } from "@/lib/workdesk/work-log-query";
 
 export default async function AdminTicketPage({
   params,
@@ -41,7 +43,7 @@ export default async function AdminTicketPage({
   const user = await requireAdminRole("EMPLOYEE");
   const { id } = await params;
   const query = await searchParams;
-  const [ticket, staff, customers] = await Promise.all([
+  const [ticket, staff, customers, catalog] = await Promise.all([
     prisma.ticket.findUnique({
       where: { id },
       include: {
@@ -54,6 +56,7 @@ export default async function AdminTicketPage({
           include: { attachments: true },
         },
         events: { orderBy: { createdAt: "asc" } },
+        ...WORK_LOG_INCLUDE,
       },
     }),
     listAssignableStaff(),
@@ -61,6 +64,11 @@ export default async function AdminTicketPage({
       where: { isActive: true },
       orderBy: { name: "asc" },
       select: { id: true, name: true },
+    }),
+    prisma.workProduct.findMany({
+      where: { isActive: true },
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, sku: true, unit: true, category: true },
     }),
   ]);
   if (!ticket) notFound();
@@ -109,11 +117,25 @@ export default async function AdminTicketPage({
             <Alert tone="warning">Assign someone before sending a reminder.</Alert>
           </div>
         ) : null}
-        <div className="mb-4 flex flex-wrap gap-2">
+        <div className="mb-4 flex flex-wrap items-center gap-2">
           <TicketStatusBadge status={ticket.status} />
           <PriorityBadge priority={ticket.priority} />
+          <WorkLogSummary
+            minutes={ticket.timeEntries.reduce((sum, row) => sum + row.minutes, 0)}
+            productCount={ticket.productUsages.length}
+          />
         </div>
-        <ol className="space-y-3">
+        <WorkLog
+          ticketId={ticket.id}
+          timeEntries={ticket.timeEntries}
+          productUsages={ticket.productUsages}
+          catalog={catalog}
+          currentUserId={user.id}
+          canManageAll
+          canEdit
+          canSaveToCatalog
+        />
+        <ol className="mt-6 space-y-3">
           {ticket.messages.map((message) => (
             <li
               key={message.id}

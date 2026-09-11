@@ -4,6 +4,7 @@ import { Alert, PageHeader } from "@/components/admin/ui";
 import { TaskQuickActions } from "@/components/workdesk/task-quick-actions";
 import { ViewFilter } from "@/components/workdesk/view-filter";
 import { WorkItem, WorkList } from "@/components/workdesk/work-item";
+import { WorkLogSummary } from "@/components/workdesk/work-log";
 import { requireAdminRole } from "@/lib/admin-guard";
 import { hasRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -14,6 +15,7 @@ import {
   taskUnassigned,
 } from "@/lib/workdesk/board";
 import { isOverdue, startOfToday, startOfTomorrow } from "@/lib/workdesk/dates";
+import { WORK_LOG_LIST_INCLUDE, workLogTotals } from "@/lib/workdesk/work-log-query";
 
 export const metadata = { title: "Tasks" };
 
@@ -120,6 +122,7 @@ export default async function AdminTasksPage({
       take: 200,
       include: {
         assignees: { include: { user: { select: { id: true, name: true } } } },
+        ...WORK_LOG_LIST_INCLUDE,
       },
     }),
     prisma.internalTask.count({ where: mineFilter }),
@@ -180,6 +183,7 @@ export default async function AdminTasksPage({
       <WorkList count={tasks.length} empty={emptyCopy(view)}>
         {tasks.map((task) => {
           const done = task.status === "COMPLETED" || task.status === "CLOSED";
+          const log = workLogTotals(task);
           return (
             <WorkItem
               key={task.id}
@@ -194,6 +198,9 @@ export default async function AdminTasksPage({
               overdue={isOverdue(task.dueAt, task.status, TASK_DONE)}
               assignees={task.assignees.map((row) => row.user.name)}
               you={user.name}
+              meta={
+                <WorkLogSummary hideEmpty minutes={log.minutes} productCount={log.productCount} />
+              }
               actions={
                 <TaskQuickActions
                   taskId={task.id}

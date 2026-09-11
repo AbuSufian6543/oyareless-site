@@ -10,6 +10,7 @@ import { AttachmentField } from "@/components/workdesk/attachment-field";
 import { AttachmentList } from "@/components/workdesk/attachment-list";
 import { PriorityBadge, TaskStatusBadge } from "@/components/workdesk/badges";
 import { EmailStaffButton, WorkdeskNotifyMenu } from "@/components/workdesk/notify-menu";
+import { WorkLog, WorkLogSummary } from "@/components/workdesk/work-log";
 import { AssigneeAvatars } from "@/components/workdesk/work-item";
 import { requireAdminRole } from "@/lib/admin-guard";
 import { hasRole } from "@/lib/auth";
@@ -20,6 +21,7 @@ import { workdeskFileHref } from "@/lib/workdesk/files";
 import { ADMIN_TASK_STATUSES } from "@/lib/workdesk/rules";
 import { TASK_STATUS_LABELS } from "@/lib/workdesk/labels";
 import { listAssignableStaff } from "@/lib/workdesk/staff";
+import { WORK_LOG_INCLUDE } from "@/lib/workdesk/work-log-query";
 
 export default async function AdminTaskPage({
   params,
@@ -31,7 +33,7 @@ export default async function AdminTaskPage({
   const user = await requireAdminRole("EMPLOYEE");
   const { id } = await params;
   const query = await searchParams;
-  const [task, staff] = await Promise.all([
+  const [task, staff, catalog] = await Promise.all([
     prisma.internalTask.findUnique({
       where: { id },
       include: {
@@ -43,9 +45,15 @@ export default async function AdminTaskPage({
         attachments: true,
         events: { orderBy: { createdAt: "asc" } },
         createdBy: { select: { name: true } },
+        ...WORK_LOG_INCLUDE,
       },
     }),
     listAssignableStaff(),
+    prisma.workProduct.findMany({
+      where: { isActive: true },
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, sku: true, unit: true, category: true },
+    }),
   ]);
   if (!task) notFound();
 
@@ -98,6 +106,10 @@ export default async function AdminTaskPage({
           {overdue ? (
             <span className="text-xs font-semibold text-amber-700">Needs attention</span>
           ) : null}
+          <WorkLogSummary
+            minutes={task.timeEntries.reduce((sum, row) => sum + row.minutes, 0)}
+            productCount={task.productUsages.length}
+          />
         </div>
         {task.description && (
           <div className="mb-6 whitespace-pre-wrap rounded-xl border border-slate-200 bg-white p-5 text-sm text-navy-900">
@@ -108,6 +120,16 @@ export default async function AdminTaskPage({
           files={task.attachments
             .filter((file) => !file.noteId)
             .map((file) => ({ ...file, url: workdeskFileHref("task", file.id) }))}
+        />
+        <WorkLog
+          taskId={task.id}
+          timeEntries={task.timeEntries}
+          productUsages={task.productUsages}
+          catalog={catalog}
+          currentUserId={user.id}
+          canManageAll
+          canEdit
+          canSaveToCatalog
         />
         <ol className="mt-6 space-y-3">
           {task.notes.map((note) => (

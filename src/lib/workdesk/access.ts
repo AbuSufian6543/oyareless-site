@@ -195,3 +195,11 @@ export async function technicianOrRedirect(fallback = "/tech"): Promise<SessionU
     handleWorkdeskAuth(error, fallback);
   }
 }
+
+export async function workdeskStaffOrRedirect(): Promise<SessionUser> {
+  try {
+    return await requireWorkdeskStaff();
+  } catch (error) {
+    handleWorkdeskAuth(error, "/login");
+  }
+}

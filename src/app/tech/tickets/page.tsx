@@ -1,10 +1,12 @@
 import { PageHeader } from "@/components/admin/ui";
 import { ViewFilter } from "@/components/workdesk/view-filter";
 import { WorkItem, WorkList } from "@/components/workdesk/work-item";
+import { WorkLogSummary } from "@/components/workdesk/work-log";
 import { prisma } from "@/lib/prisma";
 import type { TicketStatus } from "@/generated/prisma/client";
 import { technicianOrRedirect, technicianTicketWhere } from "@/lib/workdesk/access";
 import { ticketAssigneeNames } from "@/lib/workdesk/board";
+import { WORK_LOG_LIST_INCLUDE, workLogTotals } from "@/lib/workdesk/work-log-query";
 
 export const metadata = { title: "My tickets" };
 
@@ -33,6 +35,7 @@ export default async function TechTicketsPage({
         customer: { select: { name: true } },
         assignedTo: { select: { name: true } },
         assignees: { include: { user: { select: { name: true } } } },
+        ...WORK_LOG_LIST_INCLUDE,
       },
     }),
     prisma.ticket.count({ where: { ...base, status: { notIn: ["RESOLVED", "CLOSED"] } } }),
@@ -56,7 +59,9 @@ export default async function TechTicketsPage({
         count={tickets.length}
         empty={view === "done" ? "No completed tickets yet." : "Nothing assigned in this view."}
       >
-        {tickets.map((ticket) => (
+        {tickets.map((ticket) => {
+          const log = workLogTotals(ticket);
+          return (
           <WorkItem
             key={ticket.id}
             kind="ticket"
@@ -68,8 +73,12 @@ export default async function TechTicketsPage({
             subtitle={ticket.customer.name}
             assignees={ticketAssigneeNames(ticket)}
             you={user.name}
+            meta={
+              <WorkLogSummary hideEmpty minutes={log.minutes} productCount={log.productCount} />
+            }
           />
-        ))}
+          );
+        })}
       </WorkList>
     </div>
   );

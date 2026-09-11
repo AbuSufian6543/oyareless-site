@@ -7,6 +7,7 @@ import { AttachmentField } from "@/components/workdesk/attachment-field";
 import { AttachmentList } from "@/components/workdesk/attachment-list";
 import { PriorityBadge, TicketStatusBadge } from "@/components/workdesk/badges";
 import { AssigneeAvatars } from "@/components/workdesk/work-item";
+import { WorkLog, WorkLogSummary } from "@/components/workdesk/work-log";
 import { prisma } from "@/lib/prisma";
 import { formatDateTime } from "@/lib/utils";
 import { assertTicketAccess, handleWorkdeskAuth, technicianOrRedirect } from "@/lib/workdesk/access";
@@ -14,6 +15,7 @@ import { ticketAssigneeNames } from "@/lib/workdesk/board";
 import { workdeskFileHref } from "@/lib/workdesk/files";
 import { TICKET_STATUS_LABELS } from "@/lib/workdesk/labels";
 import { TECHNICIAN_TICKET_STATUSES } from "@/lib/workdesk/rules";
+import { WORK_LOG_INCLUDE } from "@/lib/workdesk/work-log-query";
 
 export const metadata = { title: "Ticket" };
 
@@ -30,16 +32,24 @@ export default async function TechTicketPage({
     handleWorkdeskAuth(error, "/tech/tickets");
   }
 
-  const ticket = await prisma.ticket.findUnique({
-    where: { id },
-    include: {
-      customer: { select: { name: true } },
-      assignedTo: { select: { name: true } },
-      assignees: { include: { user: { select: { name: true } } } },
-      messages: { orderBy: { createdAt: "asc" }, include: { attachments: true } },
-      events: { orderBy: { createdAt: "asc" } },
-    },
-  });
+  const [ticket, catalog] = await Promise.all([
+    prisma.ticket.findUnique({
+      where: { id },
+      include: {
+        customer: { select: { name: true } },
+        assignedTo: { select: { name: true } },
+        assignees: { include: { user: { select: { name: true } } } },
+        messages: { orderBy: { createdAt: "asc" }, include: { attachments: true } },
+        events: { orderBy: { createdAt: "asc" } },
+        ...WORK_LOG_INCLUDE,
+      },
+    }),
+    prisma.workProduct.findMany({
+      where: { isActive: true },
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, sku: true, unit: true, category: true },
+    }),
+  ]);
   if (!ticket) notFound();
 
   const closed = ticket.status === "CLOSED";
@@ -52,11 +62,25 @@ export default async function TechTicketPage({
           title={`${ticket.reference}: ${ticket.subject}`}
           description={ticket.customer.name}
         />
-        <div className="mb-4 flex flex-wrap gap-2">
+        <div className="mb-4 flex flex-wrap items-center gap-2">
           <TicketStatusBadge status={ticket.status} />
           <PriorityBadge priority={ticket.priority} />
+          <WorkLogSummary
+            minutes={ticket.timeEntries.reduce((sum, row) => sum + row.minutes, 0)}
+            productCount={ticket.productUsages.length}
+          />
         </div>
-        <ol className="space-y-3">
+        <WorkLog
+          ticketId={ticket.id}
+          timeEntries={ticket.timeEntries}
+          productUsages={ticket.productUsages}
+          catalog={catalog}
+          currentUserId={user.id}
+          canManageAll={false}
+          canEdit={!closed}
+          canSaveToCatalog={false}
+        />
+        <ol className="mt-6 space-y-3">
           {ticket.messages.map((message) => (
             <li
               key={message.id}

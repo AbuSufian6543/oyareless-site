@@ -61,6 +61,7 @@ export function WorkItem({
   subtitle,
   assignees,
   you,
+  meta,
   actions,
 }: {
   href: string;
@@ -75,6 +76,7 @@ export function WorkItem({
   subtitle?: string;
   assignees?: string[];
   you?: string;
+  meta?: ReactNode;
   actions?: ReactNode;
 }) {
   const body = (
@@ -90,6 +92,7 @@ export function WorkItem({
           <TaskStatusBadge status={status} />
         )}
         <PriorityBadge priority={priority} />
+        {meta}
         {subtitle ? <span>{subtitle}</span> : null}
         {dueAt ? (
           <span className={overdue ? "font-semibold text-amber-700" : undefined}>
