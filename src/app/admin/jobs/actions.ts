@@ -8,6 +8,7 @@ import { recordAudit } from "@/lib/audit";
 import { requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
+import { parseDateInput } from "@/lib/workdesk/dates";
 
 const jobSchema = z.object({
   title: z.string().trim().min(1).max(160),
@@ -49,7 +50,7 @@ export async function saveJobAction(formData: FormData): Promise<void> {
   }
 
   const data = parsed.data;
-  const closesAt = data.closesAt ? new Date(data.closesAt) : null;
+  const closesAt = data.closesAt ? parseDateInput(data.closesAt) : null;
 
   const values = {
     title: data.title,

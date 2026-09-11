@@ -1,4 +1,5 @@
 import { OFFICIAL_AGENT_DOWNLOADS } from "./remote-support-downloads";
+import { DEFAULT_DISPLAY_TIMEZONE } from "./timezone";
 
 /**
  * Editable site-wide configuration. Values live in the SiteSetting table so an
@@ -27,6 +28,7 @@ export const DEFAULT_SETTINGS = {
   mapEmbedUrl:
     "https://www.openstreetmap.org/export/embed.html?bbox=-84.36%2C46.50%2C-84.28%2C46.55&layer=mapnik",
   footerNote: "Proudly Canadian. Serving Northern Ontario since 2005.",
+  displayTimeZone: DEFAULT_DISPLAY_TIMEZONE,
 
   // Branding. Every value is a URL an admin can repoint at the media library,
   // so the logo, favicon and social card change without a redeploy.

@@ -19,6 +19,7 @@ import { Alert, Card, CardTitle, inputClass, Label } from "@/components/admin/ui
 import type { CollectionDefinition, CollectionField } from "@/lib/admin-collections";
 import type { Block } from "@/lib/blocks";
 import { cn, slugify } from "@/lib/utils";
+import { dateTimeLocalValue } from "@/lib/timezone";
 
 export type CollectionEditorProps = {
   collection: CollectionDefinition;
@@ -426,15 +427,10 @@ function toFieldDef(field: CollectionField) {
   }
 }
 
-/** `datetime-local` needs `YYYY-MM-DDTHH:mm` in the browser's own timezone. */
+/** `datetime-local` wall clock in the office timezone (Toronto by default). */
 function toLocalInput(value: unknown): string {
   if (!value) return "";
   const date = value instanceof Date ? value : new Date(String(value));
   if (Number.isNaN(date.getTime())) return "";
-
-  const pad = (part: number) => String(part).padStart(2, "0");
-  return [
-    `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`,
-    `${pad(date.getHours())}:${pad(date.getMinutes())}`,
-  ].join("T");
+  return dateTimeLocalValue(date);
 }

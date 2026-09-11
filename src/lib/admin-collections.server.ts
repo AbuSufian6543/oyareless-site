@@ -5,6 +5,8 @@ import { getCollection } from "@/lib/admin-collections";
 import { blocksSchema, parseBlocks, type Block } from "@/lib/blocks";
 import { isCompanyStatusHost } from "@/lib/company-status-hosts";
 import { prisma } from "@/lib/prisma";
+import { getSettings } from "@/lib/settings";
+import { parseDateTimeLocal } from "@/lib/timezone";
 import { slugify } from "@/lib/utils";
 
 /**
@@ -177,7 +179,7 @@ function coerce(
         if (field.required) return { error: `${field.label} is required.` };
         return { value: null };
       }
-      const date = new Date(text);
+      const date = parseDateTimeLocal(text) ?? new Date(text);
       if (Number.isNaN(date.getTime())) {
         return { error: `${field.label} is not a valid date and time.` };
       }
@@ -204,10 +206,11 @@ function coerce(
   }
 }
 
-export function validateRecord(
+export async function validateRecord(
   collection: CollectionDefinition,
   input: Record<string, unknown>,
-): ValidationResult {
+): Promise<ValidationResult> {
+  await getSettings();
   const data: Record<string, unknown> = {};
 
   for (const field of collection.fields) {

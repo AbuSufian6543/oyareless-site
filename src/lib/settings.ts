@@ -8,6 +8,7 @@ import {
   type SettingKey,
   type SiteSettings,
 } from "@/lib/settings-defaults";
+import { bindDisplayTimeZone, normalizeTimeZone } from "@/lib/timezone";
 
 export {
   DEFAULT_SETTINGS,
@@ -29,14 +30,20 @@ export const getSettings = cache(async (): Promise<SiteSettings> => {
         merged[row.key] = row.value;
       }
     }
-    return merged as SiteSettings;
+    return withBoundTimeZone(merged as SiteSettings);
   } catch (error) {
     // The public site should still render if the database is briefly
     // unavailable (e.g. during a rolling restart). Do not cache that miss.
     if (isTransientDbError(error)) noStore();
-    return { ...DEFAULT_SETTINGS };
+    return withBoundTimeZone({ ...DEFAULT_SETTINGS });
   }
 });
+
+function withBoundTimeZone(settings: SiteSettings): SiteSettings {
+  const displayTimeZone = normalizeTimeZone(String(settings.displayTimeZone ?? ""));
+  bindDisplayTimeZone(displayTimeZone);
+  return { ...settings, displayTimeZone };
+}
 
 export async function updateSettings(
   values: Partial<SiteSettings>,
@@ -54,6 +61,10 @@ export async function updateSettings(
       }),
     ),
   );
+
+  if (typeof values.displayTimeZone === "string") {
+    bindDisplayTimeZone(values.displayTimeZone);
+  }
 }
 
 function groupFor(key: SettingKey): string {

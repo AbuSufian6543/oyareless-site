@@ -7,7 +7,7 @@ import { getStatusSummary } from "@/lib/monitoring";
 import { publicIncidentVisible } from "@/lib/monitoring-store";
 import { prisma } from "@/lib/prisma";
 import { publicMetadata } from "@/lib/seo";
-import { cn } from "@/lib/utils";
+import { cn, formatDateTime } from "@/lib/utils";
 
 export const revalidate = 30;
 
@@ -103,8 +103,8 @@ export default async function NetworkStatusPage() {
                   <li key={window.id} className="rounded-xl border border-amber-200 bg-amber-50 p-4">
                     <p className="font-semibold text-navy-900">{window.title}</p>
                     <p className="mt-1 text-sm text-slate-600">
-                      {window.startsAt.toLocaleString("en-CA")} –{" "}
-                      {window.endsAt.toLocaleString("en-CA")}
+                      {formatDateTime(window.startsAt)} –{" "}
+                      {formatDateTime(window.endsAt)}
                     </p>
                     {window.description && (
                       <p className="mt-2 text-sm text-slate-600">{window.description}</p>

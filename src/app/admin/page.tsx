@@ -23,6 +23,7 @@ import { getCurrentUser, hasRole } from "@/lib/auth";
 import { getResolvedMail } from "@/lib/mail-settings";
 import { prisma } from "@/lib/prisma";
 import { formatDate, formatDateTime } from "@/lib/utils";
+import { zonedHour } from "@/lib/timezone";
 import { workdeskHref } from "@/lib/workdesk/access";
 import {
   OPEN_TASK,
@@ -188,7 +189,7 @@ export default async function AdminDashboard({
   ]);
 
   const firstName = user.name.trim().split(/\s+/)[0] || user.name;
-  const hour = new Date().getHours();
+  const hour = zonedHour();
   const hello = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
   const todayLabel = formatDate(new Date(), {
     weekday: "long",

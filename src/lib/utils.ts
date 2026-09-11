@@ -2,6 +2,8 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import slugifyLib from "slugify";
 
+import { displayTimeZone } from "@/lib/timezone";
+
 export function cn(...inputs: ClassValue[]): string {
   return twMerge(clsx(inputs));
 }
@@ -21,7 +23,10 @@ export function formatDate(
   if (!value) return "";
   const date = typeof value === "string" ? new Date(value) : value;
   if (Number.isNaN(date.getTime())) return "";
-  return new Intl.DateTimeFormat("en-CA", options).format(date);
+  return new Intl.DateTimeFormat("en-CA", {
+    ...options,
+    timeZone: options.timeZone ?? displayTimeZone(),
+  }).format(date);
 }
 
 export function formatDateTime(value: Date | string | null | undefined): string {
@@ -31,6 +36,8 @@ export function formatDateTime(value: Date | string | null | undefined): string 
     day: "numeric",
     hour: "numeric",
     minute: "2-digit",
+    hour12: true,
+    timeZoneName: "short",
   });
 }
 

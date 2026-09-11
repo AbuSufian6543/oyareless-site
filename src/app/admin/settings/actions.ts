@@ -8,6 +8,7 @@ import { requireRole } from "@/lib/auth";
 import { sendMail, verifySmtp } from "@/lib/mail";
 import { updateMailSettings } from "@/lib/mail-settings";
 import { DEFAULT_SETTINGS, updateSettings } from "@/lib/settings";
+import { normalizeTimeZone } from "@/lib/timezone";
 
 const BOOLEAN_KEYS = new Set([
   "announcementEnabled",
@@ -44,6 +45,10 @@ export async function saveSettingsAction(formData: FormData): Promise<void> {
     }
     const raw = formData.get(key);
     if (raw === null) continue;
+    if (key === "displayTimeZone") {
+      values[key] = normalizeTimeZone(String(raw));
+      continue;
+    }
     values[key] = String(raw).trim();
   }
 

@@ -34,7 +34,7 @@ export async function saveCollectionRecordAction(
 
   const user = await requireRole(collection.writeRole);
 
-  const validated = validateRecord(collection, values);
+  const validated = await validateRecord(collection, values);
   if (!validated.ok) return { ok: false, error: validated.error };
 
   const existing = id ? await findRecord(collection, id) : null;

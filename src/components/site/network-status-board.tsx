@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 import { STATUS_CATEGORY_ORDER } from "@/lib/status-categories";
-import { cn } from "@/lib/utils";
+import { cn, formatDateTime } from "@/lib/utils";
 
 export type PublicStatusCard = {
   key: string;
@@ -278,15 +278,7 @@ function StatusBadge({ tone }: { tone: "up" | "down" | "unknown" }) {
 }
 
 function formatCheckedAt(value: string): string {
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return "";
-  return date.toLocaleString("en-CA", {
-    timeZone: "America/Toronto",
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
+  return formatDateTime(value);
 }
 
 function slug(value: string): string {

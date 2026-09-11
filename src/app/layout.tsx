@@ -4,6 +4,7 @@ import { IBM_Plex_Mono, IBM_Plex_Sans } from "next/font/google";
 import { env } from "@/lib/env";
 import { getSettings } from "@/lib/settings";
 import { THEME_COLOR, themeCss } from "@/lib/theme";
+import { bindDisplayTimeZone } from "@/lib/timezone";
 import "./globals.css";
 
 const plexSans = IBM_Plex_Sans({
@@ -101,13 +102,18 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const settings = await getSettings();
+  const timeZone = bindDisplayTimeZone(settings.displayTimeZone);
   // Retints the accent/brand ramps when an admin has picked custom colors.
   const theme = themeCss(settings);
 
   // Do not render a <head> here. Next.js injects metadata into head; a
   // manual head tag hydrates against that text and then drops the CSS link.
   return (
-    <html lang="en-CA" className={`${plexSans.variable} ${plexMono.variable}`}>
+    <html
+      lang="en-CA"
+      data-timezone={timeZone}
+      className={`${plexSans.variable} ${plexMono.variable}`}
+    >
       <body className="flex min-h-dvh flex-col antialiased">
         {theme ? (
           <style

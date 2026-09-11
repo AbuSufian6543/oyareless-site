@@ -5,6 +5,7 @@ import { ArrowDown, ArrowUp, Gauge, Timer, Waves } from "lucide-react";
 
 import { TechBackdrop } from "@/components/visuals/tech-backdrop";
 import { prisma } from "@/lib/prisma";
+import { formatDateTime } from "@/lib/utils";
 
 /**
  * Shared results are a snapshot, not live data, and they should never appear in
@@ -38,11 +39,7 @@ export default async function SharedResultPage({
 
   if (!result) notFound();
 
-  const measured = new Intl.DateTimeFormat("en-CA", {
-    dateStyle: "long",
-    timeStyle: "short",
-    timeZone: "America/Toronto",
-  }).format(result.createdAt);
+  const measured = formatDateTime(result.createdAt);
 
   return (
     <section className="relative isolate overflow-hidden">

@@ -8,6 +8,7 @@ import { Alert, Card, CardTitle, PageHeader } from "@/components/admin/ui";
 import { requireAdminRole } from "@/lib/admin-guard";
 import { getCurrentUser, hasRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { calendarDateKey } from "@/lib/timezone";
 
 export const metadata = { title: "Edit posting" };
 
@@ -75,9 +76,7 @@ export default async function EditJobPage({
           requirements: job.requirements,
           salaryRange: job.salaryRange ?? "",
           status: job.status,
-          closesAt: job.closesAt
-            ? job.closesAt.toISOString().slice(0, 10)
-            : "",
+          closesAt: job.closesAt ? calendarDateKey(job.closesAt) : "",
         }}
       />
 

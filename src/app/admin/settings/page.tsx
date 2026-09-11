@@ -11,12 +11,14 @@ import {
   CardTitle,
   CheckboxField,
   PageHeader,
+  SelectField,
   TextAreaField,
   TextField,
 } from "@/components/admin/ui";
 import { requireAdminRole } from "@/lib/admin-guard";
 import { getMailSettings, getResolvedMail } from "@/lib/mail-settings";
 import { getSettings } from "@/lib/settings";
+import { DISPLAY_TIMEZONES, normalizeTimeZone } from "@/lib/timezone";
 
 export const metadata = { title: "Site settings" };
 
@@ -38,7 +40,7 @@ export default async function SettingsPage({
     <div className="max-w-3xl">
       <PageHeader
         title="Site settings"
-        description="Company details, outbound email, and the inboxes that receive quote requests and other site mail."
+        description="Company details, outbound email, the inboxes that receive quote requests, and the clock used on audit logs and the rest of the site."
       />
 
       {params.saved && (
@@ -241,6 +243,19 @@ export default async function SettingsPage({
               defaultValue={settings.footerNote}
             />
           </div>
+        </Card>
+
+        <Card>
+          <CardTitle description="Audit log, tickets, tasks, emails, and the public site all show this clock. Stored times stay in UTC.">
+            Date and time
+          </CardTitle>
+          <SelectField
+            label="Display timezone"
+            name="displayTimeZone"
+            defaultValue={normalizeTimeZone(settings.displayTimeZone)}
+            options={[...DISPLAY_TIMEZONES]}
+            hint="Toronto (Eastern Time) is the office default."
+          />
         </Card>
 
         <Card>

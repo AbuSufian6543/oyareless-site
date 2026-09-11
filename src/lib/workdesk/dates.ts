@@ -1,28 +1,31 @@
+import {
+  calendarDateKey,
+  displayTimeZone,
+  startOfZonedDay,
+  zonedParts,
+  zonedWallTime,
+} from "@/lib/timezone";
+
 export function parseDateInput(value: string): Date | null {
   const trimmed = value.trim();
   if (!/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return null;
-  const date = new Date(`${trimmed}T12:00:00`);
+  const [year, month, day] = trimmed.split("-").map(Number);
+  const date = zonedWallTime(year, month, day, 12, 0, displayTimeZone());
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
 export function dateInputValue(value: Date | null | undefined): string {
   if (!value) return "";
-  const year = value.getFullYear();
-  const month = String(value.getMonth() + 1).padStart(2, "0");
-  const day = String(value.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
+  return calendarDateKey(value);
 }
 
 export function startOfToday(): Date {
-  const date = new Date();
-  date.setHours(0, 0, 0, 0);
-  return date;
+  return startOfZonedDay(new Date());
 }
 
 export function startOfTomorrow(): Date {
-  const date = startOfToday();
-  date.setDate(date.getDate() + 1);
-  return date;
+  const parts = zonedParts(startOfToday());
+  return zonedWallTime(parts.year, parts.month, parts.day + 1, 0, 0);
 }
 
 export function isDueToday(dueAt: Date | null | undefined): boolean {
@@ -39,4 +42,3 @@ export function isOverdue(
   if (doneStatuses.includes(status)) return false;
   return dueAt < startOfToday();
 }
-
