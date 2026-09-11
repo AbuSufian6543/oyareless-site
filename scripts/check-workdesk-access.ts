@@ -316,12 +316,86 @@ const notifyMenu = readFileSync(
   "utf8",
 );
 assert(
-  "notify menu offers Email now and disabled chat apps",
-  notifyMenu.includes("Email now") &&
+  "notify menu offers Send notification and disabled chat apps",
+  notifyMenu.includes("Send notification") &&
     notifyMenu.includes("Telegram") &&
     notifyMenu.includes("Discord") &&
     notifyMenu.includes("Slack") &&
     notifyMenu.includes("Not connected yet"),
+);
+
+const adminTaskPage = readFileSync(
+  path.join(process.cwd(), "src/app/admin/tasks/page.tsx"),
+  "utf8",
+);
+assert(
+  "internal tasks have completed and closed tabs plus list notify/delete",
+  adminTaskPage.includes('view=completed') &&
+    adminTaskPage.includes('view=closed') &&
+    adminTaskPage.includes("TaskQuickActions") &&
+    adminTaskPage.includes("canDelete={canManage && done}"),
+);
+
+const dashboard = readFileSync(path.join(process.cwd(), "src/app/admin/page.tsx"), "utf8");
+assert(
+  "workdesk dashboard surfaces today's and upcoming tasks",
+  dashboard.includes("Today's tasks") &&
+    dashboard.includes("Upcoming tasks") &&
+    dashboard.includes("dueTodayTasks") &&
+    dashboard.includes("upcomingTasks"),
+);
+
+const resetPage = readFileSync(
+  path.join(process.cwd(), "src/app/login/reset/page.tsx"),
+  "utf8",
+);
+assert(
+  "password-reset page does not bounce signed-in staff to /admin",
+  !resetPage.includes('redirect("/admin")') && resetPage.includes("ResetPasswordForm"),
+);
+
+const proxy = readFileSync(path.join(process.cwd(), "src/proxy.ts"), "utf8");
+assert(
+  "unauthenticated /admin and /tech visits keep the original path",
+  proxy.includes("loginUrlFor") &&
+    proxy.includes("wc_session") &&
+    proxy.includes("x-wc-path"),
+);
+
+const loginActions = readFileSync(
+  path.join(process.cwd(), "src/app/login/actions.ts"),
+  "utf8",
+);
+assert(
+  "sign-in honors the email next= path",
+  loginActions.includes("destinationAfterLogin"),
+);
+
+assert(
+  "task notify and delete honor returnTo",
+  adminTasks.includes("taskReturnPath") &&
+    adminTasks.includes("returnTo") &&
+    adminTasks.includes("notifyTaskStaffAction"),
+);
+
+const mailer = readFileSync(path.join(process.cwd(), "src/lib/mail.ts"), "utf8");
+assert(
+  "staff emails include a copyable URL under the button",
+  mailer.includes("emailActionLink") &&
+    mailer.includes("If the button does not open") &&
+    mailer.includes("Choose a new password"),
+);
+
+const workdeskMail = readFileSync(
+  path.join(process.cwd(), "src/lib/workdesk/notify.ts"),
+  "utf8",
+);
+assert(
+  "assignment emails use See task / Open ticket / Open admin buttons",
+  workdeskMail.includes("See task") &&
+    workdeskMail.includes("Open ticket") &&
+    workdeskMail.includes("Open admin") &&
+    workdeskMail.includes("emailActionLink"),
 );
 
 process.exit(failed === 0 ? 0 : 1);

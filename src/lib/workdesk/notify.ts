@@ -1,7 +1,7 @@
 import "server-only";
 
 import type { Role, WorkdeskNotificationKind } from "@/generated/prisma/client";
-import { sendMail } from "@/lib/mail";
+import { emailActionLink, sendMail } from "@/lib/mail";
 import { prisma } from "@/lib/prisma";
 import { publicUrl } from "@/lib/public-url";
 import { workdeskHref } from "@/lib/workdesk/access";
@@ -78,6 +78,7 @@ export async function emailStaffAssignment(input: {
   taskId?: string;
 }): Promise<void> {
   const href = publicUrl(workdeskHref(input.role, input));
+  const ctaLabel = input.taskId ? "See task" : input.ticketId ? "Open ticket" : "Open admin";
   await sendMail({
     to: input.to,
     subject: input.title,
@@ -85,7 +86,7 @@ export async function emailStaffAssignment(input: {
       input.title,
       `<p style="margin:0 0 16px;font-size:14px;color:#3c4e63;line-height:1.6;">Hello ${escapeHtml(input.name)},</p>
        <p style="margin:0 0 16px;font-size:14px;color:#3c4e63;line-height:1.6;">${escapeHtml(input.detail)}</p>
-       <p style="margin:0;"><a href="${escapeHtml(href)}" style="color:#0a5fae;">Open in WirelessCom</a></p>`,
+       ${emailActionLink(href, ctaLabel)}`,
     ),
   }).catch((error) => {
     console.error("[workdesk] assignment email failed:", error);
@@ -102,7 +103,7 @@ export async function emailAdminInbox(input: {
     html: emailLayout(
       input.title,
       `<p style="margin:0 0 16px;font-size:14px;color:#3c4e63;line-height:1.6;">${escapeHtml(input.detail)}</p>
-       <p style="margin:0;"><a href="${escapeHtml(publicUrl(input.href))}" style="color:#0a5fae;">Review in admin</a></p>`,
+       ${emailActionLink(publicUrl(input.href), "Open admin")}`,
     ),
   }).catch((error) => {
     console.error("[workdesk] admin inbox email failed:", error);

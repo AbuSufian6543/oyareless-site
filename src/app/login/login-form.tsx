@@ -10,7 +10,7 @@ import { loginAction, verifyTwoFactorAction, type LoginState } from "@/app/login
 
 const INITIAL: LoginState = { stage: "credentials" };
 
-export function LoginForm() {
+export function LoginForm({ next }: { next?: string }) {
   const [credentialState, submitCredentials] = useActionState(
     loginAction,
     INITIAL,
@@ -29,6 +29,7 @@ export function LoginForm() {
   if (showTwoFactor) {
     return (
       <form action={submitTwoFactor} className="space-y-5">
+        {next ? <input type="hidden" name="next" value={next} /> : null}
         <div className="flex flex-col items-center text-center">
           <span className="flex size-12 items-center justify-center rounded-full bg-brand-50">
             <ShieldCheck className="size-6 text-brand-600" aria-hidden="true" />
@@ -69,6 +70,7 @@ export function LoginForm() {
 
   return (
     <form action={submitCredentials} className="space-y-5">
+      {next ? <input type="hidden" name="next" value={next} /> : null}
       <div>
         <label
           htmlFor="email"

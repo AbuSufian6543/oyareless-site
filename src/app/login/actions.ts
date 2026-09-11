@@ -16,7 +16,7 @@ import {
   verifyTotpToken,
 } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { staffHomePath } from "@/lib/workdesk/access";
+import { destinationAfterLogin } from "@/lib/safe-return";
 
 export type LoginState = {
   error?: string;
@@ -87,7 +87,7 @@ export async function loginAction(
     summary: `${user.email} signed in`,
   });
 
-  redirect(staffHomePath({ role: user.role, mustChangePassword: user.mustChangePassword }));
+  redirect(destinationAfterLogin(user, String(formData.get("next") ?? "")));
 }
 
 export async function verifyTwoFactorAction(
@@ -129,7 +129,7 @@ export async function verifyTwoFactorAction(
     summary: `${user.email} signed in with 2FA`,
   });
 
-  redirect(staffHomePath({ role: user.role, mustChangePassword: user.mustChangePassword }));
+  redirect(destinationAfterLogin(user, String(formData.get("next") ?? "")));
 }
 
 export async function logoutAction(): Promise<void> {

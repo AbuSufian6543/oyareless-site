@@ -19,6 +19,17 @@ export function startOfToday(): Date {
   return date;
 }
 
+export function startOfTomorrow(): Date {
+  const date = startOfToday();
+  date.setDate(date.getDate() + 1);
+  return date;
+}
+
+export function isDueToday(dueAt: Date | null | undefined): boolean {
+  if (!dueAt) return false;
+  return dueAt >= startOfToday() && dueAt < startOfTomorrow();
+}
+
 export function isOverdue(
   dueAt: Date | null | undefined,
   status: string,

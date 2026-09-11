@@ -19,7 +19,7 @@ import { AssigneeChecklist } from "@/components/workdesk/assignee-checklist";
 import { AttachmentField } from "@/components/workdesk/attachment-field";
 import { AttachmentList } from "@/components/workdesk/attachment-list";
 import { PriorityBadge, TicketStatusBadge } from "@/components/workdesk/badges";
-import { WorkdeskNotifyMenu } from "@/components/workdesk/notify-menu";
+import { EmailStaffButton, WorkdeskNotifyMenu } from "@/components/workdesk/notify-menu";
 import { AssigneeAvatars } from "@/components/workdesk/work-item";
 import { requireAdminRole } from "@/lib/admin-guard";
 import { hasRole } from "@/lib/auth";
@@ -96,6 +96,13 @@ export default async function AdminTicketPage({
             ticket.assignedTo?.name ||
             "Unassigned"
           }`}
+          actions={
+            <EmailStaffButton
+              action={notifyTicketStaffAction}
+              hiddenFields={{ ticketId: ticket.id }}
+              disabled={recipientIds.size === 0}
+            />
+          }
         />
         {query.notify === "none" ? (
           <div className="mb-4">

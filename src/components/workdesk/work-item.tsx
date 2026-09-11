@@ -1,3 +1,4 @@
+import type { ComponentType, ReactNode } from "react";
 import Link from "next/link";
 
 import { PriorityBadge, TaskStatusBadge, TicketStatusBadge } from "@/components/workdesk/badges";
@@ -60,6 +61,7 @@ export function WorkItem({
   subtitle,
   assignees,
   you,
+  actions,
 }: {
   href: string;
   kind: "ticket" | "task";
@@ -73,7 +75,54 @@ export function WorkItem({
   subtitle?: string;
   assignees?: string[];
   you?: string;
+  actions?: ReactNode;
 }) {
+  const body = (
+    <>
+      <p className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+        <span className="font-mono text-xs font-semibold text-brand-700">{reference}</span>
+        <span className="font-semibold text-navy-900">{title}</span>
+      </p>
+      <p className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+        {kind === "ticket" ? (
+          <TicketStatusBadge status={status} />
+        ) : (
+          <TaskStatusBadge status={status} />
+        )}
+        <PriorityBadge priority={priority} />
+        {subtitle ? <span>{subtitle}</span> : null}
+        {dueAt ? (
+          <span className={overdue ? "font-semibold text-amber-700" : undefined}>
+            {overdue ? "Overdue " : "Due "}
+            {formatDate(dueAt)}
+          </span>
+        ) : null}
+        {updatedAt ? <span>Updated {formatDateTime(updatedAt)}</span> : null}
+      </p>
+      {assignees ? (
+        <p className="mt-2">
+          <AssigneeAvatars names={assignees} you={you} />
+        </p>
+      ) : null}
+    </>
+  );
+
+  if (actions) {
+    return (
+      <li
+        className={cn(
+          "flex flex-col gap-3 rounded-xl border bg-white p-4 sm:flex-row sm:items-start sm:justify-between",
+          overdue ? "border-amber-300" : "border-slate-200",
+        )}
+      >
+        <Link href={href} className="min-w-0 flex-1 rounded-lg hover:bg-brand-50/40">
+          {body}
+        </Link>
+        <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">{actions}</div>
+      </li>
+    );
+  }
+
   return (
     <li>
       <Link
@@ -83,31 +132,7 @@ export function WorkItem({
           overdue ? "border-amber-300" : "border-slate-200",
         )}
       >
-        <p className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-          <span className="font-mono text-xs font-semibold text-brand-700">{reference}</span>
-          <span className="font-semibold text-navy-900">{title}</span>
-        </p>
-        <p className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
-          {kind === "ticket" ? (
-            <TicketStatusBadge status={status} />
-          ) : (
-            <TaskStatusBadge status={status} />
-          )}
-          <PriorityBadge priority={priority} />
-          {subtitle ? <span>{subtitle}</span> : null}
-          {dueAt ? (
-            <span className={overdue ? "font-semibold text-amber-700" : undefined}>
-              {overdue ? "Overdue " : "Due "}
-              {formatDate(dueAt)}
-            </span>
-          ) : null}
-          {updatedAt ? <span>Updated {formatDateTime(updatedAt)}</span> : null}
-        </p>
-        {assignees ? (
-          <p className="mt-2">
-            <AssigneeAvatars names={assignees} you={you} />
-          </p>
-        ) : null}
+        {body}
       </Link>
     </li>
   );
@@ -118,7 +143,7 @@ export function WorkList({
   empty,
   count,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
   empty: string;
   count: number;
 }) {
@@ -146,7 +171,7 @@ export function WorkStatLink({
   value: number;
   hint?: string;
   alert?: boolean;
-  Icon: React.ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
+  Icon: ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
 }) {
   return (
     <Link

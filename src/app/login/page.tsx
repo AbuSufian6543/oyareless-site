@@ -5,7 +5,7 @@ import { CircleCheck } from "lucide-react";
 import { LoginForm } from "@/app/login/login-form";
 import { LoginFrame } from "@/app/login/login-frame";
 import { getCurrentUser } from "@/lib/auth";
-import { staffHomePath } from "@/lib/workdesk/access";
+import { destinationAfterLogin, safeStaffReturnPath } from "@/lib/safe-return";
 
 export const dynamic = "force-dynamic";
 
@@ -17,12 +17,12 @@ export const metadata: Metadata = {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ reset?: string }>;
+  searchParams: Promise<{ reset?: string; next?: string }>;
 }) {
-  const user = await getCurrentUser();
-  if (user) redirect(staffHomePath(user));
-
   const params = await searchParams;
+  const next = safeStaffReturnPath(params.next);
+  const user = await getCurrentUser();
+  if (user) redirect(destinationAfterLogin(user, params.next));
 
   return (
     <LoginFrame
@@ -35,7 +35,7 @@ export default async function LoginPage({
           Your password was updated. Sign in with the new one.
         </div>
       )}
-      <LoginForm />
+      <LoginForm next={next || undefined} />
     </LoginFrame>
   );
 }

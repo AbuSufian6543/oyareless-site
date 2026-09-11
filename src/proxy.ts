@@ -1,5 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+import { loginUrlFor } from "@/lib/safe-return";
+
 /**
  * The legacy site used `.html` URLs. Redirecting them permanently keeps
  * existing search rankings and inbound links working.
@@ -48,6 +50,8 @@ const LEGACY_CAMERA_SLUGS = new Set([
 
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-wc-path", `${pathname}${search}`);
 
   // Ticket and task files are served only through /api/workdesk/attachments.
   if (pathname.startsWith("/uploads/private/")) {
@@ -72,7 +76,17 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL(`/${slug}${search}`, request.url), 301);
   }
 
-  return NextResponse.next();
+  const needsStaffSignIn =
+    pathname.startsWith("/admin") || pathname.startsWith("/tech");
+  if (needsStaffSignIn && !request.cookies.get("wc_session")?.value) {
+    return NextResponse.redirect(
+      new URL(loginUrlFor(`${pathname}${search}`), request.url),
+    );
+  }
+
+  return NextResponse.next({
+    request: { headers: requestHeaders },
+  });
 }
 
 export const config = {

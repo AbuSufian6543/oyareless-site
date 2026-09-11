@@ -120,6 +120,24 @@ function escapeHtml(value: string): string {
     .replace(/"/g, "&quot;");
 }
 
+/** Button plus a copyable URL so clients that strip buttons still open the right page. */
+export function emailActionLink(href: string, label: string): string {
+  const url =
+    href.startsWith("https://") || href.startsWith("http://") ? href : publicUrl(href);
+  const safeUrl = escapeHtml(url);
+  return `
+    <p style="margin:0 0 12px;">
+      <a href="${safeUrl}"
+         style="display:inline-block;background:#0a5fae;color:#ffffff;padding:12px 22px;border-radius:6px;text-decoration:none;font-size:15px;font-weight:700;">
+        ${escapeHtml(label)}
+      </a>
+    </p>
+    <p style="margin:0 0 8px;font-size:12px;color:#5a6b80;line-height:1.6;word-break:break-all;">
+      If the button does not open, copy this link into your browser:<br />
+      <a href="${safeUrl}" style="color:#0a5fae;">${safeUrl}</a>
+    </p>`;
+}
+
 function layout(title: string, body: string): string {
   return `<!doctype html>
 <html lang="en">
@@ -216,12 +234,7 @@ export function submissionNotificationEmail(input: {
         ["Message", input.message],
       ])}
     </table>
-    <p style="margin:20px 0 0;">
-      <a href="${publicUrl(input.adminPath ?? `/admin/submissions/${input.submissionId}`)}"
-         style="display:inline-block;background:#0a5fae;color:#ffffff;padding:11px 20px;border-radius:6px;text-decoration:none;font-size:14px;font-weight:600;">
-        Open in admin
-      </a>
-    </p>`;
+    ${emailActionLink(input.adminPath ?? `/admin/submissions/${input.submissionId}`, "Open admin")}`
 
   return {
     subject: `[${label}] ${input.name}${input.company ? ` — ${input.company}` : ""}`,
@@ -300,12 +313,7 @@ export function newUserInviteEmail(input: {
     <p style="margin:18px 0 0;font-size:14px;color:#b3261e;">
       You will be asked to choose a new password the first time you sign in.
     </p>
-    <p style="margin:18px 0 0;">
-      <a href="${publicUrl("/login")}"
-         style="display:inline-block;background:#0a5fae;color:#ffffff;padding:11px 20px;border-radius:6px;text-decoration:none;font-size:14px;font-weight:600;">
-        Sign in
-      </a>
-    </p>`;
+    ${emailActionLink("/login", "Sign in")}`
 
   return {
     subject: "Your WirelessCom.Ca admin account",
@@ -325,12 +333,7 @@ export function passwordResetEmail(input: {
       We received a request to reset the password on your WirelessCom.Ca staff
       account. This link expires in one hour and can only be used once.
     </p>
-    <p style="margin:0 0 20px;">
-      <a href="${escapeHtml(input.resetUrl)}"
-         style="display:inline-block;background:#0a5fae;color:#ffffff;padding:12px 22px;border-radius:6px;text-decoration:none;font-size:15px;font-weight:700;">
-        Choose a new password
-      </a>
-    </p>
+    ${emailActionLink(input.resetUrl, "Choose a new password")}
     <p style="margin:0;font-size:12px;color:#8194ab;">
       If you did not request this, you can ignore this email. Your current
       password will stay the same.

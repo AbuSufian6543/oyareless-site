@@ -1,6 +1,8 @@
 import Link from "next/link";
 import {
   Briefcase,
+  CalendarClock,
+  CalendarDays,
   CircleCheck,
   ClipboardList,
   FileText,
@@ -14,13 +16,13 @@ import {
   Users,
 } from "lucide-react";
 
-import { Alert, Badge, Card, CardTitle, EmptyState, PageHeader } from "@/components/admin/ui";
+import { Alert, Badge, Card, CardTitle, EmptyState } from "@/components/admin/ui";
 import { WorkItem, WorkList, WorkStatLink } from "@/components/workdesk/work-item";
 import { env } from "@/lib/env";
 import { getCurrentUser, hasRole } from "@/lib/auth";
 import { getResolvedMail } from "@/lib/mail-settings";
 import { prisma } from "@/lib/prisma";
-import { formatDateTime } from "@/lib/utils";
+import { formatDate, formatDateTime } from "@/lib/utils";
 import { workdeskHref } from "@/lib/workdesk/access";
 import {
   OPEN_TASK,
@@ -33,7 +35,7 @@ import {
   ticketAssigneeNames,
   ticketUnassigned,
 } from "@/lib/workdesk/board";
-import { isOverdue, startOfToday } from "@/lib/workdesk/dates";
+import { isOverdue, startOfToday, startOfTomorrow } from "@/lib/workdesk/dates";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Workdesk" };
@@ -58,9 +60,15 @@ export default async function AdminDashboard({
   const params = await searchParams;
   const canSeeCms = hasRole(user, "EDITOR");
   const today = startOfToday();
+  const tomorrow = startOfTomorrow();
   const myId = user.id;
+  const dueTodayFilter = { ...OPEN_TASK, dueAt: { gte: today, lt: tomorrow } };
+  const upcomingFilter = { ...OPEN_TASK, dueAt: { gte: tomorrow } };
+  const overdueFilter = { ...OPEN_TASK, dueAt: { lt: today } };
 
   const [
+    dueTodayCount,
+    upcomingCount,
     myOpenTasks,
     teamOpenTasks,
     unassignedTasks,
@@ -69,6 +77,9 @@ export default async function AdminDashboard({
     teamOpenTickets,
     unassignedTickets,
     openTickets,
+    dueTodayTasks,
+    upcomingTasks,
+    overdueTaskItems,
     myTasks,
     othersTasks,
     waitingTasks,
@@ -87,16 +98,34 @@ export default async function AdminDashboard({
     mail,
     recentNotifications,
   ] = await Promise.all([
+    prisma.internalTask.count({ where: dueTodayFilter }),
+    prisma.internalTask.count({ where: upcomingFilter }),
     prisma.internalTask.count({ where: { ...OPEN_TASK, ...taskAssignedTo(myId) } }),
     prisma.internalTask.count({ where: { ...OPEN_TASK, ...taskAssignedToOthers(myId) } }),
     prisma.internalTask.count({ where: { ...OPEN_TASK, ...taskUnassigned() } }),
-    prisma.internalTask.count({
-      where: { ...OPEN_TASK, dueAt: { lt: today } },
-    }),
+    prisma.internalTask.count({ where: overdueFilter }),
     prisma.ticket.count({ where: { ...OPEN_TICKET, ...ticketAssignedTo(myId) } }).catch(() => 0),
     prisma.ticket.count({ where: { ...OPEN_TICKET, ...ticketAssignedToOthers(myId) } }).catch(() => 0),
     prisma.ticket.count({ where: { ...OPEN_TICKET, ...ticketUnassigned() } }).catch(() => 0),
     prisma.ticket.count({ where: OPEN_TICKET }).catch(() => 0),
+    prisma.internalTask.findMany({
+      where: dueTodayFilter,
+      orderBy: [{ priority: "desc" }, { dueAt: "asc" }],
+      take: 10,
+      include: taskInclude,
+    }),
+    prisma.internalTask.findMany({
+      where: upcomingFilter,
+      orderBy: [{ dueAt: "asc" }, { priority: "desc" }],
+      take: 10,
+      include: taskInclude,
+    }),
+    prisma.internalTask.findMany({
+      where: overdueFilter,
+      orderBy: [{ dueAt: "asc" }, { priority: "desc" }],
+      take: 8,
+      include: taskInclude,
+    }),
     prisma.internalTask.findMany({
       where: { ...OPEN_TASK, ...taskAssignedTo(myId) },
       orderBy: [{ dueAt: "asc" }, { priority: "desc" }, { updatedAt: "desc" }],
@@ -158,32 +187,45 @@ export default async function AdminDashboard({
       .catch(() => []),
   ]);
 
+  const firstName = user.name.trim().split(/\s+/)[0] || user.name;
+  const hour = new Date().getHours();
+  const hello = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+  const todayLabel = formatDate(new Date(), {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+    year: "numeric",
+  });
+
   const taskStats = [
     {
-      label: "Assigned to me",
-      value: myOpenTasks,
-      href: "/admin/tasks",
-      Icon: UserRound,
+      label: "Today's tasks",
+      value: dueTodayCount,
+      hint: dueTodayCount === 1 ? "1 item due before end of day" : "Due before end of day",
+      href: "/admin/tasks?view=today",
+      Icon: CalendarDays,
     },
     {
-      label: "Assigned to others",
-      value: teamOpenTasks,
-      href: "/admin/tasks?view=team",
-      Icon: Users,
-    },
-    {
-      label: "Unassigned",
-      value: unassignedTasks,
-      href: "/admin/tasks?view=unassigned",
-      Icon: ClipboardList,
+      label: "Upcoming tasks",
+      value: upcomingCount,
+      hint: upcomingCount > 0 ? "Due after today" : "Nothing scheduled ahead",
+      href: "/admin/tasks?view=upcoming",
+      Icon: CalendarClock,
     },
     {
       label: "Overdue",
       value: overdueTasks,
-      hint: overdueTasks > 0 ? "Needs attention today" : "Nothing overdue",
+      hint: overdueTasks > 0 ? "Needs attention" : "Nothing overdue",
       href: "/admin/tasks?view=overdue",
       Icon: TriangleAlert,
       alert: overdueTasks > 0,
+    },
+    {
+      label: "Unassigned",
+      value: unassignedTasks,
+      hint: unassignedTasks > 0 ? "Waiting for an owner" : "Every open task has an owner",
+      href: "/admin/tasks?view=unassigned",
+      Icon: ClipboardList,
     },
   ];
 
@@ -231,27 +273,39 @@ export default async function AdminDashboard({
 
   return (
     <>
-      <PageHeader
-        title="Workdesk"
-        description="Tasks assigned to you, work on the rest of the team, and customer tickets that still need attention."
-        actions={
+      <section className="relative mb-8 overflow-hidden rounded-2xl bg-navy-900 px-6 py-7 text-white shadow-sm lg:px-8">
+        <div className="pointer-events-none absolute -right-16 -top-16 size-56 rounded-full bg-brand-500/20" />
+        <div className="pointer-events-none absolute -bottom-20 right-24 size-40 rounded-full bg-white/5" />
+        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-300">
+              {todayLabel}
+            </p>
+            <h1 className="mt-2 text-3xl font-extrabold tracking-tight">
+              {hello}, {firstName}
+            </h1>
+            <p className="mt-2 max-w-xl text-sm leading-relaxed text-navy-100">
+              {dueTodayCount} due today · {upcomingCount} upcoming · {overdueTasks} overdue ·{" "}
+              {myOpenTickets} ticket{myOpenTickets === 1 ? "" : "s"} assigned to you
+            </p>
+          </div>
           <div className="flex flex-wrap gap-2">
             <Link
               href="/admin/tasks/new"
-              className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+              className="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-semibold text-navy-950 transition-colors hover:bg-brand-400"
             >
               <Plus className="size-4" aria-hidden="true" />
               New task
             </Link>
             <Link
               href="/admin/tickets?create=1"
-              className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-navy-800 hover:border-brand-300"
+              className="inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/15"
             >
               New ticket
             </Link>
           </div>
-        }
-      />
+        </div>
+      </section>
 
       {params.denied === "1" && (
         <div className="mb-6">
@@ -275,7 +329,7 @@ export default async function AdminDashboard({
       )}
 
       <section className="mb-8">
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-wider text-slate-500">Tasks</h2>
+        <h2 className="mb-3 text-sm font-bold uppercase tracking-wider text-slate-500">At a glance</h2>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {taskStats.map((stat) => (
             <WorkStatLink key={stat.label} {...stat} />
@@ -295,7 +349,89 @@ export default async function AdminDashboard({
       <div className="mb-8 grid gap-6 lg:grid-cols-2">
         <section>
           <div className="mb-3 flex items-center justify-between gap-3">
-            <h2 className="font-bold text-navy-900">Tasks assigned to me</h2>
+            <h2 className="font-bold text-navy-900">Today&apos;s tasks</h2>
+            <Link href="/admin/tasks?view=today" className="text-sm font-semibold text-brand-700 hover:underline">
+              {dueTodayCount} due today
+            </Link>
+          </div>
+          <WorkList count={dueTodayTasks.length} empty="Nothing is due today. Upcoming work is listed next.">
+            {dueTodayTasks.map((task) => (
+              <WorkItem
+                key={task.id}
+                kind="task"
+                href={`/admin/tasks/${task.id}`}
+                reference={task.reference}
+                title={task.title}
+                status={task.status}
+                priority={task.priority}
+                dueAt={task.dueAt}
+                overdue={isOverdue(task.dueAt, task.status, TASK_DONE)}
+                assignees={task.assignees.map((row) => row.user.name)}
+                you={user.name}
+              />
+            ))}
+          </WorkList>
+        </section>
+
+        <section>
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <h2 className="font-bold text-navy-900">Upcoming tasks</h2>
+            <Link href="/admin/tasks?view=upcoming" className="text-sm font-semibold text-brand-700 hover:underline">
+              {upcomingCount} scheduled
+            </Link>
+          </div>
+          <WorkList count={upcomingTasks.length} empty="No future due dates yet. Add a date when you create or edit a task.">
+            {upcomingTasks.map((task) => (
+              <WorkItem
+                key={task.id}
+                kind="task"
+                href={`/admin/tasks/${task.id}`}
+                reference={task.reference}
+                title={task.title}
+                status={task.status}
+                priority={task.priority}
+                dueAt={task.dueAt}
+                overdue={isOverdue(task.dueAt, task.status, TASK_DONE)}
+                assignees={task.assignees.map((row) => row.user.name)}
+                you={user.name}
+              />
+            ))}
+          </WorkList>
+        </section>
+      </div>
+
+      {overdueTaskItems.length > 0 && (
+        <section className="mb-8">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <h2 className="font-bold text-navy-900">Overdue</h2>
+            <Link href="/admin/tasks?view=overdue" className="text-sm font-semibold text-amber-700 hover:underline">
+              View all {overdueTasks}
+            </Link>
+          </div>
+          <WorkList count={overdueTaskItems.length} empty="">
+            {overdueTaskItems.map((task) => (
+              <WorkItem
+                key={task.id}
+                kind="task"
+                href={`/admin/tasks/${task.id}`}
+                reference={task.reference}
+                title={task.title}
+                status={task.status}
+                priority={task.priority}
+                dueAt={task.dueAt}
+                overdue
+                assignees={task.assignees.map((row) => row.user.name)}
+                you={user.name}
+              />
+            ))}
+          </WorkList>
+        </section>
+      )}
+
+      <div className="mb-8 grid gap-6 lg:grid-cols-2">
+        <section>
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <h2 className="font-bold text-navy-900">Assigned to me</h2>
             <Link href="/admin/tasks" className="text-sm font-semibold text-brand-700 hover:underline">
               View all {myOpenTasks}
             </Link>
@@ -321,7 +457,7 @@ export default async function AdminDashboard({
 
         <section>
           <div className="mb-3 flex items-center justify-between gap-3">
-            <h2 className="font-bold text-navy-900">Tasks assigned to others</h2>
+            <h2 className="font-bold text-navy-900">Assigned to others</h2>
             <Link href="/admin/tasks?view=team" className="text-sm font-semibold text-brand-700 hover:underline">
               View all {teamOpenTasks}
             </Link>

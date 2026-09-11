@@ -13,6 +13,7 @@ import { notifyAssignees, sendWorkdeskReminder } from "@/lib/workdesk/notify";
 import { assignmentNotice, joinStaffNames } from "@/lib/workdesk/notice";
 import { nextTaskReference } from "@/lib/workdesk/references";
 import { revalidateWorkdesk } from "@/lib/workdesk/revalidate";
+import { taskReturnPath, withQuery } from "@/lib/workdesk/return-path";
 import { workdeskAdminMaySetTaskStatus } from "@/lib/workdesk/rules";
 import { PRIORITY_LABELS, TASK_STATUS_LABELS } from "@/lib/workdesk/labels";
 import {
@@ -371,11 +372,12 @@ export async function notifyTaskStaffAction(formData: FormData): Promise<void> {
   const staff = await workdeskAdminOrRedirect();
   const taskId = String(formData.get("taskId") ?? "");
   if (!taskId) return;
+  const returnTo = taskReturnPath(String(formData.get("returnTo") ?? ""), `/admin/tasks/${taskId}`);
 
   const result = await sendWorkdeskReminder({ actor: staff, taskId });
   if (result.status === "missing") return;
   if (result.status === "none") {
-    redirect(`/admin/tasks/${taskId}?notify=none`);
+    redirect(withQuery(returnTo, "notify", "none"));
   }
 
   await recordWorkdeskEvent({
@@ -394,7 +396,7 @@ export async function notifyTaskStaffAction(formData: FormData): Promise<void> {
   });
 
   await revalidateWorkdesk({ taskId, flash: "notified" });
-  redirect(`/admin/tasks/${taskId}`);
+  redirect(returnTo);
 }
 
 export async function deleteTaskAction(formData: FormData): Promise<void> {
@@ -426,5 +428,5 @@ export async function deleteTaskAction(formData: FormData): Promise<void> {
   await prisma.internalTask.delete({ where: { id: taskId } });
 
   await revalidateWorkdesk({ taskId, flash: "deleted" });
-  redirect("/admin/tasks");
+  redirect(taskReturnPath(String(formData.get("returnTo") ?? "")));
 }

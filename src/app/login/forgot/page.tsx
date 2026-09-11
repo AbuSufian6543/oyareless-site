@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { ForgotPasswordForm } from "@/app/login/forgot/forgot-form";
 import { LoginFrame } from "@/app/login/login-frame";
 import { getCurrentUser } from "@/lib/auth";
+import { destinationAfterLogin } from "@/lib/safe-return";
 
 export const dynamic = "force-dynamic";
 
@@ -14,7 +15,7 @@ export const metadata: Metadata = {
 
 export default async function ForgotPasswordPage() {
   const user = await getCurrentUser();
-  if (user) redirect("/admin");
+  if (user) redirect(destinationAfterLogin(user));
 
   return (
     <LoginFrame

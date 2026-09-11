@@ -9,7 +9,7 @@ import { AssigneeChecklist } from "@/components/workdesk/assignee-checklist";
 import { AttachmentField } from "@/components/workdesk/attachment-field";
 import { AttachmentList } from "@/components/workdesk/attachment-list";
 import { PriorityBadge, TaskStatusBadge } from "@/components/workdesk/badges";
-import { WorkdeskNotifyMenu } from "@/components/workdesk/notify-menu";
+import { EmailStaffButton, WorkdeskNotifyMenu } from "@/components/workdesk/notify-menu";
 import { AssigneeAvatars } from "@/components/workdesk/work-item";
 import { requireAdminRole } from "@/lib/admin-guard";
 import { hasRole } from "@/lib/auth";
@@ -65,6 +65,27 @@ export default async function AdminTaskPage({
           } · Created by ${task.createdBy.name}${
             task.dueAt ? ` · ${overdue ? "Overdue " : "Due "}${formatDate(task.dueAt)}` : ""
           }`}
+          actions={
+            <div className="flex flex-wrap items-center gap-2">
+              <EmailStaffButton
+                action={notifyTaskStaffAction}
+                hiddenFields={{ taskId: task.id, returnTo: `/admin/tasks/${task.id}` }}
+                disabled={assigneeNames.length === 0}
+              />
+              {task.status === "COMPLETED" || task.status === "CLOSED" ? (
+                <form action={deleteTaskAction}>
+                  <input type="hidden" name="taskId" value={task.id} />
+                  <input type="hidden" name="returnTo" value="/admin/tasks" />
+                  <ConfirmSubmit
+                    message={`Delete ${task.reference}? This cannot be undone.`}
+                    className="rounded-lg border border-red-300 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-700 hover:bg-red-100"
+                  >
+                    Delete
+                  </ConfirmSubmit>
+                </form>
+              ) : null}
+            </div>
+          }
         />
         {query.notify === "none" ? (
           <div className="mb-4">

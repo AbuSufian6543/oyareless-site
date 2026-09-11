@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 
 import { AdminShell } from "@/components/admin/admin-shell";
 import { getCurrentUser } from "@/lib/auth";
 import { FLASH_COOKIE } from "@/lib/flash-client";
 import { prisma } from "@/lib/prisma";
+import { destinationAfterLogin, loginUrlFor } from "@/lib/safe-return";
 import { getSettings } from "@/lib/settings";
 import {
   OPEN_TASK,
@@ -30,11 +31,17 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const user = await getCurrentUser();
-  if (!user) redirect("/login");
+  if (!user) {
+    const path = (await headers()).get("x-wc-path") || "/admin";
+    redirect(loginUrlFor(path));
+  }
 
   // VIEWER has no admin UI. Technicians stay on /tech. Employee and above use this workdesk.
   if (user.role === "VIEWER") redirect("/");
-  if (user.role === "TECHNICIAN") redirect("/tech");
+  if (user.role === "TECHNICIAN") {
+    const path = (await headers()).get("x-wc-path") || "/tech";
+    redirect(destinationAfterLogin(user, path));
+  }
 
   const [newSubmissions, newQuotes, settings, unreadNotifications, openTickets, openTasks] = await Promise.all([
     prisma.formSubmission.count({ where: { status: "NEW" } }).catch(() => 0),

@@ -1,10 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 import { LoginFrame } from "@/app/login/login-frame";
 import { ResetPasswordForm } from "@/app/login/reset/reset-form";
-import { getCurrentUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -18,9 +16,9 @@ export default async function ResetPasswordPage({
 }: {
   searchParams: Promise<{ token?: string }>;
 }) {
-  const user = await getCurrentUser();
-  if (user) redirect("/admin");
-
+  // Stay on this page even if a staff session already exists. Sending people
+  // to /admin first bounced viewers (and anyone without admin access) onto
+  // the public homepage, so the reset link looked broken.
   const { token } = await searchParams;
   if (!token) {
     return (

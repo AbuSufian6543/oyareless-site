@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { TechShell } from "@/components/tech/tech-shell";
 import { getCurrentUser, hasRole } from "@/lib/auth";
 import { FLASH_COOKIE } from "@/lib/flash-client";
+import { destinationAfterLogin, loginUrlFor } from "@/lib/safe-return";
 import { getSettings } from "@/lib/settings";
 import { unreadNotificationCount } from "@/lib/workdesk/notify";
 import { technicianTaskWhere, technicianTicketWhere } from "@/lib/workdesk/access";
@@ -24,9 +25,15 @@ export default async function TechLayout({
   children: React.ReactNode;
 }) {
   const user = await getCurrentUser();
-  if (!user) redirect("/login");
+  if (!user) {
+    const path = (await headers()).get("x-wc-path") || "/tech";
+    redirect(loginUrlFor(path));
+  }
   if (user.role !== "TECHNICIAN") {
-    if (hasRole(user, "EMPLOYEE")) redirect("/admin");
+    if (hasRole(user, "EMPLOYEE")) {
+      const path = (await headers()).get("x-wc-path") || "/admin";
+      redirect(destinationAfterLogin(user, path));
+    }
     redirect("/");
   }
 
