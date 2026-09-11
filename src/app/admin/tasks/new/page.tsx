@@ -18,7 +18,7 @@ export default async function NewTaskPage() {
       <PageHeader
         breadcrumb={{ href: "/admin/tasks", label: "Tasks" }}
         title="New internal task"
-        description="Assign the people who should do this work. They are emailed the full task automatically. You can send a reminder later from the task."
+        description="Assign the people who should do this work. Only those people are emailed. You can send a reminder later from the task."
       />
       <form action={createTaskAction} encType="multipart/form-data" className="max-w-2xl space-y-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_1px_2px_rgba(15,42,73,0.05)] sm:p-6">
         <TextField label="Title" name="title" required />
@@ -41,7 +41,7 @@ export default async function NewTaskPage() {
         <AttachmentField />
         <TaskEmailHint tone="create" />
         <button type="submit" className="rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-700">
-          Create task and email staff
+          Create task and email assigned staff
         </button>
       </form>
       <TaskEmailPreview />

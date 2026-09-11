@@ -26,6 +26,9 @@ import {
   parseLoggedMinutes,
   parseProductQuantity,
 } from "../src/lib/workdesk/hours";
+import { calendarDateKey, DEFAULT_DISPLAY_TIMEZONE } from "../src/lib/timezone";
+import { formatDate, formatDateTime } from "../src/lib/utils";
+import { parseDateInput } from "../src/lib/workdesk/dates";
 
 let failed = 0;
 
@@ -133,6 +136,28 @@ assert("duration formats as 1h 30m", formatLoggedDuration(90) === "1h 30m");
 assert("45m formats without hours", formatLoggedDuration(45) === "45m");
 assert("product quantity keeps two decimals", parseProductQuantity("12.5") === 12.5);
 assert("zero product quantity is rejected", parseProductQuantity("0") === null);
+
+const torontoNoon = new Date("2026-09-11T16:00:00.000Z");
+const torontoEveningUtc = new Date("2026-09-11T03:00:00.000Z");
+assert("office clock defaults to Toronto", DEFAULT_DISPLAY_TIMEZONE === "America/Toronto");
+assert(
+  "timestamps display noon Eastern, not UTC",
+  formatDateTime(torontoNoon).includes("12") &&
+    formatDateTime(torontoNoon).includes("Sep") &&
+    formatDateTime(torontoNoon).includes("11"),
+);
+assert(
+  "late UTC evening still shows the Toronto calendar date",
+  formatDate(torontoEveningUtc) === "September 10, 2026" &&
+    calendarDateKey(torontoEveningUtc) === "2026-09-10",
+);
+assert(
+  "date-only fields save noon in the office timezone",
+  (() => {
+    const parsed = parseDateInput("2026-09-11");
+    return parsed !== null && formatDate(parsed) === "September 11, 2026";
+  })(),
+);
 
 const schema = readFileSync(path.join(process.cwd(), "prisma/schema.prisma"), "utf8");
 const auditStart = schema.indexOf("model AuditLog");
@@ -427,10 +452,21 @@ const notifyLib = readFileSync(
   "utf8",
 );
 assert(
-  "new work emails assignees and the office inbox",
+  "new tickets still copy the office inbox; new tasks email only assignees",
   notifyLib.includes("export async function notifyNewWork") &&
     notifyLib.includes("emailAdminInbox") &&
-    notifyLib.includes("unassignedCreateNotice"),
+    notifyLib.includes("unassignedCreateNotice") &&
+    notifyLib.includes("async function notifyNewTaskAssignees") &&
+    (() => {
+      const start = notifyLib.indexOf("async function notifyNewTaskAssignees");
+      const end = notifyLib.indexOf("async function listWorkdeskManagerIds");
+      const taskFn = notifyLib.slice(start, end);
+      return (
+        taskFn.includes("userIds: input.assigneeIds") &&
+        !taskFn.includes("emailAdminInbox") &&
+        !taskFn.includes("listWorkdeskManagerIds")
+      );
+    })(),
 );
 
 assert(
@@ -516,6 +552,25 @@ assert(
     workdeskMail.includes("emailActionLink") &&
     workdeskMail.includes("staffEmailDocument") &&
     workdeskMail.includes("renderTaskEmailCard"),
+);
+
+const dateUtils = readFileSync(path.join(process.cwd(), "src/lib/utils.ts"), "utf8");
+const rootLayout = readFileSync(path.join(process.cwd(), "src/app/layout.tsx"), "utf8");
+const siteSettings = readFileSync(
+  path.join(process.cwd(), "src/lib/settings-defaults.ts"),
+  "utf8",
+);
+const settingsPage = readFileSync(
+  path.join(process.cwd(), "src/app/admin/settings/page.tsx"),
+  "utf8",
+);
+assert(
+  "dates use the office timezone everywhere, including a settings field",
+  dateUtils.includes("displayTimeZone()") &&
+    dateUtils.includes("timeZoneName") &&
+    rootLayout.includes("data-timezone") &&
+    siteSettings.includes("displayTimeZone") &&
+    settingsPage.includes("Display timezone"),
 );
 
 assert(

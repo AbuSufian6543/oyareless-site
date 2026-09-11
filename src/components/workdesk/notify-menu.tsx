@@ -11,7 +11,7 @@ export function TaskEmailHint({
 }) {
   const text =
     tone === "create"
-      ? "Assigned staff and the office inbox receive an email with the title, description, due date, priority, files, notes, and who is assigned."
+      ? "Only the people you assign receive an email. Nobody else on staff, and not the office inbox."
       : tone === "save"
         ? "Saving emails assigned staff with the full current task, not only the fields you changed."
         : "This reminder includes the full task in the email, not just a one-line ping.";

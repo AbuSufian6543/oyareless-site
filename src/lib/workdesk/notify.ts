@@ -3,6 +3,7 @@ import "server-only";
 import type { Role, WorkdeskNotificationKind } from "@/generated/prisma/client";
 import { emailActionLink, sendMail, staffEmailDocument } from "@/lib/mail";
 import { prisma } from "@/lib/prisma";
+import { getSettings } from "@/lib/settings";
 import { publicUrl } from "@/lib/public-url";
 import { formatDate, formatDateTime } from "@/lib/utils";
 import { workdeskHref } from "@/lib/workdesk/access";
@@ -30,6 +31,7 @@ function escapeHtml(value: string): string {
 }
 
 async function loadTaskMailSnapshot(taskId: string): Promise<TaskMailSnapshot | null> {
+  await getSettings();
   const task = await prisma.internalTask.findUnique({
     where: { id: taskId },
     include: {
@@ -248,9 +250,12 @@ function adminHref(input: { ticketId?: string; taskId?: string }): string {
 
 /**
  * Email + in-site notice when a ticket or task is created.
- * Assignees always get mail (including the person who created it).
- * If nobody is assigned, other employees/admins are pinged so the item is not silent.
- * The office inbox also gets a copy, same as a customer opening a portal ticket.
+ *
+ * Tasks: only the people on the task. No office-inbox copy and no blast to
+ * every employee/admin. Unassigned tasks stay silent until someone is assigned.
+ *
+ * Tickets: assignees get mail; if nobody is assigned, other employees/admins
+ * are pinged; the office inbox also gets a copy (same as a portal ticket).
  */
 export async function notifyNewWork(input: {
   actorId: string;
@@ -262,6 +267,11 @@ export async function notifyNewWork(input: {
   ticketId?: string;
   taskId?: string;
 }): Promise<void> {
+  if (input.kind === "task") {
+    await notifyNewTaskAssignees(input);
+    return;
+  }
+
   const href = adminHref(input);
   const emailCard = await taskEmailCard(input.taskId);
 
@@ -317,6 +327,36 @@ export async function notifyNewWork(input: {
     href,
     taskId: input.taskId,
     emailCard,
+  });
+}
+
+/** Task create/assign mail goes only to `assigneeIds` — never the office list or other staff. */
+async function notifyNewTaskAssignees(input: {
+  actorId: string;
+  actorName: string;
+  reference: string;
+  subject: string;
+  assigneeIds: string[];
+  taskId?: string;
+}): Promise<void> {
+  if (input.assigneeIds.length === 0) return;
+
+  const names = await staffNamesFor(input.assigneeIds);
+  const notice = assignmentNotice({
+    actorName: input.actorName,
+    reference: input.reference,
+    subject: input.subject,
+    addedNames: names,
+    allNames: names,
+    kind: "task",
+    previousCount: 0,
+  });
+  await notifyStaff({
+    userIds: input.assigneeIds,
+    title: notice.title,
+    body: notice.body,
+    kind: "ASSIGNMENT",
+    taskId: input.taskId,
   });
 }
 

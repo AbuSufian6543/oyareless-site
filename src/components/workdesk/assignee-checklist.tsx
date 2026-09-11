@@ -13,7 +13,7 @@ export function AssigneeChecklist({
     <fieldset>
       <legend className="mb-2 text-sm font-medium text-navy-800">{legend}</legend>
       <p className="mb-2 text-xs text-slate-500">
-        Assigned people are emailed as soon as you save. Use Send reminder later if you need to ping them again.
+        Only the people you check are emailed. Leave someone unchecked and they will not get this message.
       </p>
       <ul className="max-h-56 space-y-1.5 overflow-y-auto rounded-lg border border-slate-200 p-3">
         {staff.map((person) => (
