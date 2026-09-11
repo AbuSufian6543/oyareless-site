@@ -1,6 +1,7 @@
 import { createStreamAction } from "@/app/admin/streams/actions";
 import { StreamForm } from "@/components/admin/stream-form";
 import { Alert, PageHeader } from "@/components/admin/ui";
+import { requireAdminRole } from "@/lib/admin-guard";
 
 export const metadata = { title: "Add stream" };
 
@@ -9,6 +10,7 @@ export default async function NewStreamPage({
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
+  await requireAdminRole("EDITOR");
   const params = await searchParams;
 
   return (

@@ -7,6 +7,7 @@ import {
   TextAreaField,
   TextField,
 } from "@/components/admin/ui";
+import { requireAdminRole } from "@/lib/admin-guard";
 
 export const metadata = { title: "New article" };
 
@@ -15,6 +16,7 @@ export default async function NewPostPage({
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
+  await requireAdminRole("EDITOR");
   const params = await searchParams;
 
   return (

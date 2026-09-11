@@ -7,6 +7,7 @@ import {
 } from "@/app/admin/pages/actions";
 import { PageEditor, type PageEditorData } from "@/components/admin/page-editor";
 import { Alert, Card, CardTitle } from "@/components/admin/ui";
+import { requireAdminRole } from "@/lib/admin-guard";
 import { getCurrentUser, hasRole } from "@/lib/auth";
 import { parseBlocks } from "@/lib/blocks";
 import { parseSlideshow } from "@/lib/slideshow";
@@ -23,6 +24,7 @@ export default async function EditPagePage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ restored?: string }>;
 }) {
+  await requireAdminRole("EDITOR");
   const { id } = await params;
   const query = await searchParams;
 

@@ -16,6 +16,7 @@ import {
   TextAreaField,
   TextField,
 } from "@/components/admin/ui";
+import { requireAdminRole } from "@/lib/admin-guard";
 import { getCurrentUser, hasRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -26,6 +27,7 @@ export default async function TestimonialsPage({
 }: {
   searchParams: Promise<{ saved?: string; deleted?: string; error?: string }>;
 }) {
+  await requireAdminRole("EDITOR");
   const params = await searchParams;
 
   const [user, testimonials] = await Promise.all([

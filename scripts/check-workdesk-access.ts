@@ -23,12 +23,17 @@ function assert(label: string, ok: boolean) {
 }
 
 assert(
-  "technician cannot satisfy VIEWER, EDITOR, ADMIN, or SUPERADMIN checks",
+  "technician cannot satisfy VIEWER, EMPLOYEE, EDITOR, ADMIN, or SUPERADMIN checks",
   !roleMeetsMinimum("TECHNICIAN", "VIEWER") &&
+    !roleMeetsMinimum("TECHNICIAN", "EMPLOYEE") &&
     !roleMeetsMinimum("TECHNICIAN", "EDITOR") &&
     !roleMeetsMinimum("TECHNICIAN", "ADMIN") &&
     !roleMeetsMinimum("TECHNICIAN", "SUPERADMIN"),
 );
+assert("viewer cannot satisfy EMPLOYEE", !roleMeetsMinimum("VIEWER", "EMPLOYEE"));
+assert("employee qualifies for workdesk admin", roleMeetsMinimum("EMPLOYEE", "EMPLOYEE"));
+assert("employee cannot satisfy EDITOR", !roleMeetsMinimum("EMPLOYEE", "EDITOR"));
+assert("editor still qualifies as employee", roleMeetsMinimum("EDITOR", "EMPLOYEE"));
 assert("editor still qualifies as editor", roleMeetsMinimum("EDITOR", "EDITOR"));
 assert("admin still qualifies as editor", roleMeetsMinimum("ADMIN", "EDITOR"));
 
@@ -177,6 +182,37 @@ assert(
   portalTickets.includes("recordTicketAudit") &&
     portalTickets.includes("ticket.created") &&
     portalTickets.includes("ticket.replied"),
+);
+
+const roleStart = schema.indexOf("enum Role");
+const roleEnd = schema.indexOf("}", roleStart);
+const roleEnum = schema.slice(roleStart, roleEnd === -1 ? undefined : roleEnd);
+assert("schema Role enum includes EMPLOYEE", roleEnum.includes("EMPLOYEE"));
+
+const access = readFileSync(path.join(process.cwd(), "src/lib/workdesk/access.ts"), "utf8");
+assert(
+  "workdesk admin CRUD starts at EMPLOYEE",
+  access.includes('hasRole(user, "EMPLOYEE")') &&
+    access.includes("export function isWorkdeskAdmin"),
+);
+
+const auditPage = readFileSync(path.join(process.cwd(), "src/app/admin/audit/page.tsx"), "utf8");
+assert(
+  "employees can open ticket and task audit, not the full CMS trail",
+  auditPage.includes('requireAdminRole("EMPLOYEE")') &&
+    auditPage.includes("workdeskAuditWhere") &&
+    auditPage.includes("fullAudit"),
+);
+
+const shell = readFileSync(
+  path.join(process.cwd(), "src/components/admin/admin-shell.tsx"),
+  "utf8",
+);
+assert(
+  "CMS and enquiry nav require EDITOR; configuration stays ADMIN+",
+  shell.includes("STAFF_ROLE_RANK.EDITOR") &&
+    shell.includes("STAFF_ROLE_RANK.ADMIN") &&
+    shell.includes("STAFF_ROLE_RANK.SUPERADMIN"),
 );
 
 process.exit(failed === 0 ? 0 : 1);

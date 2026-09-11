@@ -5,6 +5,7 @@ import { ExternalLink, Trash2 } from "lucide-react";
 import { deleteJobAction, saveJobAction } from "@/app/admin/jobs/actions";
 import { JobForm } from "@/components/admin/job-form";
 import { Alert, Card, CardTitle, PageHeader } from "@/components/admin/ui";
+import { requireAdminRole } from "@/lib/admin-guard";
 import { getCurrentUser, hasRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -17,6 +18,7 @@ export default async function EditJobPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ saved?: string; created?: string; error?: string }>;
 }) {
+  await requireAdminRole("EDITOR");
   const { id } = await params;
   const query = await searchParams;
 

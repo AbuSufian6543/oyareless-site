@@ -9,6 +9,7 @@ import {
   PageHeader,
 } from "@/components/admin/ui";
 import { requireAdminRole } from "@/lib/admin-guard";
+import { hasRole } from "@/lib/auth";
 import {
   auditActionLabel,
   readAuditMeta,
@@ -20,7 +21,7 @@ export const metadata = { title: "Audit log" };
 
 const PAGE_SIZE = 100;
 
-const GROUPS = [
+const ALL_GROUPS = [
   { value: "", label: "Everything" },
   { value: "user.", label: "Accounts & sign-ins" },
   { value: "page.", label: "Pages" },
@@ -32,6 +33,21 @@ const GROUPS = [
   { value: "ticket.", label: "Tickets" },
   { value: "task.", label: "Tasks" },
 ] as const;
+
+const WORKDESK_GROUPS = [
+  { value: "", label: "Everything" },
+  { value: "ticket.", label: "Tickets" },
+  { value: "task.", label: "Tasks" },
+] as const;
+
+function workdeskAuditWhere() {
+  return {
+    OR: [
+      { action: { startsWith: "ticket." } },
+      { action: { startsWith: "task." } },
+    ],
+  };
+}
 
 function toneFor(action: string): "danger" | "warning" | "info" | "neutral" {
   if (action.startsWith("user.login_failed") || action.endsWith(".deleted")) {
@@ -65,26 +81,33 @@ export default async function AuditPage({
 }: {
   searchParams: Promise<{ page?: string; action?: string; q?: string }>;
 }) {
-  await requireAdminRole("SUPERADMIN");
+  const user = await requireAdminRole("EMPLOYEE");
+  const fullAudit = hasRole(user, "SUPERADMIN");
+  const groups = fullAudit ? ALL_GROUPS : WORKDESK_GROUPS;
 
   const params = await searchParams;
   const pageNumber = Math.max(1, Number.parseInt(params.page ?? "1", 10) || 1);
-  const filter = params.action?.trim() ?? "";
+  const requested = params.action?.trim() ?? "";
+  const filter =
+    fullAudit || requested === "ticket." || requested === "task."
+      ? requested
+      : "";
   const query = params.q?.trim() ?? "";
 
-  const where = {
-    ...(filter ? { action: { startsWith: filter } } : {}),
-    ...(query
-      ? {
-          OR: [
-            { summary: { contains: query, mode: "insensitive" as const } },
-            { ipAddress: { contains: query, mode: "insensitive" as const } },
-            { action: { contains: query, mode: "insensitive" as const } },
-            { entityId: { contains: query } },
-          ],
-        }
-      : {}),
-  };
+  const clauses: object[] = [];
+  if (!fullAudit) clauses.push(workdeskAuditWhere());
+  if (filter) clauses.push({ action: { startsWith: filter } });
+  if (query) {
+    clauses.push({
+      OR: [
+        { summary: { contains: query, mode: "insensitive" as const } },
+        { ipAddress: { contains: query, mode: "insensitive" as const } },
+        { action: { contains: query, mode: "insensitive" as const } },
+        { entityId: { contains: query } },
+      ],
+    });
+  }
+  const where = clauses.length === 0 ? {} : clauses.length === 1 ? clauses[0] : { AND: clauses };
 
   const [entries, total] = await Promise.all([
     prisma.auditLog.findMany({
@@ -134,12 +157,16 @@ export default async function AuditPage({
   return (
     <div>
       <PageHeader
-        title="Audit log"
-        description="Append-only record of sign-ins, content, quotes, tickets, and tasks. Every row keeps the caller IP. Deleting a ticket or task does not erase its trail."
+        title={fullAudit ? "Audit log" : "Ticket & task audit"}
+        description={
+          fullAudit
+            ? "Append-only record of sign-ins, content, quotes, tickets, and tasks. Every row keeps the caller IP. Deleting a ticket or task does not erase its trail."
+            : "Create, update, and delete history for tickets and tasks, with caller IP. Site and account changes are not shown on this role."
+        }
       />
 
       <div className="mb-5 flex flex-wrap gap-1.5">
-        {GROUPS.map((group) => (
+        {groups.map((group) => (
           <Link
             key={group.value || "all"}
             href={hrefFor({ action: group.value || undefined, q: query || undefined })}
@@ -194,7 +221,11 @@ export default async function AuditPage({
           <EmptyState
             icon={<ShieldAlert className="size-8" aria-hidden="true" />}
             title="Nothing recorded yet"
-            description="Sign-ins, content changes, quote requests, tickets, and tasks will appear here with the caller IP."
+            description={
+              fullAudit
+                ? "Sign-ins, content changes, quote requests, tickets, and tasks will appear here with the caller IP."
+                : "Opening, updating, or deleting a ticket or task will appear here with the caller IP. Message text is not stored."
+            }
           />
         </Card>
       ) : (

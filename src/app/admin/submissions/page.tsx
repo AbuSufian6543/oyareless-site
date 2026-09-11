@@ -9,6 +9,7 @@ import {
   EmptyState,
   PageHeader,
 } from "@/components/admin/ui";
+import { requireAdminRole } from "@/lib/admin-guard";
 import { prisma } from "@/lib/prisma";
 import { cn, formatDateTime, truncate } from "@/lib/utils";
 
@@ -37,6 +38,7 @@ export default async function SubmissionsPage({
 }: {
   searchParams: Promise<{ status?: string; updated?: string }>;
 }) {
+  await requireAdminRole("EDITOR");
   const params = await searchParams;
   const filter = params.status ?? "NEW";
 

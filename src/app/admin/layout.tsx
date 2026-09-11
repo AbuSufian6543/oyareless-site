@@ -32,7 +32,7 @@ export default async function AdminLayout({
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  // VIEWER has no admin UI. Technicians are confined to /tech.
+  // VIEWER has no admin UI. Technicians stay on /tech. Employee and above use this workdesk.
   if (user.role === "VIEWER") redirect("/");
   if (user.role === "TECHNICIAN") redirect("/tech");
 

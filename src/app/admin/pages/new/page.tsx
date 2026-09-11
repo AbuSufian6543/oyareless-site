@@ -8,6 +8,7 @@ import {
   PageHeader,
   TextField,
 } from "@/components/admin/ui";
+import { requireAdminRole } from "@/lib/admin-guard";
 
 export const metadata = { title: "New page" };
 
@@ -56,6 +57,7 @@ export default async function NewPagePage({
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
+  await requireAdminRole("EDITOR");
   const params = await searchParams;
   const error = params.error ? ERRORS[params.error] : null;
 

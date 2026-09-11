@@ -26,7 +26,7 @@ export default async function TechLayout({
   const user = await getCurrentUser();
   if (!user) redirect("/login");
   if (user.role !== "TECHNICIAN") {
-    if (hasRole(user, "EDITOR")) redirect("/admin");
+    if (hasRole(user, "EMPLOYEE")) redirect("/admin");
     redirect("/");
   }
 

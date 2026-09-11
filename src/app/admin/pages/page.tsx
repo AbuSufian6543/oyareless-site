@@ -10,6 +10,7 @@ import {
   PageHeader,
   StatusBadge,
 } from "@/components/admin/ui";
+import { requireAdminRole } from "@/lib/admin-guard";
 import { prisma } from "@/lib/prisma";
 import { formatDateTime } from "@/lib/utils";
 
@@ -20,6 +21,7 @@ export default async function AdminPagesPage({
 }: {
   searchParams: Promise<{ deleted?: string; error?: string }>;
 }) {
+  await requireAdminRole("EDITOR");
   const params = await searchParams;
 
   const pages = await prisma.page.findMany({

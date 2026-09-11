@@ -4,13 +4,14 @@ import { Trash2 } from "lucide-react";
 import { deleteCollectionRecordAction } from "@/app/admin/collections/actions";
 import { CollectionEditor } from "@/components/admin/collection-editor";
 import { Card, CardTitle } from "@/components/admin/ui";
+import { requireAdminRole } from "@/lib/admin-guard";
 import { getCollection } from "@/lib/admin-collections";
 import {
   findRecord,
   recordBlocks,
   referenceOptions,
 } from "@/lib/admin-collections.server";
-import { hasRole, requireRole } from "@/lib/auth";
+import { hasRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { toStreamPickerOptions } from "@/lib/stream-picker";
 
@@ -37,7 +38,7 @@ export default async function CollectionEditPage({
   const collection = getCollection(key);
   if (!collection) notFound();
 
-  const user = await requireRole(collection.writeRole);
+  const user = await requireAdminRole(collection.writeRole);
   const isNew = id === "new";
 
   const record = isNew ? null : await findRecord(collection, id);

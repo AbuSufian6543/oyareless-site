@@ -19,6 +19,8 @@ enum Role {
   SUPERADMIN
   ADMIN
   EDITOR
+  /// Workdesk staff. Full ticket and task CRUD, plus those audit trails. No CMS.
+  EMPLOYEE
   VIEWER
   /// Field technicians. They can only use /tech for assigned tickets and tasks.
   TECHNICIAN

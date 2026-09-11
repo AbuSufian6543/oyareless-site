@@ -33,7 +33,7 @@ export function isTechnician(user: SessionUser | null): boolean {
 }
 
 export function isWorkdeskAdmin(user: SessionUser | null): boolean {
-  return hasRole(user, "EDITOR");
+  return hasRole(user, "EMPLOYEE");
 }
 
 export function canManageWorkdesk(user: SessionUser | null): boolean {

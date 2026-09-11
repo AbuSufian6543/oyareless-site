@@ -11,6 +11,7 @@ import {
   SelectField,
   TextAreaField,
 } from "@/components/admin/ui";
+import { requireAdminRole } from "@/lib/admin-guard";
 import { prisma } from "@/lib/prisma";
 import { formatDateTime, telHref } from "@/lib/utils";
 
@@ -23,6 +24,7 @@ export default async function SubmissionDetailPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ saved?: string }>;
 }) {
+  await requireAdminRole("EDITOR");
   const { id } = await params;
   const query = await searchParams;
 

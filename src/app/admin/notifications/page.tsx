@@ -10,7 +10,7 @@ import { workdeskHref } from "@/lib/workdesk/access";
 export const metadata = { title: "Notifications" };
 
 export default async function AdminNotificationsPage() {
-  const user = await requireAdminRole("EDITOR");
+  const user = await requireAdminRole("EMPLOYEE");
   const items = await prisma.workdeskNotification.findMany({
     where: { userId: user.id },
     orderBy: { createdAt: "desc" },

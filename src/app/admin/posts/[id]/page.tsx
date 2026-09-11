@@ -4,6 +4,7 @@ import { Trash2 } from "lucide-react";
 import { deletePostAction } from "@/app/admin/posts/actions";
 import { PostEditor, type PostEditorData } from "@/components/admin/post-editor";
 import { Card, CardTitle } from "@/components/admin/ui";
+import { requireAdminRole } from "@/lib/admin-guard";
 import { getCurrentUser, hasRole } from "@/lib/auth";
 import { parseBlocks } from "@/lib/blocks";
 import { prisma } from "@/lib/prisma";
@@ -16,6 +17,7 @@ export default async function EditPostPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requireAdminRole("EDITOR");
   const { id } = await params;
 
   const [user, post, streams] = await Promise.all([

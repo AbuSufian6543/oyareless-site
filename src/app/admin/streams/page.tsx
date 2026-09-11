@@ -10,6 +10,7 @@ import {
   PageHeader,
   StatusBadge,
 } from "@/components/admin/ui";
+import { requireAdminRole } from "@/lib/admin-guard";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = { title: "Live streams" };
@@ -19,6 +20,7 @@ export default async function AdminStreamsPage({
 }: {
   searchParams: Promise<{ deleted?: string }>;
 }) {
+  await requireAdminRole("EDITOR");
   const params = await searchParams;
 
   const streams = await prisma.stream.findMany({

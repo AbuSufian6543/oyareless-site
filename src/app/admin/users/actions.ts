@@ -11,10 +11,11 @@ import {
   validatePasswordStrength,
 } from "@/lib/auth";
 import { newUserInviteEmail, sendMail } from "@/lib/mail";
+import { staffRoleLabel } from "@/lib/workdesk/rules";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
 
-const ROLES = ["SUPERADMIN", "ADMIN", "EDITOR", "VIEWER", "TECHNICIAN"] as const;
+const ROLES = ["SUPERADMIN", "ADMIN", "EDITOR", "EMPLOYEE", "VIEWER", "TECHNICIAN"] as const;
 type RoleName = (typeof ROLES)[number];
 
 const createSchema = z.object({
@@ -72,7 +73,7 @@ export async function createUserAction(formData: FormData): Promise<void> {
       name: user.name,
       email: user.email,
       temporaryPassword: parsed.data.password,
-      role: user.role,
+      role: staffRoleLabel(user.role),
     });
     await sendMail({
       to: user.email,

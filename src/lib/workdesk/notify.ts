@@ -5,9 +5,8 @@ import { sendMail } from "@/lib/mail";
 import { prisma } from "@/lib/prisma";
 import { publicUrl } from "@/lib/public-url";
 import { workdeskHref } from "@/lib/workdesk/access";
+import { WORKDESK_MANAGER_ROLES } from "@/lib/workdesk/rules";
 import { listTaskAssigneeIds, listTicketAssigneeIds } from "@/lib/workdesk/staff";
-
-const WORKDESK_MANAGER_ROLES = ["EDITOR", "ADMIN", "SUPERADMIN"] as const;
 
 function escapeHtml(value: string): string {
   return value

@@ -31,7 +31,7 @@ export default async function AdminTicketsPage({
 }: {
   searchParams: Promise<{ view?: string; create?: string; error?: string }>;
 }) {
-  const user = await requireAdminRole("EDITOR");
+  const user = await requireAdminRole("EMPLOYEE");
   const params = await searchParams;
   const view = parseView(params.view);
   const createOpen = params.create === "1" || params.error === "invalid";
@@ -82,7 +82,7 @@ export default async function AdminTicketsPage({
         title="Tickets"
         description="Customer tickets assigned to you, to the team, or still waiting for an owner. Open a card to reply or reassign."
         actions={
-          hasRole(user, "SUPERADMIN") ? (
+          hasRole(user, "EMPLOYEE") ? (
             <Link
               href="/admin/audit?action=ticket."
               className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-navy-800 hover:bg-slate-50"

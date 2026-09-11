@@ -7,12 +7,14 @@ import {
   EmptyState,
   PageHeader,
 } from "@/components/admin/ui";
+import { requireAdminRole } from "@/lib/admin-guard";
 import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/utils";
 
 export const metadata = { title: "Subscribers" };
 
 export default async function SubscribersPage() {
+  await requireAdminRole("EDITOR");
   const [subscribers, counts] = await Promise.all([
     prisma.subscriber.findMany({ orderBy: { createdAt: "desc" }, take: 500 }),
     prisma.subscriber.groupBy({ by: ["status"], _count: true }),

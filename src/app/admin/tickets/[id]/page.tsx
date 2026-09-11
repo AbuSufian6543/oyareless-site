@@ -34,7 +34,7 @@ export default async function AdminTicketPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const user = await requireAdminRole("EDITOR");
+  const user = await requireAdminRole("EMPLOYEE");
   const { id } = await params;
   const [ticket, staff, customers] = await Promise.all([
     prisma.ticket.findUnique({
@@ -257,7 +257,7 @@ export default async function AdminTicketPage({
         <Card>
           <CardTitle>History</CardTitle>
           <ActivityLog events={ticket.events} />
-          {hasRole(user, "SUPERADMIN") ? (
+          {hasRole(user, "EMPLOYEE") ? (
             <Link
               href={`/admin/audit?action=ticket.&q=${encodeURIComponent(ticket.reference)}`}
               className="mt-3 inline-block text-sm font-semibold text-brand-700 hover:underline"

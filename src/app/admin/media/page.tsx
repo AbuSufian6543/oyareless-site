@@ -1,12 +1,13 @@
 import { MediaManager } from "@/components/admin/media-manager";
 import { PageHeader } from "@/components/admin/ui";
-import { getCurrentUser, hasRole } from "@/lib/auth";
+import { requireAdminRole } from "@/lib/admin-guard";
+import { hasRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = { title: "Media library" };
 
 export default async function AdminMediaPage() {
-  const user = await getCurrentUser();
+  const user = await requireAdminRole("EDITOR");
 
   const assets = await prisma.mediaAsset
     .findMany({

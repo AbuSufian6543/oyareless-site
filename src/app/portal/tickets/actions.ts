@@ -16,6 +16,7 @@ import {
 import { nextTicketReference } from "@/lib/workdesk/references";
 import { revalidateWorkdesk } from "@/lib/workdesk/revalidate";
 import { TICKET_CATEGORIES } from "@/lib/workdesk/labels";
+import { WORKDESK_MANAGER_ROLES } from "@/lib/workdesk/rules";
 
 async function attachFiles(messageId: string, formData: FormData) {
   const files = await saveWorkdeskUploads(formData);
@@ -83,7 +84,7 @@ export async function createTicketAction(formData: FormData): Promise<void> {
   });
 
   const admins = await prisma.user.findMany({
-    where: { isActive: true, role: { in: ["EDITOR", "ADMIN", "SUPERADMIN"] } },
+    where: { isActive: true, role: { in: [...WORKDESK_MANAGER_ROLES] } },
     select: { id: true },
   });
   await notifyStaff({

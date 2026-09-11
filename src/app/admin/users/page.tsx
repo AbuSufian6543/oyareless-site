@@ -33,6 +33,7 @@ const ROLE_OPTIONS = [
   { value: "SUPERADMIN", label: "Super Admin — full control, manages users" },
   { value: "ADMIN", label: "Admin — all content plus site configuration" },
   { value: "EDITOR", label: "Editor — creates and publishes content" },
+  { value: "EMPLOYEE", label: "Employee — tickets, tasks, and those audit trails (no CMS)" },
   { value: "VIEWER", label: "Viewer — read-only reports" },
   { value: "TECHNICIAN", label: "Technician — assigned tickets and tasks only" },
 ];
@@ -41,6 +42,7 @@ const ROLE_TONES = {
   SUPERADMIN: "danger",
   ADMIN: "info",
   EDITOR: "success",
+  EMPLOYEE: "navy",
   VIEWER: "neutral",
   TECHNICIAN: "warning",
 } as const;

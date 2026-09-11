@@ -8,7 +8,7 @@ import { listAssignableStaff } from "@/lib/workdesk/staff";
 export const metadata = { title: "New task" };
 
 export default async function NewTaskPage() {
-  await requireAdminRole("EDITOR");
+  await requireAdminRole("EMPLOYEE");
   const staff = await listAssignableStaff();
 
   return (

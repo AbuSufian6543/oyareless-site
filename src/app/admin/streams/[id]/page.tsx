@@ -8,6 +8,7 @@ import {
 } from "@/app/admin/streams/actions";
 import { StreamForm } from "@/components/admin/stream-form";
 import { Alert, Card, CardTitle, PageHeader } from "@/components/admin/ui";
+import { requireAdminRole } from "@/lib/admin-guard";
 import { getCurrentUser, hasRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -33,6 +34,7 @@ export default async function EditStreamPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ created?: string; saved?: string; error?: string }>;
 }) {
+  await requireAdminRole("EDITOR");
   const { id } = await params;
   const query = await searchParams;
 

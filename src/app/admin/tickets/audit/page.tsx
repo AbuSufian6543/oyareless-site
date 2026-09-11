@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 
 export const metadata = { title: "Audit log" };
 
-/** Old workdesk URL. Ticket and task trails now live under Configuration → Audit log. */
+/** Old workdesk URL. Ticket and task trails live under Audit log. */
 export default async function TicketAuditRedirect({
   searchParams,
 }: {

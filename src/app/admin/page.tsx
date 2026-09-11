@@ -17,7 +17,7 @@ import {
 import { Alert, Badge, Card, CardTitle, EmptyState, PageHeader } from "@/components/admin/ui";
 import { WorkItem, WorkList, WorkStatLink } from "@/components/workdesk/work-item";
 import { env } from "@/lib/env";
-import { getCurrentUser } from "@/lib/auth";
+import { getCurrentUser, hasRole } from "@/lib/auth";
 import { getResolvedMail } from "@/lib/mail-settings";
 import { prisma } from "@/lib/prisma";
 import { formatDateTime } from "@/lib/utils";
@@ -48,9 +48,15 @@ const ticketInclude = {
   assignees: { include: { user: { select: { name: true } } } },
 };
 
-export default async function AdminDashboard() {
+export default async function AdminDashboard({
+  searchParams,
+}: {
+  searchParams: Promise<{ denied?: string }>;
+}) {
   const user = await getCurrentUser();
   if (!user) return null;
+  const params = await searchParams;
+  const canSeeCms = hasRole(user, "EDITOR");
   const today = startOfToday();
   const myId = user.id;
 
@@ -127,17 +133,19 @@ export default async function AdminDashboard() {
       take: 6,
       include: ticketInclude,
     }),
-    prisma.page.count({ where: { status: "PUBLISHED" } }).catch(() => 0),
-    prisma.page.count({ where: { status: "DRAFT" } }).catch(() => 0),
-    prisma.stream.count({ where: { status: "PUBLISHED" } }).catch(() => 0),
-    prisma.post.count({ where: { status: "PUBLISHED" } }).catch(() => 0),
-    prisma.jobPosting.count({ where: { status: "PUBLISHED" } }).catch(() => 0),
-    prisma.formSubmission.count({ where: { status: "NEW" } }).catch(() => 0),
-    prisma.quoteRequest.count({ where: { status: "NEW" } }).catch(() => 0),
-    prisma.subscriber.count({ where: { status: "CONFIRMED" } }).catch(() => 0),
-    prisma.formSubmission
-      .findMany({ orderBy: { createdAt: "desc" }, take: 5 })
-      .catch(() => []),
+    canSeeCms ? prisma.page.count({ where: { status: "PUBLISHED" } }).catch(() => 0) : Promise.resolve(0),
+    canSeeCms ? prisma.page.count({ where: { status: "DRAFT" } }).catch(() => 0) : Promise.resolve(0),
+    canSeeCms ? prisma.stream.count({ where: { status: "PUBLISHED" } }).catch(() => 0) : Promise.resolve(0),
+    canSeeCms ? prisma.post.count({ where: { status: "PUBLISHED" } }).catch(() => 0) : Promise.resolve(0),
+    canSeeCms ? prisma.jobPosting.count({ where: { status: "PUBLISHED" } }).catch(() => 0) : Promise.resolve(0),
+    canSeeCms ? prisma.formSubmission.count({ where: { status: "NEW" } }).catch(() => 0) : Promise.resolve(0),
+    canSeeCms ? prisma.quoteRequest.count({ where: { status: "NEW" } }).catch(() => 0) : Promise.resolve(0),
+    canSeeCms ? prisma.subscriber.count({ where: { status: "CONFIRMED" } }).catch(() => 0) : Promise.resolve(0),
+    canSeeCms
+      ? prisma.formSubmission
+          .findMany({ orderBy: { createdAt: "desc" }, take: 5 })
+          .catch(() => [])
+      : Promise.resolve([]),
     getResolvedMail().catch((): { isConfigured: boolean } => ({
       isConfigured: false,
     })),
@@ -245,7 +253,15 @@ export default async function AdminDashboard() {
         }
       />
 
-      {!mail.isConfigured && (
+      {params.denied === "1" && (
+        <div className="mb-6">
+          <Alert tone="danger">
+            You do not have access to that section.
+          </Alert>
+        </div>
+      )}
+
+      {!mail.isConfigured && canSeeCms && (
         <div className="mb-6">
           <Alert tone="warning">
             <strong>SMTP is not configured.</strong> Assignment emails will not send until
@@ -467,6 +483,7 @@ export default async function AdminDashboard() {
           </Card>
       </div>
 
+      {canSeeCms ? (
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <Card>
@@ -559,6 +576,7 @@ export default async function AdminDashboard() {
           </dl>
         </Card>
       </div>
+      ) : null}
     </>
   );
 }

@@ -14,9 +14,10 @@ import {
   inputClass,
 } from "@/components/admin/ui";
 import { AdminIcon } from "@/components/admin/admin-icon";
+import { requireAdminRole } from "@/lib/admin-guard";
 import { getCollection } from "@/lib/admin-collections";
 import { listRecords } from "@/lib/admin-collections.server";
-import { getCurrentUser, hasRole } from "@/lib/auth";
+import { hasRole } from "@/lib/auth";
 import { formatDateTime } from "@/lib/utils";
 
 const PAGE_SIZE = 40;
@@ -43,7 +44,7 @@ export default async function CollectionListPage({
   const collection = getCollection(key);
   if (!collection) notFound();
 
-  const user = await getCurrentUser();
+  const user = await requireAdminRole(collection.writeRole);
   const canWrite = hasRole(user, collection.writeRole);
   const canDelete = hasRole(user, "ADMIN");
 

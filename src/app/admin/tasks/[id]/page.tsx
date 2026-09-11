@@ -25,7 +25,7 @@ export default async function AdminTaskPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const user = await requireAdminRole("EDITOR");
+  const user = await requireAdminRole("EMPLOYEE");
   const { id } = await params;
   const [task, staff] = await Promise.all([
     prisma.internalTask.findUnique({
@@ -149,7 +149,7 @@ export default async function AdminTaskPage({
         <Card>
           <CardTitle>History</CardTitle>
           <ActivityLog events={task.events} />
-          {hasRole(user, "SUPERADMIN") ? (
+          {hasRole(user, "EMPLOYEE") ? (
             <Link
               href={`/admin/audit?action=task.&q=${encodeURIComponent(task.reference)}`}
               className="mt-3 inline-block text-sm font-semibold text-brand-700 hover:underline"

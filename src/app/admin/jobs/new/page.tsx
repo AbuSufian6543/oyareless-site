@@ -1,6 +1,7 @@
 import { saveJobAction } from "@/app/admin/jobs/actions";
 import { JobForm } from "@/components/admin/job-form";
 import { Alert, PageHeader } from "@/components/admin/ui";
+import { requireAdminRole } from "@/lib/admin-guard";
 
 export const metadata = { title: "Post a role" };
 
@@ -9,6 +10,7 @@ export default async function NewJobPage({
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
+  await requireAdminRole("EDITOR");
   const params = await searchParams;
 
   return (

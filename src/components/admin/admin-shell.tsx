@@ -48,6 +48,7 @@ import {
 } from "@/lib/admin-collections";
 import type { SessionUser } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+import { STAFF_ROLE_RANK, staffRoleLabel } from "@/lib/workdesk/rules";
 
 /**
  * Icons referenced by the collection registry. Named explicitly rather than
@@ -78,20 +79,12 @@ type NavEntry = {
   badge?: number;
 };
 
-const ROLE_RANK: Record<string, number> = {
-  TECHNICIAN: 0,
-  VIEWER: 1,
-  EDITOR: 2,
-  ADMIN: 3,
-  SUPERADMIN: 4,
-};
-
 function collectionEntries(group: CollectionGroup): NavEntry[] {
   return collectionsInGroup(group).map((collection) => ({
     href: `/admin/collections/${collection.key}`,
     label: collection.plural,
     Icon: COLLECTION_ICONS[collection.icon] ?? FileText,
-    minRank: ROLE_RANK[collection.writeRole],
+    minRank: STAFF_ROLE_RANK[collection.writeRole],
   }));
 }
 
@@ -118,32 +111,41 @@ export function AdminShell({
 }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const rank = ROLE_RANK[user.role] ?? 1;
+  const rank = STAFF_ROLE_RANK[user.role] ?? 1;
+
+  const workdeskItems: NavEntry[] = [
+    { href: "/admin", label: "Dashboard", Icon: LayoutDashboard },
+    { href: "/admin/tickets", label: "Tickets", Icon: Headset, badge: openTickets },
+    { href: "/admin/tasks", label: "Tasks", Icon: ClipboardList, badge: openTasks },
+    {
+      href: "/admin/notifications",
+      label: "Notifications",
+      Icon: Bell,
+      badge: unreadNotifications,
+    },
+  ];
+  if (rank < STAFF_ROLE_RANK.SUPERADMIN) {
+    workdeskItems.push({
+      href: "/admin/audit",
+      label: "Audit log",
+      Icon: ShieldAlert,
+    });
+  }
 
   const groups: Array<{ title: string; items: NavEntry[] }> = [
     {
       title: "Workdesk",
-      items: [
-        { href: "/admin", label: "Dashboard", Icon: LayoutDashboard },
-        { href: "/admin/tickets", label: "Tickets", Icon: Headset, badge: openTickets },
-        { href: "/admin/tasks", label: "Tasks", Icon: ClipboardList, badge: openTasks },
-        {
-          href: "/admin/notifications",
-          label: "Notifications",
-          Icon: Bell,
-          badge: unreadNotifications,
-        },
-      ],
+      items: workdeskItems,
     },
     {
       title: "Content",
       items: [
-        { href: "/admin/pages", label: "Pages", Icon: FileText },
-        { href: "/admin/streams", label: "Live Streams", Icon: Radio },
-        { href: "/admin/posts", label: "News & Blog", Icon: Newspaper },
-        { href: "/admin/jobs", label: "Careers", Icon: Briefcase },
-        { href: "/admin/testimonials", label: "Testimonials", Icon: Quote },
-        { href: "/admin/media", label: "Media Library", Icon: ImageIcon },
+        { href: "/admin/pages", label: "Pages", Icon: FileText, minRank: STAFF_ROLE_RANK.EDITOR },
+        { href: "/admin/streams", label: "Live Streams", Icon: Radio, minRank: STAFF_ROLE_RANK.EDITOR },
+        { href: "/admin/posts", label: "News & Blog", Icon: Newspaper, minRank: STAFF_ROLE_RANK.EDITOR },
+        { href: "/admin/jobs", label: "Careers", Icon: Briefcase, minRank: STAFF_ROLE_RANK.EDITOR },
+        { href: "/admin/testimonials", label: "Testimonials", Icon: Quote, minRank: STAFF_ROLE_RANK.EDITOR },
+        { href: "/admin/media", label: "Media Library", Icon: ImageIcon, minRank: STAFF_ROLE_RANK.EDITOR },
       ],
     },
     {
@@ -162,10 +164,11 @@ export function AdminShell({
           label: "Inbox",
           Icon: Inbox,
           badge: newSubmissions,
+          minRank: STAFF_ROLE_RANK.EDITOR,
         },
-        { href: "/admin/subscribers", label: "Subscribers", Icon: Users },
-        { href: "/admin/quotes", label: "Quotes", Icon: FileText, badge: newQuotes },
-        { href: "/admin/portal-users", label: "Portal users", Icon: Building2, minRank: 3 },
+        { href: "/admin/subscribers", label: "Subscribers", Icon: Users, minRank: STAFF_ROLE_RANK.EDITOR },
+        { href: "/admin/quotes", label: "Quotes", Icon: FileText, badge: newQuotes, minRank: STAFF_ROLE_RANK.EDITOR },
+        { href: "/admin/portal-users", label: "Portal users", Icon: Building2, minRank: STAFF_ROLE_RANK.ADMIN },
       ],
     },
     {
@@ -175,18 +178,18 @@ export function AdminShell({
     {
       title: "Configuration",
       items: [
-        { href: "/admin/navigation", label: "Navigation", Icon: Link2, minRank: 3 },
-        { href: "/admin/branding", label: "Branding & Theme", Icon: Palette, minRank: 3 },
+        { href: "/admin/navigation", label: "Navigation", Icon: Link2, minRank: STAFF_ROLE_RANK.ADMIN },
+        { href: "/admin/branding", label: "Branding & Theme", Icon: Palette, minRank: STAFF_ROLE_RANK.ADMIN },
         {
           href: "/admin/remote-support",
           label: "Remote Support",
           Icon: Headset,
-          minRank: 3,
+          minRank: STAFF_ROLE_RANK.ADMIN,
         },
-        { href: "/admin/redirects", label: "Redirects", Icon: ExternalLink, minRank: 3 },
-        { href: "/admin/settings", label: "Site Settings", Icon: Settings, minRank: 3 },
-        { href: "/admin/users", label: "Users & Access", Icon: Users, minRank: 4 },
-        { href: "/admin/audit", label: "Audit Log", Icon: ShieldAlert, minRank: 4 },
+        { href: "/admin/redirects", label: "Redirects", Icon: ExternalLink, minRank: STAFF_ROLE_RANK.ADMIN },
+        { href: "/admin/settings", label: "Site Settings", Icon: Settings, minRank: STAFF_ROLE_RANK.ADMIN },
+        { href: "/admin/users", label: "Users & Access", Icon: Users, minRank: STAFF_ROLE_RANK.SUPERADMIN },
+        { href: "/admin/audit", label: "Audit Log", Icon: ShieldAlert, minRank: STAFF_ROLE_RANK.SUPERADMIN },
       ],
     },
   ];
@@ -274,9 +277,7 @@ export function AdminShell({
               {user.name}
             </span>
             <span className="block truncate text-xs text-navy-400">
-              {user.role === "SUPERADMIN"
-                ? "Super Admin"
-                : user.role.charAt(0) + user.role.slice(1).toLowerCase()}
+              {staffRoleLabel(user.role)}
             </span>
           </span>
           <UserCircle className="size-4 text-navy-500" aria-hidden="true" />
