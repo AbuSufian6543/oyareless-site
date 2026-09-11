@@ -9,7 +9,8 @@ import { workdeskAdminOrRedirect } from "@/lib/workdesk/access";
 import { dateInputValue, parseDateInput } from "@/lib/workdesk/dates";
 import { recordWorkdeskEvent } from "@/lib/workdesk/events";
 import { recordTaskAudit } from "@/lib/workdesk/audit";
-import { notifyAssignees } from "@/lib/workdesk/notify";
+import { notifyAssignees, sendWorkdeskReminder } from "@/lib/workdesk/notify";
+import { assignmentNotice, joinStaffNames } from "@/lib/workdesk/notice";
 import { nextTaskReference } from "@/lib/workdesk/references";
 import { revalidateWorkdesk } from "@/lib/workdesk/revalidate";
 import { workdeskAdminMaySetTaskStatus } from "@/lib/workdesk/rules";
@@ -18,6 +19,7 @@ import {
   activeAssigneeIds,
   assigneeIdsFrom,
   listTaskAssigneeIds,
+  staffNamesFor,
 } from "@/lib/workdesk/staff";
 
 export async function createTaskAction(formData: FormData): Promise<void> {
@@ -68,17 +70,27 @@ export async function createTaskAction(formData: FormData): Promise<void> {
   });
 
   if (assignees.length > 0) {
+    const names = await staffNamesFor(assignees);
     await recordWorkdeskEvent({
       kind: "ASSIGNED",
-      summary: `${staff.name} assigned ${task.reference}`,
+      summary: `${staff.name} assigned ${task.reference} to ${joinStaffNames(names)}`,
       taskId: task.id,
       actorStaffId: staff.id,
+    });
+    const notice = assignmentNotice({
+      actorName: staff.name,
+      reference: task.reference,
+      subject: task.title,
+      addedNames: names,
+      allNames: names,
+      kind: "task",
+      previousCount: 0,
     });
     await notifyAssignees({
       userIds: assignees,
       excludeUserIds: [staff.id],
-      title: `Task ${task.reference} assigned to you`,
-      body: task.title,
+      title: notice.title,
+      body: notice.body,
       taskId: task.id,
     });
   }
@@ -226,17 +238,33 @@ export async function updateTaskAction(formData: FormData): Promise<void> {
   }
 
   const added = [...next].filter((id) => !previous.has(id));
-  await notifyAssignees({
-    userIds: added,
-    excludeUserIds: [staff.id],
-    title: `Task ${task.reference} assigned to you`,
-    body: task.title,
-    taskId,
-  });
+  const allNames = await staffNamesFor(assignees);
+  const addedNames = await staffNamesFor(added);
+  if (added.length > 0) {
+    const notice = assignmentNotice({
+      actorName: staff.name,
+      reference: task.reference,
+      subject: title.slice(0, 200),
+      addedNames,
+      allNames,
+      kind: "task",
+      previousCount: previous.size,
+    });
+    await notifyAssignees({
+      userIds: added,
+      excludeUserIds: [staff.id],
+      title: notice.title,
+      body: notice.body,
+      taskId,
+    });
+  }
   if (added.length > 0 || [...previous].some((id) => !next.has(id))) {
     await recordWorkdeskEvent({
-      kind: "REASSIGNED",
-      summary: `${staff.name} updated assignees`,
+      kind: previous.size > 0 ? "REASSIGNED" : "ASSIGNED",
+      summary:
+        assignees.length > 0
+          ? `${staff.name} assigned ${task.reference} to ${joinStaffNames(allNames)}`
+          : `${staff.name} unassigned ${task.reference}`,
       taskId,
       actorStaffId: staff.id,
     });
@@ -244,9 +272,16 @@ export async function updateTaskAction(formData: FormData): Promise<void> {
       action: "task.assigned",
       taskId,
       taskReference: task.reference,
-      summary: `${staff.name} updated assignees on ${task.reference}`,
+      summary:
+        assignees.length > 0
+          ? `${staff.name} assigned ${task.reference} to ${joinStaffNames(allNames)}`
+          : `${staff.name} unassigned ${task.reference}`,
       actor: staff,
-      details: { added: added.length, removed: [...previous].filter((id) => !next.has(id)).length },
+      details: {
+        assignees: allNames,
+        added: added.length,
+        removed: [...previous].filter((id) => !next.has(id)).length,
+      },
     });
   }
   if (task.status !== status) {
@@ -329,6 +364,36 @@ export async function addTaskNoteAction(formData: FormData): Promise<void> {
   }
 
   await revalidateWorkdesk({ taskId });
+  redirect(`/admin/tasks/${taskId}`);
+}
+
+export async function notifyTaskStaffAction(formData: FormData): Promise<void> {
+  const staff = await workdeskAdminOrRedirect();
+  const taskId = String(formData.get("taskId") ?? "");
+  if (!taskId) return;
+
+  const result = await sendWorkdeskReminder({ actor: staff, taskId });
+  if (result.status === "missing") return;
+  if (result.status === "none") {
+    redirect(`/admin/tasks/${taskId}?notify=none`);
+  }
+
+  await recordWorkdeskEvent({
+    kind: "NOTE",
+    summary: `${staff.name} emailed a reminder to ${joinStaffNames(result.names)}`,
+    taskId,
+    actorStaffId: staff.id,
+  });
+  await recordTaskAudit({
+    action: "task.notified",
+    taskId,
+    taskReference: result.reference,
+    summary: `${staff.name} emailed a reminder on ${result.reference} to ${joinStaffNames(result.names)}`,
+    actor: staff,
+    details: { channel: "email", recipients: result.names },
+  });
+
+  await revalidateWorkdesk({ taskId, flash: "notified" });
   redirect(`/admin/tasks/${taskId}`);
 }
 

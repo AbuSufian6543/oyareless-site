@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { addTaskNoteAction, deleteTaskAction, updateTaskAction } from "@/app/admin/tasks/actions";
-import { Card, CardTitle, PageHeader, SelectField, TextAreaField, TextField } from "@/components/admin/ui";
+import { addTaskNoteAction, deleteTaskAction, notifyTaskStaffAction, updateTaskAction } from "@/app/admin/tasks/actions";
+import { Alert, Card, CardTitle, PageHeader, SelectField, TextAreaField, TextField } from "@/components/admin/ui";
 import { ConfirmSubmit } from "@/components/workdesk/confirm-submit";
 import { ActivityLog } from "@/components/workdesk/activity-log";
 import { AssigneeChecklist } from "@/components/workdesk/assignee-checklist";
 import { AttachmentField } from "@/components/workdesk/attachment-field";
 import { AttachmentList } from "@/components/workdesk/attachment-list";
 import { PriorityBadge, TaskStatusBadge } from "@/components/workdesk/badges";
+import { WorkdeskNotifyMenu } from "@/components/workdesk/notify-menu";
 import { AssigneeAvatars } from "@/components/workdesk/work-item";
 import { requireAdminRole } from "@/lib/admin-guard";
 import { hasRole } from "@/lib/auth";
@@ -22,11 +23,14 @@ import { listAssignableStaff } from "@/lib/workdesk/staff";
 
 export default async function AdminTaskPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ notify?: string }>;
 }) {
   const user = await requireAdminRole("EMPLOYEE");
   const { id } = await params;
+  const query = await searchParams;
   const [task, staff] = await Promise.all([
     prisma.internalTask.findUnique({
       where: { id },
@@ -62,6 +66,11 @@ export default async function AdminTaskPage({
             task.dueAt ? ` · ${overdue ? "Overdue " : "Due "}${formatDate(task.dueAt)}` : ""
           }`}
         />
+        {query.notify === "none" ? (
+          <div className="mb-4">
+            <Alert tone="warning">Assign someone before sending a reminder.</Alert>
+          </div>
+        ) : null}
         <div className="mb-4 flex flex-wrap items-center gap-2">
           <TaskStatusBadge status={task.status} />
           <PriorityBadge priority={task.priority} />
@@ -109,6 +118,11 @@ export default async function AdminTaskPage({
           <CardTitle>Assigned to</CardTitle>
           <AssigneeAvatars names={assigneeNames} />
         </Card>
+        <WorkdeskNotifyMenu
+          action={notifyTaskStaffAction}
+          hiddenFields={{ taskId: task.id }}
+          hasRecipients={assigneeNames.length > 0}
+        />
         <Card>
           <CardTitle>Manage</CardTitle>
           <form action={updateTaskAction} className="space-y-3">

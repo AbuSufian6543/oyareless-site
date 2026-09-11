@@ -14,7 +14,8 @@ import { saveWorkdeskUploads } from "@/lib/workdesk/attachments";
 import { workdeskAdminOrRedirect } from "@/lib/workdesk/access";
 import { recordWorkdeskEvent } from "@/lib/workdesk/events";
 import { recordTicketAudit } from "@/lib/workdesk/audit";
-import { notifyAssignees, notifyAssignee } from "@/lib/workdesk/notify";
+import { notifyAssignees, notifyAssignee, sendWorkdeskReminder } from "@/lib/workdesk/notify";
+import { accessGrantNotice, assignmentNotice, joinStaffNames } from "@/lib/workdesk/notice";
 import { nextTicketReference } from "@/lib/workdesk/references";
 import { revalidateWorkdesk } from "@/lib/workdesk/revalidate";
 import { workdeskAdminMaySetTicketStatus } from "@/lib/workdesk/rules";
@@ -24,6 +25,7 @@ import {
   assigneeIdsFrom,
   listTicketAssigneeIds,
   replaceTicketAssignees,
+  staffNamesFor,
 } from "@/lib/workdesk/staff";
 
 export async function invitePortalUserAction(formData: FormData): Promise<void> {
@@ -142,21 +144,27 @@ export async function createStaffTicketAction(formData: FormData): Promise<void>
   });
 
   if (assigneeIds.length > 0) {
-    const names = await prisma.user.findMany({
-      where: { id: { in: assigneeIds } },
-      select: { name: true },
-    });
+    const names = await staffNamesFor(assigneeIds);
     await recordWorkdeskEvent({
       kind: "ASSIGNED",
-      summary: `${staff.name} assigned ${ticket.reference} to ${names.map((row) => row.name).join(", ")}`,
+      summary: `${staff.name} assigned ${ticket.reference} to ${joinStaffNames(names)}`,
       ticketId: ticket.id,
       actorStaffId: staff.id,
+    });
+    const notice = assignmentNotice({
+      actorName: staff.name,
+      reference: ticket.reference,
+      subject: ticket.subject,
+      addedNames: names,
+      allNames: names,
+      kind: "ticket",
+      previousCount: 0,
     });
     await notifyAssignees({
       userIds: assigneeIds,
       excludeUserIds: [staff.id],
-      title: `Ticket ${ticket.reference} assigned to you`,
-      body: ticket.subject,
+      title: notice.title,
+      body: notice.body,
       ticketId: ticket.id,
     });
   }
@@ -370,21 +378,15 @@ export async function assignTicketAction(formData: FormData): Promise<void> {
     });
   }
 
-  const names =
-    nextIds.length > 0
-      ? (
-          await prisma.user.findMany({
-            where: { id: { in: nextIds } },
-            select: { name: true },
-          })
-        ).map((row) => row.name)
-      : [];
+  const names = await staffNamesFor(nextIds);
+  const addedIds = nextIds.filter((id) => !previous.has(id));
+  const addedNames = await staffNamesFor(addedIds);
 
   await recordWorkdeskEvent({
     kind: previous.size > 0 ? "REASSIGNED" : "ASSIGNED",
     summary:
       nextIds.length > 0
-        ? `${staff.name} assigned the ticket to ${names.join(", ")}`
+        ? `${staff.name} assigned the ticket to ${joinStaffNames(names)}`
         : `${staff.name} unassigned the ticket`,
     ticketId,
     actorStaffId: staff.id,
@@ -395,19 +397,30 @@ export async function assignTicketAction(formData: FormData): Promise<void> {
     ticketReference: ticket.reference,
     summary:
       nextIds.length > 0
-        ? `${staff.name} assigned ${ticket.reference} to ${names.join(", ")}`
+        ? `${staff.name} assigned ${ticket.reference} to ${joinStaffNames(names)}`
         : `${staff.name} unassigned ${ticket.reference}`,
     actor: { kind: "staff", id: staff.id, name: staff.name },
     details: { assignees: names },
   });
 
-  await notifyAssignees({
-    userIds: nextIds.filter((id) => !previous.has(id)),
-    excludeUserIds: [staff.id],
-    title: `Ticket ${ticket.reference} assigned to you`,
-    body: ticket.subject,
-    ticketId,
-  });
+  if (addedIds.length > 0) {
+    const notice = assignmentNotice({
+      actorName: staff.name,
+      reference: ticket.reference,
+      subject: ticket.subject,
+      addedNames,
+      allNames: names,
+      kind: "ticket",
+      previousCount: previous.size,
+    });
+    await notifyAssignees({
+      userIds: addedIds,
+      excludeUserIds: [staff.id],
+      title: notice.title,
+      body: notice.body,
+      ticketId,
+    });
+  }
 
   await revalidateWorkdesk({ ticketId });
   redirect(`/admin/tickets/${ticketId}`);
@@ -455,10 +468,16 @@ export async function grantTicketAccessAction(formData: FormData): Promise<void>
     actor: { kind: "staff", id: staff.id, name: staff.name },
     details: { grantedTo: granted?.name ?? userId },
   });
+  const grantedNotice = accessGrantNotice({
+    actorName: staff.name,
+    grantedName: granted?.name ?? "a technician",
+    reference: ticket.reference,
+    subject: ticket.subject,
+  });
   await notifyAssignee({
     userId,
-    title: `You can now work on ticket ${ticket.reference}`,
-    body: ticket.subject,
+    title: grantedNotice.title,
+    body: grantedNotice.body,
     ticketId,
   });
   await revalidateWorkdesk({ ticketId });
@@ -588,6 +607,36 @@ export async function deleteTicketAction(formData: FormData): Promise<void> {
 
   await revalidateWorkdesk({ ticketId, flash: "deleted" });
   redirect("/admin/tickets");
+}
+
+export async function notifyTicketStaffAction(formData: FormData): Promise<void> {
+  const staff = await workdeskAdminOrRedirect();
+  const ticketId = String(formData.get("ticketId") ?? "");
+  if (!ticketId) return;
+
+  const result = await sendWorkdeskReminder({ actor: staff, ticketId });
+  if (result.status === "missing") return;
+  if (result.status === "none") {
+    redirect(`/admin/tickets/${ticketId}?notify=none`);
+  }
+
+  await recordWorkdeskEvent({
+    kind: "NOTE",
+    summary: `${staff.name} emailed a reminder to ${joinStaffNames(result.names)}`,
+    ticketId,
+    actorStaffId: staff.id,
+  });
+  await recordTicketAudit({
+    action: "ticket.notified",
+    ticketId,
+    ticketReference: result.reference,
+    summary: `${staff.name} emailed a reminder on ${result.reference} to ${joinStaffNames(result.names)}`,
+    actor: { kind: "staff", id: staff.id, name: staff.name },
+    details: { channel: "email", recipients: result.names },
+  });
+
+  await revalidateWorkdesk({ ticketId, flash: "notified" });
+  redirect(`/admin/tickets/${ticketId}`);
 }
 
 export async function markNotificationsReadAction(): Promise<void> {

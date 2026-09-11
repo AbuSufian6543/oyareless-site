@@ -69,3 +69,16 @@ export async function listTaskAssigneeIds(taskId: string): Promise<string[]> {
   });
   return rows.map((row) => row.userId);
 }
+
+/** Names in the same order as `ids`. Missing users are skipped. */
+export async function staffNamesFor(ids: string[]): Promise<string[]> {
+  if (ids.length === 0) return [];
+  const rows = await prisma.user.findMany({
+    where: { id: { in: ids } },
+    select: { id: true, name: true },
+  });
+  const byId = new Map(rows.map((row) => [row.id, row.name]));
+  return ids
+    .map((id) => byId.get(id))
+    .filter((name): name is string => Boolean(name));
+}

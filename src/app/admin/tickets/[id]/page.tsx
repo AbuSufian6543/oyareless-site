@@ -5,19 +5,21 @@ import {
   assignTicketAction,
   deleteTicketAction,
   grantTicketAccessAction,
+  notifyTicketStaffAction,
   replyStaffTicketAction,
   revokeTicketAccessAction,
   updateTicketDetailsAction,
   updateTicketPriorityAction,
   updateTicketStatusAction,
 } from "@/app/admin/tickets/actions";
-import { Card, CardTitle, PageHeader, SelectField, TextField } from "@/components/admin/ui";
+import { Alert, Card, CardTitle, PageHeader, SelectField, TextField } from "@/components/admin/ui";
 import { ConfirmSubmit } from "@/components/workdesk/confirm-submit";
 import { ActivityLog } from "@/components/workdesk/activity-log";
 import { AssigneeChecklist } from "@/components/workdesk/assignee-checklist";
 import { AttachmentField } from "@/components/workdesk/attachment-field";
 import { AttachmentList } from "@/components/workdesk/attachment-list";
 import { PriorityBadge, TicketStatusBadge } from "@/components/workdesk/badges";
+import { WorkdeskNotifyMenu } from "@/components/workdesk/notify-menu";
 import { AssigneeAvatars } from "@/components/workdesk/work-item";
 import { requireAdminRole } from "@/lib/admin-guard";
 import { hasRole } from "@/lib/auth";
@@ -31,11 +33,14 @@ import { listAssignableStaff } from "@/lib/workdesk/staff";
 
 export default async function AdminTicketPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ notify?: string }>;
 }) {
   const user = await requireAdminRole("EMPLOYEE");
   const { id } = await params;
+  const query = await searchParams;
   const [ticket, staff, customers] = await Promise.all([
     prisma.ticket.findUnique({
       where: { id },
@@ -67,6 +72,10 @@ export default async function AdminTicketPage({
         ? [ticket.assignedToId]
         : [];
   const assignedIds = new Set(selectedAssigneeIds);
+  const recipientIds = new Set([
+    ...assignedIds,
+    ...ticket.accessGrants.map((grant) => grant.userId),
+  ]);
   const grantOptions = staff
     .filter((person) => person.role === "TECHNICIAN")
     .filter((person) => !assignedIds.has(person.id))
@@ -88,6 +97,11 @@ export default async function AdminTicketPage({
             "Unassigned"
           }`}
         />
+        {query.notify === "none" ? (
+          <div className="mb-4">
+            <Alert tone="warning">Assign someone before sending a reminder.</Alert>
+          </div>
+        ) : null}
         <div className="mb-4 flex flex-wrap gap-2">
           <TicketStatusBadge status={ticket.status} />
           <PriorityBadge priority={ticket.priority} />
@@ -141,6 +155,11 @@ export default async function AdminTicketPage({
           <CardTitle>Assigned to</CardTitle>
           <AssigneeAvatars names={ticketAssigneeNames(ticket)} />
         </Card>
+        <WorkdeskNotifyMenu
+          action={notifyTicketStaffAction}
+          hiddenFields={{ ticketId: ticket.id }}
+          hasRecipients={recipientIds.size > 0}
+        />
         <Card>
           <CardTitle>Manage</CardTitle>
           <form action={updateTicketStatusAction} className="space-y-2">

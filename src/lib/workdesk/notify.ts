@@ -5,8 +5,13 @@ import { sendMail } from "@/lib/mail";
 import { prisma } from "@/lib/prisma";
 import { publicUrl } from "@/lib/public-url";
 import { workdeskHref } from "@/lib/workdesk/access";
+import { reminderNotice } from "@/lib/workdesk/notice";
 import { WORKDESK_MANAGER_ROLES } from "@/lib/workdesk/rules";
-import { listTaskAssigneeIds, listTicketAssigneeIds } from "@/lib/workdesk/staff";
+import {
+  listTaskAssigneeIds,
+  listTicketAssigneeIds,
+  staffNamesFor,
+} from "@/lib/workdesk/staff";
 
 function escapeHtml(value: string): string {
   return value
@@ -255,4 +260,70 @@ export async function unreadNotificationCount(userId: string): Promise<number> {
   return prisma.workdeskNotification.count({
     where: { userId, readAt: null },
   });
+}
+
+export type WorkdeskReminderResult =
+  | { status: "sent"; names: string[]; reference: string }
+  | { status: "none" }
+  | { status: "missing" };
+
+/** Manual ping of everyone currently on a ticket or task (in-site + email). */
+export async function sendWorkdeskReminder(input: {
+  actor: { id: string; name: string };
+  ticketId?: string;
+  taskId?: string;
+}): Promise<WorkdeskReminderResult> {
+  if (input.ticketId) {
+    const ticket = await prisma.ticket.findUnique({
+      where: { id: input.ticketId },
+      select: { id: true, reference: true, subject: true },
+    });
+    if (!ticket) return { status: "missing" };
+    const userIds = await listTicketAssigneeIds(ticket.id);
+    const names = await staffNamesFor(userIds);
+    if (userIds.length === 0) return { status: "none" };
+    const notice = reminderNotice({
+      actorName: input.actor.name,
+      reference: ticket.reference,
+      subject: ticket.subject,
+      assigneeNames: names,
+      kind: "ticket",
+    });
+    await notifyStaff({
+      userIds,
+      title: notice.title,
+      body: notice.body,
+      kind: "UPDATE",
+      ticketId: ticket.id,
+    });
+    return { status: "sent", names, reference: ticket.reference };
+  }
+
+  if (input.taskId) {
+    const task = await prisma.internalTask.findUnique({
+      where: { id: input.taskId },
+      select: { id: true, reference: true, title: true },
+    });
+    if (!task) return { status: "missing" };
+    const userIds = await listTaskAssigneeIds(task.id);
+    const names = await staffNamesFor(userIds);
+    if (userIds.length === 0) return { status: "none" };
+    const notice = reminderNotice({
+      actorName: input.actor.name,
+      reference: task.reference,
+      subject: task.title,
+      assigneeNames: names,
+      kind: "task",
+    });
+    await notifyStaff({
+      userIds,
+      title: notice.title,
+      body: notice.body,
+      kind: "UPDATE",
+      taskId: task.id,
+    });
+    return { status: "sent", names, reference: task.reference };
+  }
+
+  return { status: "missing" };
 }

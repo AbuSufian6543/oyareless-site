@@ -53,6 +53,7 @@ export type AuditAction =
   | "ticket.updated"
   | "ticket.access_granted"
   | "ticket.access_revoked"
+  | "ticket.notified"
   | "ticket.deleted"
   | "task.created"
   | "task.updated"
@@ -61,6 +62,7 @@ export type AuditAction =
   | "task.priority_changed"
   | "task.due_changed"
   | "task.assigned"
+  | "task.notified"
   | "task.deleted";
 
 const ACTION_LABELS: Record<string, string> = {
@@ -76,6 +78,7 @@ const ACTION_LABELS: Record<string, string> = {
   "ticket.updated": "Ticket details",
   "ticket.access_granted": "Ticket access granted",
   "ticket.access_revoked": "Ticket access revoked",
+  "ticket.notified": "Ticket notification",
   "ticket.deleted": "Ticket deleted",
   "task.created": "Task created",
   "task.updated": "Task details",
@@ -84,6 +87,7 @@ const ACTION_LABELS: Record<string, string> = {
   "task.priority_changed": "Task priority",
   "task.due_changed": "Task due date",
   "task.assigned": "Task assignment",
+  "task.notified": "Task notification",
   "task.deleted": "Task deleted",
 };
 

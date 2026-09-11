@@ -11,6 +11,13 @@ import {
   workdeskAdminMaySetTaskStatus,
   workdeskAdminMaySetTicketStatus,
 } from "../src/lib/workdesk/rules";
+import {
+  accessGrantNotice,
+  assignmentNotice,
+  joinStaffNames,
+  reminderNotice,
+  WORKDESK_NOTIFY_CHANNELS,
+} from "../src/lib/workdesk/notice";
 
 let failed = 0;
 
@@ -213,6 +220,108 @@ assert(
   shell.includes("STAFF_ROLE_RANK.EDITOR") &&
     shell.includes("STAFF_ROLE_RANK.ADMIN") &&
     shell.includes("STAFF_ROLE_RANK.SUPERADMIN"),
+);
+
+assert("joinStaffNames uses and-lists", joinStaffNames(["Sarah Chen"]) === "Sarah Chen");
+assert(
+  "joinStaffNames uses and between two names",
+  joinStaffNames(["Sarah Chen", "Mike Tech"]) === "Sarah Chen and Mike Tech",
+);
+assert(
+  "joinStaffNames uses commas and a final and",
+  joinStaffNames(["Sarah", "Mike", "Jane"]) === "Sarah, Mike, and Jane",
+);
+
+const firstAssign = assignmentNotice({
+  actorName: "Abu",
+  reference: "WC-1042",
+  subject: "Printer offline",
+  addedNames: ["Sarah Chen"],
+  allNames: ["Sarah Chen"],
+  kind: "ticket",
+  previousCount: 0,
+});
+assert(
+  "first assignment names the employee in the title and body",
+  firstAssign.title.includes("Sarah Chen") &&
+    firstAssign.body.includes("Abu assigned this ticket to Sarah Chen") &&
+    firstAssign.body.includes("Printer offline"),
+);
+
+const addedLater = assignmentNotice({
+  actorName: "Abu",
+  reference: "WT-12",
+  subject: "Site survey",
+  addedNames: ["Jane Employee"],
+  allNames: ["Sarah Chen", "Jane Employee"],
+  kind: "task",
+  previousCount: 1,
+});
+assert(
+  "adding someone names who was added and who is now assigned",
+  addedLater.title.includes("Jane Employee") &&
+    addedLater.body.includes("Abu added Jane Employee") &&
+    addedLater.body.includes("Sarah Chen and Jane Employee"),
+);
+
+const reminder = reminderNotice({
+  actorName: "Abu",
+  reference: "WC-1042",
+  subject: "Printer offline",
+  assigneeNames: ["Sarah Chen", "Mike Tech"],
+  kind: "ticket",
+});
+assert(
+  "manual reminder names current assignees",
+  reminder.title.includes("WC-1042") &&
+    reminder.body.includes("Sarah Chen and Mike Tech") &&
+    reminder.body.includes("Printer offline"),
+);
+
+const grant = accessGrantNotice({
+  actorName: "Abu",
+  grantedName: "Mike Tech",
+  reference: "WC-1042",
+  subject: "Printer offline",
+});
+assert(
+  "extra access names the technician",
+  grant.title.includes("Mike Tech") && grant.body.includes("Mike Tech"),
+);
+
+assert(
+  "email is the only live notify channel for now",
+  WORKDESK_NOTIFY_CHANNELS.filter((channel) => channel.enabled).map((channel) => channel.id).join() ===
+    "email" &&
+    WORKDESK_NOTIFY_CHANNELS.some((channel) => channel.id === "telegram" && !channel.enabled) &&
+    WORKDESK_NOTIFY_CHANNELS.some((channel) => channel.id === "discord" && !channel.enabled) &&
+    WORKDESK_NOTIFY_CHANNELS.some((channel) => channel.id === "slack" && !channel.enabled),
+);
+
+assert(
+  "admin ticket assign and create use named assignment notices",
+  adminTickets.includes("assignmentNotice") &&
+    adminTickets.includes("notifyTicketStaffAction") &&
+    adminTickets.includes("ticket.notified"),
+);
+assert(
+  "admin task assign and create use named assignment notices",
+  adminTasks.includes("assignmentNotice") &&
+    adminTasks.includes("notifyTaskStaffAction") &&
+    adminTasks.includes("task.notified"),
+);
+
+const notifyMenu = readFileSync(
+  path.join(process.cwd(), "src/components/workdesk/notify-menu.tsx"),
+  "utf8",
+);
+assert(
+  "notify menu offers Email now and disabled chat apps",
+  notifyMenu.includes("Email now") &&
+    notifyMenu.includes("Telegram") &&
+    notifyMenu.includes("Discord") &&
+    notifyMenu.includes("Slack") &&
+    notifyMenu.includes("Not connected yet"),
 );
 
 process.exit(failed === 0 ? 0 : 1);
