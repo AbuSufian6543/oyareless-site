@@ -12,10 +12,12 @@ import {
 
 import { Readout, SpeedGauge } from "@/components/tools/speed-gauge";
 import {
+  formatPayloadBytes,
   runSpeedTest,
   SpeedTestError,
   type SpeedTestOutcome,
   type SpeedTestPhase,
+  type SpeedTestTransfer,
 } from "@/lib/speedtest-client";
 import { SPEEDTEST_PROVIDER } from "@/lib/speedtest-provider";
 import { cn } from "@/lib/utils";
@@ -30,10 +32,10 @@ type Partial4 = Partial<SpeedTestOutcome>;
 
 const PHASE_COPY: Record<SpeedTestPhase, string> = {
   idle: "",
-  connecting: "Connecting to Cloudflare's edge…",
+  connecting: "Connecting to Cloudflare’s edge…",
   ping: "Measuring latency and jitter…",
-  download: "Measuring download speed…",
-  upload: "Measuring upload speed…",
+  download: "Measuring download — holding the connection so the figure is real",
+  upload: "Measuring upload — holding the connection so the figure is real",
   complete: "Test complete",
 };
 
@@ -62,12 +64,32 @@ export function SpeedTest({
   const [info, setInfo] = useState<Info | null>(null);
   const [shareUrl, setShareUrl] = useState("");
   const [copied, setCopied] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [elapsedMs, setElapsedMs] = useState(0);
+  const [transfer, setTransfer] = useState<SpeedTestTransfer | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const phaseRef = useRef<SpeedTestPhase>("idle");
+  const elapsedOriginRef = useRef<number | null>(null);
 
   useEffect(() => {
     return () => abortRef.current?.abort();
   }, []);
+
+  const busy =
+    phase === "connecting" ||
+    phase === "ping" ||
+    phase === "download" ||
+    phase === "upload";
+
+  useEffect(() => {
+    if (!busy) return;
+    elapsedOriginRef.current ??= performance.now();
+    const origin = elapsedOriginRef.current;
+    const id = window.setInterval(() => {
+      setElapsedMs(performance.now() - origin);
+    }, 200);
+    return () => window.clearInterval(id);
+  }, [busy]);
 
   const run = useCallback(async () => {
     abortRef.current?.abort();
@@ -80,6 +102,10 @@ export function SpeedTest({
     setError("");
     setShareUrl("");
     setCopied(false);
+    setProgress(0);
+    setElapsedMs(0);
+    setTransfer(null);
+    elapsedOriginRef.current = null;
     phaseRef.current = "idle";
 
     void fetch("/api/speedtest/info", { cache: "no-store" })
@@ -98,6 +124,8 @@ export function SpeedTest({
           if (next === "complete") {
             setLive(null);
             setSamples([]);
+            setTransfer(null);
+            setProgress(1);
             return;
           }
           if (next === previous) return;
@@ -108,7 +136,8 @@ export function SpeedTest({
           setLive(value);
           setSamples((current) => [...current.slice(-119), value]);
         },
-        onProgress: () => undefined,
+        onProgress: (fraction) => setProgress(fraction),
+        onTransfer: (next) => setTransfer(next),
         onPartial: (partial) =>
           setResults((current) => ({ ...current, ...partial })),
       });
@@ -118,6 +147,8 @@ export function SpeedTest({
         setPhase("idle");
         setLive(null);
         setSamples([]);
+        setProgress(0);
+        setTransfer(null);
         return;
       }
       setError(
@@ -129,6 +160,8 @@ export function SpeedTest({
       setPhase("idle");
       setLive(null);
       setSamples([]);
+      setProgress(0);
+      setTransfer(null);
       return;
     }
 
@@ -149,16 +182,11 @@ export function SpeedTest({
     }
   }, []);
 
-  const busy =
-    phase === "connecting" ||
-    phase === "ping" ||
-    phase === "download" ||
-    phase === "upload";
   const showingLatency = phase === "connecting" || phase === "ping";
   const throughput = phase === "download" || phase === "upload";
   const complete = phase === "complete";
-
   const gaugeMbps = throughput ? live : null;
+  const percent = Math.round(Math.min(1, Math.max(0, progress)) * 100);
 
   async function copyShare() {
     await navigator.clipboard.writeText(shareUrl).catch(() => undefined);
@@ -166,7 +194,7 @@ export function SpeedTest({
     setTimeout(() => setCopied(false), 2000);
   }
 
-  const status = error || PHASE_COPY[phase];
+  const status = error || statusCopy(phase, transfer);
 
   return (
     <div>
@@ -200,7 +228,46 @@ export function SpeedTest({
             ) : null}
           </SpeedGauge>
 
+          {phase === "idle" && !error ? (
+            <p className="mx-auto mt-1 max-w-md text-center text-sm leading-relaxed text-navy-300">
+              Press GO. A typical run is 15–25 seconds — long enough for a fast
+              line to fill, not a two-second burst.
+            </p>
+          ) : null}
+
           <PhasePills phase={phase} />
+
+          {busy || complete ? (
+            <div className="mx-auto mt-5 w-full max-w-sm">
+              <div className="mb-1.5 flex items-center justify-between text-[0.65rem] font-bold uppercase tracking-[0.16em] text-navy-400">
+                <span>{complete ? "Finished" : "Progress"}</span>
+                <span className="font-mono tabular-nums">
+                  {complete
+                    ? `${formatElapsed(elapsedMs)} total`
+                    : `${percent}% · ${formatElapsed(elapsedMs)}`}
+                </span>
+              </div>
+              <div
+                className="relative h-1.5 overflow-hidden rounded-full bg-white/10"
+                role="progressbar"
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={complete ? 100 : percent}
+                aria-label="Speed test progress"
+              >
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-brand-500 to-accent-300 transition-[width] duration-500 ease-out"
+                  style={{ width: `${complete ? 100 : percent}%` }}
+                />
+                {busy ? (
+                  <div
+                    className="animate-speedtest-sheen pointer-events-none absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/35 to-transparent"
+                    aria-hidden="true"
+                  />
+                ) : null}
+              </div>
+            </div>
+          ) : null}
 
           <div className="mt-5 min-h-8 text-center">
             {status ? (
@@ -210,6 +277,7 @@ export function SpeedTest({
                   error ? "text-red-400" : "text-navy-300",
                 )}
                 role="status"
+                aria-live="polite"
               >
                 {status}
               </p>
@@ -219,7 +287,7 @@ export function SpeedTest({
               <button
                 type="button"
                 onClick={() => abortRef.current?.abort()}
-                className="mt-2 text-sm font-semibold text-navy-400 underline-offset-4 transition-colors hover:text-white hover:underline"
+                className="mt-3 rounded-full border border-white/15 px-4 py-1.5 text-sm font-semibold text-navy-200 transition-colors hover:border-white/30 hover:bg-white/5 hover:text-white"
               >
                 Stop test
               </button>
@@ -327,6 +395,30 @@ export function SpeedTest({
   );
 }
 
+function statusCopy(
+  phase: SpeedTestPhase,
+  transfer: SpeedTestTransfer | null,
+): string {
+  if (
+    transfer &&
+    (phase === "download" || phase === "upload") &&
+    transfer.bytes
+  ) {
+    const payload = formatPayloadBytes(transfer.bytes);
+    if (transfer.round <= 0) {
+      return `Starting a ${payload} ${phase} transfer…`;
+    }
+    return `${PHASE_COPY[phase].split(" — ")[0]} · ${payload} · ${transfer.round} of ${transfer.rounds}`;
+  }
+  return PHASE_COPY[phase];
+}
+
+function formatElapsed(ms: number): string {
+  const seconds = Math.max(0, ms / 1000);
+  if (seconds < 10) return `${seconds.toFixed(1)}s`;
+  return `${Math.round(seconds)}s`;
+}
+
 function GoControl({
   hint,
   pulse,
@@ -400,7 +492,7 @@ function PhasePills({ phase }: { phase: SpeedTestPhase }) {
             : -1;
 
   return (
-    <ol className="mt-2 flex items-center justify-center gap-2 sm:gap-3">
+    <ol className="mt-4 flex items-center justify-center gap-2 sm:gap-3">
       {PHASE_STEPS.map((step, index) => {
         const done = currentIndex > index;
         const current = currentIndex === index;

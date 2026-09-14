@@ -106,9 +106,11 @@ export default async function SpeedTestPage() {
                 <strong className="font-semibold text-navy-800">
                   Download and upload
                 </strong>{" "}
-                transfer growing amounts of data to the nearest Cloudflare
-                location so the figure reflects your path onto the public
-                internet, not the capacity of this website.
+                start with a short probe, then hold a payload large enough that
+                each transfer lasts several seconds. That is long enough for TCP
+                to fill the path to the nearest Cloudflare location — a
+                two-second burst cannot measure a fast line. The figure is your
+                path onto the public internet, not the capacity of this website.
               </li>
               <li>
                 <strong className="font-semibold text-navy-800">

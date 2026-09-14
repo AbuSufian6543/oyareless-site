@@ -458,6 +458,22 @@
   }
 }
 
+/* Moving highlight on the speed-test progress bar while a transfer is held. */
+@keyframes wc-speedtest-sheen {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(380%);
+  }
+}
+
+@utility animate-speedtest-sheen {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: wc-speedtest-sheen 1.6s ease-in-out infinite;
+  }
+}
+
 /*
   Mist / VideoStreamCanada sizes its UI in pixels from the stream metadata
   or the window. Keep the vendor chrome inside our 16:9 stage so a featured
