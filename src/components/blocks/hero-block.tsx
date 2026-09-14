@@ -5,6 +5,7 @@ import { ButtonLink, buttonVariantOnSurface } from "@/components/ui/button";
 import { SectionImage } from "@/components/visuals/section-image";
 import { TechBackdrop } from "@/components/visuals/tech-backdrop";
 import type { BlockOf, LinkItem } from "@/lib/blocks";
+import { visitorPageIsLight } from "@/lib/page-theme.server";
 import { visibleSlideshow, type SlideshowItem } from "@/lib/slideshow";
 import { cn } from "@/lib/utils";
 
@@ -23,7 +24,8 @@ export function HeroBlock({
   slideshow?: SlideshowItem[];
 }) {
   const { data } = block;
-  const isLight = data.variant === "light";
+  const lightUi = visitorPageIsLight();
+  const isLight = data.variant === "light" || lightUi;
   const isSplit = data.variant === "split";
   const hasMedia = Boolean(data.backgroundImageUrl || data.backgroundVideoUrl);
   const slides = visibleSlideshow(slideshow);
@@ -32,12 +34,19 @@ export function HeroBlock({
     const picture = slides.length > 0 || data.backgroundImageUrl;
 
     return (
-      <section className="relative isolate overflow-hidden bg-navy-950">
-        <TechBackdrop network density={0.75} glow="right" mood="network" />
+      <section
+        className={cn(
+          "relative isolate overflow-hidden",
+          isLight ? "bg-slate-50 text-navy-900" : "bg-navy-950",
+        )}
+      >
+        {isLight ? null : (
+          <TechBackdrop network density={0.75} glow="right" mood="network" />
+        )}
         <div className="container-page relative z-10">
           <div className="grid items-center gap-10 pt-16 pb-20 sm:gap-12 lg:grid-cols-2 lg:gap-16 lg:pt-28 lg:pb-32">
             <div className="animate-fade-up">
-              <HeroCopy data={data} dark />
+              <HeroCopy data={data} dark={!isLight} />
             </div>
             {picture && (
               <div className="relative animate-fade-up-slow">

@@ -63,6 +63,7 @@ export default async function EditPagePage({
     metaDescription: page.metaDescription ?? "",
     ogImageUrl: page.ogImageUrl ?? "",
     noIndex: page.noIndex,
+    visitorThemeToggle: page.visitorThemeToggle,
     showInHeaderNav: page.showInHeaderNav,
     showInFooterNav: page.showInFooterNav,
     navOrder: page.navOrder,

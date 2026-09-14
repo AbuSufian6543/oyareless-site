@@ -3,6 +3,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 
 import { BlockList } from "@/components/blocks/block-renderer";
 import { JsonLd } from "@/components/site/json-ld";
+import { CmsPageFrame } from "@/components/site/cms-page-frame";
 import { PageBreadcrumbs } from "@/components/site/page-breadcrumbs";
 import { getPublishedPage, pageJsonLd, pageMetadata } from "@/lib/pages";
 import { crumbs } from "@/lib/seo";
@@ -44,10 +45,10 @@ export default async function CmsPage({ params }: Props) {
   }
 
   return (
-    <>
+    <CmsPageFrame slug={page.slug} enabled={page.visitorThemeToggle}>
       <PageBreadcrumbs items={crumbs({ name: page.title, href: `/${slug}` })} />
       <JsonLd data={pageJsonLd(page)} />
       <BlockList blocks={page.blocks} slideshow={page.slideshow} sourcePage={`/${slug}`} />
-    </>
+    </CmsPageFrame>
   );
 }

@@ -19,6 +19,11 @@ import {
   uniquifyEmbedIds,
 } from "../src/lib/html-stream-embed";
 import { PUBLIC_STATUS_MONITORS } from "../src/lib/status-monitor-catalog";
+import {
+  parsePageLightSlugs,
+  slugWantsLight,
+  withPageLightSlug,
+} from "../src/lib/page-theme";
 
 let failures = 0;
 
@@ -235,6 +240,34 @@ if (
 ) {
   failures += 1;
   console.error("FAIL HTML sanitiser must not load jsdom on public pages");
+}
+
+if (
+  parsePageLightSlugs("it-services,../evil,not valid").join(",") !== "it-services" ||
+  !slugWantsLight("it-services,cybersecurity", "it-services") ||
+  slugWantsLight("it-services", "home") ||
+  withPageLightSlug("it-services", "home", true) !== "it-services,home" ||
+  withPageLightSlug("it-services,home", "home", false) !== "it-services"
+) {
+  failures += 1;
+  console.error("FAIL page-theme cookie must keep only safe CMS slugs");
+}
+
+const pageEditorSource = readFileSync(
+  path.join(process.cwd(), "src/components/admin/page-editor.tsx"),
+  "utf8",
+);
+const pageSchema = readFileSync(
+  path.join(process.cwd(), "prisma/schema.prisma"),
+  "utf8",
+);
+if (
+  !pageSchema.includes("visitorThemeToggle") ||
+  !pageEditorSource.includes("Let visitors switch this page to a light look") ||
+  !pageEditorSource.includes("visitorThemeToggle")
+) {
+  failures += 1;
+  console.error("FAIL pages need a per-page visitor light-look option");
 }
 
 if (failures === 0) {

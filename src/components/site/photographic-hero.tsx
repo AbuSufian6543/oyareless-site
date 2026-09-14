@@ -26,6 +26,19 @@ export const photoHeroCopy = {
     "border-white/50 bg-navy-950/30 shadow-[0_8px_24px_rgb(4_19_37_/_0.35)] backdrop-blur-sm hover:border-white hover:bg-white/12",
 } as const;
 
+/** Same IBM Plex / brand tokens, pale field, navy type. */
+export const photoHeroCopyLight = {
+  wrap: "max-w-xl lg:max-w-2xl",
+  eyebrow:
+    "mb-5 inline-flex items-center gap-2.5 rounded-full border border-brand-200 bg-white/90 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-brand-700 shadow-sm backdrop-blur-md",
+  heading:
+    "text-balance-tight text-4xl leading-[1.08] font-bold text-navy-900 sm:text-5xl lg:text-[3.35rem]",
+  sub: "mt-6 max-w-xl text-lg leading-relaxed text-slate-600 lg:text-xl",
+  actions: "mt-9 flex flex-wrap gap-3",
+  outlineButton:
+    "border-navy-300 bg-white/85 text-navy-900 shadow-sm hover:border-navy-400 hover:bg-white",
+} as const;
+
 /**
  * Home hero when the office photograph is the background.
  *
@@ -40,6 +53,7 @@ export function PhotographicHero({
   id,
   className,
   footer,
+  light = false,
   children,
 }: {
   src: string;
@@ -47,13 +61,15 @@ export function PhotographicHero({
   id?: string;
   className?: string;
   footer?: ReactNode;
+  light?: boolean;
   children: ReactNode;
 }) {
   return (
     <section
       id={id}
       className={cn(
-        "relative isolate flex min-h-[32rem] flex-col overflow-hidden bg-navy-950 text-white lg:min-h-[38rem]",
+        "relative isolate flex min-h-[32rem] flex-col overflow-hidden lg:min-h-[38rem]",
+        light ? "bg-slate-50 text-navy-900" : "bg-navy-950 text-white",
         className,
       )}
     >
@@ -72,45 +88,65 @@ export function PhotographicHero({
         className="pointer-events-none absolute inset-0 -z-10"
         aria-hidden="true"
       >
-        {/* Light overall veil — enough for type, not a flat navy field. */}
-        <div className="absolute inset-0 bg-navy-950/38 lg:bg-navy-950/12" />
-
-        {/* Copy well on the left only; the mask keeps the sign and uplights. */}
-        <div
-          className="absolute inset-0 bg-gradient-to-r from-navy-950/88 via-navy-950/58 to-transparent lg:from-navy-950/78 lg:via-navy-950/36"
-          style={{
-            maskImage:
-              "linear-gradient(to right, black 0%, black 42%, transparent 74%)",
-            WebkitMaskImage:
-              "linear-gradient(to right, black 0%, black 42%, transparent 74%)",
-          }}
-        />
-
-        {/* Local contrast behind the headline, still left-weighted. */}
-        <div className="absolute -left-24 top-10 h-[28rem] w-[36rem] rounded-full bg-[radial-gradient(circle,rgb(4_19_37_/_0.55)_0%,transparent_72%)] lg:bg-[radial-gradient(circle,rgb(4_19_37_/_0.42)_0%,transparent_72%)]" />
-
-        {/* Let the building's gold lights breathe on the right. */}
-        <div className="absolute -right-10 bottom-10 hidden h-[22rem] w-[28rem] rounded-full bg-[radial-gradient(circle,rgb(245_186_72_/_0.14)_0%,transparent_70%)] lg:block" />
-
-        <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-navy-950/50 to-transparent lg:from-navy-950/22" />
-        <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-navy-950/70 to-transparent lg:from-navy-950/45" />
+        {light ? (
+          <>
+            <div className="absolute inset-0 bg-white/50 lg:bg-white/20" />
+            <div
+              className="absolute inset-0 bg-gradient-to-r from-white via-white/90 to-transparent lg:from-white/95 lg:via-white/72"
+              style={{
+                maskImage:
+                  "linear-gradient(to right, black 0%, black 42%, transparent 74%)",
+                WebkitMaskImage:
+                  "linear-gradient(to right, black 0%, black 42%, transparent 74%)",
+              }}
+            />
+            <div className="absolute -left-24 top-10 h-[28rem] w-[36rem] rounded-full bg-[radial-gradient(circle,rgb(255_255_255_/_0.85)_0%,transparent_72%)]" />
+            <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-white/70 to-transparent" />
+            <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-white/80 to-transparent lg:from-white/55" />
+          </>
+        ) : (
+          <>
+            <div className="absolute inset-0 bg-navy-950/38 lg:bg-navy-950/12" />
+            <div
+              className="absolute inset-0 bg-gradient-to-r from-navy-950/88 via-navy-950/58 to-transparent lg:from-navy-950/78 lg:via-navy-950/36"
+              style={{
+                maskImage:
+                  "linear-gradient(to right, black 0%, black 42%, transparent 74%)",
+                WebkitMaskImage:
+                  "linear-gradient(to right, black 0%, black 42%, transparent 74%)",
+              }}
+            />
+            <div className="absolute -left-24 top-10 h-[28rem] w-[36rem] rounded-full bg-[radial-gradient(circle,rgb(4_19_37_/_0.55)_0%,transparent_72%)] lg:bg-[radial-gradient(circle,rgb(4_19_37_/_0.42)_0%,transparent_72%)]" />
+            <div className="absolute -right-10 bottom-10 hidden h-[22rem] w-[28rem] rounded-full bg-[radial-gradient(circle,rgb(245_186_72_/_0.14)_0%,transparent_70%)] lg:block" />
+            <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-navy-950/50 to-transparent lg:from-navy-950/22" />
+            <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-navy-950/70 to-transparent lg:from-navy-950/45" />
+          </>
+        )}
       </div>
 
-      <TechBackdrop
-        wash="photo"
-        network
-        density={0.28}
-        glow="none"
-        scrim="none"
-        mood="network"
-      />
+      {light ? null : (
+        <TechBackdrop
+          wash="photo"
+          network
+          density={0.28}
+          glow="none"
+          scrim="none"
+          mood="network"
+        />
+      )}
 
       <div className="container-page relative flex flex-1 flex-col justify-center py-16 lg:py-20">
         {children}
       </div>
 
       {footer ? (
-        <div className="relative border-t border-white/12 bg-navy-950/40 backdrop-blur-md">
+        <div
+          className={
+            light
+              ? "relative border-t border-slate-200 bg-white/85 backdrop-blur-md"
+              : "relative border-t border-white/12 bg-navy-950/40 backdrop-blur-md"
+          }
+        >
           {footer}
         </div>
       ) : null}

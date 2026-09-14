@@ -488,3 +488,14 @@
   background: #020617;
 }
 
+/* Visitor light look on opted-in CMS pages. Header/footer stay as designed. */
+[data-page-theme="light"] {
+  color-scheme: light;
+}
+
+[data-page-theme="light"] .bg-tech-grid {
+  opacity: 0.08;
+  filter: invert(1) saturate(0.15);
+}
+
+

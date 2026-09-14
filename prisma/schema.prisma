@@ -149,6 +149,8 @@ model Page {
   metaDescription String?
   ogImageUrl      String?
   noIndex         Boolean       @default(false)
+  /// When true, visitors see an Original / Light control on this page only.
+  visitorThemeToggle Boolean    @default(false)
 
   showInHeaderNav Boolean       @default(false)
   showInFooterNav Boolean       @default(false)

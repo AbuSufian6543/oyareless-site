@@ -32,6 +32,7 @@ export type PageEditorData = {
   metaDescription: string;
   ogImageUrl: string;
   noIndex: boolean;
+  visitorThemeToggle: boolean;
   showInHeaderNav: boolean;
   showInFooterNav: boolean;
   navOrder: number;
@@ -87,6 +88,7 @@ export function PageEditor({
       metaDescription: form.metaDescription,
       ogImageUrl: form.ogImageUrl,
       noIndex: form.noIndex,
+      visitorThemeToggle: form.visitorThemeToggle,
       showInHeaderNav: form.showInHeaderNav,
       showInFooterNav: form.showInFooterNav,
       navOrder: form.navOrder,
@@ -362,6 +364,33 @@ function PageSettings({
               />
             </div>
           </div>
+        </div>
+
+        <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h2 className="mb-1 font-bold text-navy-900">Visitor look</h2>
+          <p className="mb-4 text-xs text-slate-500">
+            Optional. Off by default, and only this page is affected.
+          </p>
+          <label className="flex cursor-pointer items-start gap-3 rounded-lg border border-slate-200 p-3 hover:bg-slate-50">
+            <input
+              type="checkbox"
+              checked={form.visitorThemeToggle}
+              onChange={(event) =>
+                update("visitorThemeToggle", event.target.checked)
+              }
+              className="mt-0.5 size-4 rounded border-slate-300 text-brand-600"
+            />
+            <span>
+              <span className="block text-sm font-semibold text-navy-800">
+                Let visitors switch this page to a light look
+              </span>
+              <span className="mt-0.5 block text-xs leading-relaxed text-slate-500">
+                Shows an Original / Light control on the public page. Original
+                keeps the sections as you designed them. Light uses the same
+                fonts and brand colours on a pale background.
+              </span>
+            </span>
+          </label>
         </div>
       </div>
 

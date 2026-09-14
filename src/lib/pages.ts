@@ -27,6 +27,7 @@ export type RenderablePage = {
   metaDescription: string | null;
   ogImageUrl: string | null;
   noIndex: boolean;
+  visitorThemeToggle: boolean;
   updatedAt: Date;
 };
 
@@ -49,6 +50,7 @@ export const getPublishedPage = cache(
         metaDescription: page.metaDescription,
         ogImageUrl: page.ogImageUrl,
         noIndex: page.noIndex,
+        visitorThemeToggle: page.visitorThemeToggle,
         updatedAt: page.updatedAt,
       };
     } catch (error) {
@@ -76,6 +78,7 @@ async function seedFallbackPage(slug: string): Promise<RenderablePage | null> {
     metaDescription: seed.metaDescription,
     ogImageUrl: null,
     noIndex: false,
+    visitorThemeToggle: false,
     updatedAt: new Date(0),
   };
 }

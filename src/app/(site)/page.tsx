@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { BlockList } from "@/components/blocks/block-renderer";
 import { JsonLd } from "@/components/site/json-ld";
+import { CmsPageFrame } from "@/components/site/cms-page-frame";
 import { FallbackHome } from "@/components/site/fallback-home";
 import { getPublishedPage, pageJsonLd, pageMetadata } from "@/lib/pages";
 import { publicMetadata, webPageJsonLd } from "@/lib/seo";
@@ -42,9 +43,9 @@ export default async function HomePage() {
   }
 
   return (
-    <>
+    <CmsPageFrame slug={page.slug} enabled={page.visitorThemeToggle}>
       <JsonLd data={pageJsonLd(page)} />
       <BlockList blocks={page.blocks} slideshow={page.slideshow} sourcePage="/" />
-    </>
+    </CmsPageFrame>
   );
 }

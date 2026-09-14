@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import type { BlockSettings } from "@/lib/blocks";
+import { visitorPageIsLight } from "@/lib/page-theme.server";
 import { cn } from "@/lib/utils";
 
 const BACKGROUNDS: Record<string, string> = {
@@ -43,10 +44,27 @@ const ALIGN: Record<string, string> = {
   right: "text-right",
 };
 
+const LIGHT_REMAP: Record<string, string> = {
+  dark: "light",
+  navy: "white",
+  gradient: "light",
+  grid: "light",
+};
+
+function resolveBackground(
+  settings?: BlockSettings,
+  defaultBackground = "white",
+): string {
+  const background = settings?.background ?? defaultBackground;
+  if (!visitorPageIsLight()) return background;
+  return LIGHT_REMAP[background] ?? background;
+}
+
 export function isDarkBackground(
   settings?: BlockSettings,
   defaultBackground = "white",
 ): boolean {
+  if (visitorPageIsLight()) return false;
   const background = settings?.background ?? defaultBackground;
   return (
     background === "dark" ||
@@ -72,7 +90,7 @@ export function Section({
   defaultBackground?: string;
   defaultPadding?: string;
 }) {
-  const background = settings?.background ?? defaultBackground ?? "white";
+  const background = resolveBackground(settings, defaultBackground ?? "white");
   const paddingY = settings?.paddingY ?? defaultPadding ?? "lg";
   const width = settings?.width ?? "default";
   const align = settings?.align ?? "left";

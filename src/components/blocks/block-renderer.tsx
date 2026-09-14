@@ -50,6 +50,8 @@ import {
 import { MediaSlideshow } from "@/components/blocks/media-slideshow";
 import { visibleSlideshow, type SlideshowItem } from "@/lib/slideshow";
 import type { Block } from "@/lib/blocks";
+import { visitorPageIsLight } from "@/lib/page-theme.server";
+import { cn } from "@/lib/utils";
 
 /**
  * Renders one block. Unknown types render nothing so that content authored
@@ -133,30 +135,37 @@ export function BlockRenderer({
       return <CaseStudyGridBlock block={block} />;
     case "kbHighlights":
       return <KbHighlightsBlock block={block} />;
-    case "speedTest":
+    case "speedTest": {
+      const light = visitorPageIsLight();
       return (
         <section
           id={block.settings?.anchor || undefined}
-          className="relative isolate overflow-hidden bg-navy-950"
+          className={cn(
+            "relative isolate overflow-hidden",
+            light ? "bg-slate-50" : "bg-navy-950",
+          )}
           style={
             block.settings?.anchor
               ? { scrollMarginTop: "6rem" }
               : undefined
           }
         >
-          <TechBackdrop network density={0.7} glow="center" mood="network" />
+          {light ? null : (
+            <TechBackdrop network density={0.7} glow="center" mood="network" />
+          )}
           <div className="container-page py-14 lg:py-20">
             <SectionHeading
               heading={block.data.heading}
               description={block.data.description}
-              dark
+              dark={!light}
               align="center"
               className="mb-8 lg:mb-10"
             />
-            <SpeedTest note={block.data.note} dark />
+            <SpeedTest note={block.data.note} dark={!light} />
           </div>
         </section>
       );
+    }
     case "contactForm":
       return (
         <Section settings={block.settings}>

@@ -6,16 +6,18 @@ import {
   SectionHeading,
   isDarkBackground,
 } from "@/components/blocks/section";
-import { ButtonLink, type ButtonVariant } from "@/components/ui/button";
+import { ButtonLink, buttonVariantOnSurface, type ButtonVariant } from "@/components/ui/button";
 import { BlockIcon } from "@/components/ui/icon";
 import { SectionImage } from "@/components/visuals/section-image";
 import { TechBackdrop } from "@/components/visuals/tech-backdrop";
 import {
   PhotographicHero,
   photoHeroCopy,
+  photoHeroCopyLight,
 } from "@/components/site/photographic-hero";
 import type { BlockOf } from "@/lib/blocks";
 import { HOME_OFFICE_ALT } from "@/lib/home-office";
+import { visitorPageIsLight } from "@/lib/page-theme.server";
 import { getSettings } from "@/lib/settings";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +35,7 @@ const HEIGHTS: Record<string, string> = {
  */
 export async function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
   const { data } = block;
+  const light = visitorPageIsLight();
   const settings = await getSettings();
   const heroImage =
     data.officeImageUrl.trim() ||
@@ -42,15 +45,18 @@ export async function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
     data.officeImageAlt.trim() ||
     data.backgroundImageAlt.trim() ||
     HOME_OFFICE_ALT;
+  const photoCopy = light ? photoHeroCopyLight : photoHeroCopy;
 
   const copy = (
-    <div className={heroImage ? photoHeroCopy.wrap : "max-w-3xl"}>
+    <div className={heroImage ? photoCopy.wrap : "max-w-3xl"}>
       {data.eyebrow && (
         <p
           className={
             heroImage
-              ? photoHeroCopy.eyebrow
-              : "mb-4 inline-flex items-center gap-2 rounded-full border border-accent-500/30 bg-accent-500/10 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-accent-300"
+              ? photoCopy.eyebrow
+              : light
+                ? "mb-4 inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-brand-700"
+                : "mb-4 inline-flex items-center gap-2 rounded-full border border-accent-500/30 bg-accent-500/10 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.14em] text-accent-300"
           }
         >
           {heroImage ? (
@@ -66,19 +72,25 @@ export async function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
       <h1
         className={
           heroImage
-            ? photoHeroCopy.heading
-            : "text-balance-tight text-4xl leading-[1.08] font-bold lg:text-[3.5rem]"
+            ? photoCopy.heading
+            : cn(
+                "text-balance-tight text-4xl leading-[1.08] font-bold lg:text-[3.5rem]",
+                light ? "text-navy-900" : "text-white",
+              )
         }
       >
-        <HeroHeadline text={data.headline} />
+        <HeroHeadline text={data.headline} light={light} />
       </h1>
 
       {data.subheadline && (
         <p
           className={
             heroImage
-              ? photoHeroCopy.sub
-              : "mt-5 max-w-2xl text-lg leading-relaxed text-navy-200 lg:text-xl"
+              ? photoCopy.sub
+              : cn(
+                  "mt-5 max-w-2xl text-lg leading-relaxed lg:text-xl",
+                  light ? "text-slate-600" : "text-navy-200",
+                )
           }
         >
           {data.subheadline}
@@ -86,9 +98,9 @@ export async function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
       )}
 
       {data.buttons.length > 0 && (
-        <div className={heroImage ? photoHeroCopy.actions : "mt-8 flex flex-wrap gap-3"}>
+        <div className={heroImage ? photoCopy.actions : "mt-8 flex flex-wrap gap-3"}>
           {data.buttons.map((button, index) => {
-            const variant = heroButtonVariant(button.style, index);
+            const variant = heroButtonVariant(button.style, index, light);
             return (
               <ButtonLink
                 key={index}
@@ -98,7 +110,7 @@ export async function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
                 variant={variant}
                 className={
                   heroImage && variant === "onDark"
-                    ? photoHeroCopy.outlineButton
+                    ? photoCopy.outlineButton
                     : undefined
                 }
               >
@@ -110,7 +122,12 @@ export async function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
       )}
 
       {!heroImage && data.highlights.length > 0 && (
-        <ul className="mt-10 flex flex-wrap gap-x-7 gap-y-3 border-t border-white/10 pt-6 text-sm text-navy-200">
+        <ul
+          className={cn(
+            "mt-10 flex flex-wrap gap-x-7 gap-y-3 border-t pt-6 text-sm",
+            light ? "border-slate-200 text-slate-600" : "border-white/10 text-navy-200",
+          )}
+        >
           {data.highlights.map((highlight) => (
             <li key={highlight} className="flex items-center gap-2">
               <span
@@ -131,9 +148,15 @@ export async function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
         src={heroImage}
         alt={heroAlt}
         id={block.settings?.anchor || undefined}
+        light={light}
         footer={
           data.highlights.length > 0 ? (
-            <ul className="container-page flex flex-wrap gap-x-8 gap-y-3 py-6 text-sm text-white/80">
+            <ul
+              className={cn(
+                "container-page flex flex-wrap gap-x-8 gap-y-3 py-6 text-sm",
+                light ? "text-slate-600" : "text-white/80",
+              )}
+            >
               {data.highlights.map((highlight) => (
                 <li key={highlight} className="flex items-center gap-2">
                   <span
@@ -156,34 +179,38 @@ export async function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
     <section
       id={block.settings?.anchor || undefined}
       className={cn(
-        "relative isolate overflow-hidden bg-navy-950 text-white",
+        "relative isolate overflow-hidden",
+        light ? "bg-slate-50 text-navy-900" : "bg-navy-950 text-white",
         HEIGHTS[data.height] ?? HEIGHTS.lg,
       )}
     >
-      <TechBackdrop
-        network={data.networkDensity > 0}
-        density={data.networkDensity / 100}
-        glow="right"
-        mood="network"
-      />
+      {light ? null : (
+        <TechBackdrop
+          network={data.networkDensity > 0}
+          density={data.networkDensity / 100}
+          glow="right"
+          mood="network"
+        />
+      )}
       <div className="container-page relative">{copy}</div>
     </section>
   );
 }
 
-function HeroHeadline({ text }: { text: string }) {
+function HeroHeadline({ text, light = false }: { text: string; light?: boolean }) {
   const match = /^(AI)(\b[\s\S]*)$/.exec(text);
   if (!match) return text;
 
   return (
     <>
-      <span className="text-accent-300">{match[1]}</span>
+      <span className={light ? "text-brand-600" : "text-accent-300"}>{match[1]}</span>
       {match[2]}
     </>
   );
 }
 
-function heroButtonVariant(style: string, index: number): ButtonVariant {
+function heroButtonVariant(style: string, index: number, light = false): ButtonVariant {
+  if (light) return buttonVariantOnSurface(style, false);
   if (style === "outline" || style === "ghost") return "onDark";
   if (style === "secondary") return "secondary";
   // First primary button gets the accent so it reads against navy.
