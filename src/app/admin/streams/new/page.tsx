@@ -17,7 +17,7 @@ export default async function NewStreamPage({
     <div className="max-w-3xl">
       <PageHeader
         title="Add a live stream"
-        description="Cameras, live events, and vendor player snippets such as Mist / VideoStreamCanada. New streams default to an HTML embed."
+        description="Cameras, live events, and vendor player snippets such as Mist / VideoStreamCanada. New streams stay off /live and Video & Broadcasting until you turn listing on."
         breadcrumb={{ href: "/admin/streams", label: "Live streams" }}
       />
 
@@ -46,7 +46,7 @@ export default async function NewStreamPage({
           order: 0,
           isLive: true,
           featured: false,
-          isPublic: true,
+          isPublic: false,
           autoplay: true,
           muted: true,
           showControls: true,

@@ -261,7 +261,9 @@ model Stream {
   /// When set, visitors must enter a password to view. Mirrors the
   /// password-protected camera pages on the legacy site.
   accessPasswordHash String?
-  isPublic      Boolean       @default(true)
+  /// Listed on /live and Video & Broadcasting. Unlisted streams stay
+  /// watchable at /live/[slug] and in page embeds.
+  isPublic      Boolean       @default(false)
 
   autoplay      Boolean       @default(true)
   muted         Boolean       @default(true)

@@ -306,7 +306,7 @@ export const BLOCK_FIELDS: Record<BlockType, FieldDef[]> = {
         { value: "3", label: "3 columns" },
       ],
     },
-    { kind: "boolean", key: "featuredOnly", label: "Only show featured streams" },
+    { kind: "boolean", key: "featuredOnly", label: "Only show featured listed streams" },
     {
       kind: "streamMultiPicker",
       key: "slugs",

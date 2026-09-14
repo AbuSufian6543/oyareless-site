@@ -99,6 +99,10 @@ export function StreamForm({
               section, and pick this stream. It also has a URL at{" "}
               <span className="font-mono">/live/your-slug</span>.
             </li>
+            <li>
+              It does <strong>not</strong> appear on /live or Video &
+              Broadcasting unless you turn on listing below.
+            </li>
           </ol>
         </div>
 
@@ -223,24 +227,42 @@ export function StreamForm({
             />
           </div>
 
+          <div
+            className={cn(
+              "space-y-2.5 rounded-xl border-2 p-4",
+              isPublic
+                ? "border-brand-300 bg-brand-50/70"
+                : "border-slate-200 bg-slate-50/80",
+            )}
+          >
+            <div>
+              <p className="text-sm font-bold text-navy-900">Public listings</p>
+              <p className="mt-1 text-xs leading-relaxed text-slate-600">
+                New streams stay off these pages until you turn this on. Leave
+                it off for private jobs, tests, and client-only cameras.
+              </p>
+            </div>
+            <CheckboxField
+              label="Show on /live and Video & Broadcasting"
+              name="isPublic"
+              checked={isPublic}
+              onChange={(event) => setIsPublic(event.target.checked)}
+              description="When this is off, the stream is unlisted. Viewers can still watch at /live/your-slug or on a page where you embed the player."
+            />
+            <CheckboxField
+              label="Pin to the top of those listings"
+              name="featured"
+              defaultChecked={values.featured}
+              description="Only visible on those pages when listing is turned on above."
+            />
+          </div>
+
           <div className="space-y-2.5">
             <CheckboxField
               label="Currently live"
               name="isLive"
               defaultChecked={values.isLive}
               description="Shows a red LIVE badge on cards and the player."
-            />
-            <CheckboxField
-              label="Feature on the live page"
-              name="featured"
-              defaultChecked={values.featured}
-            />
-            <CheckboxField
-              label="Publicly listed"
-              name="isPublic"
-              checked={isPublic}
-              onChange={(event) => setIsPublic(event.target.checked)}
-              description="Listed streams appear on /live. Turn this off for private events — viewers still watch from a page you add the player to, or from /live/your-slug."
             />
           </div>
 

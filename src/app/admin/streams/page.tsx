@@ -31,7 +31,7 @@ export default async function AdminStreamsPage({
     <div>
       <PageHeader
         title="Live streams"
-        description="Cameras and live video that can be embedded on any page. Paste vendor player code here, optionally set a password, then add a Live stream player section on a page."
+        description="Cameras and live video that can be embedded on any page. New streams stay unlisted until you choose to show them on /live and Video & Broadcasting."
         actions={
           <Link
             href="/admin/streams/new"
@@ -105,10 +105,14 @@ export default async function AdminStreamsPage({
                       Password
                     </Badge>
                   )}
-                  {!stream.isPublic && <Badge tone="neutral">Unlisted</Badge>}
-                  {stream.isPublic && !stream.accessPasswordHash && (
-                    <span className="text-xs text-slate-500">Public</span>
+                  {stream.isPublic ? (
+                    <Badge tone="success">On /live</Badge>
+                  ) : (
+                    <Badge tone="neutral">Unlisted</Badge>
                   )}
+                  {stream.isPublic && stream.featured ? (
+                    <Badge tone="info">Featured</Badge>
+                  ) : null}
                 </div>
               </td>
               <td className="px-4 py-3.5">
