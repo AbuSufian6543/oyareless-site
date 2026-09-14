@@ -40,3 +40,30 @@ export function formatProductQuantity(quantity: number, unit: string): string {
   const amount = Number.isInteger(quantity) ? String(quantity) : String(quantity);
   return `${amount} ${unit}`.trim();
 }
+
+/** Staff work-log notes: one step per line, stored as a single text field. */
+export const MAX_WORK_NOTE_LENGTH = 2000;
+export const MAX_WORK_NOTE_LINES = 12;
+export const MAX_WORK_NOTE_LINE_LENGTH = 200;
+
+export function joinWorkNoteLines(values: unknown[]): string {
+  return values
+    .map((value) => String(value ?? "").trim().slice(0, MAX_WORK_NOTE_LINE_LENGTH))
+    .filter(Boolean)
+    .slice(0, MAX_WORK_NOTE_LINES)
+    .join("\n")
+    .slice(0, MAX_WORK_NOTE_LENGTH);
+}
+
+export function splitWorkNoteLines(note: string): string[] {
+  return String(note)
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+export function readWorkNoteFromForm(formData: FormData): string {
+  const lines = formData.getAll("noteLine");
+  if (lines.length > 0) return joinWorkNoteLines(lines);
+  return String(formData.get("note") ?? "").trim().slice(0, MAX_WORK_NOTE_LENGTH);
+}

@@ -17,7 +17,12 @@ import {
 import { recordTaskAudit, recordTicketAudit } from "@/lib/workdesk/audit";
 import { dateInputValue, parseDateInput } from "@/lib/workdesk/dates";
 import { recordWorkdeskEvent } from "@/lib/workdesk/events";
-import { formatLoggedDuration, parseLoggedMinutes, parseProductQuantity } from "@/lib/workdesk/hours";
+import {
+  formatLoggedDuration,
+  parseLoggedMinutes,
+  parseProductQuantity,
+  readWorkNoteFromForm,
+} from "@/lib/workdesk/hours";
 import { TIME_ENTRY_KIND_LABELS, TIME_ENTRY_KINDS } from "@/lib/workdesk/labels";
 import { revalidateWorkdesk } from "@/lib/workdesk/revalidate";
 
@@ -95,7 +100,7 @@ export async function addTimeEntryAction(formData: FormData): Promise<void> {
   const kind = TIME_KINDS.has(kindRaw) ? (kindRaw as TimeEntryKind) : "ONSITE";
   const workedOn =
     parseDateInput(String(formData.get("workedOn") ?? dateInputValue(new Date()))) ?? new Date();
-  const note = String(formData.get("note") ?? "").trim().slice(0, 500);
+  const note = readWorkNoteFromForm(formData);
   if (!minutes) bounceTo(staff, target);
 
   await prisma.workTimeEntry.create({

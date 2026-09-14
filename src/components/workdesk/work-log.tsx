@@ -4,7 +4,7 @@ import { ConfirmSubmit } from "@/components/workdesk/confirm-submit";
 import { ProductLogForm, TimeLogForm } from "@/components/workdesk/work-log-forms";
 import { removeProductUsageAction, removeTimeEntryAction } from "@/app/workdesk/log-actions";
 import { formatDate } from "@/lib/utils";
-import { formatLoggedDuration, formatProductQuantity } from "@/lib/workdesk/hours";
+import { formatLoggedDuration, formatProductQuantity, splitWorkNoteLines } from "@/lib/workdesk/hours";
 import { TIME_ENTRY_KIND_LABELS } from "@/lib/workdesk/labels";
 
 const KIND_PILL: Record<string, string> = {
@@ -36,6 +36,18 @@ type ProductRow = {
   createdAt: Date;
   addedBy: { id: string; name: string };
 };
+
+function WorkNoteList({ note }: { note: string }) {
+  const lines = splitWorkNoteLines(note);
+  if (lines.length === 0) return null;
+  return (
+    <ul className="mt-1.5 list-disc space-y-1 pl-4 text-sm leading-snug text-navy-800">
+      {lines.map((line, index) => (
+        <li key={`${index}-${line.slice(0, 24)}`}>{line}</li>
+      ))}
+    </ul>
+  );
+}
 
 type CatalogRow = {
   id: string;
@@ -118,9 +130,7 @@ export function WorkLog({
                       <p className="mt-0.5 text-xs text-slate-500">
                         {row.user.name} · {formatDate(row.workedOn)}
                       </p>
-                      {row.note ? (
-                        <p className="mt-1 text-sm text-navy-800">{row.note}</p>
-                      ) : null}
+                      {row.note ? <WorkNoteList note={row.note} /> : null}
                     </div>
                     {canEdit && (canManageAll || row.userId === currentUserId) ? (
                       <form action={removeTimeEntryAction}>

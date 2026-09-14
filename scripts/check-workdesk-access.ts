@@ -23,8 +23,10 @@ import {
 import { renderTaskEmailCard } from "../src/lib/workdesk/task-mail";
 import {
   formatLoggedDuration,
+  joinWorkNoteLines,
   parseLoggedMinutes,
   parseProductQuantity,
+  splitWorkNoteLines,
 } from "../src/lib/workdesk/hours";
 import { calendarDateKey, DEFAULT_DISPLAY_TIMEZONE } from "../src/lib/timezone";
 import { formatDate, formatDateTime } from "../src/lib/utils";
@@ -136,6 +138,16 @@ assert("duration formats as 1h 30m", formatLoggedDuration(90) === "1h 30m");
 assert("45m formats without hours", formatLoggedDuration(45) === "45m");
 assert("product quantity keeps two decimals", parseProductQuantity("12.5") === 12.5);
 assert("zero product quantity is rejected", parseProductQuantity("0") === null);
+assert(
+  "work notes join as one step per line",
+  joinWorkNoteLines([" Replaced radio ", "", "Tested coverage"]) ===
+    "Replaced radio\nTested coverage",
+);
+assert(
+  "work notes split back into a list",
+  splitWorkNoteLines("Replaced radio\nTested coverage").join("|") ===
+    "Replaced radio|Tested coverage",
+);
 
 const torontoNoon = new Date("2026-09-11T16:00:00.000Z");
 const torontoEveningUtc = new Date("2026-09-11T03:00:00.000Z");
@@ -589,12 +601,24 @@ const workLogForms = readFileSync(
   path.join(process.cwd(), "src/components/workdesk/work-log-forms.tsx"),
   "utf8",
 );
+const workLogActions = readFileSync(
+  path.join(process.cwd(), "src/app/workdesk/log-actions.ts"),
+  "utf8",
+);
 assert(
   "work log UI records time and products",
   workLogUi.includes("Work log") &&
     workLogForms.includes("Log time") &&
     workLogForms.includes("Add product") &&
     workLogForms.includes("Quick duration"),
+);
+assert(
+  "work log notes are a list with an add-step control",
+  workLogForms.includes("What did you do?") &&
+    workLogForms.includes('name="noteLine"') &&
+    workLogForms.includes("Add another step") &&
+    workLogUi.includes("WorkNoteList") &&
+    workLogActions.includes("readWorkNoteFromForm"),
 );
 
 const adminTicketDetail = readFileSync(
