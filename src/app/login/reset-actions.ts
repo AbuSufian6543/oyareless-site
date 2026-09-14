@@ -76,7 +76,7 @@ export async function requestPasswordResetAction(
     },
   });
 
-  // Links are built from the canonical https://wirelesscom.ca origin, never
+  // Links are built from the canonical https://wirelesscom.org origin, never
   // from the request Host header (that would allow reset-link poisoning).
   const message = passwordResetEmail({
     name: user.name,

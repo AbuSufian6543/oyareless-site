@@ -1,15 +1,25 @@
 /**
  * Canonical public origin for links we send off-site (email, sitemap, OG).
  *
- * Production always uses https://wirelesscom.ca. That stops notification and
+ * Production always uses https://wirelesscom.org. That stops notification and
  * password-reset mail from leaking the server IP or following a spoofed Host
  * header, even if NEXT_PUBLIC_SITE_URL still contains one.
+ *
+ * Mailboxes stay @wirelesscom.ca. Only clickable https origins use .org.
+ * The former wirelesscom.ca site host is still trusted so old hrefs keep
+ * their path when they are rewritten onto .org.
  */
 
-export const CANONICAL_PUBLIC_HOST = "wirelesscom.ca";
+export const CANONICAL_PUBLIC_HOST = "wirelesscom.org";
 export const CANONICAL_PUBLIC_ORIGIN = `https://${CANONICAL_PUBLIC_HOST}`;
 
+const LEGACY_PUBLIC_HOSTS = new Set(["wirelesscom.ca", "www.wirelesscom.ca"]);
+
 const LOCAL_DEV_ORIGIN = "http://localhost:3000";
+
+function normalizeHostname(hostname: string): string {
+  return hostname.trim().toLowerCase().replace(/\.$/, "");
+}
 
 export function isIpHostname(hostname: string): boolean {
   const host = hostname.trim().toLowerCase().replace(/^\[/, "").replace(/\]$/, "");
@@ -31,8 +41,14 @@ export function isLoopbackHost(hostname: string): boolean {
 }
 
 export function isCanonicalPublicHost(hostname: string): boolean {
-  const host = hostname.trim().toLowerCase().replace(/\.$/, "");
+  const host = normalizeHostname(hostname);
   return host === CANONICAL_PUBLIC_HOST || host === `www.${CANONICAL_PUBLIC_HOST}`;
+}
+
+/** Live site plus the former public host, used to keep paths when rewriting links. */
+export function isTrustedPublicHost(hostname: string): boolean {
+  const host = normalizeHostname(hostname);
+  return isCanonicalPublicHost(host) || LEGACY_PUBLIC_HOSTS.has(host);
 }
 
 function tryParseHttpUrl(value: string): URL | null {
@@ -49,7 +65,7 @@ function tryParseHttpUrl(value: string): URL | null {
 
 /**
  * Origin used in email, robots, sitemap, and metadata.
- * Production: always https://wirelesscom.ca.
+ * Production: always https://wirelesscom.org.
  * Development: only loopback is kept; IPs and unknown hosts become the company HTTPS origin.
  */
 export function resolvePublicOrigin(
@@ -81,7 +97,7 @@ export function sanitizeAppPath(pathOrUrl: string): string {
   const absolute = tryParseHttpUrl(trimmed);
   if (absolute) {
     if (
-      isCanonicalPublicHost(absolute.hostname) ||
+      isTrustedPublicHost(absolute.hostname) ||
       isLoopbackHost(absolute.hostname) ||
       isIpHostname(absolute.hostname)
     ) {
@@ -115,7 +131,7 @@ export function publicOrigin(): string {
   return resolvePublicOrigin(process.env.NEXT_PUBLIC_SITE_URL);
 }
 
-/** Safe absolute https://wirelesscom.ca (or localhost in `next dev`) link. */
+/** Safe absolute https://wirelesscom.org (or localhost in `next dev`) link. */
 export function publicUrl(pathOrUrl = "/"): string {
   return joinOriginAndPath(publicOrigin(), pathOrUrl);
 }
@@ -178,7 +194,7 @@ export function emailHtmlContainsForbiddenOrigin(html: string): boolean {
     const parsed = tryParseHttpUrl(decoded);
     if (!parsed) return true;
     if (isIpHostname(parsed.hostname)) return true;
-    if (!isCanonicalPublicHost(parsed.hostname) && !isLoopbackHost(parsed.hostname)) {
+    if (!isTrustedPublicHost(parsed.hostname) && !isLoopbackHost(parsed.hostname)) {
       return true;
     }
     if (parsed.protocol !== "https:" && !isLoopbackHost(parsed.hostname)) return true;

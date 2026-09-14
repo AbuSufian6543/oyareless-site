@@ -3,6 +3,7 @@ import {
   emailHtmlContainsForbiddenOrigin,
   isCanonicalPublicHost,
   isIpHostname,
+  isTrustedPublicHost,
   joinOriginAndPath,
   resolvePublicOrigin,
   sanitizeAppPath,
@@ -39,11 +40,23 @@ assert(
   resolvePublicOrigin("https://64.110.141.167", "production") === CANONICAL_PUBLIC_ORIGIN,
 );
 assert(
-  "production upgrades http://wirelesscom.ca to https apex",
+  "production origin is https://wirelesscom.org",
+  CANONICAL_PUBLIC_ORIGIN === "https://wirelesscom.org",
+);
+assert(
+  "production upgrades http://wirelesscom.org to https apex",
+  resolvePublicOrigin("http://wirelesscom.org", "production") === CANONICAL_PUBLIC_ORIGIN,
+);
+assert(
+  "production upgrades http://wirelesscom.ca to https://wirelesscom.org",
   resolvePublicOrigin("http://wirelesscom.ca", "production") === CANONICAL_PUBLIC_ORIGIN,
 );
 assert(
-  "production canonicalizes www",
+  "production canonicalizes www.wirelesscom.org",
+  resolvePublicOrigin("https://www.wirelesscom.org", "production") === CANONICAL_PUBLIC_ORIGIN,
+);
+assert(
+  "production canonicalizes www.wirelesscom.ca onto .org",
   resolvePublicOrigin("https://www.wirelesscom.ca", "production") === CANONICAL_PUBLIC_ORIGIN,
 );
 assert(
@@ -61,29 +74,35 @@ assert(
 
 assert("IPv4 hostnames are detected", isIpHostname("64.110.141.167"));
 assert("IPv6 hostnames are detected", isIpHostname("2001:db8::1"));
-assert("company host is not treated as an IP", !isIpHostname("wirelesscom.ca"));
-assert("www is accepted as the company host", isCanonicalPublicHost("www.wirelesscom.ca"));
+assert("company .org host is not treated as an IP", !isIpHostname("wirelesscom.org"));
+assert("company .ca host is not treated as an IP", !isIpHostname("wirelesscom.ca"));
+assert("www.org is accepted as the live site host", isCanonicalPublicHost("www.wirelesscom.org"));
+assert("legacy .ca host is trusted for path rewriting", isTrustedPublicHost("www.wirelesscom.ca"));
+assert("legacy .ca is not the live site host", !isCanonicalPublicHost("wirelesscom.ca"));
 assert(
   "lookalike hosts are rejected",
-  !isCanonicalPublicHost("wirelesscom.ca.evil.com") &&
-    !isCanonicalPublicHost("notwirelesscom.ca") &&
-    !isCanonicalPublicHost("evil.wirelesscom.ca"),
+  !isCanonicalPublicHost("wirelesscom.org.evil.com") &&
+    !isCanonicalPublicHost("notwirelesscom.org") &&
+    !isCanonicalPublicHost("evil.wirelesscom.org") &&
+    !isTrustedPublicHost("wirelesscom.ca.evil.com") &&
+    !isTrustedPublicHost("notwirelesscom.ca") &&
+    !isTrustedPublicHost("evil.wirelesscom.ca"),
 );
 
 assert(
-  "IP ticket links keep the path on https://wirelesscom.ca",
+  "IP ticket links keep the path on https://wirelesscom.org",
   production("http://64.110.141.167", "http://64.110.141.167/admin/tickets/abc") ===
     `${CANONICAL_PUBLIC_ORIGIN}/admin/tickets/abc`,
 );
 assert(
-  "relative admin paths stay on https://wirelesscom.ca",
+  "relative admin paths stay on https://wirelesscom.org",
   production("http://64.110.141.167", "/admin/notifications") ===
     `${CANONICAL_PUBLIC_ORIGIN}/admin/notifications`,
 );
 assert(
   "protocol-relative URLs cannot escape the company origin",
   sanitizeAppPath("//evil.com/phish") === "/" &&
-    production("https://wirelesscom.ca", "//evil.com/phish") === CANONICAL_PUBLIC_ORIGIN,
+    production("https://wirelesscom.org", "//evil.com/phish") === CANONICAL_PUBLIC_ORIGIN,
 );
 assert(
   "javascript URLs are dropped",
@@ -95,14 +114,15 @@ assert(
 );
 assert(
   "userinfo cannot disguise a foreign host",
-  sanitizeAppPath("https://evil.com@wirelesscom.ca/login") === "/login",
+  sanitizeAppPath("https://evil.com@wirelesscom.org/login") === "/login" &&
+    sanitizeAppPath("https://evil.com@wirelesscom.ca/login") === "/login",
 );
 assert(
   "CRLF cannot be injected into a path",
   sanitizeAppPath("/login\r\nLocation: https://evil.com") === "/",
 );
 assert(
-  "password-reset tokens stay on https://wirelesscom.ca",
+  "password-reset tokens stay on https://wirelesscom.org",
   production(
     "http://64.110.141.167",
     "/login/reset?token=abc%2Fdef",
@@ -146,8 +166,24 @@ assert(
   !emailHtmlContainsForbiddenOrigin(rewritten),
 );
 assert(
-  "mailto links are kept",
+  "mailto links keep @wirelesscom.ca addresses",
   sanitizeEmailHref("mailto:service@wirelesscom.ca") === "mailto:service@wirelesscom.ca",
+);
+assert(
+  "legacy wirelesscom.ca paths are kept on the live origin",
+  joinOriginAndPath(CANONICAL_PUBLIC_ORIGIN, "https://wirelesscom.ca/admin/tasks/task-1") ===
+    `${CANONICAL_PUBLIC_ORIGIN}/admin/tasks/task-1` &&
+    joinOriginAndPath(
+      CANONICAL_PUBLIC_ORIGIN,
+      "https://www.wirelesscom.ca/login/reset?token=abc",
+    ) === `${CANONICAL_PUBLIC_ORIGIN}/login/reset?token=abc`,
+);
+const rewrittenCa = sanitizeEmailHtml(
+  `<a href="https://wirelesscom.ca/admin/tasks/task-1">See task</a>`,
+);
+assert(
+  "email HTML drops the legacy wirelesscom.ca host and keeps the path",
+  rewrittenCa.includes("/admin/tasks/task-1") && !rewrittenCa.includes("://wirelesscom.ca"),
 );
 assert(
   "javascript mailto is rejected",

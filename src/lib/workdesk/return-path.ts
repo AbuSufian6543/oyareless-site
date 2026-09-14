@@ -11,7 +11,7 @@ export function taskReturnPath(raw: string | null | undefined, fallback = "/admi
 }
 
 export function withQuery(path: string, key: string, value: string): string {
-  const url = new URL(path, "https://wirelesscom.ca");
+  const url = new URL(path, "https://wirelesscom.org");
   url.searchParams.set(key, value);
   return `${url.pathname}${url.search}${url.hash}`;
 }

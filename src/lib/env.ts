@@ -30,7 +30,7 @@ export const env = {
   get encryptionKey() {
     return process.env.ENCRYPTION_KEY?.trim() || required("AUTH_SECRET");
   },
-  /** Public HTTPS origin. Production always returns https://wirelesscom.ca. */
+  /** Public HTTPS origin. Production always returns https://wirelesscom.org. */
   get siteUrl() {
     return resolvePublicOrigin(optional("NEXT_PUBLIC_SITE_URL", "http://localhost:3000"));
   },
