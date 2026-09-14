@@ -145,7 +145,7 @@ detect_public_ip() {
 canonical_site_url() {
   local domain
   domain="$(primary_domain)"
-  domain="${domain:-wirelesscom.ca}"
+  domain="${domain:-wirelesscom.org}"
   domain="${domain#www.}"
   domain="$(printf '%s' "$domain" | tr '[:upper:]' '[:lower:]')"
   printf 'https://%s' "$domain"
