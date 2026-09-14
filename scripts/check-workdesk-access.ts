@@ -31,6 +31,15 @@ import {
 import { calendarDateKey, DEFAULT_DISPLAY_TIMEZONE } from "../src/lib/timezone";
 import { formatDate, formatDateTime } from "../src/lib/utils";
 import { parseDateInput } from "../src/lib/workdesk/dates";
+import {
+  companyAddressLines,
+  formatSiteAddress,
+  minutesByKind,
+  publicCompanyWebsite,
+  sumMinutes,
+  ticketNoteMeta,
+  workOrderPath,
+} from "../src/lib/workdesk/work-order";
 
 let failed = 0;
 
@@ -522,10 +531,11 @@ assert(
 
 const proxy = readFileSync(path.join(process.cwd(), "src/proxy.ts"), "utf8");
 assert(
-  "unauthenticated /admin and /tech visits keep the original path",
+  "unauthenticated /admin, /tech, and /work-orders visits keep the original path",
   proxy.includes("loginUrlFor") &&
     proxy.includes("wc_session") &&
-    proxy.includes("x-wc-path"),
+    proxy.includes("x-wc-path") &&
+    proxy.includes('pathname.startsWith("/work-orders")'),
 );
 
 const loginActions = readFileSync(
@@ -676,6 +686,90 @@ assert(
 assert(
   "admin nav includes the job product list",
   shell.includes("/admin/products") && shell.includes("Products"),
+);
+
+assert(
+  "work order paths stay on the staff print routes",
+  workOrderPath("ticket", "abc") === "/work-orders/ticket/abc" &&
+    workOrderPath("task", "abc") === "/work-orders/task/abc",
+);
+assert(
+  "work order site address stacks street then city",
+  formatSiteAddress({
+    addressLine1: "97 White Oak Drive, East",
+    city: "Sault Ste. Marie",
+    province: "ON",
+    postalCode: "P6B 4J7",
+  }) === "97 White Oak Drive, East\nSault Ste. Marie, ON P6B 4J7",
+);
+assert(
+  "company address keeps Canada on its own line",
+  companyAddressLines({
+    addressLine1: "97 White Oak Drive, East",
+    city: "Sault Ste. Marie",
+    province: "ON",
+    postalCode: "P6B 4J7",
+    country: "Canada",
+  }).join("|") ===
+    "97 White Oak Drive, East|Sault Ste. Marie, ON P6B 4J7|Canada",
+);
+assert(
+  "work order totals add minutes and group by kind",
+  sumMinutes([{ minutes: 45 }, { minutes: 90 }]) === 135 &&
+    minutesByKind([
+      { kind: "ONSITE", minutes: 60 },
+      { kind: "TRAVEL", minutes: 30 },
+      { kind: "ONSITE", minutes: 15 },
+    ])
+      .map((row) => `${row.kind}:${row.durationLabel}`)
+      .join("|") === "ONSITE:1h 15m|TRAVEL:30m",
+);
+assert(
+  "internal ticket notes stay labelled internal on the work order",
+  ticketNoteMeta({
+    isInternal: true,
+    authorStaffName: "Alex",
+    authorCustomerUser: { name: "Pat" },
+  }).visibility === "internal",
+);
+assert(
+  "work order website is wirelesscom.org, not the mailbox domain",
+  publicCompanyWebsite().host === "wirelesscom.org" &&
+    publicCompanyWebsite().url === "https://wirelesscom.org",
+);
+
+const ticketWorkOrderPage = readFileSync(
+  path.join(process.cwd(), "src/app/work-orders/ticket/[id]/page.tsx"),
+  "utf8",
+);
+const taskWorkOrderPage = readFileSync(
+  path.join(process.cwd(), "src/app/work-orders/task/[id]/page.tsx"),
+  "utf8",
+);
+assert(
+  "printable work orders re-check ticket and task access",
+  ticketWorkOrderPage.includes("assertTicketAccess") &&
+    taskWorkOrderPage.includes("assertTaskAccess") &&
+    ticketWorkOrderPage.includes("workdeskStaffOrRedirect") &&
+    taskWorkOrderPage.includes("workdeskStaffOrRedirect"),
+);
+assert(
+  "admin and technician job pages offer a printable work order",
+  adminTicketDetail.includes("PrintWorkOrderLink") &&
+    adminTaskDetail.includes("PrintWorkOrderLink") &&
+    techTicketDetail.includes("PrintWorkOrderLink") &&
+    techTaskDetail.includes("PrintWorkOrderLink"),
+);
+assert(
+  "customer portal tickets do not offer a staff work order print",
+  !portalTicket.includes("PrintWorkOrderLink") &&
+    !portalTicket.includes("work-orders"),
+);
+
+const robots = readFileSync(path.join(process.cwd(), "src/app/robots.ts"), "utf8");
+assert(
+  "robots.txt keeps work orders out of search",
+  robots.includes('"/work-orders"') && robots.includes('"/work-orders/"'),
 );
 
 process.exit(failed === 0 ? 0 : 1);

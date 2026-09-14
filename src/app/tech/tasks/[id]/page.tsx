@@ -7,6 +7,7 @@ import { AttachmentField } from "@/components/workdesk/attachment-field";
 import { AttachmentList } from "@/components/workdesk/attachment-list";
 import { PriorityBadge, TaskStatusBadge } from "@/components/workdesk/badges";
 import { AssigneeAvatars } from "@/components/workdesk/work-item";
+import { PrintWorkOrderLink } from "@/components/workdesk/print-work-order-link";
 import { WorkLog, WorkLogSummary } from "@/components/workdesk/work-log";
 import { prisma } from "@/lib/prisma";
 import { formatDate, formatDateTime } from "@/lib/utils";
@@ -64,6 +65,7 @@ export default async function TechTaskPage({
               ? `${overdue ? "Overdue " : "Due "}${formatDate(task.dueAt)}`
               : "No due date"
           }
+          actions={<PrintWorkOrderLink kind="task" id={task.id} />}
         />
         <div className="mb-4 flex flex-wrap items-center gap-2">
           <TaskStatusBadge status={task.status} />

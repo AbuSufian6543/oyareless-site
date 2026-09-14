@@ -218,6 +218,20 @@ assert(
   destinationAfterLogin({ role: "EMPLOYEE" }, "/tech/tasks/abc") === "/admin/tasks/abc",
 );
 assert(
+  "work order print paths are accepted as staff return URLs",
+  safeStaffReturnPath("/work-orders/ticket/abc") === "/work-orders/ticket/abc",
+);
+assert(
+  "technicians keep work order print links after sign-in",
+  destinationAfterLogin({ role: "TECHNICIAN" }, "/work-orders/ticket/abc") ===
+    "/work-orders/ticket/abc",
+);
+assert(
+  "employees keep work order print links after sign-in",
+  destinationAfterLogin({ role: "EMPLOYEE" }, "/work-orders/task/abc") ===
+    "/work-orders/task/abc",
+);
+assert(
   "viewers cannot be sent into admin from an email next= parameter",
   destinationAfterLogin({ role: "VIEWER" }, "/admin") === "/",
 );

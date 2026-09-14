@@ -24,6 +24,7 @@ export function safeStaffReturnPath(raw: string | null | undefined): string {
   if (
     pathIsUnder(path, "/admin") ||
     pathIsUnder(path, "/tech") ||
+    pathIsUnder(path, "/work-orders") ||
     pathIsUnder(path, "/portal") ||
     pathIsUnder(path, "/login/reset") ||
     pathIsUnder(path, "/login/forgot")
@@ -59,7 +60,11 @@ export function destinationAfterLogin(
     if (pathIsUnder(next, "/admin")) {
       return safeStaffReturnPath(swapWorkspacePrefix(next, "/admin", "/tech")) || "/tech";
     }
-    return pathIsUnder(next, "/tech") || pathIsUnder(next, "/portal") ? next : "/tech";
+    return pathIsUnder(next, "/tech") ||
+      pathIsUnder(next, "/work-orders") ||
+      pathIsUnder(next, "/portal")
+      ? next
+      : "/tech";
   }
 
   if (pathIsUnder(next, "/tech")) {

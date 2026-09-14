@@ -1,0 +1,52 @@
+.work-order-page {
+  print-color-adjust: exact;
+  -webkit-print-color-adjust: exact;
+}
+
+@media print {
+  html,
+  body {
+    background: #fff !important;
+    display: block !important;
+    min-height: 0 !important;
+    height: auto !important;
+  }
+
+  .work-order-chrome {
+    display: none !important;
+  }
+
+  .work-order-page {
+    background: #fff !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+  }
+
+  .work-order-sheet {
+    max-width: none !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+  }
+
+  .wo-keep {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  thead {
+    display: table-header-group;
+  }
+
+  tr,
+  img {
+    break-inside: avoid;
+  }
+
+  @page {
+    size: letter;
+    margin: 12mm 12mm 14mm;
+  }
+}

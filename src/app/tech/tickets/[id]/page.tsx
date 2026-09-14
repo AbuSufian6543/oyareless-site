@@ -7,6 +7,7 @@ import { AttachmentField } from "@/components/workdesk/attachment-field";
 import { AttachmentList } from "@/components/workdesk/attachment-list";
 import { PriorityBadge, TicketStatusBadge } from "@/components/workdesk/badges";
 import { AssigneeAvatars } from "@/components/workdesk/work-item";
+import { PrintWorkOrderLink } from "@/components/workdesk/print-work-order-link";
 import { WorkLog, WorkLogSummary } from "@/components/workdesk/work-log";
 import { prisma } from "@/lib/prisma";
 import { formatDateTime } from "@/lib/utils";
@@ -61,6 +62,7 @@ export default async function TechTicketPage({
           breadcrumb={{ href: "/tech/tickets", label: "Tickets" }}
           title={`${ticket.reference}: ${ticket.subject}`}
           description={ticket.customer.name}
+          actions={<PrintWorkOrderLink kind="ticket" id={ticket.id} />}
         />
         <div className="mb-4 flex flex-wrap items-center gap-2">
           <TicketStatusBadge status={ticket.status} />

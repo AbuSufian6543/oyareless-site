@@ -77,7 +77,9 @@ export function proxy(request: NextRequest) {
   }
 
   const needsStaffSignIn =
-    pathname.startsWith("/admin") || pathname.startsWith("/tech");
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/tech") ||
+    pathname.startsWith("/work-orders");
   if (needsStaffSignIn && !request.cookies.get("wc_session")?.value) {
     return NextResponse.redirect(
       new URL(loginUrlFor(`${pathname}${search}`), request.url),

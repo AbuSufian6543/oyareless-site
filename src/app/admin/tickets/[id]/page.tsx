@@ -20,6 +20,7 @@ import { AttachmentField } from "@/components/workdesk/attachment-field";
 import { AttachmentList } from "@/components/workdesk/attachment-list";
 import { PriorityBadge, TicketStatusBadge } from "@/components/workdesk/badges";
 import { EmailStaffButton, WorkdeskNotifyMenu } from "@/components/workdesk/notify-menu";
+import { PrintWorkOrderLink } from "@/components/workdesk/print-work-order-link";
 import { WorkLog, WorkLogSummary } from "@/components/workdesk/work-log";
 import { AssigneeAvatars } from "@/components/workdesk/work-item";
 import { requireAdminRole } from "@/lib/admin-guard";
@@ -105,11 +106,14 @@ export default async function AdminTicketPage({
             "Unassigned"
           }`}
           actions={
-            <EmailStaffButton
-              action={notifyTicketStaffAction}
-              hiddenFields={{ ticketId: ticket.id }}
-              disabled={recipientIds.size === 0}
-            />
+            <div className="flex flex-wrap items-center gap-2">
+              <PrintWorkOrderLink kind="ticket" id={ticket.id} />
+              <EmailStaffButton
+                action={notifyTicketStaffAction}
+                hiddenFields={{ ticketId: ticket.id }}
+                disabled={recipientIds.size === 0}
+              />
+            </div>
           }
         />
         {query.notify === "none" ? (

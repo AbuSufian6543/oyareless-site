@@ -18,6 +18,8 @@ export default function robots(): MetadataRoute.Robots {
           "/portal/",
           "/tech",
           "/tech/",
+          "/work-orders",
+          "/work-orders/",
           "/subscription",
           "/speed-test/r/",
           "/uploads/private",
