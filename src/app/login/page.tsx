@@ -4,8 +4,13 @@ import { CircleCheck } from "lucide-react";
 
 import { LoginForm } from "@/app/login/login-form";
 import { LoginFrame } from "@/app/login/login-frame";
+import { HumanCheckMisconfiguredNotice } from "@/components/security/human-check-notice";
 import { getCurrentUser } from "@/lib/auth";
 import { destinationAfterLogin, safeStaffReturnPath } from "@/lib/safe-return";
+import {
+  clientTurnstileSiteKey,
+  getResolvedTurnstile,
+} from "@/lib/turnstile";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +26,10 @@ export default async function LoginPage({
 }) {
   const params = await searchParams;
   const next = safeStaffReturnPath(params.next);
-  const user = await getCurrentUser();
+  const [user, turnstile] = await Promise.all([
+    getCurrentUser(),
+    getResolvedTurnstile(),
+  ]);
   if (user) redirect(destinationAfterLogin(user, params.next));
 
   return (
@@ -35,7 +43,11 @@ export default async function LoginPage({
           Your password was updated. Sign in with the new one.
         </div>
       )}
-      <LoginForm next={next || undefined} />
+      {turnstile.isMisconfigured && <HumanCheckMisconfiguredNotice />}
+      <LoginForm
+        next={next || undefined}
+        turnstileSiteKey={clientTurnstileSiteKey(turnstile)}
+      />
     </LoginFrame>
   );
 }

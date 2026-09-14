@@ -4,8 +4,13 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { PortalLoginForm } from "@/app/portal/login-form";
+import { HumanCheckMisconfiguredNotice } from "@/components/security/human-check-notice";
 import { getPortalUser } from "@/lib/portal-auth";
 import { getSettings } from "@/lib/settings";
+import {
+  clientTurnstileSiteKey,
+  getResolvedTurnstile,
+} from "@/lib/turnstile";
 
 export const metadata: Metadata = {
   title: "Customer portal sign in",
@@ -14,7 +19,10 @@ export const metadata: Metadata = {
 
 export default async function PortalLoginPage() {
   if (await getPortalUser()) redirect("/portal");
-  const settings = await getSettings();
+  const [settings, turnstile] = await Promise.all([
+    getSettings(),
+    getResolvedTurnstile(),
+  ]);
 
   return (
     <div className="flex min-h-dvh items-center justify-center bg-navy-900 px-4">
@@ -27,7 +35,10 @@ export default async function PortalLoginPage() {
           Accounts are created by WirelessCom. Ask your account manager for an invite.
         </p>
         <div className="mt-6">
-          <PortalLoginForm />
+          {turnstile.isMisconfigured && <HumanCheckMisconfiguredNotice />}
+          <PortalLoginForm
+            turnstileSiteKey={clientTurnstileSiteKey(turnstile)}
+          />
         </div>
       </div>
     </div>

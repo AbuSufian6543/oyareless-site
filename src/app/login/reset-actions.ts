@@ -1,6 +1,5 @@
 "use server";
 
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { recordAudit } from "@/lib/audit";
@@ -12,17 +11,11 @@ import { hashPassword, validatePasswordStrength } from "@/lib/passwords";
 import { prisma } from "@/lib/prisma";
 import { publicUrl } from "@/lib/public-url";
 import { rateLimit } from "@/lib/rate-limit";
+import { requestClientIp } from "@/lib/request-ip";
+import { TURNSTILE_ACTIONS } from "@/lib/turnstile-constants";
+import { verifyAuthHumanCheck } from "@/lib/turnstile";
 
 const RESET_TTL_MS = 60 * 60 * 1000;
-
-async function requestIp(): Promise<string> {
-  const headerList = await headers();
-  return (
-    headerList.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    headerList.get("x-real-ip") ||
-    "unknown"
-  );
-}
 
 export type ResetRequestState = { error?: string; sent?: boolean };
 export type ResetCompleteState = { error?: string };
@@ -32,11 +25,18 @@ export async function requestPasswordResetAction(
   formData: FormData,
 ): Promise<ResetRequestState> {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
-  const ip = await requestIp();
+  const ip = await requestClientIp();
 
   if (!email) {
     return { error: "Enter the email address for your staff account." };
   }
+
+  const human = await verifyAuthHumanCheck(
+    formData,
+    ip,
+    TURNSTILE_ACTIONS.staffResetRequest,
+  );
+  if (!human.ok) return { error: human.message };
 
   const ipLimit = rateLimit(`pwreset-ip:${ip}`, 8, 3600);
   const emailLimit = rateLimit(`pwreset-email:${email}`, 4, 3600);
@@ -105,10 +105,26 @@ export async function completePasswordResetAction(
   const token = String(formData.get("token") ?? "");
   const password = String(formData.get("password") ?? "");
   const confirm = String(formData.get("confirm") ?? "");
+  const ip = await requestClientIp();
 
   if (!token) {
     return { error: "This reset link is missing. Request a new one." };
   }
+
+  const human = await verifyAuthHumanCheck(
+    formData,
+    ip,
+    TURNSTILE_ACTIONS.staffResetComplete,
+  );
+  if (!human.ok) return { error: human.message };
+
+  const completeLimit = rateLimit(`pwreset-complete:${ip}`, 10, 3600);
+  if (!completeLimit.allowed) {
+    return {
+      error: "Too many reset attempts. Please wait before trying again.",
+    };
+  }
+
   if (password !== confirm) {
     return { error: "The two passwords do not match." };
   }

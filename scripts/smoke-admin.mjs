@@ -6,6 +6,9 @@
  * Signs in through the real login form (the no-JavaScript server action path),
  * then requests every admin route and asserts it renders. Useful after a
  * deployment to confirm the database, session cookies and role checks all work.
+ *
+ * If Cloudflare Turnstile keys are configured, this script cannot complete
+ * the widget and sign-in will fail. Leave the keys unset, or use a browser.
  */
 
 const base = (process.argv[2] ?? "http://127.0.0.1:3000").replace(/\/$/, "");
@@ -140,11 +143,18 @@ if (hidden.size === 0) {
   const body = await submit.text();
 
   const signedIn = cookies.has("wc_session");
+  const humanCheck = /human check/i.test(body);
   const wrongPassword = /incorrect|invalid|not recogni[sz]/i.test(body);
   report(
     `sign in as ${email}`,
     signedIn,
-    wrongPassword ? "credentials rejected" : `no session cookie (status ${submit.status})`,
+    signedIn
+      ? undefined
+      : humanCheck
+        ? "human check is required; smoke-admin cannot complete Turnstile"
+        : wrongPassword
+          ? "credentials rejected"
+          : `no session cookie (status ${submit.status})`,
   );
 }
 

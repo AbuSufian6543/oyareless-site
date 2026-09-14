@@ -1,4 +1,9 @@
 import { AcceptForm } from "@/app/portal/accept-form";
+import { HumanCheckMisconfiguredNotice } from "@/components/security/human-check-notice";
+import {
+  clientTurnstileSiteKey,
+  getResolvedTurnstile,
+} from "@/lib/turnstile";
 
 export const metadata = { title: "Activate portal access", robots: { index: false } };
 
@@ -15,6 +20,9 @@ export default async function AcceptInvitePage({
       </div>
     );
   }
+
+  const turnstile = await getResolvedTurnstile();
+
   return (
     <div className="flex min-h-dvh items-center justify-center bg-navy-900 px-4">
       <div className="w-full max-w-md rounded-2xl bg-white p-8">
@@ -23,7 +31,11 @@ export default async function AcceptInvitePage({
           This is a one-time invite. After you set a password you will be signed in.
         </p>
         <div className="mt-6">
-          <AcceptForm token={token} />
+          {turnstile.isMisconfigured && <HumanCheckMisconfiguredNotice />}
+          <AcceptForm
+            token={token}
+            turnstileSiteKey={clientTurnstileSiteKey(turnstile)}
+          />
         </div>
       </div>
     </div>

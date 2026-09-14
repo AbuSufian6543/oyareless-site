@@ -18,6 +18,7 @@ import {
   prepareResumePdf,
   storePrivateResume,
 } from "@/lib/resume-pdf";
+import { TURNSTILE_ACTIONS } from "@/lib/turnstile-constants";
 import { verifyTurnstileToken, isAllowedHumanCheckHost } from "@/lib/turnstile";
 import { UploadError } from "@/lib/uploads";
 
@@ -120,7 +121,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Thank you." }, { status: 200 });
   }
 
-  const human = await verifyTurnstileToken(data.cfTurnstileResponse ?? "", ip);
+  const human = await verifyTurnstileToken(data.cfTurnstileResponse ?? "", ip, {
+    expectedAction: TURNSTILE_ACTIONS.careersApply,
+    unavailableMessage:
+      "Applications are not accepting uploads right now. Please try again later.",
+    missingTokenMessage:
+      "Please complete the human check before sending your résumé.",
+  });
   if (!human.ok) {
     return NextResponse.json({ message: human.message }, { status: 400 });
   }

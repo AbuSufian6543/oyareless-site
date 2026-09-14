@@ -7,10 +7,18 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { loginAction, verifyTwoFactorAction, type LoginState } from "@/app/login/actions";
+import { HumanCheckField } from "@/components/security/human-check-field";
+import { TURNSTILE_ACTIONS } from "@/lib/turnstile-constants";
 
 const INITIAL: LoginState = { stage: "credentials" };
 
-export function LoginForm({ next }: { next?: string }) {
+export function LoginForm({
+  next,
+  turnstileSiteKey,
+}: {
+  next?: string;
+  turnstileSiteKey: string;
+}) {
   const [credentialState, submitCredentials] = useActionState(
     loginAction,
     INITIAL,
@@ -61,6 +69,12 @@ export function LoginForm({ next }: { next?: string }) {
           />
         </div>
 
+        <HumanCheckField
+          siteKey={turnstileSiteKey}
+          action={TURNSTILE_ACTIONS.staffTwoFactor}
+          resetSignal={twoFactorState}
+        />
+
         {twoFactorState.error && <ErrorNotice message={twoFactorState.error} />}
 
         <SubmitButton label="Verify and sign in" Icon={ShieldCheck} />
@@ -100,6 +114,12 @@ export function LoginForm({ next }: { next?: string }) {
           Forgot password?
         </Link>
       </p>
+
+      <HumanCheckField
+        siteKey={turnstileSiteKey}
+        action={TURNSTILE_ACTIONS.staffLogin}
+        resetSignal={credentialState}
+      />
 
       {credentialState.error && <ErrorNotice message={credentialState.error} />}
 

@@ -101,7 +101,7 @@ assert(
   "Turnstile fails closed when keys are missing",
   turnstile.includes("challenges.cloudflare.com/turnstile/v0/siteverify") &&
     turnstile.includes("isConfigured") &&
-    turnstile.includes("Applications are not accepting uploads"),
+    applyApi.includes("Applications are not accepting uploads"),
 );
 
 const proxy = read("src/proxy.ts");

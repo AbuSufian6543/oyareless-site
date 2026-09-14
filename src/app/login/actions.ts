@@ -1,6 +1,5 @@
 "use server";
 
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { recordAudit } from "@/lib/audit";
@@ -16,21 +15,15 @@ import {
   verifyTotpToken,
 } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requestClientIp } from "@/lib/request-ip";
 import { destinationAfterLogin } from "@/lib/safe-return";
+import { TURNSTILE_ACTIONS } from "@/lib/turnstile-constants";
+import { verifyAuthHumanCheck } from "@/lib/turnstile";
 
 export type LoginState = {
   error?: string;
   stage?: "credentials" | "twoFactor";
 };
-
-async function requestIp(): Promise<string> {
-  const headerList = await headers();
-  return (
-    headerList.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    headerList.get("x-real-ip") ||
-    "unknown"
-  );
-}
 
 export async function loginAction(
   _previous: LoginState,
@@ -38,10 +31,19 @@ export async function loginAction(
 ): Promise<LoginState> {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
-  const ip = await requestIp();
+  const ip = await requestClientIp();
 
   if (!email || !password) {
     return { error: "Enter your email and password.", stage: "credentials" };
+  }
+
+  const human = await verifyAuthHumanCheck(
+    formData,
+    ip,
+    TURNSTILE_ACTIONS.staffLogin,
+  );
+  if (!human.ok) {
+    return { error: human.message, stage: "credentials" };
   }
 
   if (await isLoginThrottled(email, ip)) {
@@ -95,7 +97,16 @@ export async function verifyTwoFactorAction(
   formData: FormData,
 ): Promise<LoginState> {
   const token = String(formData.get("token") ?? "").trim();
-  const ip = await requestIp();
+  const ip = await requestClientIp();
+
+  const human = await verifyAuthHumanCheck(
+    formData,
+    ip,
+    TURNSTILE_ACTIONS.staffTwoFactor,
+  );
+  if (!human.ok) {
+    return { error: human.message, stage: "twoFactor" };
+  }
 
   const userId = await readTwoFactorChallenge();
   if (!userId) {

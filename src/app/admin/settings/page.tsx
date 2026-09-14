@@ -131,8 +131,9 @@ export default async function SettingsPage({
             <span className="flex items-start gap-2">
               <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
               <span>
-                Cloudflare Turnstile is not configured, so the careers form will
-                refuse résumé uploads. Add a free widget at{" "}
+                Cloudflare Turnstile is not configured. Career applications stay
+                closed, and sign-in pages will not show a human check until you
+                add a free widget at{" "}
                 <a
                   href="https://dash.cloudflare.com/?to=/:account/turnstile"
                   className="font-semibold underline"
@@ -217,9 +218,10 @@ export default async function SettingsPage({
               <div className="min-w-0">
                 <h2 className="font-bold text-navy-900">Human check (Cloudflare Turnstile)</h2>
                 <p className="mt-1 text-sm leading-relaxed text-slate-600">
-                  Required before a visitor can upload a résumé. Create a free
-                  widget in the Cloudflare dashboard, then paste the site key
-                  and secret here. The secret is stored encrypted.
+                  Required on staff sign-in, the customer portal, password
+                  reset, and career applications. Create a free widget in the
+                  Cloudflare dashboard, then paste the site key and secret
+                  here. The secret is stored encrypted.
                 </p>
               </div>
             </div>
@@ -234,8 +236,8 @@ export default async function SettingsPage({
               className="sm:col-span-2"
               hint={
                 turnstileResolved.isConfigured
-                  ? "Turnstile is active on the careers form."
-                  : "The careers form stays closed until both keys are saved."
+                  ? "Turnstile is active on sign-in pages and the careers form."
+                  : "Save both keys to protect sign-in and career applications."
               }
             />
             <TextField

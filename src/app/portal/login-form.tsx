@@ -5,8 +5,14 @@ import { useFormStatus } from "react-dom";
 import { LoaderCircle } from "lucide-react";
 
 import { portalLoginAction, type PortalLoginState } from "@/app/portal/actions";
+import { HumanCheckField } from "@/components/security/human-check-field";
+import { TURNSTILE_ACTIONS } from "@/lib/turnstile-constants";
 
-export function PortalLoginForm() {
+export function PortalLoginForm({
+  turnstileSiteKey,
+}: {
+  turnstileSiteKey: string;
+}) {
   const [state, action] = useActionState(portalLoginAction, {} as PortalLoginState);
   return (
     <form action={action} className="space-y-4">
@@ -30,6 +36,11 @@ export function PortalLoginForm() {
           className="mt-1.5 w-full rounded-lg border border-slate-300 px-3 py-2.5"
         />
       </label>
+      <HumanCheckField
+        siteKey={turnstileSiteKey}
+        action={TURNSTILE_ACTIONS.portalLogin}
+        resetSignal={state}
+      />
       {state.error && <p className="text-sm text-red-700">{state.error}</p>}
       <Submit />
     </form>

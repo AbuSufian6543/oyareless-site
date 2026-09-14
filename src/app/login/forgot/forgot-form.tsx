@@ -9,10 +9,16 @@ import {
   requestPasswordResetAction,
   type ResetRequestState,
 } from "@/app/login/reset-actions";
+import { HumanCheckField } from "@/components/security/human-check-field";
+import { TURNSTILE_ACTIONS } from "@/lib/turnstile-constants";
 
 const INITIAL: ResetRequestState = {};
 
-export function ForgotPasswordForm() {
+export function ForgotPasswordForm({
+  turnstileSiteKey,
+}: {
+  turnstileSiteKey: string;
+}) {
   const [state, action] = useActionState(requestPasswordResetAction, INITIAL);
 
   if (state.sent) {
@@ -52,6 +58,12 @@ export function ForgotPasswordForm() {
           className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-[0.9375rem] text-navy-900 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100"
         />
       </div>
+
+      <HumanCheckField
+        siteKey={turnstileSiteKey}
+        action={TURNSTILE_ACTIONS.staffResetRequest}
+        resetSignal={state}
+      />
 
       {state.error && (
         <div

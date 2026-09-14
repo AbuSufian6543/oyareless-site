@@ -3,6 +3,11 @@ import Link from "next/link";
 
 import { LoginFrame } from "@/app/login/login-frame";
 import { ResetPasswordForm } from "@/app/login/reset/reset-form";
+import { HumanCheckMisconfiguredNotice } from "@/components/security/human-check-notice";
+import {
+  clientTurnstileSiteKey,
+  getResolvedTurnstile,
+} from "@/lib/turnstile";
 
 export const dynamic = "force-dynamic";
 
@@ -36,12 +41,18 @@ export default async function ResetPasswordPage({
     );
   }
 
+  const turnstile = await getResolvedTurnstile();
+
   return (
     <LoginFrame
       title="Choose a new password"
       description="This link can only be used once and expires after one hour."
     >
-      <ResetPasswordForm token={token} />
+      {turnstile.isMisconfigured && <HumanCheckMisconfiguredNotice />}
+      <ResetPasswordForm
+        token={token}
+        turnstileSiteKey={clientTurnstileSiteKey(turnstile)}
+      />
     </LoginFrame>
   );
 }

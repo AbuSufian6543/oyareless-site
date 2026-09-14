@@ -102,7 +102,8 @@ export default async function AdminApplicationsPage({
         <div className="mb-5">
           <Alert tone="warning">
             Cloudflare Turnstile is not configured, so the public form will not
-            accept uploads. Add the site and secret keys under{" "}
+            accept uploads and sign-in pages will skip the human check. Add the
+            site and secret keys under{" "}
             <Link href="/admin/settings" className="font-semibold underline">
               Site Settings
             </Link>

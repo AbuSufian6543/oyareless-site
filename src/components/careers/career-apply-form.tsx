@@ -11,9 +11,10 @@ import {
   X,
 } from "lucide-react";
 
-import { TurnstileField } from "@/components/careers/turnstile-field";
+import { TurnstileField } from "@/components/security/turnstile-field";
 import { Button } from "@/components/ui/button";
 import { RESUME_MAX_BYTES, RESUME_MAX_MB } from "@/lib/careers";
+import { TURNSTILE_ACTIONS } from "@/lib/turnstile-constants";
 import { formatBytes } from "@/lib/utils";
 
 export function CareerApplyForm({
@@ -261,6 +262,7 @@ export function CareerApplyForm({
           <TurnstileField
             key={widgetKey}
             siteKey={turnstileSiteKey}
+            action={TURNSTILE_ACTIONS.careersApply}
             onToken={setToken}
           />
         </div>

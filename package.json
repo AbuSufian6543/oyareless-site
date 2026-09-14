@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "check:blocks": "tsx scripts/check-blocks.ts",
     "check:careers": "tsx scripts/check-careers.ts",
+    "check:auth": "tsx scripts/check-auth.ts",
     "check:workdesk": "tsx scripts/check-workdesk-access.ts",
     "check:public-url": "tsx scripts/check-public-url.ts",
     "check:smoke": "node scripts/smoke-admin.mjs",

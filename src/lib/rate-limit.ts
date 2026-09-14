@@ -57,9 +57,12 @@ export function rateLimit(
   };
 }
 
-/** Best-effort client IP, accounting for the nginx reverse proxy. */
+/** Best-effort client IP, accounting for Cloudflare and nginx. */
 export function clientIp(request: Request): string {
-  const forwarded = request.headers.get("x-forwarded-for");
-  if (forwarded) return forwarded.split(",")[0].trim();
-  return request.headers.get("x-real-ip") ?? "unknown";
+  return (
+    request.headers.get("cf-connecting-ip")?.trim() ||
+    request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    request.headers.get("x-real-ip")?.trim() ||
+    "unknown"
+  );
 }
