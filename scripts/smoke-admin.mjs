@@ -159,6 +159,7 @@ for (const path of [
   "/admin/streams",
   "/admin/streams/new",
   "/admin/jobs",
+  "/admin/applications",
   "/admin/submissions",
   "/admin/subscribers",
   "/admin/testimonials",

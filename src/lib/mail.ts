@@ -50,6 +50,11 @@ export async function sendMail(input: {
   html: string;
   text?: string;
   replyTo?: string;
+  attachments?: Array<{
+    filename: string;
+    content: Buffer;
+    contentType?: string;
+  }>;
 }): Promise<MailResult> {
   const client = await getClient();
   if (!client) {
@@ -68,6 +73,11 @@ export async function sendMail(input: {
       html,
       text: input.text ?? htmlToText(html),
       replyTo: input.replyTo,
+      attachments: input.attachments?.map((file) => ({
+        filename: file.filename,
+        content: file.content,
+        contentType: file.contentType ?? "application/octet-stream",
+      })),
     });
     return { ok: true };
   } catch (error) {
@@ -271,6 +281,64 @@ export function submissionAckEmail(input: {
   return {
     subject: "We received your message — WirelessCom.Ca Inc.",
     html: layout("Thanks for getting in touch", body),
+  };
+}
+
+export function applicationNotificationEmail(input: {
+  name: string;
+  email: string;
+  phone?: string | null;
+  location?: string | null;
+  jobTitle: string;
+  message: string;
+  originalName: string;
+  sizeBytes: number;
+  applicationId: string;
+}): { subject: string; html: string } {
+  const body = `
+    <p style="margin:0 0 16px;font-size:14px;color:#3c4e63;line-height:1.6;">
+      A résumé was submitted on the website. The PDF is attached, and a copy is
+      stored in the admin so you do not have to keep it in this inbox.
+    </p>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+      ${detailRows([
+        ["Name", input.name],
+        ["Email", input.email],
+        ["Phone", input.phone],
+        ["Location", input.location],
+        ["Role", input.jobTitle],
+        ["Résumé file", input.originalName],
+        ["File size", `${Math.max(1, Math.round(input.sizeBytes / 1024))} KB`],
+        ["Cover note", input.message || "(none)"],
+      ])}
+    </table>
+    ${emailActionLink(`/admin/applications/${input.applicationId}`, "Open in admin")}`;
+
+  return {
+    subject: `[Job application] ${input.name} — ${input.jobTitle}`,
+    html: layout("Job application", body),
+  };
+}
+
+export function applicationAckEmail(input: {
+  name: string;
+  jobTitle: string;
+}): { subject: string; html: string } {
+  const first = escapeHtml(input.name.split(" ")[0] || input.name);
+  const role = escapeHtml(input.jobTitle);
+  const body = `
+    <p style="margin:0 0 14px;font-size:15px;color:#3c4e63;line-height:1.65;">
+      Hello ${first},
+    </p>
+    <p style="margin:0 0 14px;font-size:15px;color:#3c4e63;line-height:1.65;">
+      Thank you for applying to WirelessCom.Ca Inc. We have received your résumé
+      for <strong>${role}</strong> and will be in touch if there is a fit.
+    </p>
+    <p style="margin:0;font-size:14px;color:#5a6b80;">— The WirelessCom.Ca team</p>`;
+
+  return {
+    subject: "We received your application — WirelessCom.Ca Inc.",
+    html: layout("Thanks for applying", body),
   };
 }
 

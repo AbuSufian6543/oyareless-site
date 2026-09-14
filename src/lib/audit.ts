@@ -29,6 +29,8 @@ export type AuditAction =
   | "job.created"
   | "job.updated"
   | "job.deleted"
+  | "application.updated"
+  | "application.deleted"
   | "media.uploaded"
   | "media.replaced"
   | "media.deleted"

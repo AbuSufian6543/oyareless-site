@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "check:blocks": "tsx scripts/check-blocks.ts",
-    "check:portal": "tsx scripts/check-portal-scope.ts",
+    "check:careers": "tsx scripts/check-careers.ts",
     "check:workdesk": "tsx scripts/check-workdesk-access.ts",
     "check:public-url": "tsx scripts/check-public-url.ts",
     "check:smoke": "node scripts/smoke-admin.mjs",

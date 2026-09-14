@@ -92,6 +92,7 @@ export function AdminShell({
   user,
   newSubmissions,
   newQuotes = 0,
+  newApplications = 0,
   unreadNotifications = 0,
   openTickets = 0,
   openTasks = 0,
@@ -102,6 +103,7 @@ export function AdminShell({
   user: SessionUser;
   newSubmissions: number;
   newQuotes?: number;
+  newApplications?: number;
   unreadNotifications?: number;
   openTickets?: number;
   openTasks?: number;
@@ -169,6 +171,13 @@ export function AdminShell({
         },
         { href: "/admin/subscribers", label: "Subscribers", Icon: Users, minRank: STAFF_ROLE_RANK.EDITOR },
         { href: "/admin/quotes", label: "Quotes", Icon: FileText, badge: newQuotes, minRank: STAFF_ROLE_RANK.EDITOR },
+        {
+          href: "/admin/applications",
+          label: "Applications",
+          Icon: ClipboardList,
+          badge: newApplications,
+          minRank: STAFF_ROLE_RANK.EDITOR,
+        },
         { href: "/admin/portal-users", label: "Portal users", Icon: Building2, minRank: STAFF_ROLE_RANK.ADMIN },
       ],
     },

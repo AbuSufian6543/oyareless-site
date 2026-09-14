@@ -11,7 +11,7 @@ export { parseNotifyEmails } from "@/lib/notify-emails";
  * SMTP and notification inboxes live in SiteSetting so an admin can set them
  * from the dashboard. They are deliberately kept out of getSettings() — that
  * object is rendered into public pages, and neither the SMTP password nor the
- * quote/office inbox lists must travel with it.
+ * quote/office/career inbox lists must travel with it.
  */
 
 export const MAIL_SETTING_KEYS = [
@@ -23,6 +23,7 @@ export const MAIL_SETTING_KEYS = [
   "smtpFrom",
   "notifyEmails",
   "quoteNotifyEmails",
+  "careerNotifyEmails",
 ] as const;
 
 export type MailSettingKey = (typeof MAIL_SETTING_KEYS)[number];
@@ -36,6 +37,7 @@ export type MailSettings = {
   smtpFrom: string;
   notifyEmails: string;
   quoteNotifyEmails: string;
+  careerNotifyEmails: string;
 };
 
 export type ResolvedMail = {
@@ -47,8 +49,11 @@ export type ResolvedMail = {
   from: string;
   notifyEmails: string[];
   quoteNotifyEmails: string[];
+  careerNotifyEmails: string[];
   /** True when Site Settings has a dedicated quote inbox list. */
   hasQuoteNotifyList: boolean;
+  /** True when Site Settings has career/résumé inboxes. No office fallback. */
+  hasCareerNotifyList: boolean;
   isConfigured: boolean;
   passwordIsSet: boolean;
 };
@@ -62,6 +67,7 @@ const MAIL_DEFAULTS: MailSettings = {
   smtpFrom: "WirelessCom.Ca Inc. <no-reply@wirelesscom.ca>",
   notifyEmails: "service@wirelesscom.ca",
   quoteNotifyEmails: "",
+  careerNotifyEmails: "",
 };
 
 function asString(value: unknown, fallback: string): string {
@@ -143,6 +149,7 @@ export async function getResolvedMail(): Promise<ResolvedMail> {
     notifyEmails.length > 0 ? notifyEmails : ["service@wirelesscom.ca"];
 
   const quoteFromStore = parseNotifyEmails(stored.quoteNotifyEmails);
+  const careerFromStore = parseNotifyEmails(stored.careerNotifyEmails);
 
   return {
     host,
@@ -154,7 +161,9 @@ export async function getResolvedMail(): Promise<ResolvedMail> {
     notifyEmails: officeEmails,
     quoteNotifyEmails:
       quoteFromStore.length > 0 ? quoteFromStore : officeEmails,
+    careerNotifyEmails: careerFromStore,
     hasQuoteNotifyList: quoteFromStore.length > 0,
+    hasCareerNotifyList: careerFromStore.length > 0,
     isConfigured: Boolean(host),
     passwordIsSet: Boolean(password),
   };

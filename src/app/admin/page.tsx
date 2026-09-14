@@ -94,6 +94,7 @@ export default async function AdminDashboard({
     jobs,
     newSubmissions,
     newQuotes,
+    newApplications,
     subscribers,
     recentSubmissions,
     mail,
@@ -170,15 +171,19 @@ export default async function AdminDashboard({
     canSeeCms ? prisma.jobPosting.count({ where: { status: "PUBLISHED" } }).catch(() => 0) : Promise.resolve(0),
     canSeeCms ? prisma.formSubmission.count({ where: { status: "NEW" } }).catch(() => 0) : Promise.resolve(0),
     canSeeCms ? prisma.quoteRequest.count({ where: { status: "NEW" } }).catch(() => 0) : Promise.resolve(0),
+    canSeeCms ? prisma.jobApplication.count({ where: { status: "NEW" } }).catch(() => 0) : Promise.resolve(0),
     canSeeCms ? prisma.subscriber.count({ where: { status: "CONFIRMED" } }).catch(() => 0) : Promise.resolve(0),
     canSeeCms
       ? prisma.formSubmission
           .findMany({ orderBy: { createdAt: "desc" }, take: 5 })
           .catch(() => [])
       : Promise.resolve([]),
-    getResolvedMail().catch((): { isConfigured: boolean } => ({
-      isConfigured: false,
-    })),
+    getResolvedMail().catch(
+      (): { isConfigured: boolean; hasCareerNotifyList: boolean } => ({
+        isConfigured: false,
+        hasCareerNotifyList: false,
+      }),
+    ),
     prisma.workdeskNotification
       .findMany({
         where: { userId: user.id },
@@ -270,6 +275,7 @@ export default async function AdminDashboard({
     { label: "Jobs", value: jobs, href: "/admin/jobs", Icon: Briefcase },
     { label: "New inquiries", value: newSubmissions, href: "/admin/submissions", Icon: Inbox },
     { label: "New quotes", value: newQuotes, href: "/admin/quotes", Icon: FileText },
+    { label: "New applications", value: newApplications, href: "/admin/applications", Icon: ClipboardList },
   ];
 
   return (
@@ -321,6 +327,22 @@ export default async function AdminDashboard({
           <Alert tone="warning">
             <strong>SMTP is not configured.</strong> Assignment emails will not send until
             the mail server is added under{" "}
+            <Link href="/admin/settings" className="font-semibold underline">
+              Site Settings
+            </Link>
+            .
+          </Alert>
+        </div>
+      )}
+
+      {canSeeCms && "hasCareerNotifyList" in mail && !mail.hasCareerNotifyList && (
+        <div className="mb-6">
+          <Alert tone="warning">
+            <strong>No career notification emails.</strong> Résumés are saved under{" "}
+            <Link href="/admin/applications" className="font-semibold underline">
+              Applications
+            </Link>{" "}
+            but nobody is emailed a copy until you add addresses under{" "}
             <Link href="/admin/settings" className="font-semibold underline">
               Site Settings
             </Link>

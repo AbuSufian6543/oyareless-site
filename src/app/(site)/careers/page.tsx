@@ -10,10 +10,12 @@ import {
   Wallet,
 } from "lucide-react";
 
+import { CareerApplyForm } from "@/components/careers/career-apply-form";
 import { PageHero } from "@/components/site/page-hero";
 import { ButtonLink } from "@/components/ui/button";
+import { GENERAL_APPLICATION_TITLE } from "@/lib/careers";
 import { prisma } from "@/lib/prisma";
-import { getSettings } from "@/lib/settings";
+import { getResolvedTurnstile } from "@/lib/turnstile";
 import { formatDate } from "@/lib/utils";
 import { JsonLd } from "@/components/site/json-ld";
 import { collectionPageJsonLd, publicMetadata } from "@/lib/seo";
@@ -49,7 +51,7 @@ const BENEFITS = [
 ];
 
 export default async function CareersPage() {
-  const [jobs, settings] = await Promise.all([
+  const [jobs, turnstile] = await Promise.all([
     prisma.jobPosting
       .findMany({
         // Expired postings are excluded in the query rather than in render so
@@ -61,7 +63,7 @@ export default async function CareersPage() {
         orderBy: { postedAt: "desc" },
       })
       .catch(() => []),
-    getSettings(),
+    getResolvedTurnstile(),
   ]);
 
   const open = jobs;
@@ -120,11 +122,11 @@ export default async function CareersPage() {
                   No positions are posted right now
                 </p>
                 <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-slate-600">
-                  We still like to hear from good people. Send your resume and we
-                  will keep it on file for the next opening.
+                  We still like to hear from good people. Send your résumé below
+                  and we will keep it on file for the next opening.
                 </p>
-                <ButtonLink href="/contact" className="mt-5">
-                  Send us your resume
+                <ButtonLink href="#apply" className="mt-5">
+                  Send us your résumé
                 </ButtonLink>
               </div>
             ) : (
@@ -181,17 +183,27 @@ export default async function CareersPage() {
                 ))}
               </ul>
             )}
+          </div>
+        </div>
+      </section>
 
-            <p className="mt-8 text-sm text-slate-600">
-              Questions about working here? Email{" "}
-              <a
-                href={`mailto:${settings.email}`}
-                className="font-semibold text-brand-700 hover:underline"
-              >
-                {settings.email}
-              </a>
-              .
+      <section id="apply" className="scroll-mt-24 bg-white py-16 lg:py-20">
+        <div className="container-page">
+          <div className="mx-auto max-w-2xl">
+            <h2 className="text-2xl font-bold text-navy-900 lg:text-3xl">
+              {open.length === 0 ? "Send a résumé" : "Don’t see a fit?"}
+            </h2>
+            <p className="mt-3 text-slate-600">
+              Upload a PDF résumé. We review every application in our hiring
+              inbox — there is no public email address for applications.
             </p>
+            <div className="mt-7">
+              <CareerApplyForm
+                jobTitle={GENERAL_APPLICATION_TITLE}
+                turnstileSiteKey={turnstile.siteKey}
+                successMessage="Thank you. We have your résumé on file and will be in touch if a role opens that matches."
+              />
+            </div>
           </div>
         </div>
       </section>

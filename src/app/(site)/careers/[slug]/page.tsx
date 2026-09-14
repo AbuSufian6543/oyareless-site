@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Briefcase, Clock, Download, MapPin } from "lucide-react";
 
-import { ContactFormBlock } from "@/components/blocks/contact-form";
+import { CareerApplyForm } from "@/components/careers/career-apply-form";
 import { JsonLd } from "@/components/site/json-ld";
 import { PageBreadcrumbs } from "@/components/site/page-breadcrumbs";
 import { prisma } from "@/lib/prisma";
@@ -16,6 +16,7 @@ import {
   publicMetadata,
 } from "@/lib/seo";
 import { getSettings } from "@/lib/settings";
+import { getResolvedTurnstile } from "@/lib/turnstile";
 import { formatDate } from "@/lib/utils";
 
 export const revalidate = 60;
@@ -45,7 +46,10 @@ export default async function JobPage({ params }: Props) {
   const job = await loadJob(slug);
   if (!job) notFound();
 
-  const settings = await getSettings();
+  const [settings, turnstile] = await Promise.all([
+    getSettings(),
+    getResolvedTurnstile(),
+  ]);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -174,21 +178,12 @@ export default async function JobPage({ params }: Props) {
                 <h2 className="mb-4 text-lg font-bold text-navy-900">
                   Apply for this role
                 </h2>
-                <ContactFormBlock
-                  config={{
-                    formType: "CONTACT",
-                    showCompany: false,
-                    showAddress: false,
-                    showServiceInterest: false,
-                    successMessage:
-                      "Thank you for applying. We review every application and will be in touch if there is a fit.",
-                    sourcePage: `/careers/${job.slug}`,
-                  }}
+                <CareerApplyForm
+                  jobId={job.id}
+                  jobTitle={job.title}
+                  turnstileSiteKey={turnstile.siteKey}
+                  successMessage={`Thank you for applying for ${job.title}. We review every application and will be in touch if there is a fit.`}
                 />
-                <p className="mt-3 text-xs leading-relaxed text-slate-500">
-                  Please mention <strong>{job.title}</strong> in your message and
-                  email your r&eacute;sum&eacute; to service@wirelesscom.ca.
-                </p>
               </div>
             </div>
           </div>

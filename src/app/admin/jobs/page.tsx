@@ -33,13 +33,21 @@ export default async function AdminJobsPage({
         title="Careers"
         description="Open roles listed on the careers page with structured data for Google Jobs."
         actions={
-          <Link
-            href="/admin/jobs/new"
-            className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
-          >
-            <Plus className="size-4" aria-hidden="true" />
-            Post a role
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/admin/applications"
+              className="inline-flex items-center gap-2 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-navy-800 transition-colors hover:bg-slate-50"
+            >
+              Applications
+            </Link>
+            <Link
+              href="/admin/jobs/new"
+              className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+            >
+              <Plus className="size-4" aria-hidden="true" />
+              Post a role
+            </Link>
+          </div>
         }
       />
 

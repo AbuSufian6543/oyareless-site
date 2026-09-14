@@ -331,7 +331,53 @@ model JobPosting {
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
+  applications   JobApplication[]
+
   @@index([status, postedAt])
+}
+
+enum JobApplicationStatus {
+  NEW
+  REVIEWING
+  SHORTLISTED
+  DECLINED
+  HIRED
+  ARCHIVED
+}
+
+/// Visitor résumé submissions. Files live under uploads/private/resumes and
+/// are never served from a public URL — only through the staff download route.
+model JobApplication {
+  id           String               @id @default(cuid())
+  status       JobApplicationStatus @default(NEW)
+
+  name         String
+  email        String
+  phone        String?
+  location     String?
+  message      String               @default("")
+
+  jobId        String?
+  job          JobPosting?          @relation(fields: [jobId], references: [id], onDelete: SetNull)
+  /// Snapshot so the row still reads after the posting is deleted.
+  jobTitle     String
+
+  originalName String
+  storagePath  String
+  sizeBytes    Int
+  sha256       String
+
+  ipAddress    String?
+  userAgent    String?
+
+  internalNotes String?
+  emailSentAt   DateTime?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  @@index([status, createdAt])
+  @@index([email, createdAt])
+  @@index([jobId])
 }
 
 // ---------------------------------------------------------------------------

@@ -70,6 +70,14 @@ export const env = {
       return Boolean(optional("SMTP_HOST"));
     },
   },
+  turnstile: {
+    get siteKey() {
+      return optional("TURNSTILE_SITE_KEY");
+    },
+    get secretKey() {
+      return optional("TURNSTILE_SECRET_KEY");
+    },
+  },
   uploads: {
     get dir() {
       return optional("UPLOAD_DIR", "./public/uploads");

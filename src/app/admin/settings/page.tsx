@@ -1,4 +1,4 @@
-import { CircleCheck, Mails, TriangleAlert } from "lucide-react";
+import { CircleCheck, Mails, ShieldCheck, TriangleAlert } from "lucide-react";
 
 import {
   saveSettingsAction,
@@ -18,6 +18,7 @@ import {
 import { requireAdminRole } from "@/lib/admin-guard";
 import { getMailSettings, getResolvedMail } from "@/lib/mail-settings";
 import { getSettings } from "@/lib/settings";
+import { getTurnstileSettings, getResolvedTurnstile } from "@/lib/turnstile";
 import { DISPLAY_TIMEZONES, normalizeTimeZone } from "@/lib/timezone";
 
 export const metadata = { title: "Site settings" };
@@ -30,17 +31,19 @@ export default async function SettingsPage({
   await requireAdminRole("ADMIN");
 
   const params = await searchParams;
-  const [settings, mail, resolved] = await Promise.all([
+  const [settings, mail, resolved, turnstile, turnstileResolved] = await Promise.all([
     getSettings(),
     getMailSettings(),
     getResolvedMail(),
+    getTurnstileSettings(),
+    getResolvedTurnstile(),
   ]);
 
   return (
     <div className="max-w-3xl">
       <PageHeader
         title="Site settings"
-        description="Company details, outbound email, the inboxes that receive quote requests, and the clock used on audit logs and the rest of the site."
+        description="Company details, outbound email, the inboxes that receive quote and career applications, human verification, and the clock used on audit logs and the rest of the site."
       />
 
       {params.saved && (
@@ -98,7 +101,17 @@ export default async function SettingsPage({
                   <strong>{resolved.quoteNotifyEmails.join(", ")}</strong>
                   {resolved.hasQuoteNotifyList
                     ? "."
-                    : " (the office inboxes, until you add quote-specific addresses below)."}
+                    : " (the office inboxes, until you add quote-specific addresses below)."}{" "}
+                  Career applications go to{" "}
+                  {resolved.hasCareerNotifyList ? (
+                    <strong>{resolved.careerNotifyEmails.join(", ")}</strong>
+                  ) : (
+                    <>
+                      <strong>nobody by email</strong> until you add résumé
+                      inboxes below — they never fall back to the office list
+                    </>
+                  )}
+                  .
                 </>
               ) : (
                 <>
@@ -111,6 +124,29 @@ export default async function SettingsPage({
           </span>
         </Alert>
       </div>
+
+      {!turnstileResolved.isConfigured && (
+        <div className="mb-6">
+          <Alert tone="warning">
+            <span className="flex items-start gap-2">
+              <TriangleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+              <span>
+                Cloudflare Turnstile is not configured, so the careers form will
+                refuse résumé uploads. Add a free widget at{" "}
+                <a
+                  href="https://dash.cloudflare.com/?to=/:account/turnstile"
+                  className="font-semibold underline"
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Cloudflare Turnstile
+                </a>{" "}
+                and paste the keys below.
+              </span>
+            </span>
+          </Alert>
+        </div>
+      )}
 
       <form action={saveSettingsAction} className="space-y-5">
         <input type="hidden" name="returnTo" value="/admin/settings" />
@@ -144,6 +180,80 @@ export default async function SettingsPage({
             emptyHint="No quote-specific inboxes yet. Until you add some, new quote requests are sent to the office addresses:"
             fallbackEmails={resolved.notifyEmails}
           />
+        </Card>
+
+        <Card className="overflow-hidden">
+          <div className="-mx-5 -mt-5 mb-5 border-b border-brand-100 bg-gradient-to-r from-brand-50 to-white px-5 py-4 lg:-mx-6 lg:-mt-6 lg:px-6">
+            <div className="flex items-start gap-3">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white text-brand-700 shadow-sm ring-1 ring-brand-100">
+                <Mails className="size-5" aria-hidden="true" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="font-bold text-navy-900">Career applications</h2>
+                <p className="mt-1 text-sm leading-relaxed text-slate-600">
+                  Each address below receives the applicant&apos;s details and the
+                  PDF résumé. Applications are also stored under Admin →
+                  Applications. This list does not fall back to the office inbox
+                  — if it is empty, nobody is emailed.
+                </p>
+              </div>
+            </div>
+          </div>
+          <NotifyEmailListField
+            name="careerNotifyEmails"
+            label="Résumé notification emails"
+            defaultValue={mail.careerNotifyEmails}
+            placeholder="hiring@wirelesscom.ca"
+            emptyHint="No career inboxes yet. Applications are still saved for staff to review, but no email is sent."
+          />
+        </Card>
+
+        <Card className="overflow-hidden">
+          <div className="-mx-5 -mt-5 mb-5 border-b border-brand-100 bg-gradient-to-r from-brand-50 to-white px-5 py-4 lg:-mx-6 lg:-mt-6 lg:px-6">
+            <div className="flex items-start gap-3">
+              <div className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-white text-brand-700 shadow-sm ring-1 ring-brand-100">
+                <ShieldCheck className="size-5" aria-hidden="true" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="font-bold text-navy-900">Human check (Cloudflare Turnstile)</h2>
+                <p className="mt-1 text-sm leading-relaxed text-slate-600">
+                  Required before a visitor can upload a résumé. Create a free
+                  widget in the Cloudflare dashboard, then paste the site key
+                  and secret here. The secret is stored encrypted.
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <TextField
+              label="Site key"
+              name="turnstileSiteKey"
+              defaultValue={turnstile.siteKey}
+              placeholder="0x4AAAAAAA..."
+              autoComplete="off"
+              className="sm:col-span-2"
+              hint={
+                turnstileResolved.isConfigured
+                  ? "Turnstile is active on the careers form."
+                  : "The careers form stays closed until both keys are saved."
+              }
+            />
+            <TextField
+              label="Secret key"
+              name="turnstileSecretKey"
+              type="password"
+              autoComplete="new-password"
+              placeholder={
+                turnstile.secretKey ? "Leave blank to keep the current secret" : ""
+              }
+              hint={
+                turnstile.secretKey
+                  ? "A secret is already saved."
+                  : "From the Cloudflare Turnstile widget settings."
+              }
+              className="sm:col-span-2"
+            />
+          </div>
         </Card>
 
         <Card>
@@ -212,7 +322,7 @@ export default async function SettingsPage({
               label="Office email addresses"
               defaultValue={mail.notifyEmails}
               placeholder="service@wirelesscom.ca"
-              description="Contact forms, support requests, and other staff mail. Quote requests use the list above when it is filled in."
+              description="Contact forms, support requests, and other staff mail. Quote requests use the list above when it is filled in. Career applications use their own list and never this one."
             />
           </div>
         </Card>

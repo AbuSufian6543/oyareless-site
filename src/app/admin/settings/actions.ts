@@ -9,6 +9,7 @@ import { sendMail, verifySmtp } from "@/lib/mail";
 import { updateMailSettings } from "@/lib/mail-settings";
 import { DEFAULT_SETTINGS, updateSettings } from "@/lib/settings";
 import { normalizeTimeZone } from "@/lib/timezone";
+import { updateTurnstileSettings } from "@/lib/turnstile";
 
 const BOOLEAN_KEYS = new Set([
   "announcementEnabled",
@@ -65,13 +66,18 @@ export async function saveSettingsAction(formData: FormData): Promise<void> {
       smtpFrom: String(formData.get("smtpFrom") ?? "").trim(),
       notifyEmails: String(formData.get("notifyEmails") ?? "").trim(),
       quoteNotifyEmails: String(formData.get("quoteNotifyEmails") ?? "").trim(),
+      careerNotifyEmails: String(formData.get("careerNotifyEmails") ?? "").trim(),
     };
     const nextPassword = String(formData.get("smtpPassword") ?? "");
     if (nextPassword.trim()) {
       mail.smtpPassword = nextPassword.trim();
     }
     await updateMailSettings(mail);
-  } else if (formData.has("quoteNotifyEmails") || formData.has("notifyEmails")) {
+  } else if (
+    formData.has("quoteNotifyEmails") ||
+    formData.has("notifyEmails") ||
+    formData.has("careerNotifyEmails")
+  ) {
     await updateMailSettings({
       ...(formData.has("notifyEmails")
         ? { notifyEmails: String(formData.get("notifyEmails") ?? "").trim() }
@@ -83,6 +89,21 @@ export async function saveSettingsAction(formData: FormData): Promise<void> {
             ).trim(),
           }
         : {}),
+      ...(formData.has("careerNotifyEmails")
+        ? {
+            careerNotifyEmails: String(
+              formData.get("careerNotifyEmails") ?? "",
+            ).trim(),
+          }
+        : {}),
+    });
+  }
+
+  if (formData.has("turnstileSiteKey")) {
+    const secret = String(formData.get("turnstileSecretKey") ?? "");
+    await updateTurnstileSettings({
+      siteKey: String(formData.get("turnstileSiteKey") ?? ""),
+      ...(secret.trim() ? { secretKey: secret.trim() } : {}),
     });
   }
 

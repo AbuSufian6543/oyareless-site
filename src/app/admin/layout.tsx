@@ -43,9 +43,10 @@ export default async function AdminLayout({
     redirect(destinationAfterLogin(user, path));
   }
 
-  const [newSubmissions, newQuotes, settings, unreadNotifications, openTickets, openTasks] = await Promise.all([
+  const [newSubmissions, newQuotes, newApplications, settings, unreadNotifications, openTickets, openTasks] = await Promise.all([
     prisma.formSubmission.count({ where: { status: "NEW" } }).catch(() => 0),
     prisma.quoteRequest.count({ where: { status: "NEW" } }).catch(() => 0),
+    prisma.jobApplication.count({ where: { status: "NEW" } }).catch(() => 0),
     getSettings(),
     unreadNotificationCount(user.id).catch(() => 0),
     prisma.ticket
@@ -63,6 +64,7 @@ export default async function AdminLayout({
       user={user}
       newSubmissions={newSubmissions}
       newQuotes={newQuotes}
+      newApplications={newApplications}
       unreadNotifications={unreadNotifications}
       openTickets={openTickets}
       openTasks={openTasks}
