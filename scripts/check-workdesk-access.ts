@@ -33,6 +33,7 @@ import {
 } from "../src/lib/workdesk/notice";
 import { renderTaskEmailCard } from "../src/lib/workdesk/task-mail";
 import {
+  formatDurationWords,
   formatLoggedDuration,
   joinWorkNoteLines,
   parseLoggedMinutes,
@@ -177,6 +178,13 @@ assert("empty duration is rejected", parseLoggedMinutes("", "") === null);
 assert("more than 24 hours is rejected", parseLoggedMinutes("25", "0") === null);
 assert("duration formats as 1h 30m", formatLoggedDuration(90) === "1h 30m");
 assert("45m formats without hours", formatLoggedDuration(45) === "45m");
+assert(
+  "print durations say min and hr so they are not read as clock times",
+  formatDurationWords(45) === "45 min" &&
+    formatDurationWords(60) === "1 hr" &&
+    formatDurationWords(105) === "1 hr 45 min" &&
+    formatDurationWords(1) === "1 min",
+);
 assert("product quantity keeps two decimals", parseProductQuantity("12.5") === 12.5);
 assert("zero product quantity is rejected", parseProductQuantity("0") === null);
 assert(
@@ -908,6 +916,9 @@ assert(
   workOrderDocument.includes("notesForPrint") &&
     workOrderDocument.includes("What was reported") &&
     workOrderDocument.includes("Work performed") &&
+    workOrderDocument.includes("Time spent") &&
+    workOrderDocument.includes("What was done") &&
+    workOrderDocument.includes("wo-timesheet") &&
     workOrderDocument.includes("Materials used") &&
     workOrderDocument.includes("wo-sign") &&
     workOrderDocument.includes("wo-watermark") &&

@@ -7,7 +7,9 @@ import {
   type WorkOrderCompany,
   type WorkOrderDocumentModel,
   type WorkOrderNote,
+  type WorkOrderTimeRow,
 } from "@/lib/workdesk/work-order";
+import { formatDurationWords } from "@/lib/workdesk/hours";
 import { WorkOrderPrintBar } from "@/components/workdesk/work-order-print-bar";
 
 function Section({
@@ -40,6 +42,75 @@ function NoteBadge({ note }: { note: WorkOrderNote }) {
   return <span className={`wo-badge ${tone}`}>{note.visibilityLabel}</span>;
 }
 
+function WorkDone({ notes }: { notes: string[] }) {
+  if (notes.length === 0) {
+    return <p className="wo-empty">No steps recorded for this time.</p>;
+  }
+  if (notes.length === 1) {
+    return <p className="wo-copy">{notes[0]}</p>;
+  }
+  return (
+    <ol className="wo-steps">
+      {notes.map((step, index) => (
+        <li key={`${index}-${step.slice(0, 24)}`}>{step}</li>
+      ))}
+    </ol>
+  );
+}
+
+function TimeSheet({
+  rows,
+  totalMinutes,
+  kindTotals,
+}: {
+  rows: WorkOrderTimeRow[];
+  totalMinutes: number;
+  kindTotals: WorkOrderDocumentModel["kindTotals"];
+}) {
+  return (
+    <>
+      <table className="wo-timesheet">
+        <thead>
+          <tr>
+            <th className="wo-col-date">Date</th>
+            <th className="wo-col-who">Technician</th>
+            <th className="wo-col-kind">Kind of time</th>
+            <th className="wo-col-mins">Time spent</th>
+            <th>What was done</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.id}>
+              <td>{row.dateLabel}</td>
+              <td>{row.technician}</td>
+              <td>{row.kindLabel}</td>
+              <td className="wo-time">{formatDurationWords(row.minutes)}</td>
+              <td>
+                <WorkDone notes={row.notes} />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="wo-time-summary">
+        <p>
+          <strong>Total time spent:</strong> {formatDurationWords(totalMinutes)}
+        </p>
+        {kindTotals.length > 1 ? (
+          <p>
+            {kindTotals
+              .map((row) => `${row.kindLabel}: ${formatDurationWords(row.minutes)}`)
+              .join(" · ")}
+          </p>
+        ) : kindTotals[0] ? (
+          <p>All of that time is {kindTotals[0].kindLabel.toLowerCase()}.</p>
+        ) : null}
+      </div>
+    </>
+  );
+}
+
 export function WorkOrderDocument({
   company,
   document,
@@ -61,10 +132,6 @@ export function WorkOrderDocument({
   const customerContact = document.customer
     ? [document.customer.phone, document.customer.email].filter(Boolean).join(" · ")
     : "";
-  const kindTotalText =
-    document.kindTotals.length > 1
-      ? document.kindTotals.map((row) => `${row.kindLabel} ${row.durationLabel}`).join(", ")
-      : "";
 
   return (
     <div className="work-order-page min-h-dvh bg-slate-200 print:min-h-0 print:bg-white">
@@ -123,7 +190,7 @@ export function WorkOrderDocument({
               </li>
               <li>
                 <span>Time on this job</span>
-                {document.totalDurationLabel}
+                {formatDurationWords(document.totalMinutes)}
               </li>
             </ul>
 
@@ -170,26 +237,12 @@ export function WorkOrderDocument({
             </Section>
 
             {document.timeEntries.length > 0 ? (
-              <Section
-                title="Work performed"
-                meta={`${document.totalDurationLabel}${kindTotalText ? ` · ${kindTotalText}` : ""}`}
-              >
-                <ul className="wo-log">
-                  {document.timeEntries.map((row) => (
-                    <li key={row.id}>
-                      <p className="wo-log-head">
-                        <strong>{row.durationLabel}</strong>
-                        <span>{row.kindLabel}</span>
-                        <span className="wo-log-when">
-                          {row.dateLabel} · {row.technician}
-                        </span>
-                      </p>
-                      {row.notes.length > 0 ? (
-                        <p className="wo-copy">{row.notes.join(" ")}</p>
-                      ) : null}
-                    </li>
-                  ))}
-                </ul>
+              <Section title="Work performed">
+                <TimeSheet
+                  rows={document.timeEntries}
+                  totalMinutes={document.totalMinutes}
+                  kindTotals={document.kindTotals}
+                />
               </Section>
             ) : null}
 

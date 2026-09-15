@@ -22,6 +22,18 @@ export function formatLoggedDuration(minutes: number): string {
   return `${hours}h ${rest}m`;
 }
 
+/** Print-friendly duration so "1h 45m" is not read as a clock time. */
+export function formatDurationWords(minutes: number): string {
+  const safe = Math.max(0, Math.round(minutes));
+  const hours = Math.floor(safe / MINUTES_PER_HOUR);
+  const rest = safe % MINUTES_PER_HOUR;
+  const hourPart = hours === 1 ? "1 hr" : `${hours} hr`;
+  const minPart = rest === 1 ? "1 min" : `${rest} min`;
+  if (hours === 0) return minPart;
+  if (rest === 0) return hourPart;
+  return `${hourPart} ${minPart}`;
+}
+
 export function splitLoggedMinutes(minutes: number): { hours: number; minutes: number } {
   const safe = Math.max(0, Math.round(minutes));
   return {

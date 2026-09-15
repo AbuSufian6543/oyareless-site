@@ -273,6 +273,92 @@
   color: #475569;
 }
 
+.wo-timesheet {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14.5px;
+}
+
+.wo-timesheet th {
+  padding: 0.12rem 0.45rem 0.22rem 0;
+  border-bottom: 2px solid #071e39;
+  font-size: 12px;
+  font-weight: 700;
+  color: #0a2a4e;
+  vertical-align: bottom;
+  white-space: nowrap;
+}
+
+.wo-timesheet td {
+  padding: 0.28rem 0.45rem 0.28rem 0;
+  border-bottom: 1px solid #e2e8f0;
+  vertical-align: top;
+  line-height: 1.35;
+}
+
+.wo-timesheet tr:last-child td {
+  border-bottom: 0;
+}
+
+.wo-timesheet .wo-col-date {
+  width: 18%;
+}
+
+.wo-timesheet .wo-col-who {
+  width: 18%;
+}
+
+.wo-timesheet .wo-col-kind {
+  width: 15%;
+}
+
+.wo-timesheet .wo-col-mins {
+  width: 14%;
+}
+
+.wo-timesheet .wo-time {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.wo-timesheet .wo-copy,
+.wo-timesheet .wo-empty {
+  margin: 0;
+}
+
+.wo-steps {
+  margin: 0;
+  padding-left: 1.15rem;
+}
+
+.wo-steps li {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.wo-steps li + li {
+  margin-top: 0.08rem;
+}
+
+.wo-time-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.15rem 1rem;
+  margin: 0.28rem 0 0;
+  padding: 0.28rem 0.45rem;
+  border: 1px solid #e2e8f0;
+  background: rgb(248 250 252 / 0.88);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.wo-time-summary p {
+  margin: 0;
+}
+
 .wo-notes {
   margin: 0;
   padding: 0;
@@ -465,10 +551,15 @@
   .wo-summary,
   .wo-sign,
   .wo-footer,
+  .wo-timesheet tr,
   .wo-log li,
   .wo-notes li {
     break-inside: avoid;
     page-break-inside: avoid;
+  }
+
+  thead {
+    display: table-header-group;
   }
 
   p,
