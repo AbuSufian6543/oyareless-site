@@ -140,4 +140,10 @@ assert(
     applyApi.includes("await verifyTurnstileToken"),
 );
 
+const accountActions = read("src/app/admin/account/actions.ts");
+assert(
+  "account 2FA redirects never include setup or recovery codes",
+  !accountActions.includes("?setup=") && !accountActions.includes("?codes="),
+);
+
 process.exit(failed === 0 ? 0 : 1);

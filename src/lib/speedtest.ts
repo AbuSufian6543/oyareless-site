@@ -4,6 +4,7 @@ import { createHmac } from "node:crypto";
 import { reverse } from "node:dns/promises";
 
 import { env } from "@/lib/env";
+import { isPrivateClientIp } from "@/lib/ip-address";
 
 /**
  * Shared helpers for speed-test API routes (IP hashing, reverse DNS, leftover
@@ -46,7 +47,7 @@ export function hashIp(ip: string): string {
  * rather than guessing when there is no useful record.
  */
 export async function networkNameFor(ip: string): Promise<string | null> {
-  if (!ip || ip === "unknown" || isPrivateAddress(ip)) return null;
+  if (!ip || ip === "unknown" || isPrivateClientIp(ip)) return null;
 
   try {
     const names = await withTimeout(reverse(ip), 1500);
@@ -68,21 +69,6 @@ export async function networkNameFor(ip: string): Promise<string | null> {
   } catch {
     return null;
   }
-}
-
-function isPrivateAddress(ip: string): boolean {
-  if (ip === "::1" || ip.startsWith("127.")) return true;
-  if (ip.startsWith("10.") || ip.startsWith("192.168.")) return true;
-  if (ip.startsWith("169.254.") || ip.toLowerCase().startsWith("fe80:")) {
-    return true;
-  }
-  if (/^fc|^fd/i.test(ip)) return true;
-  const match = /^172\.(\d+)\./.exec(ip);
-  if (match) {
-    const second = Number.parseInt(match[1], 10);
-    return second >= 16 && second <= 31;
-  }
-  return false;
 }
 
 async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {

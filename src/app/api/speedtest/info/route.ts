@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 
 import { clientIp, rateLimit } from "@/lib/rate-limit";
+import { publicClientIp } from "@/lib/ip-address";
 import { SPEEDTEST_PROVIDER } from "@/lib/speedtest-provider";
 import { networkNameFor } from "@/lib/speedtest";
 
@@ -12,9 +13,10 @@ export const dynamic = "force-dynamic";
  * against Cloudflare's edge, not this host.
  */
 export async function GET(request: Request) {
-  const ip = clientIp(request);
+  const requestIp = clientIp(request);
+  const ip = publicClientIp(requestIp);
 
-  const limit = rateLimit(`speedtest-info:${ip}`, 60, 600);
+  const limit = rateLimit(`speedtest-info:${requestIp}`, 60, 600);
   if (!limit.allowed) {
     return NextResponse.json(
       { message: "Too many requests." },
@@ -28,11 +30,11 @@ export async function GET(request: Request) {
     );
   }
 
-  const networkName = await networkNameFor(ip);
+  const networkName = ip ? await networkNameFor(ip) : null;
 
   return NextResponse.json(
     {
-      ip: ip === "unknown" ? null : ip,
+      ip,
       networkName,
       server: SPEEDTEST_PROVIDER,
     },

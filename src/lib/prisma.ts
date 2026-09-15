@@ -54,7 +54,7 @@ export function withTimeout<T>(promise: Promise<T>, ms = QUERY_TIMEOUT_MS): Prom
 function createClient(): PrismaClient {
   const connectionString = process.env.DATABASE_URL?.trim();
   if (!connectionString) {
-    throw new Error("DATABASE_URL is not set. Copy .env.example to .env.");
+    throw new Error("Database is not configured.");
   }
 
   return new PrismaClient({

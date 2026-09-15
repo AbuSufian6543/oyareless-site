@@ -3,25 +3,19 @@ import Link from "next/link";
 
 import { PageHero } from "@/components/site/page-hero";
 import { publicMetadata } from "@/lib/seo";
-import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = publicMetadata({
   title: "System Status",
-  description: "Whether the WirelessCom.Ca Inc. website and its supporting services are reachable.",
+  description: "Whether the WirelessCom.Ca Inc. website is reachable.",
   path: "/system-status",
 });
 
 export default async function SystemStatusPage() {
-  const databaseOk = await prisma.$queryRaw`SELECT 1`
-    .then(() => true)
-    .catch(() => false);
-
   const checks = [
-    { name: "Website", ok: true, note: "This page rendered, so the app process is up." },
     {
-      name: "Database",
-      ok: databaseOk,
-      note: databaseOk ? "Postgres accepted a probe query." : "Postgres did not respond.",
+      name: "Website",
+      ok: true,
+      note: "This page rendered, so the public site is answering.",
     },
   ];
 

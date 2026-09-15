@@ -12,6 +12,11 @@ import {
 
 import { Readout, SpeedGauge } from "@/components/tools/speed-gauge";
 import {
+  formatCloudflareColo,
+  readCloudflareEdgeTrace,
+} from "@/lib/cloudflare-trace";
+import { publicClientIp } from "@/lib/ip-address";
+import {
   formatPayloadBytes,
   runSpeedTest,
   SpeedTestError,
@@ -29,6 +34,30 @@ type Info = {
 };
 
 type Partial4 = Partial<SpeedTestOutcome>;
+
+async function loadConnectionInfo(signal?: AbortSignal): Promise<Info> {
+  const [local, edge] = await Promise.all([
+    fetch("/api/speedtest/info", { cache: "no-store", signal })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data: Info | null) => data)
+      .catch(() => null),
+    readCloudflareEdgeTrace(signal).catch(() => null),
+  ]);
+
+  const ip = publicClientIp(edge?.ip) ?? publicClientIp(local?.ip) ?? null;
+  const location = edge?.colo
+    ? formatCloudflareColo(edge.colo)
+    : (local?.server?.location ?? SPEEDTEST_PROVIDER.location);
+
+  return {
+    ip,
+    networkName: local?.networkName ?? null,
+    server: {
+      host: local?.server?.host ?? SPEEDTEST_PROVIDER.host,
+      location,
+    },
+  };
+}
 
 const PHASE_COPY: Record<SpeedTestPhase, string> = {
   idle: "",
@@ -75,6 +104,14 @@ export function SpeedTest({
     return () => abortRef.current?.abort();
   }, []);
 
+  useEffect(() => {
+    const controller = new AbortController();
+    void loadConnectionInfo(controller.signal)
+      .then((data) => setInfo(data))
+      .catch(() => undefined);
+    return () => controller.abort();
+  }, []);
+
   const busy =
     phase === "connecting" ||
     phase === "ping" ||
@@ -108,9 +145,8 @@ export function SpeedTest({
     elapsedOriginRef.current = null;
     phaseRef.current = "idle";
 
-    void fetch("/api/speedtest/info", { cache: "no-store" })
-      .then((response) => (response.ok ? response.json() : null))
-      .then((data: Info | null) => setInfo(data))
+    void loadConnectionInfo(controller.signal)
+      .then((data) => setInfo(data))
       .catch(() => undefined);
 
     let outcome: SpeedTestOutcome | null = null;
@@ -356,7 +392,9 @@ export function SpeedTest({
         <MetaDot dark={dark} />
         <div>
           <dt className="sr-only">Your IP address</dt>
-          <dd className="font-mono text-[0.8125rem]">{info?.ip ?? "—"}</dd>
+          <dd className="font-mono text-[0.8125rem]">
+            {publicClientIp(info?.ip) ?? "—"}
+          </dd>
         </div>
       </dl>
 

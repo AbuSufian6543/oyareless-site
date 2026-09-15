@@ -40,14 +40,14 @@ export async function POST(request: Request) {
 
   const email = parsed.data.email.toLowerCase();
   const confirmToken = randomToken(24);
+  const acceptedMessage =
+    "If that address can be added, we sent a confirmation. Check your inbox.";
 
   try {
     const existing = await prisma.subscriber.findUnique({ where: { email } });
 
     if (existing?.status === "CONFIRMED") {
-      return NextResponse.json({
-        message: "You are already subscribed. Thank you!",
-      });
+      return NextResponse.json({ message: acceptedMessage });
     }
 
     await prisma.subscriber.upsert({
@@ -88,12 +88,8 @@ export async function POST(request: Request) {
         data: { status: "CONFIRMED", confirmedAt: new Date(), confirmToken: null },
       })
       .catch(() => undefined);
-    return NextResponse.json({
-      message: "Thank you — you have been added to our mailing list.",
-    });
+    return NextResponse.json({ message: acceptedMessage });
   }
 
-  return NextResponse.json({
-    message: "Almost done! Check your inbox to confirm your subscription.",
-  });
+  return NextResponse.json({ message: acceptedMessage });
 }

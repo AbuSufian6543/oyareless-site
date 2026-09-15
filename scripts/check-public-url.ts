@@ -33,11 +33,11 @@ const production = (raw: string, path = "/") =>
 
 assert(
   "production ignores a public IPv4 SITE_URL",
-  resolvePublicOrigin("http://64.110.141.167", "production") === CANONICAL_PUBLIC_ORIGIN,
+  resolvePublicOrigin("http://203.0.113.1", "production") === CANONICAL_PUBLIC_ORIGIN,
 );
 assert(
   "production ignores https on a public IP",
-  resolvePublicOrigin("https://64.110.141.167", "production") === CANONICAL_PUBLIC_ORIGIN,
+  resolvePublicOrigin("https://203.0.113.1", "production") === CANONICAL_PUBLIC_ORIGIN,
 );
 assert(
   "production origin is https://wirelesscom.org",
@@ -69,10 +69,10 @@ assert(
 );
 assert(
   "development does not keep a public IP",
-  resolvePublicOrigin("http://64.110.141.167", "development") === CANONICAL_PUBLIC_ORIGIN,
+  resolvePublicOrigin("http://203.0.113.1", "development") === CANONICAL_PUBLIC_ORIGIN,
 );
 
-assert("IPv4 hostnames are detected", isIpHostname("64.110.141.167"));
+assert("IPv4 hostnames are detected", isIpHostname("203.0.113.1"));
 assert("IPv6 hostnames are detected", isIpHostname("2001:db8::1"));
 assert("company .org host is not treated as an IP", !isIpHostname("wirelesscom.org"));
 assert("company .ca host is not treated as an IP", !isIpHostname("wirelesscom.ca"));
@@ -91,12 +91,12 @@ assert(
 
 assert(
   "IP ticket links keep the path on https://wirelesscom.org",
-  production("http://64.110.141.167", "http://64.110.141.167/admin/tickets/abc") ===
+  production("http://203.0.113.1", "http://203.0.113.1/admin/tickets/abc") ===
     `${CANONICAL_PUBLIC_ORIGIN}/admin/tickets/abc`,
 );
 assert(
   "relative admin paths stay on https://wirelesscom.org",
-  production("http://64.110.141.167", "/admin/notifications") ===
+  production("http://203.0.113.1", "/admin/notifications") ===
     `${CANONICAL_PUBLIC_ORIGIN}/admin/notifications`,
 );
 assert(
@@ -124,7 +124,7 @@ assert(
 assert(
   "password-reset tokens stay on https://wirelesscom.org",
   production(
-    "http://64.110.141.167",
+    "http://203.0.113.1",
     "/login/reset?token=abc%2Fdef",
   ) === `${CANONICAL_PUBLIC_ORIGIN}/login/reset?token=abc%2Fdef`,
 );
@@ -155,11 +155,11 @@ assert(
 );
 
 const rewritten = sanitizeEmailHtml(
-  `<a href="http://64.110.141.167/tech/tickets/1">Open</a>`,
+  `<a href="http://203.0.113.1/tech/tickets/1">Open</a>`,
 );
 assert(
   "email HTML rewrite strips the public IP from hrefs",
-  !rewritten.includes("64.110.141.167") && rewritten.includes("href="),
+  !rewritten.includes("203.0.113.1") && rewritten.includes("href="),
 );
 assert(
   "rewritten email HTML has no forbidden origin",

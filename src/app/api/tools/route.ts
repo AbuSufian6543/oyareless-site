@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { NetGuardError } from "@/lib/net-guard";
+import { publicClientIp } from "@/lib/ip-address";
 import {
   checkSecurityHeaders,
   dnsblLookup,
@@ -63,11 +64,15 @@ export async function POST(request: Request) {
 
   try {
     switch (tool) {
-      case "ip":
+      case "ip": {
+        const visible = publicClientIp(ip);
         return NextResponse.json({
-          ip: ip === "unknown" ? null : ip,
-          note: "This is the address our server sees, after your reverse proxy.",
+          ip: visible,
+          note: visible
+            ? "This is the address our server sees, after your reverse proxy."
+            : "No public address was visible on this connection.",
         });
+      }
       case "oui": {
         const result = lookupOui(target);
         if (!result) {

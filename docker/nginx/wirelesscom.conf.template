@@ -29,6 +29,7 @@ server {
     listen 80 default_server;
     listen [::]:80 default_server;
     server_name __DOMAINS__ _;
+    server_tokens off;
 
     # Let deploy.sh --tls (certbot) complete the HTTP-01 challenge.
     location /.well-known/acme-challenge/ {

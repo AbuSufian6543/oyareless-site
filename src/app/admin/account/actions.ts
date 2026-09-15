@@ -17,6 +17,10 @@ import {
 } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
+import {
+  clearTwoFactorRecoveryCodes,
+  stashTwoFactorRecoveryCodes,
+} from "@/lib/two-factor-recovery";
 import { staffAccountPath } from "@/lib/workdesk/access";
 
 export async function updateProfileAction(formData: FormData): Promise<void> {
@@ -87,7 +91,8 @@ export async function beginTwoFactorSetupAction(): Promise<void> {
     data: { twoFactorSecret: storeTotpSecret(secret), twoFactorEnabled: false },
   });
 
-  redirect(`${staffAccountPath(user.role)}?setup=${encodeURIComponent(secret)}`);
+  await clearTwoFactorRecoveryCodes();
+  redirect(staffAccountPath(user.role));
 }
 
 export async function confirmTwoFactorAction(
@@ -125,7 +130,15 @@ export async function confirmTwoFactorAction(
     entityId: user.id,
   });
 
-  redirect(`${staffAccountPath(user.role)}?codes=${encodeURIComponent(codes.join(","))}`);
+  await stashTwoFactorRecoveryCodes(user.id, codes);
+  redirect(staffAccountPath(user.role));
+}
+
+export async function dismissRecoveryCodesAction(): Promise<void> {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+  await clearTwoFactorRecoveryCodes();
+  redirect(staffAccountPath(user.role));
 }
 
 export async function disableOwnTwoFactorAction(
@@ -150,6 +163,8 @@ export async function disableOwnTwoFactorAction(
       recoveryCodes: Prisma.DbNull,
     },
   });
+
+  await clearTwoFactorRecoveryCodes();
 
   await recordAudit({
     action: "user.2fa_disabled",

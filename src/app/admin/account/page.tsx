@@ -13,6 +13,7 @@ import {
   changePasswordAction,
   confirmTwoFactorAction,
   disableOwnTwoFactorAction,
+  dismissRecoveryCodesAction,
   updateProfileAction,
 } from "@/app/admin/account/actions";
 import {
@@ -23,8 +24,9 @@ import {
   PageHeader,
   TextField,
 } from "@/components/admin/ui";
-import { getCurrentUser, totpUri } from "@/lib/auth";
+import { getCurrentUser, readTotpSecret, totpUri } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { readTwoFactorRecoveryCodes } from "@/lib/two-factor-recovery";
 
 export const metadata = { title: "My account" };
 
@@ -57,8 +59,6 @@ export default async function AccountPage({
     saved?: string;
     twooff?: string;
     error?: string;
-    setup?: string;
-    codes?: string;
   }>;
 }) {
   const params = await searchParams;
@@ -67,7 +67,13 @@ export default async function AccountPage({
 
   const record = await prisma.user.findUnique({
     where: { id: user.id },
-    select: { name: true, email: true, phone: true, twoFactorEnabled: true },
+    select: {
+      name: true,
+      email: true,
+      phone: true,
+      twoFactorEnabled: true,
+      twoFactorSecret: true,
+    },
   });
   if (!record) redirect("/login");
 
@@ -75,8 +81,11 @@ export default async function AccountPage({
     params.error ?? (params.saved ? "saved" : params.twooff ? "twooff" : null);
   const message = messageKey ? MESSAGES[messageKey] : null;
 
-  const recoveryCodes = params.codes ? params.codes.split(",") : null;
-  const setupSecret = params.setup ?? null;
+  const recoveryCodes = await readTwoFactorRecoveryCodes(user.id);
+  const setupSecret =
+    !record.twoFactorEnabled && record.twoFactorSecret
+      ? readTotpSecret(record.twoFactorSecret)
+      : null;
   const qrDataUrl = setupSecret
     ? await QRCode.toDataURL(totpUri(setupSecret, record.email), {
         width: 220,
@@ -116,6 +125,14 @@ export default async function AccountPage({
             <Copy className="size-3.5" aria-hidden="true" />
             Print this page or copy the codes into your password manager.
           </p>
+          <form action={dismissRecoveryCodesAction} className="mt-4">
+            <button
+              type="submit"
+              className="rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+            >
+              I have saved these codes
+            </button>
+          </form>
         </Card>
       )}
 
