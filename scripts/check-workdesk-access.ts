@@ -46,6 +46,7 @@ import {
   companyAddressLines,
   compactAddressLines,
   formatSiteAddress,
+  jobRecordLines,
   minutesByKind,
   notesForPrint,
   publicCompanyWebsite,
@@ -835,6 +836,17 @@ assert(
   }).length === 2,
 );
 assert(
+  "job record lines keep every fact in readable sentences",
+  jobRecordLines([
+    { label: "Category", value: "Radio" },
+    { label: "Opened", value: "Sep 15, 2026, 8:14 a.m." },
+    { label: "Opened by", value: "Alex Nguyen" },
+    { label: "Last updated", value: "Sep 15, 2026, 10:40 a.m." },
+    { label: "PO number", value: "PO-88" },
+  ]).join("|") ===
+    "Radio · opened Sep 15, 2026, 8:14 a.m. by Alex Nguyen|Last updated Sep 15, 2026, 10:40 a.m.|PO number PO-88",
+);
+assert(
   "work order totals add minutes and group by kind",
   sumMinutes([{ minutes: 45 }, { minutes: 90 }]) === 135 &&
     minutesByKind([
@@ -887,17 +899,21 @@ assert(
   workOrderCss.includes("size: letter") &&
     workOrderCss.includes(".work-order-chrome") &&
     workOrderCss.includes("display: none") &&
+    workOrderCss.includes("font-size: 15px") &&
+    workOrderCss.includes(".wo-watermark") &&
     !workOrderCss.includes("wo-keep"),
 );
 assert(
-  "work order print keeps unique job fields and a compact sign-off",
+  "work order print keeps unique job fields, a watermark, and a compact sign-off",
   workOrderDocument.includes("notesForPrint") &&
-    workOrderDocument.includes("Reported issue") &&
-    workOrderDocument.includes("Time and work performed") &&
-    workOrderDocument.includes("Products and materials used") &&
+    workOrderDocument.includes("What was reported") &&
+    workOrderDocument.includes("Work performed") &&
+    workOrderDocument.includes("Materials used") &&
     workOrderDocument.includes("wo-sign") &&
+    workOrderDocument.includes("wo-watermark") &&
+    workOrderDocument.includes("/brand/logo-mark.png") &&
     workOrderDocument.includes("Account notes") &&
-    workOrderDocument.includes("Attached files"),
+    workOrderDocument.includes("Files on this job"),
 );
 assert(
   "admin and technician job pages offer a printable work order",

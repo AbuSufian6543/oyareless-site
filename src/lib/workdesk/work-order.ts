@@ -172,6 +172,42 @@ export function compactAddressLines(lines: string[]): string[] {
   return [clean[0], clean.slice(1).join(" · ")];
 }
 
+const LEAD_FACT_LABELS = new Set(["Category", "Opened", "Opened by", "Created by"]);
+const DATED_FACT_LABELS = [
+  "Last updated",
+  "Due",
+  "First response",
+  "Resolved",
+  "Completed",
+  "Closed",
+] as const;
+
+/** Flatten job facts into short readable lines instead of a labelled grid. */
+export function jobRecordLines(facts: WorkOrderFact[]): string[] {
+  const byLabel = new Map(facts.map((fact) => [fact.label, fact.value]));
+  const lines: string[] = [];
+  const category = byLabel.get("Category");
+  const opened = byLabel.get("Opened");
+  const openedBy = byLabel.get("Opened by") || byLabel.get("Created by");
+  const lead: string[] = [];
+  if (category) lead.push(category);
+  if (opened && openedBy) lead.push(`opened ${opened} by ${openedBy}`);
+  else if (opened) lead.push(`opened ${opened}`);
+  else if (openedBy) lead.push(`opened by ${openedBy}`);
+  if (lead.length > 0) lines.push(lead.join(" · "));
+
+  for (const label of DATED_FACT_LABELS) {
+    const value = byLabel.get(label);
+    if (value) lines.push(`${label} ${value}`);
+  }
+  for (const fact of facts) {
+    if (LEAD_FACT_LABELS.has(fact.label)) continue;
+    if ((DATED_FACT_LABELS as readonly string[]).includes(fact.label)) continue;
+    lines.push(`${fact.label} ${fact.value}`);
+  }
+  return lines;
+}
+
 /**
  * Ticket work orders use the first customer/staff message as the description.
  * Skip repeating that same body in Job notes; keep later notes and any files

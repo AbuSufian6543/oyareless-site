@@ -4,24 +4,48 @@
 }
 
 .work-order-sheet {
+  position: relative;
   box-sizing: border-box;
   color: #071e39;
-  font-size: 13px;
-  line-height: 1.38;
+  font-size: 15px;
+  line-height: 1.4;
 }
 
 .work-order-sheet h1,
-.work-order-sheet h2 {
+.work-order-sheet h2,
+.work-order-sheet h3 {
   text-wrap: wrap;
+}
+
+.wo-watermark {
+  position: absolute;
+  inset: 8% 6%;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.wo-watermark img {
+  width: min(58%, 4.6in);
+  max-height: 4.6in;
+  object-fit: contain;
+  opacity: 0.11;
+}
+
+.wo-body {
+  position: relative;
+  z-index: 1;
 }
 
 .wo-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 0.9rem;
-  padding-bottom: 0.38rem;
-  border-bottom: 2.5px solid #071e39;
+  gap: 1rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 2px solid #071e39;
 }
 
 .wo-brand {
@@ -29,36 +53,22 @@
   min-width: 0;
   flex: 1;
   align-items: flex-start;
-  gap: 0.7rem;
+  gap: 0.75rem;
 }
 
 .wo-logo {
   display: block;
   height: 40px;
   width: auto;
-  max-width: 180px;
+  max-width: 200px;
   object-fit: contain;
   object-position: left center;
   flex-shrink: 0;
 }
 
-.wo-company {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
-}
-
-.wo-tagline {
-  margin: 0.12rem 0 0;
-  font-size: 11px;
-  color: #475569;
-}
-
 .wo-contact {
-  margin: 0.28rem 0 0;
-  font-size: 11px;
+  margin: 0;
+  font-size: 12.5px;
   line-height: 1.35;
   color: #0a2a4e;
 }
@@ -69,187 +79,198 @@
 
 .wo-meta {
   flex-shrink: 0;
-  width: 12.75rem;
-  padding: 0.42rem 0.55rem 0.48rem;
+  min-width: 10.5rem;
+  padding: 0.35rem 0.7rem 0.45rem;
   border: 2px solid #071e39;
+  text-align: right;
 }
 
 .wo-kicker {
   margin: 0;
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #64748b;
 }
 
 .wo-ref {
-  margin: 0.1rem 0 0;
+  margin: 0.12rem 0 0;
   font-family: var(--font-ibm-mono), ui-monospace, monospace;
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 600;
   letter-spacing: -0.03em;
   line-height: 1.1;
 }
 
 .wo-kind {
-  margin: 0.16rem 0 0;
-  font-size: 12px;
+  margin: 0.18rem 0 0;
+  font-size: 13.5px;
   font-weight: 600;
-}
-
-.wo-printed {
-  margin: 0.26rem 0 0;
-  font-size: 10px;
-  line-height: 1.3;
-  color: #475569;
-}
-
-.wo-printed span {
-  display: block;
-}
-
-.wo-title-label {
-  margin: 0.38rem 0 0;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: #64748b;
 }
 
 .wo-title {
-  margin: 0.1rem 0 0;
-  font-size: 16.5px;
+  margin: 0.4rem 0 0;
+  font-size: 20px;
   font-weight: 700;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.03em;
   line-height: 1.2;
 }
 
-.wo-facts {
+.wo-summary {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 0.28rem 0.65rem;
-  margin: 0.3rem 0 0;
+  gap: 0.35rem 0.75rem;
+  margin: 0.4rem 0 0;
+  padding: 0.32rem 0.5rem;
+  list-style: none;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
 }
 
-.wo-facts dt {
-  font-size: 9px;
+.wo-summary li {
+  margin: 0;
+  font-size: 15px;
   font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  line-height: 1.3;
+}
+
+.wo-summary span {
+  display: block;
+  margin-bottom: 0.08rem;
+  font-size: 12px;
+  font-weight: 600;
   color: #64748b;
 }
 
-.wo-facts dd {
-  margin: 0.06rem 0 0;
-  font-size: 12.5px;
-  font-weight: 600;
-  line-height: 1.3;
-  white-space: pre-wrap;
+.wo-split {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 0 1.1rem;
+  align-items: start;
+  margin-top: 0.42rem;
+}
+
+.wo-split > .wo-section {
+  margin-top: 0;
 }
 
 .wo-section {
-  margin-top: 0.4rem;
+  margin-top: 0.42rem;
 }
 
 .wo-section h2 {
-  margin: 0 0 0.26rem;
-  padding-bottom: 0.12rem;
-  border-bottom: 1.5px solid #071e39;
-  font-size: 9px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.2rem 0.75rem;
+  margin: 0 0 0.18rem;
+  font-size: 15px;
   font-weight: 700;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  color: #0a2a4e;
+}
+
+.wo-heading-meta {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #334155;
 }
 
 .wo-copy {
-  margin: 0;
+  margin: 0.12rem 0 0;
   white-space: pre-wrap;
-  font-size: 13px;
-  line-height: 1.42;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.wo-section > .wo-copy:first-of-type {
+  margin-top: 0;
 }
 
 .wo-empty {
   margin: 0;
-  font-size: 12px;
+  font-size: 14px;
   font-style: italic;
   color: #64748b;
 }
 
-.wo-account-notes {
-  margin: 0.35rem 0 0;
-  padding: 0.28rem 0.4rem;
-  border: 1px solid #e2e8f0;
-  background: #f8fafc;
-}
-
-.wo-subhead {
+.wo-person {
   margin: 0;
-  font-size: 9px;
+  font-size: 16px;
   font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #64748b;
+  line-height: 1.25;
 }
 
-.wo-account-notes .wo-copy {
-  margin-top: 0.12rem;
+.wo-secondary {
+  margin: 0.12rem 0 0;
+  font-size: 13.5px;
+  line-height: 1.35;
+  color: #334155;
+}
+
+.wo-record-line {
+  margin: 0 0 0.18rem;
+  font-size: 14.5px;
+  line-height: 1.4;
+}
+
+.wo-record-line:last-child {
+  margin-bottom: 0;
+}
+
+.wo-callout {
+  margin: 0.22rem 0 0;
+  padding: 0.22rem 0.4rem;
+  border-left: 3px solid #1478d4;
+  background: rgb(255 255 255 / 0.72);
+}
+
+.wo-callout-label {
+  margin: 0;
   font-size: 12px;
+  font-weight: 700;
+  color: #0a5fae;
 }
 
-.wo-totals {
+.wo-log {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.wo-log li {
+  padding: 0.18rem 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.wo-log li:first-child {
+  padding-top: 0;
+}
+
+.wo-log li:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.wo-log-head {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.22rem 0.75rem;
-  margin: 0 0 0.22rem;
-  font-size: 11.5px;
-  color: #0a2a4e;
+  align-items: baseline;
+  gap: 0.2rem 0.55rem;
+  margin: 0;
+  font-size: 15px;
 }
 
-.wo-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-  font-size: 12px;
-}
-
-.wo-table th {
-  padding: 0.1rem 0.45rem 0.16rem 0;
-  border-bottom: 1px solid #071e39;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #64748b;
-}
-
-.wo-table td {
-  padding: 0.2rem 0.45rem 0.2rem 0;
-  border-bottom: 1px solid #e2e8f0;
-  vertical-align: top;
-  line-height: 1.32;
-}
-
-.wo-table tfoot td {
-  border-bottom: 0;
-  padding-top: 0.28rem;
+.wo-log-head strong {
   font-weight: 700;
 }
 
-.wo-table .wo-total-label {
-  text-align: right;
-}
-
-.wo-table .wo-num {
-  white-space: nowrap;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-.wo-table .wo-mono {
-  font-family: var(--font-ibm-mono), ui-monospace, monospace;
-  font-size: 11px;
+.wo-log-when {
+  margin-left: auto;
+  font-size: 13.5px;
+  color: #475569;
 }
 
 .wo-notes {
@@ -259,7 +280,7 @@
 }
 
 .wo-notes li {
-  padding: 0.2rem 0;
+  padding: 0.18rem 0;
   border-bottom: 1px solid #e2e8f0;
 }
 
@@ -272,8 +293,9 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 0.28rem 0.45rem;
-  font-size: 10.5px;
+  gap: 0.3rem 0.5rem;
+  margin: 0;
+  font-size: 13px;
   color: #64748b;
 }
 
@@ -282,21 +304,13 @@
   color: #0a2a4e;
 }
 
-.wo-note-files {
-  margin: 0.08rem 0 0;
-  font-size: 11px;
-  color: #475569;
-}
-
 .wo-badge {
   display: inline-flex;
   border: 1px solid #cbd5e1;
-  border-radius: 2px;
-  padding: 0 0.3rem;
-  font-size: 9px;
+  border-radius: 3px;
+  padding: 0 0.35rem;
+  font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
   line-height: 1.5;
 }
 
@@ -318,63 +332,50 @@
 }
 
 .wo-files {
-  margin: 0;
-  padding-left: 1.05rem;
-  font-size: 12px;
-  line-height: 1.35;
+  margin: 0.4rem 0 0;
+  font-size: 14.5px;
+  line-height: 1.4;
 }
 
 .wo-sign {
-  width: 100%;
-  border-collapse: collapse;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem 1.25rem;
+}
+
+.wo-sign h3 {
+  margin: 0 0 0.2rem;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #0a2a4e;
+}
+
+.wo-sign .wo-person {
+  min-height: 1.3em;
+}
+
+.wo-sign-field {
+  margin: 0.32rem 0 0;
+  padding-bottom: 0.12rem;
+  border-bottom: 1px solid #071e39;
+  min-height: 1.08rem;
   font-size: 12px;
-}
-
-.wo-sign th,
-.wo-sign td {
-  padding: 0.32rem 0.4rem 0.28rem 0;
-  text-align: left;
-  vertical-align: bottom;
-}
-
-.wo-sign thead th {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
   color: #64748b;
-  border-bottom: 1px solid #071e39;
-}
-
-.wo-sign tbody th {
-  width: 6.4rem;
-  padding-top: 0.38rem;
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: #334155;
-}
-
-.wo-sign-line {
-  border-bottom: 1px solid #071e39;
-  height: 1.55rem;
-  min-width: 6.5rem;
 }
 
 .wo-legal {
   margin: 0.22rem 0 0;
-  font-size: 10px;
-  line-height: 1.35;
+  font-size: 12.5px;
+  line-height: 1.4;
   color: #475569;
 }
 
 .wo-footer {
-  margin-top: 0.38rem;
-  padding-top: 0.26rem;
+  margin-top: 0.32rem;
+  padding-top: 0.35rem;
   border-top: 1px solid #cbd5e1;
-  font-size: 10px;
-  line-height: 1.35;
+  font-size: 12.5px;
+  line-height: 1.4;
   color: #64748b;
 }
 
@@ -384,16 +385,29 @@
 
 @media (max-width: 640px) {
   .wo-header,
-  .wo-brand {
-    flex-direction: column;
+  .wo-brand,
+  .wo-split,
+  .wo-sign,
+  .wo-summary {
+    display: block;
   }
 
   .wo-meta {
     width: 100%;
+    margin-top: 0.7rem;
+    text-align: left;
   }
 
-  .wo-facts {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .wo-summary li + li {
+    margin-top: 0.4rem;
+  }
+
+  .wo-log-when {
+    margin-left: 0;
+  }
+
+  .wo-sign > div + div {
+    margin-top: 0.85rem;
   }
 }
 
@@ -430,22 +444,31 @@
     overflow: visible !important;
   }
 
-  .wo-facts {
+  .wo-summary {
     grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
   }
 
-  .wo-header,
-  .wo-meta,
-  .wo-sign,
-  .wo-footer,
-  tr,
-  img {
-    break-inside: avoid;
-    page-break-inside: avoid;
+  .wo-split {
+    grid-template-columns: 1.15fr 0.85fr !important;
   }
 
-  thead {
-    display: table-header-group;
+  .wo-sign {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .wo-watermark img {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .wo-header,
+  .wo-summary,
+  .wo-sign,
+  .wo-footer,
+  .wo-log li,
+  .wo-notes li {
+    break-inside: avoid;
+    page-break-inside: avoid;
   }
 
   p,
