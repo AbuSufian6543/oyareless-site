@@ -58,6 +58,7 @@ import {
   canAccessOperations,
   canAccessPortalUsers,
   navItemVisible,
+  type StaffAccessCheck,
 } from "@/lib/staff-access";
 import { STAFF_ROLE_RANK, staffRoleLabel } from "@/lib/workdesk/rules";
 
@@ -87,7 +88,7 @@ type NavEntry = {
   Icon: typeof LayoutDashboard;
   /** Minimum role rank required to see the item. */
   minRank?: number;
-  allow?: (user: SessionUser) => boolean;
+  allow?: StaffAccessCheck;
   badge?: number;
 };
 

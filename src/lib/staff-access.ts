@@ -12,6 +12,7 @@ import type { CollectionDefinition } from "@/lib/admin-collections";
 import { roleMeetsMinimum } from "@/lib/workdesk/rules";
 
 export type RoleHolder = { role: Role } | null | undefined;
+export type StaffAccessCheck = (user: NonNullable<RoleHolder>) => boolean;
 
 export function canAccessWorkdesk(user: RoleHolder): boolean {
   return Boolean(user && roleMeetsMinimum(user.role, "EMPLOYEE"));
@@ -80,7 +81,7 @@ export function canDeleteCollection(
 
 export function navItemVisible(
   user: RoleHolder,
-  item: { minRank?: number; allow?: (user: NonNullable<RoleHolder>) => boolean },
+  item: { minRank?: number; allow?: StaffAccessCheck },
   rank: number,
 ): boolean {
   if (!user) return false;
