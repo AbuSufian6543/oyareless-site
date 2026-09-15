@@ -165,6 +165,33 @@ export function minutesByKind(entries: { kind: string; minutes: number }[]): Wor
   });
 }
 
+/** Street, then city/province/postal and country on one line — compact for print. */
+export function compactAddressLines(lines: string[]): string[] {
+  const clean = lines.map((line) => line.trim()).filter(Boolean);
+  if (clean.length <= 2) return clean;
+  return [clean[0], clean.slice(1).join(" · ")];
+}
+
+/**
+ * Ticket work orders use the first customer/staff message as the description.
+ * Skip repeating that same body in Job notes; keep later notes and any files
+ * attached to the opening message.
+ */
+export function notesForPrint(
+  document: Pick<WorkOrderDocumentModel, "kind" | "description" | "notes">,
+): WorkOrderNote[] {
+  if (document.kind !== "ticket" || !document.description) return document.notes;
+  const openingIndex = document.notes.findIndex(
+    (note) => note.visibility !== "internal" && note.body === document.description,
+  );
+  if (openingIndex < 0) return document.notes;
+  return document.notes.flatMap((note, index) => {
+    if (index !== openingIndex) return [note];
+    if (note.attachments.length > 0) return [{ ...note, body: "" }];
+    return [];
+  });
+}
+
 export function ticketNoteMeta(message: {
   isInternal: boolean;
   authorStaffName?: string | null;

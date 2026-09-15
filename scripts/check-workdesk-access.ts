@@ -44,8 +44,10 @@ import { formatDate, formatDateTime } from "../src/lib/utils";
 import { parseDateInput } from "../src/lib/workdesk/dates";
 import {
   companyAddressLines,
+  compactAddressLines,
   formatSiteAddress,
   minutesByKind,
+  notesForPrint,
   publicCompanyWebsite,
   sumMinutes,
   ticketNoteMeta,
@@ -773,6 +775,66 @@ assert(
     "97 White Oak Drive, East|Sault Ste. Marie, ON P6B 4J7|Canada",
 );
 assert(
+  "print address keeps the street, then folds city and country onto one line",
+  compactAddressLines(
+    companyAddressLines({
+      addressLine1: "97 White Oak Drive, East",
+      city: "Sault Ste. Marie",
+      province: "ON",
+      postalCode: "P6B 4J7",
+      country: "Canada",
+    }),
+  ).join("|") ===
+    "97 White Oak Drive, East|Sault Ste. Marie, ON P6B 4J7 · Canada",
+);
+
+const openingNote = {
+  id: "m1",
+  at: "Sep 15, 2026, 9:00 a.m.",
+  author: "Pat",
+  visibility: "customer" as const,
+  visibilityLabel: "Customer",
+  body: "Radio is down at the yard.",
+  attachments: [] as string[],
+};
+const followUpNote = {
+  id: "m2",
+  at: "Sep 15, 2026, 11:00 a.m.",
+  author: "Alex",
+  visibility: "internal" as const,
+  visibilityLabel: "Internal",
+  body: "Antenna swapped. Testing overnight.",
+  attachments: [] as string[],
+};
+assert(
+  "ticket print skips the opening message already used as the description",
+  notesForPrint({
+    kind: "ticket",
+    description: openingNote.body,
+    notes: [openingNote, followUpNote],
+  })
+    .map((note) => note.id)
+    .join("|") === "m2",
+);
+assert(
+  "ticket print keeps opening-message files when the body is already in the description",
+  notesForPrint({
+    kind: "ticket",
+    description: openingNote.body,
+    notes: [{ ...openingNote, attachments: ["yard-photo.jpg"] }, followUpNote],
+  })
+    .map((note) => `${note.id}:${note.body}:${note.attachments.join(",")}`)
+    .join("|") === "m1::yard-photo.jpg|m2:Antenna swapped. Testing overnight.:",
+);
+assert(
+  "task print keeps every note, including one that matches the description",
+  notesForPrint({
+    kind: "task",
+    description: openingNote.body,
+    notes: [openingNote, followUpNote],
+  }).length === 2,
+);
+assert(
   "work order totals add minutes and group by kind",
   sumMinutes([{ minutes: 45 }, { minutes: 90 }]) === 135 &&
     minutesByKind([
@@ -805,12 +867,37 @@ const taskWorkOrderPage = readFileSync(
   path.join(process.cwd(), "src/app/work-orders/task/[id]/page.tsx"),
   "utf8",
 );
+const workOrderCss = readFileSync(
+  path.join(process.cwd(), "src/app/work-orders/work-order.css"),
+  "utf8",
+);
+const workOrderDocument = readFileSync(
+  path.join(process.cwd(), "src/components/workdesk/work-order-document.tsx"),
+  "utf8",
+);
 assert(
   "printable work orders re-check ticket and task access",
   ticketWorkOrderPage.includes("assertTicketAccess") &&
     taskWorkOrderPage.includes("assertTaskAccess") &&
     ticketWorkOrderPage.includes("workdeskStaffOrRedirect") &&
     taskWorkOrderPage.includes("workdeskStaffOrRedirect"),
+);
+assert(
+  "work order print uses a compact letter page and hides the on-screen chrome",
+  workOrderCss.includes("size: letter") &&
+    workOrderCss.includes(".work-order-chrome") &&
+    workOrderCss.includes("display: none") &&
+    !workOrderCss.includes("wo-keep"),
+);
+assert(
+  "work order print keeps unique job fields and a compact sign-off",
+  workOrderDocument.includes("notesForPrint") &&
+    workOrderDocument.includes("Reported issue") &&
+    workOrderDocument.includes("Time and work performed") &&
+    workOrderDocument.includes("Products and materials used") &&
+    workOrderDocument.includes("wo-sign") &&
+    workOrderDocument.includes("Account notes") &&
+    workOrderDocument.includes("Attached files"),
 );
 assert(
   "admin and technician job pages offer a printable work order",
