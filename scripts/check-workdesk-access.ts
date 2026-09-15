@@ -323,6 +323,7 @@ assert(
     shell.includes("canAccessApplications") &&
     shell.includes("canAccessOperations") &&
     shell.includes("canAccessKnowledge") &&
+    shell.includes('href: "/admin/backup"') &&
     shell.includes("STAFF_ROLE_RANK.SUPERADMIN"),
 );
 

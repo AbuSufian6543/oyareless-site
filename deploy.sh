@@ -328,6 +328,7 @@ SMTP_TO=service@wirelesscom.ca
 # --- Uploads ---------------------------------------------------------------
 UPLOAD_DIR=/app/public/uploads
 MAX_UPLOAD_MB=25
+BACKUP_DIR=/app/backups
 EOF
   umask 022
   as_root chmod 600 "$ENV_FILE" 2>/dev/null || chmod 600 "$ENV_FILE"

@@ -5,6 +5,10 @@
 #   migrate  one-shot: applies migrations and seeds, then exits
 #   app      the Next.js server, published on 127.0.0.1:${APP_PORT}
 #
+# Site snapshots (admin Backup page and backup.sh) live on the `backups`
+# volume, separate from `db-data`, so deleting the database volume does not
+# also delete the last snapshot.
+#
 # The app is bound to loopback because the host's nginx terminates TLS and
 # proxies to it. Set APP_BIND=0.0.0.0 in .env to expose it directly instead.
 # ---------------------------------------------------------------------------
@@ -56,6 +60,7 @@ services:
       - "${APP_BIND:-127.0.0.1}:${APP_PORT:-3000}:3000"
     volumes:
       - uploads:/app/public/uploads
+      - backups:/app/backups
     depends_on:
       db:
         condition: service_healthy
@@ -70,3 +75,4 @@ services:
 volumes:
   db-data:
   uploads:
+  backups:

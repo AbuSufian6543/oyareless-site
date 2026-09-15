@@ -4,10 +4,11 @@
 #
 #   ./backup.sh                 write to ./backups
 #   ./backup.sh /mnt/backups    write somewhere else
+#   ./backup.sh --restore ./backups/wirelesscom-backup-20260915-150405.tar.gz
 #   ./backup.sh --restore ./backups/wirelesscom-20260826-101500
 #
-# Produces a compressed SQL dump of the database plus a tarball of uploaded
-# media. Add to root's crontab for nightly runs, e.g.
+# Writes a .tar.gz that matches Admin → Backup (database + uploads) plus a
+# folder with env.backup for machine rebuilds. Nightly cron example:
 #   15 2 * * * /opt/wirelesscom/backup.sh /mnt/backups >> /var/log/wc-backup.log 2>&1
 # ===========================================================================
 
@@ -22,7 +23,7 @@ KEEP_DAYS="30"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --restore) RESTORE_FROM="${2:?--restore needs a directory}"; shift 2 ;;
+    --restore) RESTORE_FROM="${2:?--restore needs a file or directory}"; shift 2 ;;
     --keep)    KEEP_DAYS="${2:?--keep needs a number of days}"; shift 2 ;;
     -h|--help)
       cat <<'EOF'
@@ -31,9 +32,10 @@ WirelessCom.Ca Inc. — backup
   ./backup.sh                 write to ./backups
   ./backup.sh /mnt/backups    write somewhere else
   ./backup.sh --keep 14       prune backups older than 14 days (default 30)
-  ./backup.sh --restore ./backups/wirelesscom-20260826-101500
+  ./backup.sh --restore FILE_OR_DIR
 
-Produces a gzipped SQL dump of the database plus a tarball of uploaded media.
+FILE_OR_DIR can be a wirelesscom-backup-*.tar.gz from the admin Backup page,
+or a folder that contains database.sql.gz.
 EOF
       exit 0 ;;
     *)         DEST="$1"; shift ;;
@@ -50,29 +52,37 @@ set -a; . ./.env; set +a
 
 DB_USER="${POSTGRES_USER:-wirelesscom}"
 DB_NAME="${POSTGRES_DB:-wirelesscom}"
+CLEANUP_DIR=""
 
 # --- Restore ---------------------------------------------------------------
 if [[ -n "$RESTORE_FROM" ]]; then
+  if [[ -f "$RESTORE_FROM" ]]; then
+    CLEANUP_DIR="$(mktemp -d)"
+    tar xzf "$RESTORE_FROM" -C "$CLEANUP_DIR"
+    RESTORE_FROM="$CLEANUP_DIR"
+  fi
+
   dump="$RESTORE_FROM/database.sql.gz"
   [[ -f "$dump" ]] || { echo "No database.sql.gz in $RESTORE_FROM" >&2; exit 1; }
 
   echo "This will REPLACE the current database with $dump."
-  read -r -p "Type 'restore' to continue: " reply
-  [[ "$reply" == "restore" ]] || { echo "Aborted."; exit 1; }
+  read -r -p "Type 'RESTORE' to continue: " reply
+  [[ "$reply" == "RESTORE" ]] || { echo "Aborted."; exit 1; }
 
   compose up -d db
   sleep 5
-  gunzip -c "$dump" | compose exec -T db psql -U "$DB_USER" -d postgres \
+  gunzip -c "$dump" | compose exec -T db psql -U "$DB_USER" -d "$DB_NAME" \
     -v ON_ERROR_STOP=1 -q
 
   if [[ -f "$RESTORE_FROM/uploads.tar.gz" ]]; then
     echo "Restoring uploaded media..."
     compose run --rm --no-deps -T -v "$RESTORE_FROM:/restore:ro" \
-      app sh -c 'tar xzf /restore/uploads.tar.gz -C /' || \
+      app sh -c 'mkdir -p /app/public/uploads && find /app/public/uploads -mindepth 1 -delete && tar xzf /restore/uploads.tar.gz -C /app/public/uploads' || \
       echo "Could not restore uploads automatically; extract uploads.tar.gz into the volume manually."
   fi
 
   compose up -d
+  [[ -n "$CLEANUP_DIR" ]] && rm -rf "$CLEANUP_DIR"
   echo "Restore complete."
   exit 0
 fi
@@ -85,25 +95,38 @@ mkdir -p "$out"
 echo "Backing up to $out"
 
 # --clean --if-exists so the dump can be replayed over an existing database.
-compose exec -T db pg_dump -U "$DB_USER" -d "$DB_NAME" --clean --if-exists \
+compose exec -T db pg_dump -U "$DB_USER" -d "$DB_NAME" --no-owner --no-acl --clean --if-exists \
   | gzip -9 > "$out/database.sql.gz"
 echo "  database.sql.gz  $(du -h "$out/database.sql.gz" | cut -f1)"
 
-# Uploaded media lives in a named volume, so read it through a throwaway
-# container that has the volume mounted.
 compose run --rm --no-deps -T -v "$out:/backup" app \
-  sh -c 'tar czf /backup/uploads.tar.gz -C / app/public/uploads' 2>/dev/null \
+  sh -c 'mkdir -p /app/public/uploads && tar czf /backup/uploads.tar.gz -C /app/public/uploads .' 2>/dev/null \
   || echo "  (no uploads to archive yet)"
 [[ -f "$out/uploads.tar.gz" ]] && \
   echo "  uploads.tar.gz   $(du -h "$out/uploads.tar.gz" | cut -f1)"
 
+created_at="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+cat > "$out/manifest.json" <<EOF
+{
+  "format": "wirelesscom.site-backup",
+  "version": 1,
+  "createdAt": "${created_at}"
+}
+EOF
+
+bundle="$DEST/wirelesscom-backup-${stamp}.tar.gz"
+tar czf "$bundle" -C "$out" manifest.json database.sql.gz uploads.tar.gz
+echo "  $(basename "$bundle")  $(du -h "$bundle" | cut -f1)"
+
 cp .env "$out/env.backup"
 chmod 600 "$out/env.backup"
-echo "  env.backup       (contains secrets — keep this private)"
+echo "  env.backup       (contains secrets — keep this private; not inside the .tar.gz)"
 
 if [[ "$KEEP_DAYS" -gt 0 ]]; then
   find "$DEST" -maxdepth 1 -type d -name 'wirelesscom-*' -mtime "+$KEEP_DAYS" \
     -exec rm -rf {} + 2>/dev/null || true
+  find "$DEST" -maxdepth 1 -type f -name 'wirelesscom-backup-*.tar.gz' -mtime "+$KEEP_DAYS" \
+    -delete 2>/dev/null || true
   echo "Pruned backups older than $KEEP_DAYS days."
 fi
 

@@ -86,6 +86,14 @@ export const env = {
       return int("MAX_UPLOAD_MB", 25) * 1024 * 1024;
     },
   },
+  backups: {
+    get dir() {
+      return optional("BACKUP_DIR", "./backups");
+    },
+  },
+  get databaseUrl() {
+    return required("DATABASE_URL");
+  },
   superadmin: {
     get email() {
       return optional("SUPERADMIN_EMAIL", "abu@wirelesscom.ca").toLowerCase();

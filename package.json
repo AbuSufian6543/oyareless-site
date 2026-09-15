@@ -16,6 +16,7 @@
     "check:public-url": "tsx scripts/check-public-url.ts",
     "check:speedtest": "tsx scripts/check-speedtest.ts",
     "check:security": "tsx scripts/check-security.ts",
+    "check:backup": "tsx scripts/check-backup.ts",
     "check:smoke": "node scripts/smoke-admin.mjs",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",

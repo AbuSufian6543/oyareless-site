@@ -56,13 +56,23 @@ ENV NODE_ENV=production \
 RUN groupadd --system --gid 1001 nodejs \
   && useradd --system --uid 1001 --gid nodejs nextjs
 
+# pg_dump / psql must match the Postgres 17 server in docker-compose.
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends curl gnupg \
+  && curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor -o /usr/share/keyrings/pgdg.gpg \
+  && echo "deb [signed-by=/usr/share/keyrings/pgdg.gpg] http://apt.postgresql.org/pub/repos/apt bookworm-pgdg main" > /etc/apt/sources.list.d/pgdg.list \
+  && apt-get update \
+  && apt-get install -y --no-install-recommends postgresql-client-17 \
+  && rm -rf /var/lib/apt/lists/*
+
 # Standalone output bundles only the modules the server actually imports.
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
-# Uploaded media lives on a volume mounted here.
-RUN mkdir -p /app/public/uploads && chown -R nextjs:nodejs /app/public/uploads
+# Uploaded media lives on a volume mounted here. Site snapshots live on a
+# separate volume so wiping the database volume does not also delete backups.
+RUN mkdir -p /app/public/uploads /app/backups && chown -R nextjs:nodejs /app/public/uploads /app/backups
 
 USER nextjs
 EXPOSE 3000

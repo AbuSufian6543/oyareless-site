@@ -74,6 +74,8 @@ export type AuditAction =
   | "task.time_removed"
   | "task.product_used"
   | "task.product_removed"
+  | "backup.downloaded"
+  | "backup.restored"
   | "product.created"
   | "product.updated";
 

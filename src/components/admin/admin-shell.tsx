@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { Suspense, useState } from "react";
 import {
   Activity,
+  Archive,
   Bell,
   BookOpen,
   Boxes,
@@ -218,6 +219,7 @@ export function AdminShell({
         { href: "/admin/redirects", label: "Redirects", Icon: ExternalLink, allow: canAccessConfiguration },
         { href: "/admin/settings", label: "Site Settings", Icon: Settings, allow: canAccessConfiguration },
         { href: "/admin/users", label: "Users & Access", Icon: Users, minRank: STAFF_ROLE_RANK.SUPERADMIN },
+        { href: "/admin/backup", label: "Backup", Icon: Archive, minRank: STAFF_ROLE_RANK.SUPERADMIN },
         { href: "/admin/audit", label: "Audit Log", Icon: ShieldAlert, minRank: STAFF_ROLE_RANK.SUPERADMIN },
       ],
     },

@@ -32,6 +32,7 @@ const ALL_GROUPS = [
   { value: "settings.", label: "Settings" },
   { value: "ticket.", label: "Tickets" },
   { value: "task.", label: "Tasks" },
+  { value: "backup.", label: "Backups" },
 ] as const;
 
 const WORKDESK_GROUPS = [
