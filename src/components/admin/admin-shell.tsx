@@ -48,6 +48,17 @@ import {
 } from "@/lib/admin-collections";
 import type { SessionUser } from "@/lib/auth";
 import { cn } from "@/lib/utils";
+import {
+  canAccessApplications,
+  canAccessCatalogue,
+  canAccessConfiguration,
+  canAccessContent,
+  canAccessEnquiries,
+  canAccessKnowledge,
+  canAccessOperations,
+  canAccessPortalUsers,
+  navItemVisible,
+} from "@/lib/staff-access";
 import { STAFF_ROLE_RANK, staffRoleLabel } from "@/lib/workdesk/rules";
 
 /**
@@ -76,16 +87,23 @@ type NavEntry = {
   Icon: typeof LayoutDashboard;
   /** Minimum role rank required to see the item. */
   minRank?: number;
+  allow?: (user: SessionUser) => boolean;
   badge?: number;
 };
 
-function collectionEntries(group: CollectionGroup): NavEntry[] {
-  return collectionsInGroup(group).map((collection) => ({
-    href: `/admin/collections/${collection.key}`,
-    label: collection.plural,
-    Icon: COLLECTION_ICONS[collection.icon] ?? FileText,
-    minRank: STAFF_ROLE_RANK[collection.writeRole],
-  }));
+function collectionEntries(group: CollectionGroup, user: SessionUser): NavEntry[] {
+  return collectionsInGroup(group)
+    .filter((collection) => {
+      if (group === "Catalogue") return canAccessCatalogue(user);
+      if (group === "Knowledge") return canAccessKnowledge(user);
+      if (group === "Operations") return canAccessOperations(user);
+      return true;
+    })
+    .map((collection) => ({
+      href: `/admin/collections/${collection.key}`,
+      label: collection.plural,
+      Icon: COLLECTION_ICONS[collection.icon] ?? FileText,
+    }));
 }
 
 export function AdminShell({
@@ -143,21 +161,21 @@ export function AdminShell({
     {
       title: "Content",
       items: [
-        { href: "/admin/pages", label: "Pages", Icon: FileText, minRank: STAFF_ROLE_RANK.EDITOR },
-        { href: "/admin/streams", label: "Live Streams", Icon: Radio, minRank: STAFF_ROLE_RANK.EDITOR },
-        { href: "/admin/posts", label: "News & Blog", Icon: Newspaper, minRank: STAFF_ROLE_RANK.EDITOR },
-        { href: "/admin/jobs", label: "Careers", Icon: Briefcase, minRank: STAFF_ROLE_RANK.EDITOR },
-        { href: "/admin/testimonials", label: "Testimonials", Icon: Quote, minRank: STAFF_ROLE_RANK.EDITOR },
-        { href: "/admin/media", label: "Media Library", Icon: ImageIcon, minRank: STAFF_ROLE_RANK.EDITOR },
+        { href: "/admin/pages", label: "Pages", Icon: FileText, allow: canAccessContent },
+        { href: "/admin/streams", label: "Live Streams", Icon: Radio, allow: canAccessContent },
+        { href: "/admin/posts", label: "News & Blog", Icon: Newspaper, allow: canAccessContent },
+        { href: "/admin/jobs", label: "Careers", Icon: Briefcase, allow: canAccessContent },
+        { href: "/admin/testimonials", label: "Testimonials", Icon: Quote, allow: canAccessContent },
+        { href: "/admin/media", label: "Media Library", Icon: ImageIcon, allow: canAccessContent },
       ],
     },
     {
       title: "Catalogue",
-      items: collectionEntries("Catalogue"),
+      items: collectionEntries("Catalogue", user),
     },
     {
       title: "Knowledge",
-      items: collectionEntries("Knowledge"),
+      items: collectionEntries("Knowledge", user),
     },
     {
       title: "Enquiries",
@@ -167,37 +185,37 @@ export function AdminShell({
           label: "Inbox",
           Icon: Inbox,
           badge: newSubmissions,
-          minRank: STAFF_ROLE_RANK.EDITOR,
+          allow: canAccessEnquiries,
         },
-        { href: "/admin/subscribers", label: "Subscribers", Icon: Users, minRank: STAFF_ROLE_RANK.EDITOR },
-        { href: "/admin/quotes", label: "Quotes", Icon: FileText, badge: newQuotes, minRank: STAFF_ROLE_RANK.EDITOR },
+        { href: "/admin/subscribers", label: "Subscribers", Icon: Users, allow: canAccessEnquiries },
+        { href: "/admin/quotes", label: "Quotes", Icon: FileText, badge: newQuotes, allow: canAccessEnquiries },
         {
           href: "/admin/applications",
           label: "Applications",
           Icon: ClipboardList,
           badge: newApplications,
-          minRank: STAFF_ROLE_RANK.EDITOR,
+          allow: canAccessApplications,
         },
-        { href: "/admin/portal-users", label: "Portal users", Icon: Building2, minRank: STAFF_ROLE_RANK.ADMIN },
+        { href: "/admin/portal-users", label: "Portal users", Icon: Building2, allow: canAccessPortalUsers },
       ],
     },
     {
       title: "Operations",
-      items: collectionEntries("Operations"),
+      items: collectionEntries("Operations", user),
     },
     {
       title: "Configuration",
       items: [
-        { href: "/admin/navigation", label: "Navigation", Icon: Link2, minRank: STAFF_ROLE_RANK.ADMIN },
-        { href: "/admin/branding", label: "Branding & Theme", Icon: Palette, minRank: STAFF_ROLE_RANK.ADMIN },
+        { href: "/admin/navigation", label: "Navigation", Icon: Link2, allow: canAccessConfiguration },
+        { href: "/admin/branding", label: "Branding & Theme", Icon: Palette, allow: canAccessConfiguration },
         {
           href: "/admin/remote-support",
           label: "Remote Support",
           Icon: Headset,
-          minRank: STAFF_ROLE_RANK.ADMIN,
+          allow: canAccessConfiguration,
         },
-        { href: "/admin/redirects", label: "Redirects", Icon: ExternalLink, minRank: STAFF_ROLE_RANK.ADMIN },
-        { href: "/admin/settings", label: "Site Settings", Icon: Settings, minRank: STAFF_ROLE_RANK.ADMIN },
+        { href: "/admin/redirects", label: "Redirects", Icon: ExternalLink, allow: canAccessConfiguration },
+        { href: "/admin/settings", label: "Site Settings", Icon: Settings, allow: canAccessConfiguration },
         { href: "/admin/users", label: "Users & Access", Icon: Users, minRank: STAFF_ROLE_RANK.SUPERADMIN },
         { href: "/admin/audit", label: "Audit Log", Icon: ShieldAlert, minRank: STAFF_ROLE_RANK.SUPERADMIN },
       ],
@@ -234,8 +252,8 @@ export function AdminShell({
 
       <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="Admin">
         {groups.map((group) => {
-          const visible = group.items.filter(
-            (item) => !item.minRank || rank >= item.minRank,
+          const visible = group.items.filter((item) =>
+            navItemVisible(user, item, rank),
           );
           if (visible.length === 0) return null;
 

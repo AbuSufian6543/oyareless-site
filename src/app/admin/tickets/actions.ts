@@ -3,12 +3,13 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { requireRole } from "@/lib/auth";
+import { requireAllowed } from "@/lib/auth";
 import { hashToken, randomToken } from "@/lib/crypto";
 import { sendMail } from "@/lib/mail";
 import { hashPassword } from "@/lib/passwords";
 import { prisma } from "@/lib/prisma";
 import { publicUrl } from "@/lib/public-url";
+import { canAccessPortalUsers } from "@/lib/staff-access";
 import type { TicketPriority, TicketStatus } from "@/generated/prisma/client";
 import { saveWorkdeskUploads } from "@/lib/workdesk/attachments";
 import { workdeskAdminOrRedirect } from "@/lib/workdesk/access";
@@ -29,7 +30,7 @@ import {
 } from "@/lib/workdesk/staff";
 
 export async function invitePortalUserAction(formData: FormData): Promise<void> {
-  await requireRole("ADMIN");
+  await requireAllowed(canAccessPortalUsers);
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const name = String(formData.get("name") ?? "").trim();
   const customerId = String(formData.get("customerId") ?? "");

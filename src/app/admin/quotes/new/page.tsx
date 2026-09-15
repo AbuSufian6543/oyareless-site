@@ -1,8 +1,9 @@
 import { saveQuoteAction } from "@/app/admin/quotes/actions";
 import { QuoteForm } from "@/components/admin/quote-form";
 import { Alert, PageHeader } from "@/components/admin/ui";
-import { requireAdminRole } from "@/lib/admin-guard";
+import { requireStaffAccess } from "@/lib/admin-guard";
 import { prisma } from "@/lib/prisma";
+import { canAccessEnquiries } from "@/lib/staff-access";
 
 export const metadata = { title: "New quote" };
 
@@ -11,7 +12,7 @@ export default async function NewQuotePage({
 }: {
   searchParams: Promise<{ error?: string }>;
 }) {
-  await requireAdminRole("EDITOR");
+  await requireStaffAccess(canAccessEnquiries);
   const params = await searchParams;
 
   const customers = await prisma.customer.findMany({

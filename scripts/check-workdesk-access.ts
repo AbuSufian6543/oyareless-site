@@ -12,6 +12,17 @@ import {
   workdeskAdminMaySetTicketStatus,
 } from "../src/lib/workdesk/rules";
 import {
+  canAccessApplications,
+  canAccessCatalogue,
+  canAccessConfiguration,
+  canAccessContent,
+  canAccessEnquiries,
+  canAccessKnowledge,
+  canAccessOperations,
+  canAccessPortalUsers,
+  canAccessWorkdesk,
+} from "../src/lib/staff-access";
+import {
   accessGrantNotice,
   assignmentNotice,
   joinStaffNames,
@@ -52,19 +63,37 @@ function assert(label: string, ok: boolean) {
 }
 
 assert(
-  "technician cannot satisfy VIEWER, EMPLOYEE, EDITOR, ADMIN, or SUPERADMIN checks",
+  "technician cannot satisfy VIEWER, EMPLOYEE, MANAGER, EDITOR, ADMIN, or SUPERADMIN checks",
   !roleMeetsMinimum("TECHNICIAN", "VIEWER") &&
     !roleMeetsMinimum("TECHNICIAN", "EMPLOYEE") &&
+    !roleMeetsMinimum("TECHNICIAN", "MANAGER") &&
     !roleMeetsMinimum("TECHNICIAN", "EDITOR") &&
     !roleMeetsMinimum("TECHNICIAN", "ADMIN") &&
     !roleMeetsMinimum("TECHNICIAN", "SUPERADMIN"),
 );
 assert("viewer cannot satisfy EMPLOYEE", !roleMeetsMinimum("VIEWER", "EMPLOYEE"));
 assert("employee qualifies for workdesk admin", roleMeetsMinimum("EMPLOYEE", "EMPLOYEE"));
+assert("employee cannot satisfy MANAGER", !roleMeetsMinimum("EMPLOYEE", "MANAGER"));
 assert("employee cannot satisfy EDITOR", !roleMeetsMinimum("EMPLOYEE", "EDITOR"));
+assert("manager qualifies as employee", roleMeetsMinimum("MANAGER", "EMPLOYEE"));
+assert("manager cannot satisfy EDITOR", !roleMeetsMinimum("MANAGER", "EDITOR"));
+assert("manager cannot satisfy ADMIN", !roleMeetsMinimum("MANAGER", "ADMIN"));
 assert("editor still qualifies as employee", roleMeetsMinimum("EDITOR", "EMPLOYEE"));
 assert("editor still qualifies as editor", roleMeetsMinimum("EDITOR", "EDITOR"));
 assert("admin still qualifies as editor", roleMeetsMinimum("ADMIN", "EDITOR"));
+
+const manager = { role: "MANAGER" as const };
+assert("manager has workdesk", canAccessWorkdesk(manager));
+assert("manager has knowledge", canAccessKnowledge(manager));
+assert("manager has enquiries", canAccessEnquiries(manager));
+assert("manager has operations", canAccessOperations(manager));
+assert("manager has portal users", canAccessPortalUsers(manager));
+assert("manager does not have applications", !canAccessApplications(manager));
+assert("manager does not have CMS content", !canAccessContent(manager));
+assert("manager does not have catalogue", !canAccessCatalogue(manager));
+assert("manager does not have configuration", !canAccessConfiguration(manager));
+assert("editor does not inherit operations", !canAccessOperations({ role: "EDITOR" }));
+assert("employee does not inherit enquiries", !canAccessEnquiries({ role: "EMPLOYEE" }));
 
 const assigned = {
   userId: "tech-1",
@@ -263,6 +292,11 @@ const roleStart = schema.indexOf("enum Role");
 const roleEnd = schema.indexOf("}", roleStart);
 const roleEnum = schema.slice(roleStart, roleEnd === -1 ? undefined : roleEnd);
 assert("schema Role enum includes EMPLOYEE", roleEnum.includes("EMPLOYEE"));
+assert("schema Role enum includes MANAGER", roleEnum.includes("MANAGER"));
+assert(
+  "internal tasks can link to one inbox or quote item",
+  schema.includes("enquiryKind") && schema.includes("enquiryId"),
+);
 
 const access = readFileSync(path.join(process.cwd(), "src/lib/workdesk/access.ts"), "utf8");
 assert(
@@ -284,10 +318,34 @@ const shell = readFileSync(
   "utf8",
 );
 assert(
-  "CMS and enquiry nav require EDITOR; configuration stays ADMIN+",
-  shell.includes("STAFF_ROLE_RANK.EDITOR") &&
-    shell.includes("STAFF_ROLE_RANK.ADMIN") &&
+  "manager nav uses capability checks; users stay SUPERADMIN",
+  shell.includes("canAccessEnquiries") &&
+    shell.includes("canAccessApplications") &&
+    shell.includes("canAccessOperations") &&
+    shell.includes("canAccessKnowledge") &&
     shell.includes("STAFF_ROLE_RANK.SUPERADMIN"),
+);
+
+const enquiryTask = readFileSync(
+  path.join(process.cwd(), "src/lib/workdesk/enquiry-task.ts"),
+  "utf8",
+);
+assert(
+  "inbox and quotes open workdesk tasks with assignable staff",
+  enquiryTask.includes("createOrOpenEnquiryTask") &&
+    enquiryTask.includes('kind: "task"') &&
+    enquiryTask.includes("enquiryKind"),
+);
+
+const assigneeUi = readFileSync(
+  path.join(process.cwd(), "src/components/workdesk/assignee-checklist.tsx"),
+  "utf8",
+);
+assert(
+  "assignment UI lists office staff including managers",
+  assigneeUi.includes("OFFICE_ASSIGNABLE_ROLES") &&
+    assigneeUi.includes("managers") &&
+    assigneeUi.includes("employees"),
 );
 
 assert("joinStaffNames uses and-lists", joinStaffNames(["Sarah Chen"]) === "Sarah Chen");

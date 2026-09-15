@@ -11,8 +11,9 @@ import {
   findRecord,
   validateRecord,
 } from "@/lib/admin-collections.server";
-import { requireRole } from "@/lib/auth";
+import { requireAllowed } from "@/lib/auth";
 import { setFlash } from "@/lib/flash";
+import { canDeleteCollection, canWriteCollection } from "@/lib/staff-access";
 
 export type SaveResult =
   | { ok: true; id: string }
@@ -32,7 +33,7 @@ export async function saveCollectionRecordAction(
   const collection = getCollection(collectionKey);
   if (!collection) return { ok: false, error: "Unknown collection." };
 
-  const user = await requireRole(collection.writeRole);
+  const user = await requireAllowed((staff) => canWriteCollection(staff, collection));
 
   const validated = await validateRecord(collection, values);
   if (!validated.ok) return { ok: false, error: validated.error };
@@ -83,7 +84,7 @@ export async function deleteCollectionRecordAction(
   if (!collection || !id) redirect("/admin");
 
   // Deletion is always an admin action, even where editors may create.
-  const user = await requireRole("ADMIN");
+  const user = await requireAllowed((staff) => canDeleteCollection(staff, collection));
 
   const existing = await findRecord(collection, id);
   const title = existing

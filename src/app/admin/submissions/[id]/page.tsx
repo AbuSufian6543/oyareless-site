@@ -1,7 +1,11 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { Mail, Phone } from "lucide-react";
 
-import { updateSubmissionAction } from "@/app/admin/submissions/actions";
+import {
+  createTaskFromSubmissionAction,
+  updateSubmissionAction,
+} from "@/app/admin/submissions/actions";
 import {
   Alert,
   Badge,
@@ -11,9 +15,13 @@ import {
   SelectField,
   TextAreaField,
 } from "@/components/admin/ui";
-import { requireAdminRole } from "@/lib/admin-guard";
+import { AssigneeChecklist } from "@/components/workdesk/assignee-checklist";
+import { requireStaffAccess } from "@/lib/admin-guard";
 import { prisma } from "@/lib/prisma";
+import { canAccessEnquiries } from "@/lib/staff-access";
 import { formatDateTime, telHref } from "@/lib/utils";
+import { findEnquiryTask } from "@/lib/workdesk/enquiry-task";
+import { listAssignableStaff } from "@/lib/workdesk/staff";
 
 export const metadata = { title: "Message" };
 
@@ -24,20 +32,17 @@ export default async function SubmissionDetailPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ saved?: string }>;
 }) {
-  await requireAdminRole("EDITOR");
+  await requireStaffAccess(canAccessEnquiries);
   const { id } = await params;
   const query = await searchParams;
 
-  const [submission, staff] = await Promise.all([
+  const [submission, staff, linkedTask] = await Promise.all([
     prisma.formSubmission.findUnique({
       where: { id },
       include: { assignedTo: { select: { id: true, name: true } } },
     }),
-    prisma.user.findMany({
-      where: { isActive: true, role: { in: ["SUPERADMIN", "ADMIN", "EDITOR"] } },
-      orderBy: { name: "asc" },
-      select: { id: true, name: true },
-    }),
+    listAssignableStaff(),
+    findEnquiryTask("submission", id),
   ]);
 
   if (!submission) notFound();
@@ -103,6 +108,38 @@ export default async function SubmissionDetailPage({
           )}
 
           <Card>
+            <CardTitle description="Work is assigned through Tasks so managers and employees can be included — not only editors and admins.">
+              Task
+            </CardTitle>
+            {linkedTask ? (
+              <p className="text-sm text-slate-700">
+                Opened as{" "}
+                <Link
+                  href={`/admin/tasks/${linkedTask.id}`}
+                  className="font-semibold text-brand-700 hover:underline"
+                >
+                  {linkedTask.reference}
+                </Link>
+                {linkedTask.assignees.length > 0
+                  ? ` · assigned to ${linkedTask.assignees.map((row) => row.user.name).join(", ")}`
+                  : " · unassigned"}
+                . Reassign from the task.
+              </p>
+            ) : (
+              <form action={createTaskFromSubmissionAction} className="space-y-4">
+                <input type="hidden" name="id" value={submission.id} />
+                <AssigneeChecklist staff={staff} legend="Assign staff" />
+                <button
+                  type="submit"
+                  className="rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700"
+                >
+                  Create task and email assigned staff
+                </button>
+              </form>
+            )}
+          </Card>
+
+          <Card>
             <CardTitle description="Only visible to staff.">
               Triage
             </CardTitle>
@@ -110,32 +147,18 @@ export default async function SubmissionDetailPage({
             <form action={updateSubmissionAction} className="space-y-4">
               <input type="hidden" name="id" value={submission.id} />
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <SelectField
-                  label="Status"
-                  name="status"
-                  defaultValue={submission.status}
-                  options={[
-                    { value: "NEW", label: "New" },
-                    { value: "IN_PROGRESS", label: "In progress" },
-                    { value: "RESOLVED", label: "Resolved" },
-                    { value: "ARCHIVED", label: "Archived" },
-                    { value: "SPAM", label: "Spam" },
-                  ]}
-                />
-                <SelectField
-                  label="Assigned to"
-                  name="assignedToId"
-                  defaultValue={submission.assignedToId ?? ""}
-                  options={[
-                    { value: "", label: "Unassigned" },
-                    ...staff.map((member) => ({
-                      value: member.id,
-                      label: member.name,
-                    })),
-                  ]}
-                />
-              </div>
+              <SelectField
+                label="Status"
+                name="status"
+                defaultValue={submission.status}
+                options={[
+                  { value: "NEW", label: "New" },
+                  { value: "IN_PROGRESS", label: "In progress" },
+                  { value: "RESOLVED", label: "Resolved" },
+                  { value: "ARCHIVED", label: "Archived" },
+                  { value: "SPAM", label: "Spam" },
+                ]}
+              />
 
               <TextAreaField
                 label="Internal notes"

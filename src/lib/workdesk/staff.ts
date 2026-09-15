@@ -1,12 +1,21 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
+import { STAFF_ROLE_RANK } from "@/lib/workdesk/rules";
+
+const ROLE_SORT = STAFF_ROLE_RANK;
 
 export async function listAssignableStaff() {
-  return prisma.user.findMany({
+  const rows = await prisma.user.findMany({
     where: { isActive: true, role: { not: "VIEWER" } },
     select: { id: true, name: true, email: true, role: true },
-    orderBy: [{ name: "asc" }],
+  });
+  return rows.sort((left, right) => {
+    const rank =
+      (ROLE_SORT[right.role as keyof typeof ROLE_SORT] ?? 0) -
+      (ROLE_SORT[left.role as keyof typeof ROLE_SORT] ?? 0);
+    if (rank !== 0) return rank;
+    return left.name.localeCompare(right.name);
   });
 }
 

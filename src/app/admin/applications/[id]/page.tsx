@@ -16,7 +16,7 @@ import {
   SelectField,
   TextAreaField,
 } from "@/components/admin/ui";
-import { requireAdminRole } from "@/lib/admin-guard";
+import { requireStaffAccess } from "@/lib/admin-guard";
 import { getCurrentUser, hasRole } from "@/lib/auth";
 import {
   jobApplicationStatusLabel,
@@ -24,6 +24,7 @@ import {
   JOB_APPLICATION_STATUSES,
 } from "@/lib/careers";
 import { prisma } from "@/lib/prisma";
+import { canAccessApplications } from "@/lib/staff-access";
 import { formatBytes, formatDateTime, telHref } from "@/lib/utils";
 
 export const metadata = { title: "Application" };
@@ -35,7 +36,7 @@ export default async function ApplicationDetailPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ saved?: string }>;
 }) {
-  await requireAdminRole("EDITOR");
+  await requireStaffAccess(canAccessApplications);
   const { id } = await params;
   const query = await searchParams;
   const [user, application] = await Promise.all([

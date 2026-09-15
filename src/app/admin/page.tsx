@@ -19,9 +19,14 @@ import {
 import { Alert, Badge, Card, CardTitle, EmptyState } from "@/components/admin/ui";
 import { WorkItem, WorkList, WorkSection, WorkStatLink } from "@/components/workdesk/work-item";
 import { env } from "@/lib/env";
-import { getCurrentUser, hasRole } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth";
 import { getResolvedMail } from "@/lib/mail-settings";
 import { prisma } from "@/lib/prisma";
+import {
+  canAccessApplications,
+  canAccessContent,
+  canAccessEnquiries,
+} from "@/lib/staff-access";
 import { formatDate, formatDateTime } from "@/lib/utils";
 import { zonedHour } from "@/lib/timezone";
 import { workdeskHref } from "@/lib/workdesk/access";
@@ -59,7 +64,9 @@ export default async function AdminDashboard({
   const user = await getCurrentUser();
   if (!user) return null;
   const params = await searchParams;
-  const canSeeCms = hasRole(user, "EDITOR");
+  const canSeeCms = canAccessContent(user);
+  const canSeeEnquiries = canAccessEnquiries(user);
+  const canSeeApplications = canAccessApplications(user);
   const today = startOfToday();
   const tomorrow = startOfTomorrow();
   const myId = user.id;
@@ -169,11 +176,11 @@ export default async function AdminDashboard({
     canSeeCms ? prisma.stream.count({ where: { status: "PUBLISHED" } }).catch(() => 0) : Promise.resolve(0),
     canSeeCms ? prisma.post.count({ where: { status: "PUBLISHED" } }).catch(() => 0) : Promise.resolve(0),
     canSeeCms ? prisma.jobPosting.count({ where: { status: "PUBLISHED" } }).catch(() => 0) : Promise.resolve(0),
-    canSeeCms ? prisma.formSubmission.count({ where: { status: "NEW" } }).catch(() => 0) : Promise.resolve(0),
-    canSeeCms ? prisma.quoteRequest.count({ where: { status: "NEW" } }).catch(() => 0) : Promise.resolve(0),
-    canSeeCms ? prisma.jobApplication.count({ where: { status: "NEW" } }).catch(() => 0) : Promise.resolve(0),
-    canSeeCms ? prisma.subscriber.count({ where: { status: "CONFIRMED" } }).catch(() => 0) : Promise.resolve(0),
-    canSeeCms
+    canSeeEnquiries ? prisma.formSubmission.count({ where: { status: "NEW" } }).catch(() => 0) : Promise.resolve(0),
+    canSeeEnquiries ? prisma.quoteRequest.count({ where: { status: "NEW" } }).catch(() => 0) : Promise.resolve(0),
+    canSeeApplications ? prisma.jobApplication.count({ where: { status: "NEW" } }).catch(() => 0) : Promise.resolve(0),
+    canSeeEnquiries ? prisma.subscriber.count({ where: { status: "CONFIRMED" } }).catch(() => 0) : Promise.resolve(0),
+    canSeeEnquiries
       ? prisma.formSubmission
           .findMany({ orderBy: { createdAt: "desc" }, take: 5 })
           .catch(() => [])
@@ -263,19 +270,29 @@ export default async function AdminDashboard({
   ];
 
   const siteStats = [
-    {
-      label: "Pages",
-      value: publishedPages,
-      hint: draftPages > 0 ? `${draftPages} draft${draftPages === 1 ? "" : "s"}` : undefined,
-      href: "/admin/pages",
-      Icon: FileText,
-    },
-    { label: "Streams", value: streams, href: "/admin/streams", Icon: Radio },
-    { label: "News", value: posts, href: "/admin/posts", Icon: Newspaper },
-    { label: "Jobs", value: jobs, href: "/admin/jobs", Icon: Briefcase },
-    { label: "New inquiries", value: newSubmissions, href: "/admin/submissions", Icon: Inbox },
-    { label: "New quotes", value: newQuotes, href: "/admin/quotes", Icon: FileText },
-    { label: "New applications", value: newApplications, href: "/admin/applications", Icon: ClipboardList },
+    ...(canSeeCms
+      ? [
+          {
+            label: "Pages",
+            value: publishedPages,
+            hint: draftPages > 0 ? `${draftPages} draft${draftPages === 1 ? "" : "s"}` : undefined,
+            href: "/admin/pages",
+            Icon: FileText,
+          },
+          { label: "Streams", value: streams, href: "/admin/streams", Icon: Radio },
+          { label: "News", value: posts, href: "/admin/posts", Icon: Newspaper },
+          { label: "Jobs", value: jobs, href: "/admin/jobs", Icon: Briefcase },
+        ]
+      : []),
+    ...(canSeeEnquiries
+      ? [
+          { label: "New inquiries", value: newSubmissions, href: "/admin/submissions", Icon: Inbox },
+          { label: "New quotes", value: newQuotes, href: "/admin/quotes", Icon: FileText },
+        ]
+      : []),
+    ...(canSeeApplications
+      ? [{ label: "New applications", value: newApplications, href: "/admin/applications", Icon: ClipboardList }]
+      : []),
   ];
 
   return (
@@ -623,7 +640,7 @@ export default async function AdminDashboard({
           </Card>
       </div>
 
-      {canSeeCms ? (
+      {canSeeCms || canSeeEnquiries ? (
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <Card>

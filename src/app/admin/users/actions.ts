@@ -15,7 +15,15 @@ import { staffRoleLabel } from "@/lib/workdesk/rules";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@/generated/prisma/client";
 
-const ROLES = ["SUPERADMIN", "ADMIN", "EDITOR", "EMPLOYEE", "VIEWER", "TECHNICIAN"] as const;
+const ROLES = [
+  "SUPERADMIN",
+  "ADMIN",
+  "EDITOR",
+  "MANAGER",
+  "EMPLOYEE",
+  "VIEWER",
+  "TECHNICIAN",
+] as const;
 type RoleName = (typeof ROLES)[number];
 
 const createSchema = z.object({

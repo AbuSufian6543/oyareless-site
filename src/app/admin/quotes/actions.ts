@@ -5,9 +5,12 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 import { recordAudit } from "@/lib/audit";
-import { requireRole } from "@/lib/auth";
+import { requireAllowed } from "@/lib/auth";
 import { setFlash } from "@/lib/flash";
 import { prisma } from "@/lib/prisma";
+import { canAccessEnquiries } from "@/lib/staff-access";
+import { createOrOpenEnquiryTask } from "@/lib/workdesk/enquiry-task";
+import { activeAssigneeIds, assigneeIdsFrom } from "@/lib/workdesk/staff";
 import {
   allocateQuoteReference,
   parseQuoteServiceAreas,
@@ -75,7 +78,7 @@ function revalidateQuotes(id?: string) {
 }
 
 export async function saveQuoteAction(formData: FormData): Promise<void> {
-  const user = await requireRole("EDITOR");
+  const user = await requireAllowed(canAccessEnquiries);
   const id = String(formData.get("id") ?? "");
   const parsed = readQuote(formData);
   const serviceAreas = parseQuoteServiceAreas(formData);
@@ -139,7 +142,7 @@ export async function saveQuoteAction(formData: FormData): Promise<void> {
 }
 
 export async function deleteQuoteAction(formData: FormData): Promise<void> {
-  const user = await requireRole("EDITOR");
+  const user = await requireAllowed(canAccessEnquiries);
   const id = String(formData.get("id") ?? "");
 
   const quote = await prisma.quoteRequest.findUnique({
@@ -160,4 +163,43 @@ export async function deleteQuoteAction(formData: FormData): Promise<void> {
   await setFlash("deleted");
   revalidateQuotes();
   redirect("/admin/quotes?deleted=1");
+}
+
+export async function createTaskFromQuoteAction(formData: FormData): Promise<void> {
+  const staff = await requireAllowed(canAccessEnquiries);
+  const id = String(formData.get("id") ?? "");
+  if (!id) redirect("/admin/quotes");
+
+  const quote = await prisma.quoteRequest.findUnique({ where: { id } });
+  if (!quote) redirect("/admin/quotes");
+
+  const assignees = await activeAssigneeIds(assigneeIdsFrom(formData));
+  const description = [
+    `From quote ${quote.reference}`,
+    `${quote.contactName} <${quote.email}>`,
+    quote.phone ? `Phone: ${quote.phone}` : "",
+    quote.companyName ? `Company: ${quote.companyName}` : "",
+    quote.siteAddress ? `Site: ${quote.siteAddress}` : "",
+    quote.timeframe ? `Timeframe: ${quote.timeframe}` : "",
+    quote.budgetRange ? `Budget: ${quote.budgetRange}` : "",
+    quote.serviceAreas.length ? `Services: ${quote.serviceAreas.join(", ")}` : "",
+    "",
+    quote.details,
+    "",
+    `Quote: /admin/quotes/${quote.id}`,
+  ]
+    .filter((line) => line !== "")
+    .join("\n");
+
+  const result = await createOrOpenEnquiryTask({
+    staff,
+    kind: "quote",
+    sourceId: quote.id,
+    title: `Quote ${quote.reference}: ${quote.contactName}`,
+    description,
+    assigneeIds: assignees,
+  });
+
+  revalidateQuotes(quote.id);
+  redirect(`/admin/tasks/${result.id}`);
 }

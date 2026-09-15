@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Mail, Phone, Trash2 } from "lucide-react";
 
 import {
+  createTaskFromQuoteAction,
   deleteQuoteAction,
   saveQuoteAction,
 } from "@/app/admin/quotes/actions";
@@ -14,10 +16,14 @@ import {
   CardTitle,
   PageHeader,
 } from "@/components/admin/ui";
-import { requireAdminRole } from "@/lib/admin-guard";
+import { AssigneeChecklist } from "@/components/workdesk/assignee-checklist";
+import { requireStaffAccess } from "@/lib/admin-guard";
 import { prisma } from "@/lib/prisma";
 import { quoteStatusLabel, quoteStatusTone } from "@/lib/quotes";
+import { canAccessEnquiries } from "@/lib/staff-access";
 import { formatDateTime, telHref } from "@/lib/utils";
+import { findEnquiryTask } from "@/lib/workdesk/enquiry-task";
+import { listAssignableStaff } from "@/lib/workdesk/staff";
 
 export const metadata = { title: "Edit quote" };
 
@@ -28,11 +34,11 @@ export default async function EditQuotePage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ saved?: string; created?: string; error?: string }>;
 }) {
-  await requireAdminRole("EDITOR");
+  await requireStaffAccess(canAccessEnquiries);
   const { id } = await params;
   const query = await searchParams;
 
-  const [quote, customers] = await Promise.all([
+  const [quote, customers, staff, linkedTask] = await Promise.all([
     prisma.quoteRequest.findUnique({
       where: { id },
       include: {
@@ -45,6 +51,8 @@ export default async function EditQuotePage({
       orderBy: { name: "asc" },
       select: { id: true, name: true },
     }),
+    listAssignableStaff(),
+    findEnquiryTask("quote", id),
   ]);
 
   if (!quote) notFound();
@@ -170,6 +178,38 @@ export default async function EditQuotePage({
           </ul>
         </Card>
       )}
+
+      <Card className="mb-5">
+        <CardTitle description="Work on this quote through Tasks so you can assign managers, employees, admins, and technicians — the same list as the rest of the workdesk.">
+          Task
+        </CardTitle>
+        {linkedTask ? (
+          <p className="text-sm text-slate-700">
+            Opened as{" "}
+            <Link
+              href={`/admin/tasks/${linkedTask.id}`}
+              className="font-semibold text-brand-700 hover:underline"
+            >
+              {linkedTask.reference}
+            </Link>
+            {linkedTask.assignees.length > 0
+              ? ` · assigned to ${linkedTask.assignees.map((row) => row.user.name).join(", ")}`
+              : " · unassigned"}
+            . Reassign from the task.
+          </p>
+        ) : (
+          <form action={createTaskFromQuoteAction} className="space-y-4">
+            <input type="hidden" name="id" value={quote.id} />
+            <AssigneeChecklist staff={staff} legend="Assign staff" />
+            <button
+              type="submit"
+              className="rounded-lg bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700"
+            >
+              Create task and email assigned staff
+            </button>
+          </form>
+        )}
+      </Card>
 
       <QuoteForm
         action={saveQuoteAction}

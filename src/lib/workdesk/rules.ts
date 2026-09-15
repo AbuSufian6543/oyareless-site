@@ -8,22 +8,33 @@ export const STAFF_ROLE_RANK = {
   TECHNICIAN: 0,
   VIEWER: 1,
   EMPLOYEE: 2,
-  EDITOR: 3,
-  ADMIN: 4,
-  SUPERADMIN: 5,
+  MANAGER: 3,
+  EDITOR: 4,
+  ADMIN: 5,
+  SUPERADMIN: 6,
 } as const;
 
 export const WORKDESK_MANAGER_ROLES = [
   "EMPLOYEE",
+  "MANAGER",
   "EDITOR",
   "ADMIN",
   "SUPERADMIN",
+] as const;
+
+export const OFFICE_ASSIGNABLE_ROLES = [
+  "SUPERADMIN",
+  "ADMIN",
+  "MANAGER",
+  "EDITOR",
+  "EMPLOYEE",
 ] as const;
 
 export function staffRoleLabel(role: string): string {
   if (role === "SUPERADMIN") return "Super Admin";
   if (role === "ADMIN") return "Admin";
   if (role === "EDITOR") return "Editor";
+  if (role === "MANAGER") return "Manager";
   if (role === "EMPLOYEE") return "Employee";
   if (role === "VIEWER") return "Viewer";
   if (role === "TECHNICIAN") return "Technician";

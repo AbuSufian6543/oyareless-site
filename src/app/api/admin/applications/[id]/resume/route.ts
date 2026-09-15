@@ -4,12 +4,13 @@ import { Readable } from "node:stream";
 
 import { NextResponse } from "next/server";
 
-import { AuthError, requireRole } from "@/lib/auth";
+import { AuthError, requireAllowed } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
   contentDispositionName,
   resumeDiskPath,
 } from "@/lib/resume-pdf";
+import { canAccessApplications } from "@/lib/staff-access";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,7 @@ export async function GET(
   context: { params: Promise<{ id: string }> },
 ) {
   try {
-    await requireRole("EDITOR");
+    await requireAllowed(canAccessApplications);
     const { id } = await context.params;
     const download =
       new URL(request.url).searchParams.get("download") === "1";

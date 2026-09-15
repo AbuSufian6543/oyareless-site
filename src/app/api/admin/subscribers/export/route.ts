@@ -1,14 +1,15 @@
 import { NextResponse } from "next/server";
 
-import { requireRole } from "@/lib/auth";
+import { requireAllowed } from "@/lib/auth";
 import { csvResponse, toCsv } from "@/lib/csv";
 import { prisma } from "@/lib/prisma";
+import { canAccessEnquiries } from "@/lib/staff-access";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
-  const user = await requireRole("ADMIN").catch(() => null);
+  const user = await requireAllowed(canAccessEnquiries).catch(() => null);
   if (!user) {
     return NextResponse.json({ message: "Not authorized." }, { status: 401 });
   }

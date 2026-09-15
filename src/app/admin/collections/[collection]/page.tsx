@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Plus, Search, Trash2 } from "lucide-react";
 
 import { deleteCollectionRecordAction } from "@/app/admin/collections/actions";
@@ -17,7 +17,7 @@ import { AdminIcon } from "@/components/admin/admin-icon";
 import { requireAdminRole } from "@/lib/admin-guard";
 import { getCollection } from "@/lib/admin-collections";
 import { listRecords } from "@/lib/admin-collections.server";
-import { hasRole } from "@/lib/auth";
+import { canDeleteCollection, canWriteCollection } from "@/lib/staff-access";
 import { formatDateTime } from "@/lib/utils";
 
 const PAGE_SIZE = 40;
@@ -44,9 +44,10 @@ export default async function CollectionListPage({
   const collection = getCollection(key);
   if (!collection) notFound();
 
-  const user = await requireAdminRole(collection.writeRole);
-  const canWrite = hasRole(user, collection.writeRole);
-  const canDelete = hasRole(user, "ADMIN");
+  const user = await requireAdminRole("EMPLOYEE");
+  if (!canWriteCollection(user, collection)) redirect("/admin?denied=1");
+  const canWrite = canWriteCollection(user, collection);
+  const canDelete = canDeleteCollection(user, collection);
 
   const page = Math.max(1, Number.parseInt(query.page ?? "1", 10) || 1);
   const search = query.q ?? "";

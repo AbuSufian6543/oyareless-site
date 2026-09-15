@@ -114,7 +114,7 @@ assert(
 const resumeRoute = read("src/app/api/admin/applications/[id]/resume/route.ts");
 assert(
   "résumé files are only served to editors, never as a public URL",
-  resumeRoute.includes('requireRole("EDITOR")') &&
+  resumeRoute.includes("canAccessApplications") &&
     resumeRoute.includes("Content-Disposition") &&
     resumeRoute.includes("private, no-store"),
 );
@@ -139,6 +139,14 @@ assert(
   settingsPage.includes('name="careerNotifyEmails"') &&
     settingsPage.includes("does not fall back to the office inbox") &&
     settingsPage.includes("turnstileSiteKey"),
+);
+
+const applicationActions = read("src/app/admin/applications/actions.ts");
+assert(
+  "application update and delete do not write audit rows",
+  !applicationActions.includes("recordAudit") &&
+    applicationActions.includes("updateApplicationAction") &&
+    applicationActions.includes("deleteApplicationAction"),
 );
 
 process.exit(failed === 0 ? 0 : 1);

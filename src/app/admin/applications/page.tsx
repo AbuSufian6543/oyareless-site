@@ -9,7 +9,8 @@ import {
   EmptyState,
   PageHeader,
 } from "@/components/admin/ui";
-import { requireAdminRole } from "@/lib/admin-guard";
+import { requireStaffAccess } from "@/lib/admin-guard";
+import { canAccessApplications } from "@/lib/staff-access";
 import {
   jobApplicationStatusLabel,
   jobApplicationStatusTone,
@@ -37,7 +38,7 @@ export default async function AdminApplicationsPage({
     deleted?: string;
   }>;
 }) {
-  await requireAdminRole("EDITOR");
+  await requireStaffAccess(canAccessApplications);
   const params = await searchParams;
   const filter = params.status ?? "NEW";
   const query = (params.q ?? "").trim();

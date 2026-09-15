@@ -202,6 +202,15 @@ export async function requireRole(minimum: Role): Promise<SessionUser> {
   return user;
 }
 
+export async function requireAllowed(
+  allowed: (user: SessionUser) => boolean,
+): Promise<SessionUser> {
+  const user = await getCurrentUser();
+  if (!user) throw new AuthError("UNAUTHENTICATED");
+  if (!allowed(user)) throw new AuthError("FORBIDDEN");
+  return user;
+}
+
 export class AuthError extends Error {
   constructor(public code: "UNAUTHENTICATED" | "FORBIDDEN") {
     super(code);
@@ -279,6 +288,11 @@ export async function verifyTotpToken(
 
 export function storeTotpSecret(secret: string): string {
   return encryptSecret(secret);
+}
+
+/** Plain TOTP seed for the account QR code. Never put this in a URL. */
+export function readTotpSecret(encryptedSecret: string): string | null {
+  return decryptSecret(encryptedSecret);
 }
 
 /**

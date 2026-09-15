@@ -36,7 +36,7 @@ export default async function AdminLayout({
     redirect(loginUrlFor(path));
   }
 
-  // VIEWER has no admin UI. Technicians stay on /tech. Employee and above use this workdesk.
+  // VIEWER has no admin UI. Technicians stay on /tech. Employee, manager, and above use this workdesk.
   if (user.role === "VIEWER") redirect("/");
   if (user.role === "TECHNICIAN") {
     const path = (await headers()).get("x-wc-path") || "/tech";

@@ -3,8 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
-import { recordAudit } from "@/lib/audit";
-import { requireRole } from "@/lib/auth";
+import { requireAllowed, requireRole } from "@/lib/auth";
+import { canAccessApplications } from "@/lib/staff-access";
 import {
   JOB_APPLICATION_STATUSES,
   type JobApplicationStatusValue,
@@ -17,7 +17,7 @@ const STATUSES = new Set(
 );
 
 export async function updateApplicationAction(formData: FormData): Promise<void> {
-  const user = await requireRole("EDITOR");
+  await requireAllowed(canAccessApplications);
   const id = String(formData.get("id") ?? "");
   if (!id) redirect("/admin/applications");
 
@@ -35,21 +35,13 @@ export async function updateApplicationAction(formData: FormData): Promise<void>
     },
   });
 
-  await recordAudit({
-    action: "application.updated",
-    userId: user.id,
-    entityType: "JobApplication",
-    entityId: id,
-    summary: `Application updated${status ? ` (${status})` : ""}`,
-  });
-
   revalidatePath("/admin/applications");
   revalidatePath(`/admin/applications/${id}`);
   redirect(`/admin/applications/${id}?saved=1`);
 }
 
 export async function deleteApplicationAction(formData: FormData): Promise<void> {
-  const user = await requireRole("ADMIN");
+  await requireRole("ADMIN");
   const id = String(formData.get("id") ?? "");
   if (!id) redirect("/admin/applications");
 
@@ -61,14 +53,6 @@ export async function deleteApplicationAction(formData: FormData): Promise<void>
 
   await prisma.jobApplication.delete({ where: { id } });
   await deletePrivateResume(application.storagePath);
-
-  await recordAudit({
-    action: "application.deleted",
-    userId: user.id,
-    entityType: "JobApplication",
-    entityId: id,
-    summary: `Deleted application from ${application.name}`,
-  });
 
   revalidatePath("/admin/applications");
   redirect("/admin/applications?deleted=1");

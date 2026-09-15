@@ -9,13 +9,14 @@ import {
   EmptyState,
   PageHeader,
 } from "@/components/admin/ui";
-import { requireAdminRole } from "@/lib/admin-guard";
+import { requireStaffAccess } from "@/lib/admin-guard";
 import { prisma } from "@/lib/prisma";
 import {
   QUOTE_STATUSES,
   quoteStatusLabel,
   quoteStatusTone,
 } from "@/lib/quotes";
+import { canAccessEnquiries } from "@/lib/staff-access";
 import { cn, formatDateTime } from "@/lib/utils";
 import type { QuoteStatus } from "@/generated/prisma/client";
 
@@ -35,7 +36,7 @@ export default async function AdminQuotesPage({
     deleted?: string;
   }>;
 }) {
-  await requireAdminRole("EDITOR");
+  await requireStaffAccess(canAccessEnquiries);
   const params = await searchParams;
   const filter = params.status ?? "all";
   const query = (params.q ?? "").trim();

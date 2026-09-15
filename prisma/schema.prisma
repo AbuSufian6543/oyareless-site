@@ -19,6 +19,8 @@ enum Role {
   SUPERADMIN
   ADMIN
   EDITOR
+  /// Office manager: workdesk, knowledge, operations, and enquiries except applications.
+  MANAGER
   /// Workdesk staff. Full ticket and task CRUD, plus those audit trails. No CMS.
   EMPLOYEE
   VIEWER
@@ -1246,6 +1248,10 @@ model InternalTask {
   createdById String
   createdBy   User     @relation("TaskCreator", fields: [createdById], references: [id], onDelete: Restrict)
 
+  /// When this task was opened from Enquiries Inbox or Quotes.
+  enquiryKind String?
+  enquiryId   String?
+
   completedAt DateTime?
   closedAt    DateTime?
   createdAt   DateTime @default(now())
@@ -1258,6 +1264,7 @@ model InternalTask {
   timeEntries   WorkTimeEntry[]
   productUsages WorkProductUsage[]
 
+  @@unique([enquiryKind, enquiryId])
   @@index([status, priority, dueAt])
   @@index([createdById, status])
 }

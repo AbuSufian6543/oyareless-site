@@ -232,7 +232,7 @@ export default async function AdminTicketPage({
             <AssigneeChecklist
               staff={staff}
               selectedIds={selectedAssigneeIds}
-              legend="Assign technicians"
+              legend="Assign staff"
             />
             <button type="submit" className="w-full rounded-lg bg-brand-600 px-3 py-2 text-sm font-semibold text-white hover:bg-brand-700">
               Save assignment

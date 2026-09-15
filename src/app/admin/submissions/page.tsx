@@ -9,8 +9,9 @@ import {
   EmptyState,
   PageHeader,
 } from "@/components/admin/ui";
-import { requireAdminRole } from "@/lib/admin-guard";
+import { requireStaffAccess } from "@/lib/admin-guard";
 import { prisma } from "@/lib/prisma";
+import { canAccessEnquiries } from "@/lib/staff-access";
 import { cn, formatDateTime, truncate } from "@/lib/utils";
 
 export const metadata = { title: "Inbox" };
@@ -38,7 +39,7 @@ export default async function SubmissionsPage({
 }: {
   searchParams: Promise<{ status?: string; updated?: string }>;
 }) {
-  await requireAdminRole("EDITOR");
+  await requireStaffAccess(canAccessEnquiries);
   const params = await searchParams;
   const filter = params.status ?? "NEW";
 

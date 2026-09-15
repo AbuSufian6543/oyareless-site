@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { Trash2 } from "lucide-react";
 
 import { deleteCollectionRecordAction } from "@/app/admin/collections/actions";
@@ -11,7 +11,7 @@ import {
   recordBlocks,
   referenceOptions,
 } from "@/lib/admin-collections.server";
-import { hasRole } from "@/lib/auth";
+import { canDeleteCollection, canWriteCollection } from "@/lib/staff-access";
 import { prisma } from "@/lib/prisma";
 import { toStreamPickerOptions } from "@/lib/stream-picker";
 
@@ -38,7 +38,8 @@ export default async function CollectionEditPage({
   const collection = getCollection(key);
   if (!collection) notFound();
 
-  const user = await requireAdminRole(collection.writeRole);
+  const user = await requireAdminRole("EMPLOYEE");
+  if (!canWriteCollection(user, collection)) redirect("/admin?denied=1");
   const isNew = id === "new";
 
   const record = isNew ? null : await findRecord(collection, id);
@@ -77,7 +78,7 @@ export default async function CollectionEditPage({
       : (field.defaultValue ?? blankFor(field.kind));
   }
 
-  const canDelete = !isNew && hasRole(user, "ADMIN");
+  const canDelete = !isNew && canDeleteCollection(user, collection);
   const title = record
     ? String(record[collection.titleField] ?? "").slice(0, 80)
     : "";

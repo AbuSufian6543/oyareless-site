@@ -1,12 +1,13 @@
 import { invitePortalUserAction } from "@/app/admin/tickets/actions";
 import { PageHeader } from "@/components/admin/ui";
-import { requireAdminRole } from "@/lib/admin-guard";
+import { requireStaffAccess } from "@/lib/admin-guard";
 import { prisma } from "@/lib/prisma";
+import { canAccessPortalUsers } from "@/lib/staff-access";
 
 export const metadata = { title: "Portal users" };
 
 export default async function PortalUsersPage() {
-  await requireAdminRole("ADMIN");
+  await requireStaffAccess(canAccessPortalUsers);
   const [customers, users] = await Promise.all([
     prisma.customer.findMany({ where: { isActive: true }, orderBy: { name: "asc" } }),
     prisma.customerUser.findMany({
