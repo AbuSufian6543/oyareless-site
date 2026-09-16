@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { HOME_OFFICE_ALT, HOME_OFFICE_IMAGE } from "./home-office";
+import { defaultMobileTrailerBlockData } from "./mobile-security-trailer";
 
 /**
  * Page content is stored as an ordered array of blocks (Postgres JSON).
@@ -530,6 +531,80 @@ const kbHighlightsData = z.object({
   buttons: z.array(linkSchema).default([]),
 });
 
+const trailerDefaults = defaultMobileTrailerBlockData();
+
+const trailerPair = z.object({
+  label: z.string().default(""),
+  detail: z.string().default(""),
+});
+
+const trailerPillar = z.object({
+  title: z.string().default(""),
+  items: z.array(z.string()).default([]),
+});
+
+const trailerApplication = z.object({
+  title: z.string().default(""),
+  description: z.string().default(""),
+  imageUrl: z.string().default(""),
+  imageAlt: z.string().default(""),
+});
+
+const mobileTrailerData = z.object({
+  eyebrow: z.string().default(trailerDefaults.eyebrow),
+  headline: z.string().default(trailerDefaults.headline),
+  kicker: z.string().default(trailerDefaults.kicker),
+  subheadline: z.string().default(trailerDefaults.subheadline),
+  heroImageUrl: z.string().default(trailerDefaults.heroImageUrl),
+  heroImageAlt: z.string().default(trailerDefaults.heroImageAlt),
+  callouts: z.array(trailerPair).default(trailerDefaults.callouts),
+  quoteLabel: z.string().default(trailerDefaults.quoteLabel),
+  quoteHref: z.string().default(trailerDefaults.quoteHref),
+  customLabel: z.string().default(trailerDefaults.customLabel),
+  customHref: z.string().default(trailerDefaults.customHref),
+  flyerUrl: z.string().default(""),
+  flyerLinkLabel: z.string().default(trailerDefaults.flyerLinkLabel),
+  stripText: z.string().default(trailerDefaults.stripText),
+  introEyebrow: z.string().default(trailerDefaults.introEyebrow),
+  introHeading: z.string().default(trailerDefaults.introHeading),
+  introParagraphs: z.array(z.string()).default(trailerDefaults.introParagraphs),
+  platformHeading: z.string().default(trailerDefaults.platformHeading),
+  platformItems: z.array(z.string()).default(trailerDefaults.platformItems),
+  proof: z.array(trailerPair).default(trailerDefaults.proof),
+  pillarsHeading: z.string().default(trailerDefaults.pillarsHeading),
+  pillarsDescription: z.string().default(trailerDefaults.pillarsDescription),
+  pillars: z.array(trailerPillar).default(trailerDefaults.pillars),
+  towerEyebrow: z.string().default(trailerDefaults.towerEyebrow),
+  towerHeading: z.string().default(trailerDefaults.towerHeading),
+  towerBody: z.string().default(trailerDefaults.towerBody),
+  towerBadge: z.string().default(trailerDefaults.towerBadge),
+  towerStrip: z.string().default(trailerDefaults.towerStrip),
+  towerImageUrl: z.string().default(trailerDefaults.towerImageUrl),
+  towerImageAlt: z.string().default(trailerDefaults.towerImageAlt),
+  pipelineHeading: z.string().default(trailerDefaults.pipelineHeading),
+  pipelineDescription: z.string().default(trailerDefaults.pipelineDescription),
+  pipeline: z.array(trailerPair).default(trailerDefaults.pipeline),
+  applicationsHeading: z.string().default(trailerDefaults.applicationsHeading),
+  applicationsDescription: z.string().default(trailerDefaults.applicationsDescription),
+  applications: z.array(trailerApplication).default(trailerDefaults.applications),
+  customEyebrow: z.string().default(trailerDefaults.customEyebrow),
+  customHeading: z.string().default(trailerDefaults.customHeading),
+  customBody: z.string().default(trailerDefaults.customBody),
+  customOptions: z.array(z.string()).default(trailerDefaults.customOptions),
+  customTraits: z.array(z.string()).default(trailerDefaults.customTraits),
+  customCardHeading: z.string().default(trailerDefaults.customCardHeading),
+  customCardBody: z.string().default(trailerDefaults.customCardBody),
+  customQuoteLabel: z.string().default(trailerDefaults.customQuoteLabel),
+  customQuoteHref: z.string().default(trailerDefaults.customQuoteHref),
+  flyerHeading: z.string().default(trailerDefaults.flyerHeading),
+  flyerDescription: z.string().default(trailerDefaults.flyerDescription),
+  flyerButtonLabel: z.string().default(trailerDefaults.flyerButtonLabel),
+  ctaHeading: z.string().default(trailerDefaults.ctaHeading),
+  ctaBody: z.string().default(trailerDefaults.ctaBody),
+  ctaSecondaryLabel: z.string().default(trailerDefaults.ctaSecondaryLabel),
+  ctaSecondaryHref: z.string().default(trailerDefaults.ctaSecondaryHref),
+});
+
 // ---------------------------------------------------------------------------
 // Discriminated union
 // ---------------------------------------------------------------------------
@@ -580,6 +655,7 @@ export const blockSchema = z.discriminatedUnion("type", [
   block("toolGrid", toolGridData),
   block("caseStudyGrid", caseStudyGridData),
   block("kbHighlights", kbHighlightsData),
+  block("mobileTrailer", mobileTrailerData),
 ]);
 
 export const blocksSchema = z.array(blockSchema);

@@ -1,4 +1,5 @@
 import { blockSchema, newBlockId, type Block, type BlockType } from "@/lib/blocks";
+import { defaultMobileTrailerBlockData } from "@/lib/mobile-security-trailer";
 
 export type BlockCategory =
   | "Layout"
@@ -614,6 +615,15 @@ export const BLOCK_DEFINITIONS: BlockDefinition[] = [
         { label: "Browse the knowledge base", href: "/knowledge-base", style: "primary" },
       ],
     },
+  },
+  {
+    type: "mobileTrailer",
+    label: "Mobile Security Trailer landing",
+    description:
+      "Full Mobile Security Trailer page: hero, specifications, applications, custom-build copy, and flyer download.",
+    category: "Services",
+    icon: "Cctv",
+    seed: defaultMobileTrailerBlockData(),
   },
 ];
 

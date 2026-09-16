@@ -11,6 +11,7 @@ import {
   trailerFlyerIsPdf,
 } from "../src/lib/mobile-security-trailer";
 import { DEFAULT_SETTINGS } from "../src/lib/settings-defaults";
+import { SEED_PAGES } from "../prisma/seed-content";
 
 let failed = 0;
 
@@ -76,10 +77,24 @@ assert(
   branding.includes('name="mobileTrailerFlyerUrl"') && branding.includes("allowDocument"),
 );
 
+const sync = read("scripts/content-sync.ts");
+assert(
+  "edited Security Systems pages still receive the trailer cards on deploy",
+  sync.includes("upgradeSecurityServicesTrailer"),
+);
+
 const quote = read("src/components/site/quote-form.tsx");
 assert(
   "quote requests can name the trailer",
   quote.includes('"Mobile security trailer"') && quote.includes("preselected"),
+);
+
+assert(
+  "the trailer is a CMS page admins can edit under Pages",
+  SEED_PAGES.some((page) => page.slug === "mobile-security-trailer") &&
+    JSON.stringify(
+      SEED_PAGES.find((page) => page.slug === "mobile-security-trailer"),
+    ).includes("mobileTrailer"),
 );
 
 process.exit(failed === 0 ? 0 : 1);

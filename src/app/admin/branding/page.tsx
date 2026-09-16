@@ -95,7 +95,7 @@ export default async function BrandingPage({
         </Card>
 
         <Card>
-          <CardTitle description="Offered as a download on the Mobile Security Trailer page. Upload a new letter in the media library (JPG or PDF), then point this field at it.">
+          <CardTitle description="Default flyer when the Mobile Security Trailer page leaves its own flyer field empty. Upload a JPG or PDF in the media library, then point this field at it. You can also set a flyer on that page under Pages.">
             Mobile Security Trailer flyer
           </CardTitle>
           <ImageUrlField

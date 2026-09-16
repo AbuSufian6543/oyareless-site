@@ -4,6 +4,10 @@
  */
 
 import { blocksSchema, type Block } from "../src/lib/blocks";
+import {
+  defaultMobileTrailerBlockData,
+  MOBILE_TRAILER_META,
+} from "../src/lib/mobile-security-trailer";
 import { serviceHeroPhoto, servicePhoto } from "../src/lib/service-photos";
 import { vendorLogoUrl } from "../src/lib/vendor-logos";
 
@@ -1437,6 +1441,23 @@ const securityServices: SeedPage = {
       "Secure what matters most",
       `Contact us to schedule a consultation and discuss your security needs. Call today ${PHONE}.`,
     ),
+  ],
+};
+
+const mobileSecurityTrailer: SeedPage = {
+  slug: "mobile-security-trailer",
+  title: MOBILE_TRAILER_META.title,
+  metaTitle: MOBILE_TRAILER_META.metaTitle,
+  navLabel: "Mobile Security Trailer",
+  metaDescription: MOBILE_TRAILER_META.description,
+  showInHeaderNav: true,
+  navOrder: 31,
+  blocks: [
+    {
+      type: "mobileTrailer",
+      settings: { paddingY: "none" },
+      data: defaultMobileTrailerBlockData(),
+    },
   ],
 };
 
@@ -3101,6 +3122,7 @@ export const SEED_PAGES: SeedPage[] = [
   firewalls,
   aiServices,
   securityServices,
+  mobileSecurityTrailer,
   telephoneServices,
   internetServices,
   videoServices,

@@ -47,6 +47,7 @@ import {
   LiveStreamBlock,
   StreamGridBlock,
 } from "@/components/blocks/stream-blocks";
+import { MobileTrailerBlock } from "@/components/site/mobile-security-trailer-view";
 import { MediaSlideshow } from "@/components/blocks/media-slideshow";
 import { visibleSlideshow, type SlideshowItem } from "@/lib/slideshow";
 import type { Block } from "@/lib/blocks";
@@ -135,6 +136,8 @@ export function BlockRenderer({
       return <CaseStudyGridBlock block={block} />;
     case "kbHighlights":
       return <KbHighlightsBlock block={block} />;
+    case "mobileTrailer":
+      return <MobileTrailerBlock block={block} />;
     case "speedTest": {
       const light = visitorPageIsLight();
       return (

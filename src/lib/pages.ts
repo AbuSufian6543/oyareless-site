@@ -87,7 +87,7 @@ async function seedFallbackPage(slug: string): Promise<RenderablePage | null> {
 function inferDescription(page: RenderablePage): string {
   for (const block of page.blocks) {
     if (
-      (block.type === "hero" || block.type === "techHero") &&
+      (block.type === "hero" || block.type === "techHero" || block.type === "mobileTrailer") &&
       "subheadline" in block.data &&
       block.data.subheadline
     ) {

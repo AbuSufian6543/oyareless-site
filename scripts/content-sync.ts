@@ -525,6 +525,91 @@ function upgradeHyteraCtaCopy(next: JsonBlock[], notes: string[]): void {
   }
 }
 
+function titleMentionsTrailer(value: unknown): boolean {
+  return canonicalServiceName(value).includes("mobile security trailer");
+}
+
+function appendMissingTrailerItem(
+  currentItems: unknown,
+  seedItem: Record<string, unknown> | undefined,
+  notes: string[],
+  label: string,
+  insertBefore?: (item: Record<string, unknown>) => boolean,
+): void {
+  if (!seedItem || !Array.isArray(currentItems)) return;
+  const exists = currentItems.some((item) =>
+    titleMentionsTrailer((item as Record<string, unknown>).title),
+  );
+  if (exists) return;
+
+  const insertAt = insertBefore
+    ? currentItems.findIndex((item) => insertBefore(item as Record<string, unknown>))
+    : -1;
+  if (insertAt >= 0) currentItems.splice(insertAt, 0, { ...seedItem });
+  else currentItems.push({ ...seedItem });
+  notes.push(label);
+}
+
+/**
+ * Live Security Systems pages keep admin copy, but still pick up the Mobile
+ * Security Trailer step, feature card, and 4-column related-services layout.
+ */
+function upgradeSecurityServicesTrailer(
+  next: JsonBlock[],
+  seed: ReturnType<typeof buildBlocks>,
+  slug: string,
+  notes: string[],
+): void {
+  if (slug !== "security-services") return;
+
+  const seedSteps = seed.find((block) => block.type === "steps");
+  const currentSteps = next.find((block) => block.type === "steps");
+  const seedStepItem = Array.isArray(seedSteps?.data?.items)
+    ? (seedSteps.data.items as Array<Record<string, unknown>>).find((item) =>
+        titleMentionsTrailer(item.title),
+      )
+    : undefined;
+  appendMissingTrailerItem(
+    currentSteps?.data?.items,
+    seedStepItem,
+    notes,
+    "added Mobile security trailer step",
+    (item) => canonicalServiceName(item.title).includes("integration"),
+  );
+
+  const seedFeatures = seed.filter((block) => block.type === "featureGrid");
+  const currentFeatures = next.filter((block) => block.type === "featureGrid");
+  for (let index = 0; index < Math.min(seedFeatures.length, currentFeatures.length); index += 1) {
+    const seedItem = Array.isArray(seedFeatures[index].data?.items)
+      ? (seedFeatures[index].data.items as Array<Record<string, unknown>>).find((item) =>
+          titleMentionsTrailer(item.title),
+        )
+      : undefined;
+    appendMissingTrailerItem(
+      currentFeatures[index].data?.items,
+      seedItem,
+      notes,
+      "added Mobile security trailer feature",
+    );
+  }
+
+  for (const grid of next.filter((block) => block.type === "serviceGrid")) {
+    const items = grid.data?.items;
+    if (!Array.isArray(items)) continue;
+    const hasTrailer = items.some((item) => {
+      const record = item as Record<string, unknown>;
+      return (
+        String(record.href ?? "").includes("/mobile-security-trailer") ||
+        titleMentionsTrailer(record.title)
+      );
+    });
+    if (hasTrailer && grid.data && String(grid.data.columns ?? "") === "3") {
+      grid.data.columns = "4";
+      notes.push("security related-services columns");
+    }
+  }
+}
+
 function ensureHyteraCatalog(
   next: JsonBlock[],
   seed: ReturnType<typeof buildBlocks>,
@@ -744,6 +829,7 @@ function fillMissingMedia(
   fixBannerCtaSurfaces(next, notes);
   upgradeHyteraCtaCopy(next, notes);
   ensureHyteraCatalog(next, seed, slug, notes);
+  upgradeSecurityServicesTrailer(next, seed, slug, notes);
 
   const seedHeroes = seed.filter((block) => block.type === "hero");
   const currentHeroes = next.filter((block) => block.type === "hero");
