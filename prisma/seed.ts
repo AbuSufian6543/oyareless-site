@@ -10,6 +10,7 @@ import "dotenv/config";
 import { env } from "../src/lib/env";
 import { DOWNTOWN_NORTH_PTZ_EMBED } from "../src/lib/downtown-north-ptz-embed";
 import { DOWNTOWN_SOUTH_PTZ_EMBED } from "../src/lib/downtown-south-ptz-embed";
+import { LEGACY_WEEBLY_LOGO_PUBLIC_URL } from "../src/lib/legacy-weebly-logo";
 import {
   DOWNTOWN_NORTH_PTZ_SLUG,
   DOWNTOWN_SOUTH_PTZ_SLUG,
@@ -346,8 +347,7 @@ async function seedDowntownNorthPtz(): Promise<void> {
       "Live PTZ camera looking north over downtown Sault Ste. Marie.",
     type: "HTML" as const,
     source: DOWNTOWN_NORTH_PTZ_EMBED,
-    posterUrl:
-      "https://www.wirelesscom.org/uploads/4/6/3/6/46366157/416823.jpg",
+    posterUrl: LEGACY_WEEBLY_LOGO_PUBLIC_URL,
     location: "Downtown Sault Ste. Marie, ON",
     status: "PUBLISHED" as const,
     isLive: true,
@@ -399,8 +399,7 @@ async function seedDowntownSouthPtz(): Promise<void> {
       "Live PTZ camera looking south over downtown Sault Ste. Marie.",
     type: "HTML" as const,
     source: DOWNTOWN_SOUTH_PTZ_EMBED,
-    posterUrl:
-      "https://www.wirelesscom.org/uploads/4/6/3/6/46366157/416823.jpg",
+    posterUrl: LEGACY_WEEBLY_LOGO_PUBLIC_URL,
     location: "Downtown Sault Ste. Marie, ON",
     status: "PUBLISHED" as const,
     isLive: true,

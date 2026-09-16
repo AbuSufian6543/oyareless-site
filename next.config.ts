@@ -53,26 +53,60 @@ const nextConfig: NextConfig = {
   async rewrites() {
     // Edited pages may still point at the old .svg paths after vendors
     // switched to the files they actually publish.
-    return [
-      { source: "/brand/logos/grandstream.svg", destination: "/brand/logos/grandstream.png" },
-      { source: "/brand/logos/fanvil.svg", destination: "/brand/logos/fanvil.png" },
-      { source: "/brand/logos/paradox.svg", destination: "/brand/logos/paradox.png" },
-      { source: "/brand/logos/cisco.svg", destination: "/brand/logos/cisco.png" },
-      { source: "/brand/logos/azure.svg", destination: "/brand/logos/azure.png" },
-      { source: "/brand/logos/unifi.svg", destination: "/brand/logos/unifi.png" },
-      { source: "/brand/logos/mikrotik.svg", destination: "/brand/logos/mikrotik.png" },
-      { source: "/brand/logos/juniper.svg", destination: "/brand/logos/juniper.png" },
-      { source: "/brand/logos/fortinet.svg", destination: "/brand/logos/fortinet.png" },
-      { source: "/brand/logos/barracuda.svg", destination: "/brand/logos/barracuda.png" },
-      { source: "/brand/logos/hytera.svg", destination: "/brand/logos/hytera.png" },
-      {
-        source: "/images/services/digital-marketing/02.webp",
-        destination: "/images/services/digital-marketing/02.jpg",
-      },
-    ];
+    return {
+      beforeFiles: [
+        // Weebly-era stream poster. Other sites still fetch this exact URL.
+        // Served from public/brand so the Docker uploads volume cannot hide it.
+        {
+          source: "/uploads/4/6/3/6/46366157/416823.jpg",
+          destination: "/brand/legacy-stream-logo.jpg",
+        },
+      ],
+      afterFiles: [
+        { source: "/brand/logos/grandstream.svg", destination: "/brand/logos/grandstream.png" },
+        { source: "/brand/logos/fanvil.svg", destination: "/brand/logos/fanvil.png" },
+        { source: "/brand/logos/paradox.svg", destination: "/brand/logos/paradox.png" },
+        { source: "/brand/logos/cisco.svg", destination: "/brand/logos/cisco.png" },
+        { source: "/brand/logos/azure.svg", destination: "/brand/logos/azure.png" },
+        { source: "/brand/logos/unifi.svg", destination: "/brand/logos/unifi.png" },
+        { source: "/brand/logos/mikrotik.svg", destination: "/brand/logos/mikrotik.png" },
+        { source: "/brand/logos/juniper.svg", destination: "/brand/logos/juniper.png" },
+        { source: "/brand/logos/fortinet.svg", destination: "/brand/logos/fortinet.png" },
+        { source: "/brand/logos/barracuda.svg", destination: "/brand/logos/barracuda.png" },
+        { source: "/brand/logos/hytera.svg", destination: "/brand/logos/hytera.png" },
+        {
+          source: "/images/services/digital-marketing/02.webp",
+          destination: "/images/services/digital-marketing/02.jpg",
+        },
+      ],
+    };
   },
   async headers() {
     return [
+      {
+        source: "/uploads/4/6/3/6/46366157/416823.jpg",
+        headers: [
+          { key: "Access-Control-Allow-Origin", value: "*" },
+          { key: "Access-Control-Allow-Methods", value: "GET, HEAD, OPTIONS" },
+          { key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+        ],
+      },
+      {
+        source: "/brand/legacy-stream-logo.jpg",
+        headers: [
+          { key: "Access-Control-Allow-Origin", value: "*" },
+          { key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+        ],
+      },
+      {
+        source: "/api/legacy/weebly-logo",
+        headers: [
+          { key: "Access-Control-Allow-Origin", value: "*" },
+          { key: "Cache-Control", value: "public, max-age=86400, stale-while-revalidate=604800" },
+        ],
+      },
       {
         source: "/_next/static/:path*",
         headers: [

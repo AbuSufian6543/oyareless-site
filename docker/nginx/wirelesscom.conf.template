@@ -62,6 +62,23 @@ server {
     add_header X-Frame-Options SAMEORIGIN always;
     add_header X-Content-Type-Options nosniff always;
 
+    # Historic Weebly stream poster. Other sites still fetch this exact URL
+    # (often as a MistServer poster). CORS must be on the response they see.
+    location = /uploads/4/6/3/6/46366157/416823.jpg {
+        proxy_pass http://wirelesscom_app;
+        proxy_http_version 1.1;
+        proxy_set_header Host              $host;
+        proxy_set_header X-Real-IP         $remote_addr;
+        proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host  $host;
+
+        add_header Access-Control-Allow-Origin "*" always;
+        add_header Access-Control-Allow-Methods "GET, HEAD, OPTIONS" always;
+        add_header Cache-Control "public, max-age=86400" always;
+        add_header X-Content-Type-Options nosniff always;
+    }
+
     location /_next/static/ {
         proxy_pass http://wirelesscom_app;
         proxy_http_version 1.1;

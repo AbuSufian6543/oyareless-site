@@ -18,6 +18,7 @@ import {
   rewriteInsecureMistPlayer,
   uniquifyEmbedIds,
 } from "../src/lib/html-stream-embed";
+import { LEGACY_WEEBLY_LOGO_PUBLIC_URL } from "../src/lib/legacy-weebly-logo";
 import { PUBLIC_STATUS_MONITORS } from "../src/lib/status-monitor-catalog";
 import {
   parsePageLightSlugs,
@@ -91,7 +92,8 @@ if (
   parsedMist.streamName !== "downtown-north-ptz" ||
   !parsedMist.loop ||
   parsedMist.muted ||
-  !parsedMist.poster?.includes("416823.jpg") ||
+  !parsedMist.poster ||
+  parsedMist.poster !== LEGACY_WEEBLY_LOGO_PUBLIC_URL ||
   !looksLikeMistEmbed(DOWNTOWN_NORTH_PTZ_EMBED)
 ) {
   console.error("FAIL Mist embed parse");
@@ -113,7 +115,8 @@ if (
   parsedSouth.streamName !== "downtown-south-ptz" ||
   !parsedSouth.loop ||
   !parsedSouth.muted ||
-  !parsedSouth.poster?.includes("416823.jpg") ||
+  !parsedSouth.poster ||
+  parsedSouth.poster !== LEGACY_WEEBLY_LOGO_PUBLIC_URL ||
   !looksLikeMistEmbed(DOWNTOWN_SOUTH_PTZ_EMBED)
 ) {
   console.error("FAIL downtown-south Mist embed parse");

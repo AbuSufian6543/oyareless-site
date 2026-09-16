@@ -1,4 +1,5 @@
 import { DOWNTOWN_SOUTH_PTZ_SLUG } from "./html-stream-embed";
+import { LEGACY_WEEBLY_LOGO_PUBLIC_URL } from "./legacy-weebly-logo";
 
 /**
  * Seed-only vendor snippet. Do not import this from client components —
@@ -20,7 +21,7 @@ export const DOWNTOWN_SOUTH_PTZ_EMBED = `<div class="mistvideo" id="downtown-sou
         target: document.getElementById("downtown-south-ptz_cOcXMwrFexSI"),
         loop: true,
         muted: true,
-        poster: "https://www.wirelesscom.org/uploads/4/6/3/6/46366157/416823.jpg",
+        poster: "${LEGACY_WEEBLY_LOGO_PUBLIC_URL}",
         monitor: {
           action: function(){
             this.MistVideo.log(

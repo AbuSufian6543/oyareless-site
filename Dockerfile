@@ -72,7 +72,10 @@ COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
 # Uploaded media lives on a volume mounted here. Site snapshots live on a
 # separate volume so wiping the database volume does not also delete backups.
-RUN mkdir -p /app/public/uploads /app/backups && chown -R nextjs:nodejs /app/public/uploads /app/backups
+COPY docker/app-entrypoint.sh /usr/local/bin/app-entrypoint.sh
+RUN chmod +x /usr/local/bin/app-entrypoint.sh \
+  && mkdir -p /app/public/uploads /app/backups \
+  && chown -R nextjs:nodejs /app/public/uploads /app/backups
 
 USER nextjs
 EXPOSE 3000
@@ -80,4 +83,5 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=5 \
   CMD node -e "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
+ENTRYPOINT ["/usr/local/bin/app-entrypoint.sh"]
 CMD ["node", "server.js"]
