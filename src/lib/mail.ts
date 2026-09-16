@@ -394,6 +394,32 @@ export function newUserInviteEmail(input: {
   };
 }
 
+export function portalInviteEmail(input: {
+  name: string;
+  inviteUrl: string;
+  days: number;
+}): { subject: string; html: string } {
+  const first = escapeHtml(input.name.split(" ")[0] || input.name);
+  const body = `
+    <p style="margin:0 0 16px;font-size:15px;color:#3c4e63;line-height:1.65;">
+      Hello ${first},
+    </p>
+    <p style="margin:0 0 16px;font-size:15px;color:#3c4e63;line-height:1.65;">
+      WirelessCom.Ca Inc. created a customer portal account for you. Choose a
+      password with the button below. This link expires in ${input.days} days
+      and can only be used once.
+    </p>
+    ${emailActionLink(input.inviteUrl, "Choose a password")}
+    <p style="margin:0;font-size:12px;color:#8194ab;">
+      If you were not expecting this, you can ignore the email.
+    </p>`;
+
+  return {
+    subject: "Your WirelessCom.Ca customer portal invite",
+    html: layout("Activate your portal access", body),
+  };
+}
+
 export function passwordResetEmail(input: {
   name: string;
   resetUrl: string;

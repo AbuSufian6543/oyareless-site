@@ -77,7 +77,9 @@ export type AuditAction =
   | "backup.downloaded"
   | "backup.restored"
   | "product.created"
-  | "product.updated";
+  | "product.updated"
+  | "portal_user.invited"
+  | "portal_user.invite_resent";
 
 const ACTION_LABELS: Record<string, string> = {
   "user.login": "Signed in",
@@ -113,6 +115,8 @@ const ACTION_LABELS: Record<string, string> = {
   "task.product_removed": "Task product removed",
   "product.created": "Product added",
   "product.updated": "Product updated",
+  "portal_user.invited": "Portal invite sent",
+  "portal_user.invite_resent": "Portal invite resent",
 };
 
 const BLOCKED_DETAIL_KEYS = new Set([

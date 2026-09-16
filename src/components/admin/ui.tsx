@@ -282,7 +282,13 @@ export function SelectField({
       <Label htmlFor={id} required={required} hint={hint}>
         {label}
       </Label>
-      <select id={id} name={name} className={inputClass} {...props}>
+      <select
+        id={id}
+        name={name}
+        required={required}
+        className={inputClass}
+        {...props}
+      >
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
