@@ -328,7 +328,8 @@ function PageSettings({
                   Show in the header menu
                 </span>
                 <span className="mt-0.5 block text-xs text-slate-500">
-                  Only applies when no custom navigation has been configured.
+                  Header and footer order is set under Content → Menus.
+                  This checkbox only applies if the Menus screen is still empty.
                 </span>
               </span>
             </label>
@@ -347,9 +348,16 @@ function PageSettings({
               </span>
             </label>
 
+            <p className="pt-1 text-xs text-slate-500">
+              <Link href="/admin/navigation" className="font-semibold text-brand-700 hover:text-brand-800">
+                Open Menus
+              </Link>{" "}
+              to drag pages into a new order under Services, Tools, Support, or Company.
+            </p>
+
             <div>
-              <Label htmlFor="navOrder" hint="Lower numbers appear first.">
-                Menu order
+              <Label htmlFor="navOrder" hint="Used only when Menus is empty.">
+                Fallback menu order
               </Label>
               <input
                 id="navOrder"

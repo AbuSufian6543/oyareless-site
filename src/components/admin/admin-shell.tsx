@@ -164,6 +164,7 @@ export function AdminShell({
       title: "Content",
       items: [
         { href: "/admin/pages", label: "Pages", Icon: FileText, allow: canAccessContent },
+        { href: "/admin/navigation", label: "Menus", Icon: Link2, allow: canAccessContent },
         { href: "/admin/streams", label: "Live Streams", Icon: Radio, allow: canAccessContent },
         { href: "/admin/posts", label: "News & Blog", Icon: Newspaper, allow: canAccessContent },
         { href: "/admin/jobs", label: "Careers", Icon: Briefcase, allow: canAccessContent },
@@ -208,7 +209,6 @@ export function AdminShell({
     {
       title: "Configuration",
       items: [
-        { href: "/admin/navigation", label: "Navigation", Icon: Link2, allow: canAccessConfiguration },
         { href: "/admin/branding", label: "Branding & Theme", Icon: Palette, allow: canAccessConfiguration },
         {
           href: "/admin/remote-support",

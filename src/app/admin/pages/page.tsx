@@ -42,15 +42,23 @@ export default async function AdminPagesPage({
     <div>
       <PageHeader
         title="Pages"
-        description="Build and edit every page on the public website. For a live camera, create the stream under Live Streams first, then add a Live stream player section here."
+        description="Build and edit every page on the public website. To change the order of Services, Tools, Support, or Company, use Menus."
         actions={
-          <Link
-            href="/admin/pages/new"
-            className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
-          >
-            <Plus className="size-4" aria-hidden="true" />
-            New page
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/admin/navigation"
+              className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-navy-800 transition-colors hover:bg-slate-50"
+            >
+              Reorder menus
+            </Link>
+            <Link
+              href="/admin/pages/new"
+              className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-brand-700"
+            >
+              <Plus className="size-4" aria-hidden="true" />
+              New page
+            </Link>
+          </div>
         }
       />
 

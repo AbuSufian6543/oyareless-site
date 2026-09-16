@@ -196,9 +196,10 @@ export function defaultNavNodes(
 }
 
 /**
- * Keeps admin labels, order inside a group, and extra links, and fills in any
- * shipped items that are missing (Home, EV Charging, Network Status, Live
- * Streams, and the rest).
+ * Keeps the admin's group order and the order of links inside each dropdown,
+ * then fills in any shipped items that are missing (Home, EV Charging, and
+ * the rest). Hidden rows stay in the tree so a later filter can drop them
+ * without the shipped fallback putting them back.
  */
 export function mergeNavWithDefaults<T extends DefaultNavNode>(
   loaded: T[],
@@ -206,33 +207,43 @@ export function mergeNavWithDefaults<T extends DefaultNavNode>(
 ): T[] {
   if (loaded.length === 0) return defaults;
 
-  const loadedByLabel = new Map(
-    loaded.map((item) => [item.label.trim().toLowerCase(), item] as const),
+  const defaultsByLabel = new Map(
+    defaults.map((item) => [item.label.trim().toLowerCase(), item] as const),
   );
   const used = new Set<string>();
   const result: T[] = [];
 
-  for (const fallback of defaults) {
-    const key = fallback.label.trim().toLowerCase();
-    const existing = loadedByLabel.get(key);
-    if (!existing) {
-      result.push(fallback);
-      continue;
-    }
+  for (const item of loaded) {
+    const key = item.label.trim().toLowerCase();
     used.add(key);
+    const fallback = defaultsByLabel.get(key);
     result.push({
-      ...existing,
-      children: mergeChildren(existing.children, fallback.children),
+      ...item,
+      children: fallback
+        ? mergeChildren(item.children, fallback.children)
+        : item.children,
     });
   }
 
-  for (const item of loaded) {
-    const key = item.label.trim().toLowerCase();
+  for (const fallback of defaults) {
+    const key = fallback.label.trim().toLowerCase();
     if (used.has(key)) continue;
-    result.push(item);
+    result.push(fallback);
   }
 
   return result;
+}
+
+/** Drops groups and links marked not visible after merging with defaults. */
+export function filterVisibleNav<
+  T extends { isVisible?: boolean; children: T[] },
+>(nodes: T[]): T[] {
+  return nodes
+    .filter((node) => node.isVisible !== false)
+    .map((node) => ({
+      ...node,
+      children: filterVisibleNav(node.children),
+    }));
 }
 
 function mergeChildren<T extends DefaultNavNode>(existing: T[], fallback: T[]): T[] {
