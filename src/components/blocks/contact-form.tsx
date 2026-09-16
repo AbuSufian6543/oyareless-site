@@ -23,6 +23,7 @@ const SERVICES = [
   "Internet Services",
   "Security & Alarm Systems",
   "Video Surveillance (CCTV)",
+  "Mobile Security Trailer",
   "Access Control & Gates",
   "Data Cabling & Fiber Optic",
   "Two-Way Radios",

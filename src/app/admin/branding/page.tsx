@@ -95,6 +95,20 @@ export default async function BrandingPage({
         </Card>
 
         <Card>
+          <CardTitle description="Offered as a download on the Mobile Security Trailer page. Upload a new letter in the media library (JPG or PDF), then point this field at it.">
+            Mobile Security Trailer flyer
+          </CardTitle>
+          <ImageUrlField
+            label="Flyer file"
+            name="mobileTrailerFlyerUrl"
+            defaultValue={settings.mobileTrailerFlyerUrl}
+            hint="JPG or PDF. Visitors download this from /mobile-security-trailer."
+            placeholder="/docs/mobile-security-trailer-flyer.jpg"
+            allowDocument
+          />
+        </Card>
+
+        <Card>
           <CardTitle description="These two colors generate the full light-to-dark ranges used across the site.">
             Brand colors
           </CardTitle>

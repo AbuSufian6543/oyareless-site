@@ -77,6 +77,7 @@ export function ImageUrlField({
   hint,
   previewOnDark = false,
   placeholder = "/brand/logo.png",
+  allowDocument = false,
 }: {
   label: string;
   name: string;
@@ -84,9 +85,11 @@ export function ImageUrlField({
   hint?: string;
   previewOnDark?: boolean;
   placeholder?: string;
+  allowDocument?: boolean;
 }) {
   const [value, setValue] = useState(defaultValue);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const looksLikeImage = /\.(avif|gif|jpe?g|png|svg|webp)(?:$|\?)/i.test(value);
 
   return (
     <div>
@@ -115,17 +118,24 @@ export function ImageUrlField({
           className="flex shrink-0 items-center gap-1.5 rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-navy-800 transition-colors hover:bg-slate-50"
         >
           <ImageIcon className="size-4" aria-hidden="true" />
-          {value ? "Change photo" : "Choose photo"}
+          {value
+            ? allowDocument
+              ? "Change file"
+              : "Change photo"
+            : allowDocument
+              ? "Choose file"
+              : "Choose photo"}
         </button>
       </div>
 
-      {value && (
+      {value && looksLikeImage && (
         <div
           className={cn(
             "mt-2 inline-flex max-w-full items-center justify-center rounded-lg border p-3",
             previewOnDark
               ? "border-navy-700 bg-navy-900"
               : "border-slate-200 bg-slate-50",
+            allowDocument && "max-h-64 overflow-hidden",
           )}
         >
           {/* Unoptimised: the preview is admin-only and the source may be an
@@ -133,12 +143,17 @@ export function ImageUrlField({
           <Image
             src={value}
             alt=""
-            width={260}
-            height={80}
+            width={allowDocument ? 220 : 260}
+            height={allowDocument ? 280 : 80}
             unoptimized
-            className="h-12 w-auto object-contain"
+            className={allowDocument ? "h-auto w-40 object-contain" : "h-12 w-auto object-contain"}
           />
         </div>
+      )}
+      {value && allowDocument && !looksLikeImage && (
+        <p className="mt-2 text-sm text-slate-600">
+          File ready: <span className="font-mono text-xs text-navy-800">{value}</span>
+        </p>
       )}
 
       <MediaPicker

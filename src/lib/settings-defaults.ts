@@ -39,6 +39,11 @@ export const DEFAULT_SETTINGS = {
   appleIconUrl: "/apple-icon.png",
   ogImageUrl: "/brand/og-default.png",
 
+  // Product flyer offered on /mobile-security-trailer. Admins replace this
+  // URL from Branding when the letter is updated; the public path stays the
+  // same until they point it at a media-library file.
+  mobileTrailerFlyerUrl: "/docs/mobile-security-trailer-flyer.jpg",
+
   // Theme. `themeAccent` drives the whole accent ramp at runtime via
   // color-mix(); see src/lib/theme.ts.
   themePrimary: "#1478d4",

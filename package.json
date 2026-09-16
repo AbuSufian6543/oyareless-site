@@ -18,6 +18,7 @@
     "check:security": "tsx scripts/check-security.ts",
     "check:backup": "tsx scripts/check-backup.ts",
     "check:legacy-logo": "tsx scripts/check-legacy-logo.ts",
+    "check:mobile-trailer": "tsx scripts/check-mobile-trailer.ts",
     "check:smoke": "node scripts/smoke-admin.mjs",
     "brand:stream-logo": "node scripts/build-legacy-stream-logo.mjs",
     "prisma:generate": "prisma generate",

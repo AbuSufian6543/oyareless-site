@@ -60,6 +60,7 @@ const SERVICE_PAGES: Array<{ slug: string; name: string }> = [
   { slug: "firewalls", name: "Firewalls" },
   { slug: "ai-services", name: "AI cameras and phones" },
   { slug: "security-services", name: "Security systems" },
+  { slug: "mobile-security-trailer", name: "Mobile security trailer" },
   { slug: "alarm-systems", name: "Alarm systems" },
   { slug: "access-control", name: "Access control" },
   { slug: "door-intercom", name: "Door intercom" },

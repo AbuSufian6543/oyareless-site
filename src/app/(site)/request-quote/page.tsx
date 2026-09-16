@@ -11,7 +11,15 @@ export const metadata: Metadata = publicMetadata({
   path: "/request-quote",
 });
 
-export default function RequestQuotePage() {
+export default async function RequestQuotePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ interest?: string; intent?: string }>;
+}) {
+  const params = await searchParams;
+  const trailer = params.interest === "trailer";
+  const custom = params.intent === "custom";
+
   return (
     <>
       <PageHero
@@ -22,7 +30,16 @@ export default function RequestQuotePage() {
       <section className="bg-slate-50 py-12 lg:py-16">
         <div className="container-page max-w-2xl">
           <div className="surface-card p-6 sm:p-8">
-            <QuoteForm />
+            <QuoteForm
+              preselected={trailer ? ["Mobile security trailer"] : []}
+              defaultDetails={
+                custom
+                  ? "I would like a Mobile Security Trailer custom-built for our site. Please contact me to specify cameras, recording, communications, and deployment."
+                  : trailer
+                    ? "I am requesting a quote for a Mobile Security Trailer."
+                    : ""
+              }
+            />
           </div>
         </div>
       </section>

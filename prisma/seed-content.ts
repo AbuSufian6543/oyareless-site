@@ -1278,6 +1278,11 @@ const securityServices: SeedPage = {
               "We evaluate your current security posture, identify vulnerabilities and recommend tailored solutions to mitigate risk effectively.",
           },
           {
+            title: "Mobile security trailer",
+            description:
+              "A solar-powered, satellite-connected surveillance trailer with a 30-foot tower for construction sites, parking lots, and locations without permanent power or communications. See Mobile Security Trailer for the full specification.",
+          },
+          {
             title: "Integration and support",
             description:
               "Expert installation and configuration, then ongoing support, maintenance and training so your security investment keeps working.",
@@ -1291,8 +1296,8 @@ const securityServices: SeedPage = {
       data: {
         heading: "Specified as their own systems",
         description:
-          "Alarms, door intercom, and panic buttons are installed by the same team as the cameras. They have their own pages because they are quoted and supported that way.",
-        columns: "3",
+          "Alarms, door intercom, panic buttons, and the mobile security trailer are installed by the same team as the cameras. They have their own pages because they are quoted and supported that way.",
+        columns: "4",
         items: [
           {
             icon: "siren",
@@ -1324,6 +1329,17 @@ const securityServices: SeedPage = {
             imageAlt: photos.panic.alt,
             badge: "",
           },
+          {
+            icon: "cctv",
+            title: "Mobile Security Trailer",
+            description:
+              "Solar-powered autonomous surveillance with a 30-foot tower and satellite communications. Deploy, power, walk away.",
+            href: "/mobile-security-trailer",
+            imageUrl: "/images/services/mobile-security-trailer/hero.webp",
+            imageAlt:
+              "WirelessCom.Ca mobile security trailer with a 30-foot camera tower and solar array",
+            badge: "",
+          },
         ],
       },
     },
@@ -1347,6 +1363,12 @@ const securityServices: SeedPage = {
             title: "AI camera analytics",
             description:
               "People, vehicle and line-crossing detection, smarter search of recorded video, and fewer false alarms — running on the system we install.",
+          },
+          {
+            icon: "cctv",
+            title: "Mobile security trailer",
+            description:
+              "A towable, solar-powered 30-foot camera tower with satellite communications for sites that cannot take a permanent install. Custom built to the job.",
           },
           {
             icon: "phone",
@@ -3121,6 +3143,9 @@ export const SEED_REDIRECTS: Array<{ source: string; destination: string }> = [
   { source: "/it", destination: "/it-services" },
   { source: "/voip", destination: "/telephone-services" },
   { source: "/cameras", destination: "/security-services" },
+  { source: "/security-trailer", destination: "/mobile-security-trailer" },
+  { source: "/mobile-security", destination: "/mobile-security-trailer" },
+  { source: "/surveillance-trailer", destination: "/mobile-security-trailer" },
   { source: "/ai", destination: "/ai-services" },
   { source: "/firewall", destination: "/firewalls" },
   { source: "/ngfw", destination: "/firewalls" },

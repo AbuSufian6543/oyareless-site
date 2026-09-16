@@ -75,6 +75,14 @@ if (duplicates.length > 0) {
   console.error(`FAIL duplicate seed slugs: ${duplicates.join(", ")}`);
 }
 
+const securitySeed = JSON.stringify(
+  SEED_PAGES.find((page) => page.slug === "security-services") ?? {},
+);
+if (!securitySeed.includes("/mobile-security-trailer")) {
+  failures += 1;
+  console.error("FAIL security-services seed must link the Mobile Security Trailer");
+}
+
 if (failures === 0) {
   console.log(
     `OK  ${BLOCK_DEFINITIONS.length} block types construct, validate, and round-trip cleanly.`,

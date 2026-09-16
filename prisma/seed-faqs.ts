@@ -361,4 +361,11 @@ export const ADDITIONAL_FAQS: SeedFaq[] = [
     category: "General",
     order: 55,
   },
+  {
+    question: "Do you offer a mobile security trailer?",
+    answer:
+      "Yes. A solar-powered, satellite-connected surveillance trailer with a 30-foot camera tower, custom built for the site. It is for locations where a permanent camera install is impractical. See /mobile-security-trailer.",
+    category: "Security",
+    order: 56,
+  },
 ];

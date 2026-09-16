@@ -13,6 +13,7 @@ const AREAS = [
   "Networking / Wi-Fi",
   "VoIP telephone",
   "Video surveillance",
+  "Mobile security trailer",
   "Alarm systems",
   "Door intercom",
   "Panic buttons",
@@ -24,7 +25,13 @@ const AREAS = [
   "Other",
 ];
 
-export function QuoteForm() {
+export function QuoteForm({
+  preselected = [],
+  defaultDetails = "",
+}: {
+  preselected?: string[];
+  defaultDetails?: string;
+}) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [done, setDone] = useState("");
@@ -87,7 +94,12 @@ export function QuoteForm() {
         <div className="grid gap-2 sm:grid-cols-2">
           {AREAS.map((area) => (
             <label key={area} className="flex items-center gap-2 text-sm text-navy-800">
-              <input type="checkbox" name={`area-${area}`} className="size-4 accent-brand-600" />
+              <input
+                type="checkbox"
+                name={`area-${area}`}
+                defaultChecked={preselected.includes(area)}
+                className="size-4 accent-brand-600"
+              />
               {area}
             </label>
           ))}
@@ -103,6 +115,7 @@ export function QuoteForm() {
           name="details"
           required
           rows={6}
+          defaultValue={defaultDetails}
           className="field resize-y"
         />
       </label>
