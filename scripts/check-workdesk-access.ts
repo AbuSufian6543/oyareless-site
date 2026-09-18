@@ -585,9 +585,10 @@ const dashboard = readFileSync(path.join(process.cwd(), "src/app/admin/page.tsx"
 assert(
   "workdesk dashboard surfaces today's and upcoming tasks",
   dashboard.includes("Today's tasks") &&
-    dashboard.includes("Upcoming tasks") &&
     dashboard.includes("dueTodayTasks") &&
-    dashboard.includes("upcomingTasks"),
+    dashboard.includes("upcomingTasks") &&
+    dashboard.includes("MonthCalendarCard") &&
+    dashboard.includes("dashboardPersona"),
 );
 
 const resetPage = readFileSync(

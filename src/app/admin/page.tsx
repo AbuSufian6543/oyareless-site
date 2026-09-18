@@ -16,8 +16,21 @@ import {
   Users,
 } from "lucide-react";
 
+import { setDashboardPersonaAction } from "@/app/admin/account/actions";
 import { Alert, Badge, Card, CardTitle, EmptyState } from "@/components/admin/ui";
-import { WorkItem, WorkList, WorkSection, WorkStatLink } from "@/components/workdesk/work-item";
+import {
+  ActivityChartCard,
+  calendarWeeks,
+  ColorStatLink,
+  DashboardHero,
+  DashboardProfileCard,
+  MonthCalendarCard,
+  ScheduleCard,
+  TaskDonutCard,
+  weekdayShort,
+} from "@/components/workdesk/dashboard-panels";
+import { PersonaPicker } from "@/components/workdesk/persona-picker";
+import { WorkItem, WorkList, WorkSection } from "@/components/workdesk/work-item";
 import { env } from "@/lib/env";
 import { getCurrentUser } from "@/lib/auth";
 import { getResolvedMail } from "@/lib/mail-settings";
@@ -27,8 +40,8 @@ import {
   canAccessContent,
   canAccessEnquiries,
 } from "@/lib/staff-access";
+import { calendarDateKey, zonedHour } from "@/lib/timezone";
 import { formatDate, formatDateTime } from "@/lib/utils";
-import { zonedHour } from "@/lib/timezone";
 import { workdeskHref } from "@/lib/workdesk/access";
 import {
   OPEN_TASK,
@@ -41,7 +54,14 @@ import {
   ticketAssigneeNames,
   ticketUnassigned,
 } from "@/lib/workdesk/board";
-import { isOverdue, startOfToday, startOfTomorrow } from "@/lib/workdesk/dates";
+import {
+  addZonedDays,
+  isOverdue,
+  startOfMonth,
+  startOfNextMonth,
+  startOfToday,
+  startOfTomorrow,
+} from "@/lib/workdesk/dates";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Workdesk" };
@@ -69,10 +89,17 @@ export default async function AdminDashboard({
   const canSeeApplications = canAccessApplications(user);
   const today = startOfToday();
   const tomorrow = startOfTomorrow();
+  const monthStart = startOfMonth(today);
+  const nextMonth = startOfNextMonth(today);
+  const weekStart = addZonedDays(today, -6);
   const myId = user.id;
   const dueTodayFilter = { ...OPEN_TASK, dueAt: { gte: today, lt: tomorrow } };
   const upcomingFilter = { ...OPEN_TASK, dueAt: { gte: tomorrow } };
   const overdueFilter = { ...OPEN_TASK, dueAt: { lt: today } };
+  const myDoneFilter = {
+    ...taskAssignedTo(myId),
+    status: { in: [...TASK_DONE] },
+  };
 
   const [
     dueTodayCount,
@@ -106,6 +133,9 @@ export default async function AdminDashboard({
     recentSubmissions,
     mail,
     recentNotifications,
+    myDoneTasks,
+    monthDueTasks,
+    recentTaskEvents,
   ] = await Promise.all([
     prisma.internalTask.count({ where: dueTodayFilter }),
     prisma.internalTask.count({ where: upcomingFilter }),
@@ -198,6 +228,18 @@ export default async function AdminDashboard({
         take: 5,
       })
       .catch(() => []),
+    prisma.internalTask.count({ where: myDoneFilter }),
+    prisma.internalTask.findMany({
+      where: { ...OPEN_TASK, dueAt: { gte: monthStart, lt: nextMonth } },
+      select: { id: true, title: true, dueAt: true, priority: true },
+      take: 250,
+    }),
+    prisma.workdeskEvent
+      .findMany({
+        where: { taskId: { not: null }, createdAt: { gte: weekStart } },
+        select: { createdAt: true },
+      })
+      .catch(() => []),
   ]);
 
   const firstName = user.name.trim().split(/\s+/)[0] || user.name;
@@ -210,37 +252,37 @@ export default async function AdminDashboard({
     year: "numeric",
   });
 
-  const taskStats = [
-    {
-      label: "Today's tasks",
-      value: dueTodayCount,
-      hint: dueTodayCount === 1 ? "1 item due before end of day" : "Due before end of day",
-      href: "/admin/tasks?view=today",
-      Icon: CalendarDays,
-    },
-    {
-      label: "Upcoming tasks",
-      value: upcomingCount,
-      hint: upcomingCount > 0 ? "Due after today" : "Nothing scheduled ahead",
-      href: "/admin/tasks?view=upcoming",
-      Icon: CalendarClock,
-    },
-    {
-      label: "Overdue",
-      value: overdueTasks,
-      hint: overdueTasks > 0 ? "Needs attention" : "Nothing overdue",
-      href: "/admin/tasks?view=overdue",
-      Icon: TriangleAlert,
-      alert: overdueTasks > 0,
-    },
-    {
-      label: "Unassigned",
-      value: unassignedTasks,
-      hint: unassignedTasks > 0 ? "Waiting for an owner" : "Every open task has an owner",
-      href: "/admin/tasks?view=unassigned",
-      Icon: ClipboardList,
-    },
-  ];
+  const todayKey = calendarDateKey(today);
+  const dueCounts: Record<string, number> = {};
+  for (const task of monthDueTasks) {
+    if (!task.dueAt) continue;
+    const key = calendarDateKey(task.dueAt);
+    dueCounts[key] = (dueCounts[key] ?? 0) + 1;
+  }
+
+  const activityPoints = Array.from({ length: 7 }, (_, index) => {
+    const date = addZonedDays(weekStart, index);
+    const key = calendarDateKey(date);
+    return {
+      key,
+      label: weekdayShort(date),
+      count: recentTaskEvents.filter((event) => calendarDateKey(event.createdAt) === key).length,
+    };
+  });
+
+  const scheduleItems = [...dueTodayTasks, ...upcomingTasks].slice(0, 5).map((task, index) => ({
+    id: task.id,
+    href: `/admin/tasks/${task.id}`,
+    title: task.title,
+    when: task.dueAt
+      ? `${isOverdue(task.dueAt, task.status, TASK_DONE) ? "Overdue · " : "Due "}${formatDate(task.dueAt)}`
+      : "No due date",
+    tone: (["sky", "violet", "amber", "emerald", "sky"] as const)[index],
+  }));
+
+  const todayAgenda = monthDueTasks
+    .filter((task) => task.dueAt && calendarDateKey(task.dueAt) === todayKey)
+    .slice(0, 5);
 
   const ticketStats = [
     {
@@ -297,40 +339,6 @@ export default async function AdminDashboard({
 
   return (
     <>
-      <section className="relative mb-8 overflow-hidden rounded-2xl bg-navy-900 px-6 py-7 text-white shadow-sm lg:px-8">
-        <div className="pointer-events-none absolute -right-16 -top-16 size-56 rounded-full bg-brand-500/20" />
-        <div className="pointer-events-none absolute -bottom-20 right-24 size-40 rounded-full bg-white/5" />
-        <div className="relative flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-300">
-              {todayLabel}
-            </p>
-            <h1 className="mt-2 text-3xl font-extrabold tracking-tight">
-              {hello}, {firstName}
-            </h1>
-            <p className="mt-2 max-w-xl text-sm leading-relaxed text-navy-100">
-              {dueTodayCount} due today · {upcomingCount} upcoming · {overdueTasks} overdue ·{" "}
-              {myOpenTickets} ticket{myOpenTickets === 1 ? "" : "s"} assigned to you
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Link
-              href="/admin/tasks/new"
-              className="inline-flex items-center gap-2 rounded-lg bg-brand-500 px-4 py-2.5 text-sm font-semibold text-navy-950 transition-colors hover:bg-brand-400"
-            >
-              <Plus className="size-4" aria-hidden="true" />
-              New task
-            </Link>
-            <Link
-              href="/admin/tickets?create=1"
-              className="inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/15"
-            >
-              New ticket
-            </Link>
-          </div>
-        </div>
-      </section>
-
       {params.denied === "1" && (
         <div className="mb-6">
           <Alert tone="danger">
@@ -368,73 +376,141 @@ export default async function AdminDashboard({
         </div>
       )}
 
-      <section className="mb-8">
-        <h2 className="mb-3 text-sm font-bold uppercase tracking-[0.16em] text-slate-400">At a glance</h2>
+      <div className="mb-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_19rem] xl:items-stretch">
+        <DashboardHero
+          hello={hello}
+          firstName={firstName}
+          todayLabel={todayLabel}
+          summary={`${dueTodayCount} due today · ${upcomingCount} upcoming · ${overdueTasks} overdue · ${myOpenTickets} ticket${myOpenTickets === 1 ? "" : "s"} assigned to you`}
+          persona={user.dashboardPersona}
+          actions={
+            <>
+              <Link
+                href="/admin/tasks/new"
+                className="inline-flex items-center gap-2 rounded-lg bg-brand-400 px-4 py-2.5 text-sm font-semibold text-navy-950 transition-colors hover:bg-brand-300"
+              >
+                <Plus className="size-4" aria-hidden="true" />
+                New task
+              </Link>
+              <Link
+                href="/admin/tickets?create=1"
+                className="inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/15"
+              >
+                New ticket
+              </Link>
+            </>
+          }
+        />
+        <DashboardProfileCard
+          hello={hello}
+          firstName={firstName}
+          role={user.role}
+          persona={user.dashboardPersona}
+          newTaskCount={myOpenTasks}
+          homeHref="/admin/tasks"
+          accountHref="/admin/account"
+          picker={
+            user.dashboardPersona ? undefined : (
+              <PersonaPicker
+                action={setDashboardPersonaAction}
+                current={user.dashboardPersona}
+                next="/admin"
+                compact
+              />
+            )
+          }
+        />
+      </div>
+
+      <section className="mb-5">
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {taskStats.map((stat) => (
-            <WorkStatLink key={stat.label} {...stat} />
-          ))}
+          <ColorStatLink
+            href="/admin/tasks?view=today"
+            label="Today's tasks"
+            value={dueTodayCount}
+            hint={dueTodayCount === 1 ? "1 item due before end of day" : "Due before end of day"}
+            tone="sky"
+            Icon={CalendarDays}
+          />
+          <ColorStatLink
+            href="/admin/tasks?view=upcoming"
+            label="Upcoming"
+            value={upcomingCount}
+            hint={upcomingCount > 0 ? "Due after today" : "Nothing scheduled ahead"}
+            tone="cyan"
+            Icon={CalendarClock}
+          />
+          <ColorStatLink
+            href="/admin/tasks?view=overdue"
+            label="Overdue"
+            value={overdueTasks}
+            hint={overdueTasks > 0 ? "Needs attention" : "Nothing overdue"}
+            tone={overdueTasks > 0 ? "rose" : "amber"}
+            Icon={TriangleAlert}
+          />
+          <ColorStatLink
+            href="/admin/tasks?view=unassigned"
+            label="Unassigned"
+            value={unassignedTasks}
+            hint={unassignedTasks > 0 ? "Waiting for an owner" : "Every open task has an owner"}
+            tone="violet"
+            Icon={ClipboardList}
+          />
         </div>
       </section>
+
+      <div className="mb-5 grid gap-5 lg:grid-cols-3">
+        <ActivityChartCard points={activityPoints} />
+        <TaskDonutCard done={myDoneTasks} open={myOpenTasks} href="/admin/tasks?view=completed" />
+        <ScheduleCard
+          title="Today & upcoming"
+          href="/admin/tasks?view=upcoming"
+          empty="No dated tasks yet. Add a due date when you create or edit a task."
+          items={scheduleItems}
+        />
+      </div>
+
+      <div className="mb-8">
+        <MonthCalendarCard
+          monthLabel={formatDate(today, { month: "long", year: "numeric" })}
+          weeks={calendarWeeks(monthStart)}
+          todayKey={todayKey}
+          selectedKey={todayKey}
+          selectedLabel={formatDate(today, { weekday: "long", month: "long", day: "numeric" })}
+          dueCounts={dueCounts}
+          agenda={
+            todayAgenda.length === 0 ? (
+              <p className="text-sm text-navy-300">Nothing due today.</p>
+            ) : (
+              <ul className="space-y-2">
+                {todayAgenda.map((task) => (
+                  <li key={task.id}>
+                    <Link
+                      href={`/admin/tasks/${task.id}`}
+                      className="block rounded-xl bg-fuchsia-500/90 px-3 py-2 text-sm font-semibold text-white hover:bg-fuchsia-400"
+                    >
+                      {task.title}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )
+          }
+        />
+      </div>
 
       <section className="mb-8">
         <h2 className="mb-3 text-sm font-bold uppercase tracking-[0.16em] text-slate-400">Tickets</h2>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {ticketStats.map((stat) => (
-            <WorkStatLink key={stat.label} {...stat} />
+          {ticketStats.map((stat, index) => (
+            <ColorStatLink
+              key={stat.label}
+              {...stat}
+              tone={(["emerald", "sky", "violet", "cyan"] as const)[index]}
+            />
           ))}
         </div>
       </section>
-
-      <div className="mb-8 grid gap-6 lg:grid-cols-2">
-        <WorkSection
-          title="Today's tasks"
-          href="/admin/tasks?view=today"
-          countLabel={`${dueTodayCount} due today`}
-        >
-          <WorkList count={dueTodayTasks.length} empty="Nothing is due today. Upcoming work is listed next.">
-            {dueTodayTasks.map((task) => (
-              <WorkItem
-                key={task.id}
-                kind="task"
-                href={`/admin/tasks/${task.id}`}
-                reference={task.reference}
-                title={task.title}
-                status={task.status}
-                priority={task.priority}
-                dueAt={task.dueAt}
-                overdue={isOverdue(task.dueAt, task.status, TASK_DONE)}
-                assignees={task.assignees.map((row) => row.user.name)}
-                you={user.name}
-              />
-            ))}
-          </WorkList>
-        </WorkSection>
-
-        <WorkSection
-          title="Upcoming tasks"
-          href="/admin/tasks?view=upcoming"
-          countLabel={`${upcomingCount} scheduled`}
-        >
-          <WorkList count={upcomingTasks.length} empty="No future due dates yet. Add a date when you create or edit a task.">
-            {upcomingTasks.map((task) => (
-              <WorkItem
-                key={task.id}
-                kind="task"
-                href={`/admin/tasks/${task.id}`}
-                reference={task.reference}
-                title={task.title}
-                status={task.status}
-                priority={task.priority}
-                dueAt={task.dueAt}
-                overdue={isOverdue(task.dueAt, task.status, TASK_DONE)}
-                assignees={task.assignees.map((row) => row.user.name)}
-                you={user.name}
-              />
-            ))}
-          </WorkList>
-        </WorkSection>
-      </div>
 
       {overdueTaskItems.length > 0 && (
         <WorkSection

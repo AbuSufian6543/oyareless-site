@@ -28,6 +28,21 @@ export function startOfTomorrow(): Date {
   return zonedWallTime(parts.year, parts.month, parts.day + 1, 0, 0);
 }
 
+export function startOfMonth(date = new Date()): Date {
+  const parts = zonedParts(date);
+  return zonedWallTime(parts.year, parts.month, 1, 0, 0);
+}
+
+export function startOfNextMonth(date = new Date()): Date {
+  const parts = zonedParts(date);
+  return zonedWallTime(parts.year, parts.month + 1, 1, 0, 0);
+}
+
+export function addZonedDays(date: Date, days: number): Date {
+  const parts = zonedParts(date);
+  return zonedWallTime(parts.year, parts.month, parts.day + days, 0, 0);
+}
+
 export function isDueToday(dueAt: Date | null | undefined): boolean {
   if (!dueAt) return false;
   return dueAt >= startOfToday() && dueAt < startOfTomorrow();

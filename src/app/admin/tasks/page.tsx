@@ -1,6 +1,13 @@
 import Link from "next/link";
+import {
+  CalendarClock,
+  CalendarDays,
+  ClipboardList,
+  TriangleAlert,
+} from "lucide-react";
 
-import { Alert, PageHeader } from "@/components/admin/ui";
+import { Alert } from "@/components/admin/ui";
+import { ColorStatLink } from "@/components/workdesk/dashboard-panels";
 import { TaskQuickActions } from "@/components/workdesk/task-quick-actions";
 import { ViewFilter } from "@/components/workdesk/view-filter";
 import { WorkItem, WorkList } from "@/components/workdesk/work-item";
@@ -140,28 +147,66 @@ export default async function AdminTasksPage({
 
   return (
     <div>
-      <PageHeader
-        title="Internal tasks"
-        description="Open a card to update status, reassign, or add a note. Assigned staff are emailed when you create or assign. Use Send reminder to ping them again. Completed and closed work can be deleted from those tabs."
-        actions={
+      <div className="mb-6 overflow-hidden rounded-3xl bg-gradient-to-r from-navy-900 via-brand-800 to-fuchsia-700 px-5 py-6 text-white sm:px-7">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-accent-200">
+              Workdesk
+            </p>
+            <h1 className="mt-1 text-3xl font-extrabold tracking-tight">Tasks</h1>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-navy-100">
+              Open a card to update status, reassign, or add a note. Assigned staff are emailed
+              when you create or assign. Completed and closed work can be deleted from those tabs.
+            </p>
+          </div>
           <div className="flex flex-wrap gap-2">
             {canManage ? (
               <Link
                 href="/admin/audit?action=task."
-                className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold text-navy-800 hover:bg-slate-50"
+                className="rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm font-semibold text-white hover:bg-white/15"
               >
                 Audit log
               </Link>
             ) : null}
             <Link
               href="/admin/tasks/new"
-              className="rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-700"
+              className="rounded-lg bg-brand-400 px-4 py-2.5 text-sm font-semibold text-navy-950 hover:bg-brand-300"
             >
               New task
             </Link>
           </div>
-        }
-      />
+        </div>
+      </div>
+      <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <ColorStatLink
+          href="/admin/tasks"
+          label="Assigned to me"
+          value={mineCount}
+          tone="sky"
+          Icon={ClipboardList}
+        />
+        <ColorStatLink
+          href="/admin/tasks?view=today"
+          label="Due today"
+          value={todayCount}
+          tone="cyan"
+          Icon={CalendarDays}
+        />
+        <ColorStatLink
+          href="/admin/tasks?view=overdue"
+          label="Overdue"
+          value={overdueCount}
+          tone={overdueCount > 0 ? "rose" : "amber"}
+          Icon={TriangleAlert}
+        />
+        <ColorStatLink
+          href="/admin/tasks?view=upcoming"
+          label="Upcoming"
+          value={upcomingCount}
+          tone="violet"
+          Icon={CalendarClock}
+        />
+      </div>
       {params.notify === "none" ? (
         <div className="mb-4">
           <Alert tone="warning">Assign someone before sending a notification.</Alert>
@@ -172,10 +217,10 @@ export default async function AdminTasksPage({
           { href: "/admin/tasks", label: "Assigned to me", active: view === "mine", count: mineCount },
           { href: "/admin/tasks?view=team", label: "Assigned to others", active: view === "team", count: teamCount },
           { href: "/admin/tasks?view=unassigned", label: "Unassigned", active: view === "unassigned", count: unassignedCount },
-          { href: "/admin/tasks?view=overdue", label: "Overdue", active: view === "overdue", count: overdueCount },
+          { href: "/admin/tasks?view=overdue", label: "Overdue", active: view === "overdue", count: overdueCount, tone: "danger" },
           { href: "/admin/tasks?view=today", label: "Today", active: view === "today", count: todayCount },
           { href: "/admin/tasks?view=upcoming", label: "Upcoming", active: view === "upcoming", count: upcomingCount },
-          { href: "/admin/tasks?view=completed", label: "Completed", active: view === "completed", count: completedCount },
+          { href: "/admin/tasks?view=completed", label: "Completed", active: view === "completed", count: completedCount, tone: "success" },
           { href: "/admin/tasks?view=closed", label: "Closed", active: view === "closed", count: closedCount },
           { href: "/admin/tasks?view=all", label: "All open", active: view === "all", count: allCount },
         ]}

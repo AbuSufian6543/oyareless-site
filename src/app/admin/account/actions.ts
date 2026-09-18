@@ -16,12 +16,14 @@ import {
   verifyTotpToken,
 } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { Prisma } from "@/generated/prisma/client";
+import { Prisma, type DashboardPersona } from "@/generated/prisma/client";
 import {
   clearTwoFactorRecoveryCodes,
   stashTwoFactorRecoveryCodes,
 } from "@/lib/two-factor-recovery";
 import { staffAccountPath } from "@/lib/workdesk/access";
+
+const PERSONAS = new Set<DashboardPersona>(["BOY", "GIRL"]);
 
 export async function updateProfileAction(formData: FormData): Promise<void> {
   const user = await getCurrentUser();
@@ -36,6 +38,30 @@ export async function updateProfileAction(formData: FormData): Promise<void> {
   });
 
   redirect(`${staffAccountPath(user.role)}?saved=1`);
+}
+
+export async function setDashboardPersonaAction(formData: FormData): Promise<void> {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login");
+
+  const persona = String(formData.get("persona") ?? "");
+  if (!PERSONAS.has(persona as DashboardPersona)) {
+    redirect(staffAccountPath(user.role));
+  }
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { dashboardPersona: persona as DashboardPersona },
+  });
+
+  const next = String(formData.get("next") ?? "").trim();
+  const allowedHomes = new Set([
+    "/admin",
+    "/tech",
+    "/admin/account",
+    "/tech/account",
+  ]);
+  redirect(allowedHomes.has(next) ? next : staffAccountPath(user.role));
 }
 
 export async function changePasswordAction(formData: FormData): Promise<void> {

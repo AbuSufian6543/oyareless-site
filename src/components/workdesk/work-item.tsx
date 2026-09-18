@@ -13,9 +13,25 @@ function initials(name: string): string {
 
 function cardAccent(kind: "ticket" | "task", priority: string, overdue?: boolean): string {
   if (overdue) return "border-l-amber-500";
-  if (priority === "EMERGENCY") return "border-l-red-500";
+  if (priority === "EMERGENCY") return "border-l-rose-500";
   if (priority === "HIGH") return "border-l-orange-400";
-  return kind === "ticket" ? "border-l-brand-500" : "border-l-navy-700";
+  return kind === "ticket" ? "border-l-brand-500" : "border-l-cyan-500";
+}
+
+function cardSurface(
+  kind: "ticket" | "task",
+  priority: string,
+  overdue?: boolean,
+  status?: string,
+): string {
+  if (overdue) return "border-amber-200 bg-gradient-to-r from-amber-50 via-white to-white";
+  if (status === "COMPLETED") return "border-emerald-200 bg-gradient-to-r from-emerald-50 via-white to-white";
+  if (status === "CLOSED") return "border-slate-200 bg-slate-50";
+  if (priority === "EMERGENCY") return "border-rose-200 bg-gradient-to-r from-rose-50 via-white to-white";
+  if (priority === "HIGH") return "border-orange-200 bg-gradient-to-r from-orange-50 via-white to-white";
+  return kind === "ticket"
+    ? "border-slate-200 bg-white"
+    : "border-slate-200 bg-gradient-to-r from-sky-50/70 via-white to-white";
 }
 
 export function AssigneeAvatars({
@@ -87,17 +103,18 @@ export function WorkItem({
   actions?: ReactNode;
 }) {
   const accent = cardAccent(kind, priority, overdue);
+  const surface = cardSurface(kind, priority, overdue, status);
   const body = (
     <>
       <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
-        <span className="rounded-md bg-slate-100 px-1.5 py-0.5 font-mono text-[11px] font-bold tracking-wide text-brand-800">
+        <span className="rounded-md bg-white/80 px-1.5 py-0.5 font-mono text-[11px] font-bold tracking-wide text-brand-800 ring-1 ring-slate-200">
           {reference}
         </span>
         <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
           {kind === "ticket" ? "Ticket" : "Task"}
         </span>
       </p>
-      <p className="mt-1.5 text-[0.95rem] font-semibold leading-snug text-navy-900">{title}</p>
+      <p className="mt-1.5 text-base font-bold leading-snug text-navy-900">{title}</p>
       <p className="mt-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
         {kind === "ticket" ? (
           <TicketStatusBadge status={status} />
@@ -111,7 +128,7 @@ export function WorkItem({
           <span
             className={cn(
               "rounded-full px-2 py-0.5 font-semibold",
-              overdue ? "bg-amber-50 text-amber-800" : "bg-slate-100 text-slate-600",
+              overdue ? "bg-amber-200/80 text-amber-950" : "bg-sky-100 text-sky-800",
             )}
           >
             {overdue ? "Overdue " : "Due "}
@@ -129,9 +146,9 @@ export function WorkItem({
   );
 
   const shell = cn(
-    "border-l-[3px] bg-white shadow-[0_1px_2px_rgba(15,42,73,0.05)] transition duration-200",
+    "border-l-[3px] shadow-[0_1px_2px_rgba(15,42,73,0.05)] transition duration-200",
     accent,
-    overdue ? "border-amber-200" : "border-slate-200",
+    surface,
   );
 
   if (actions) {
@@ -199,7 +216,7 @@ export function WorkSection({
   className?: string;
 }) {
   return (
-    <section className={cn("rounded-2xl border border-slate-200/90 bg-slate-50/40 p-4 sm:p-5", className)}>
+    <section className={cn("rounded-2xl border border-slate-200/90 bg-gradient-to-b from-slate-50 to-white p-4 sm:p-5", className)}>
       <div className="mb-4 flex items-end justify-between gap-3">
         <h2 className="text-base font-bold tracking-tight text-navy-900">{title}</h2>
         {href && countLabel ? (

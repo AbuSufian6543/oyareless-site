@@ -8,7 +8,7 @@ import { generateSecret, generateURI, verify as verifyTotp } from "otplib";
 import { env } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
 import { decryptSecret, encryptSecret, hashToken, randomToken } from "@/lib/crypto";
-import type { Role, User } from "@/generated/prisma/client";
+import type { DashboardPersona, Role, User } from "@/generated/prisma/client";
 import { STAFF_ROLE_RANK } from "@/lib/workdesk/rules";
 
 export {
@@ -34,6 +34,7 @@ export type SessionUser = {
   name: string;
   role: Role;
   avatarUrl: string | null;
+  dashboardPersona: DashboardPersona | null;
   mustChangePassword: boolean;
   twoFactorEnabled: boolean;
 };
@@ -149,6 +150,7 @@ export const getCurrentUser = cache(async (): Promise<SessionUser | null> => {
     name: user.name,
     role: user.role,
     avatarUrl: user.avatarUrl,
+    dashboardPersona: user.dashboardPersona,
     mustChangePassword: user.mustChangePassword,
     twoFactorEnabled: user.twoFactorEnabled,
   };

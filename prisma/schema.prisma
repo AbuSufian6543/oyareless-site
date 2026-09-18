@@ -28,6 +28,12 @@ enum Role {
   TECHNICIAN
 }
 
+/// Cartoon used on the staff dashboard. Chosen by the person, never inferred.
+enum DashboardPersona {
+  BOY
+  GIRL
+}
+
 model User {
   id                String    @id @default(cuid())
   email             String    @unique
@@ -38,6 +44,7 @@ model User {
   mustChangePassword Boolean  @default(false)
   phone             String?
   avatarUrl         String?
+  dashboardPersona  DashboardPersona?
 
   // TOTP two-factor. Secret is stored encrypted-at-rest by the app layer.
   twoFactorEnabled  Boolean   @default(false)

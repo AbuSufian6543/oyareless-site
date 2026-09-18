@@ -2,9 +2,11 @@ import { redirect } from "next/navigation";
 
 import {
   changePasswordAction,
+  setDashboardPersonaAction,
   updateProfileAction,
 } from "@/app/admin/account/actions";
 import { Alert, Card, CardTitle, PageHeader, TextField } from "@/components/admin/ui";
+import { PersonaPicker } from "@/components/workdesk/persona-picker";
 import { prisma } from "@/lib/prisma";
 import { technicianOrRedirect } from "@/lib/workdesk/access";
 
@@ -29,7 +31,7 @@ export default async function TechAccountPage({
   const params = await searchParams;
   const record = await prisma.user.findUnique({
     where: { id: user.id },
-    select: { name: true, email: true, phone: true },
+    select: { name: true, email: true, phone: true, dashboardPersona: true },
   });
   if (!record) redirect("/login");
 
@@ -60,6 +62,16 @@ export default async function TechAccountPage({
               Save profile
             </button>
           </form>
+        </Card>
+        <Card>
+          <CardTitle description="Boy for a male account, girl for a female account. Only you see this cartoon.">
+            Dashboard illustration
+          </CardTitle>
+          <PersonaPicker
+            action={setDashboardPersonaAction}
+            current={record.dashboardPersona}
+            next="/tech/account"
+          />
         </Card>
         <Card>
           <CardTitle>Password</CardTitle>

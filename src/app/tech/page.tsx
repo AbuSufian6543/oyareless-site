@@ -6,8 +6,9 @@ import {
   TriangleAlert,
 } from "lucide-react";
 
-import { PageHeader } from "@/components/admin/ui";
-import { WorkItem, WorkList, WorkSection, WorkStatLink } from "@/components/workdesk/work-item";
+import { ColorStatLink } from "@/components/workdesk/dashboard-panels";
+import { StaffIllustration } from "@/components/workdesk/staff-illustration";
+import { WorkItem, WorkList, WorkSection } from "@/components/workdesk/work-item";
 import { prisma } from "@/lib/prisma";
 import { technicianOrRedirect, technicianTaskWhere, technicianTicketWhere } from "@/lib/workdesk/access";
 import { ticketAssigneeNames } from "@/lib/workdesk/board";
@@ -115,15 +116,36 @@ export default async function TechHomePage() {
 
   return (
     <div>
-      <PageHeader
-        title={`Hi, ${firstName}`}
-        description="Your assigned tickets and tasks. Overdue work is highlighted so it is easy to see first."
-      />
+      <section className="mb-6 overflow-hidden rounded-3xl bg-gradient-to-r from-navy-950 via-navy-900 to-brand-800 px-5 py-5 text-white sm:px-7">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-accent-200">My work</p>
+            <h1 className="mt-1 text-3xl font-extrabold tracking-tight">Hi, {firstName}</h1>
+            <p className="mt-2 max-w-xl text-sm text-navy-100">
+              Your assigned tickets and tasks. Overdue work is highlighted so it is easy to see first.
+            </p>
+          </div>
+          <div className="hidden w-40 shrink-0 sm:block">
+            <StaffIllustration persona={user.dashboardPersona} />
+          </div>
+        </div>
+      </section>
 
       <div className="mb-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-        {stats.map((stat) => (
-          <WorkStatLink key={stat.label} {...stat} />
-        ))}
+        {stats.map((stat, index) => {
+          const { alert, ...rest } = stat;
+          return (
+            <ColorStatLink
+              key={stat.label}
+              {...rest}
+              tone={
+                alert
+                  ? "rose"
+                  : (["sky", "emerald", "cyan", "violet", "amber"] as const)[index]
+              }
+            />
+          );
+        })}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">

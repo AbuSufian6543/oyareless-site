@@ -14,6 +14,7 @@ import {
   confirmTwoFactorAction,
   disableOwnTwoFactorAction,
   dismissRecoveryCodesAction,
+  setDashboardPersonaAction,
   updateProfileAction,
 } from "@/app/admin/account/actions";
 import {
@@ -24,6 +25,7 @@ import {
   PageHeader,
   TextField,
 } from "@/components/admin/ui";
+import { PersonaPicker } from "@/components/workdesk/persona-picker";
 import { getCurrentUser, readTotpSecret, totpUri } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { readTwoFactorRecoveryCodes } from "@/lib/two-factor-recovery";
@@ -73,6 +75,7 @@ export default async function AccountPage({
       phone: true,
       twoFactorEnabled: true,
       twoFactorSecret: true,
+      dashboardPersona: true,
     },
   });
   if (!record) redirect("/login");
@@ -160,6 +163,17 @@ export default async function AccountPage({
               Save profile
             </button>
           </form>
+        </Card>
+
+        <Card>
+          <CardTitle description="Boy for a male account, girl for a female account. This cartoon is only on your workdesk.">
+            Dashboard illustration
+          </CardTitle>
+          <PersonaPicker
+            action={setDashboardPersonaAction}
+            current={record.dashboardPersona}
+            next="/admin/account"
+          />
         </Card>
 
         <Card>

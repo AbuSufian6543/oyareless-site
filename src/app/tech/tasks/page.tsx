@@ -64,8 +64,8 @@ export default async function TechTasksPage({
       <ViewFilter
         items={[
           { href: "/tech/tasks", label: "Open", active: view === "open", count: openCount },
-          { href: "/tech/tasks?view=overdue", label: "Overdue", active: view === "overdue", count: overdueCount },
-          { href: "/tech/tasks?view=done", label: "Completed", active: view === "done", count: doneCount },
+          { href: "/tech/tasks?view=overdue", label: "Overdue", active: view === "overdue", count: overdueCount, tone: "danger" },
+          { href: "/tech/tasks?view=done", label: "Completed", active: view === "done", count: doneCount, tone: "success" },
           { href: "/tech/tasks?view=all", label: "All", active: view === "all" },
         ]}
       />
