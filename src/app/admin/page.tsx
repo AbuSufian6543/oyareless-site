@@ -375,34 +375,37 @@ export default async function AdminDashboard({
         </div>
       )}
 
-      <DashboardHero
-        hello={hello}
-        firstName={firstName}
-        todayLabel={todayLabel}
-        summary={`${dueTodayCount} due today · ${upcomingCount} upcoming · ${overdueTasks} overdue · ${myOpenTickets} ticket${myOpenTickets === 1 ? "" : "s"} assigned to you`}
-        persona={user.dashboardPersona}
-        accountHref="/admin/account"
-        actions={
-          <>
-            <Link
-              href={`/admin/tasks/new?due=${selectedKey}`}
-              className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-3.5 py-2 text-sm font-semibold text-white hover:bg-brand-700"
-            >
-              <Plus className="size-4" aria-hidden="true" />
-              New task
-            </Link>
-            <Link
-              href="/admin/tickets?create=1"
-              className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-navy-800 hover:border-brand-300 hover:bg-brand-50"
-            >
-              New ticket
-            </Link>
-          </>
-        }
-      />
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_17.5rem] xl:grid-rows-[auto_1fr]">
+        <div className="order-1 xl:col-start-1 xl:row-start-1">
+          <DashboardHero
+            className="mb-0"
+            hello={hello}
+            firstName={firstName}
+            todayLabel={todayLabel}
+            summary={`${dueTodayCount} due today · ${upcomingCount} upcoming · ${overdueTasks} overdue · ${myOpenTickets} ticket${myOpenTickets === 1 ? "" : "s"} assigned to you`}
+            persona={user.dashboardPersona}
+            accountHref="/admin/account"
+            actions={
+              <>
+                <Link
+                  href={`/admin/tasks/new?due=${selectedKey}`}
+                  className="inline-flex h-9 items-center gap-2 rounded-lg bg-brand-600 px-3.5 text-sm font-semibold text-white hover:bg-brand-700"
+                >
+                  <Plus className="size-4" aria-hidden="true" />
+                  New task
+                </Link>
+                <Link
+                  href="/admin/tickets?create=1"
+                  className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-semibold text-navy-800 hover:border-brand-300 hover:bg-brand-50"
+                >
+                  New ticket
+                </Link>
+              </>
+            }
+          />
+        </div>
 
-      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_16.75rem]">
-        <div className="order-1 xl:order-2 xl:col-start-2">
+        <div className="order-2 xl:col-start-2 xl:row-span-2 xl:row-start-1">
           <WorkdeskCalendar
             monthLabel={formatDate(monthStart, { month: "long", year: "numeric" })}
             prevMonthKey={calendarDateKey(previousMonth)}
@@ -419,7 +422,7 @@ export default async function AdminDashboard({
           />
         </div>
 
-        <div className="order-2 min-w-0 xl:order-1 xl:col-start-1">
+        <div className="order-3 min-w-0 xl:col-start-1 xl:row-start-2">
       <section>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <ColorStatLink

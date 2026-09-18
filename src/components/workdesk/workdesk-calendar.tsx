@@ -43,7 +43,7 @@ export function WorkdeskCalendar({
   const total = mine.length + others.length + unassigned.length;
 
   return (
-    <aside className="mx-auto w-full max-w-sm max-h-[calc(100vh-4.5rem)] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_1px_2px_rgba(15,42,73,0.05)] xl:sticky xl:top-6 xl:mx-0 xl:max-w-none">
+    <aside className="mx-auto w-full max-w-sm max-h-[calc(100vh-2.75rem)] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_1px_2px_rgba(15,42,73,0.05)] xl:sticky xl:top-5 xl:mx-0 xl:max-w-none">
       <div className="mb-2 flex items-center justify-between gap-1">
         <Link
           href={`/admin?day=${prevMonthKey}`}

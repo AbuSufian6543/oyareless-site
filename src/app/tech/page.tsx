@@ -123,7 +123,7 @@ export default async function TechHomePage() {
         accountHref="/tech/account"
       />
 
-      <div className="mb-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+      <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         {stats.map((stat, index) => {
           const { alert, ...rest } = stat;
           return (

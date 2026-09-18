@@ -1,13 +1,8 @@
 import Link from "next/link";
-import {
-  CalendarClock,
-  CalendarDays,
-  ClipboardList,
-  TriangleAlert,
-} from "lucide-react";
+import { Plus } from "lucide-react";
 
 import { Alert } from "@/components/admin/ui";
-import { ColorStatLink, WorkdeskPageHeader } from "@/components/workdesk/dashboard-panels";
+import { WorkdeskPageHeader } from "@/components/workdesk/dashboard-panels";
 import { TaskQuickActions } from "@/components/workdesk/task-quick-actions";
 import { ViewFilter } from "@/components/workdesk/view-filter";
 import { WorkItem, WorkList } from "@/components/workdesk/work-item";
@@ -150,62 +145,33 @@ export default async function AdminTasksPage({
       <WorkdeskPageHeader
         kicker="Workdesk"
         title="Tasks"
-        description="Open a card to update, reassign, or add a note. Use the dashboard calendar to create work on a day."
+        description={`${mineCount} assigned to you · ${todayCount} due today · ${overdueCount} overdue`}
         actions={
           <>
             <Link
               href="/admin"
-              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-navy-800 hover:border-brand-300 hover:bg-brand-50"
+              className="inline-flex h-9 items-center rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-navy-800 hover:border-brand-300 hover:bg-brand-50"
             >
               Calendar
             </Link>
             {canManage ? (
               <Link
                 href="/admin/audit?action=task."
-                className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-navy-800 hover:border-brand-300 hover:bg-brand-50"
+                className="inline-flex h-9 items-center rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-navy-800 hover:border-brand-300 hover:bg-brand-50"
               >
                 Audit log
               </Link>
             ) : null}
             <Link
               href="/admin/tasks/new"
-              className="rounded-lg bg-brand-600 px-3.5 py-2 text-sm font-semibold text-white hover:bg-brand-700"
+              className="inline-flex h-9 items-center gap-2 rounded-lg bg-brand-600 px-3.5 text-sm font-semibold text-white hover:bg-brand-700"
             >
+              <Plus className="size-4" aria-hidden="true" />
               New task
             </Link>
           </>
         }
       />
-      <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <ColorStatLink
-          href="/admin/tasks"
-          label="Assigned to me"
-          value={mineCount}
-          tone="sky"
-          Icon={ClipboardList}
-        />
-        <ColorStatLink
-          href="/admin/tasks?view=today"
-          label="Due today"
-          value={todayCount}
-          tone="cyan"
-          Icon={CalendarDays}
-        />
-        <ColorStatLink
-          href="/admin/tasks?view=overdue"
-          label="Overdue"
-          value={overdueCount}
-          tone={overdueCount > 0 ? "rose" : "amber"}
-          Icon={TriangleAlert}
-        />
-        <ColorStatLink
-          href="/admin/tasks?view=upcoming"
-          label="Upcoming"
-          value={upcomingCount}
-          tone="violet"
-          Icon={CalendarClock}
-        />
-      </div>
       {params.notify === "none" ? (
         <div className="mb-4">
           <Alert tone="warning">Assign someone before sending a notification.</Alert>

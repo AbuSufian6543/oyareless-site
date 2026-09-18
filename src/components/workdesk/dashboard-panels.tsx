@@ -5,7 +5,6 @@ import { StaffIllustration } from "@/components/workdesk/staff-illustration";
 import type { DashboardPersona } from "@/generated/prisma/client";
 import { zonedParts } from "@/lib/timezone";
 import { cn, formatDate } from "@/lib/utils";
-import { staffRoleLabel } from "@/lib/workdesk/rules";
 
 export function WorkdeskPageHeader({
   kicker,
@@ -14,6 +13,7 @@ export function WorkdeskPageHeader({
   persona,
   accountHref,
   actions,
+  className,
 }: {
   kicker?: string;
   title: string;
@@ -21,16 +21,22 @@ export function WorkdeskPageHeader({
   persona?: DashboardPersona | null;
   accountHref?: string;
   actions?: ReactNode;
+  className?: string;
 }) {
   const portrait =
     persona !== undefined ? (
-      <span className="size-12 shrink-0 overflow-hidden rounded-xl ring-1 ring-slate-200">
+      <span className="size-10 shrink-0 overflow-hidden rounded-lg bg-white ring-1 ring-slate-200">
         <StaffIllustration persona={persona} size="thumb" />
       </span>
     ) : null;
 
   return (
-    <header className="mb-5 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3.5 shadow-[0_1px_2px_rgba(15,42,73,0.04)] sm:flex-row sm:items-center sm:justify-between sm:px-5">
+    <header
+      className={cn(
+        "mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between",
+        className,
+      )}
+    >
       <div className="flex min-w-0 items-center gap-3">
         {accountHref && portrait ? (
           <Link href={accountHref} className="shrink-0" title="Change illustration">
@@ -41,7 +47,7 @@ export function WorkdeskPageHeader({
         )}
         <div className="min-w-0">
           {kicker ? (
-            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
               {kicker}
             </p>
           ) : null}
@@ -64,6 +70,7 @@ export function DashboardHero({
   persona,
   actions,
   accountHref,
+  className,
 }: {
   hello: string;
   firstName: string;
@@ -71,8 +78,8 @@ export function DashboardHero({
   summary: string;
   persona: DashboardPersona | null;
   actions: ReactNode;
-  picker?: ReactNode;
   accountHref?: string;
+  className?: string;
 }) {
   return (
     <WorkdeskPageHeader
@@ -82,65 +89,8 @@ export function DashboardHero({
       persona={persona}
       accountHref={accountHref}
       actions={actions}
+      className={className}
     />
-  );
-}
-
-export function DashboardProfileCard({
-  hello,
-  firstName,
-  role,
-  persona,
-  newTaskCount,
-  homeHref,
-  accountHref,
-  picker,
-}: {
-  hello: string;
-  firstName: string;
-  role: string;
-  persona: DashboardPersona | null;
-  newTaskCount: number;
-  homeHref: string;
-  accountHref: string;
-  picker?: ReactNode;
-}) {
-  return (
-    <aside className="flex h-full flex-col rounded-3xl border border-navy-800/80 bg-gradient-to-b from-navy-900 to-navy-950 p-5 text-white shadow-[0_18px_40px_-24px_rgba(7,30,57,0.8)]">
-      <p className="text-xs font-bold uppercase tracking-[0.16em] text-navy-300">
-        My profile
-      </p>
-      <div className="mt-4 flex items-center gap-3">
-        <div className="size-12 overflow-hidden rounded-xl bg-white ring-1 ring-slate-200">
-          <StaffIllustration persona={persona} size="thumb" />
-        </div>
-        <div className="min-w-0">
-          <p className="text-sm text-navy-200">
-            {hello}, {firstName}
-          </p>
-          <p className="truncate text-lg font-bold">{firstName}</p>
-          <p className="text-xs font-semibold text-accent-300">{staffRoleLabel(role)}</p>
-        </div>
-      </div>
-      <p className="mt-4 text-sm leading-relaxed text-navy-100">
-        {newTaskCount > 0
-          ? `You have ${newTaskCount} open task${newTaskCount === 1 ? "" : "s"} assigned to you.`
-          : "You are caught up — nothing is assigned to you right now."}
-      </p>
-      {picker}
-      <Link
-        href={homeHref}
-        className="mt-auto inline-flex items-center justify-center rounded-full bg-brand-400 px-4 py-2 text-xs font-bold uppercase tracking-wider text-navy-950 hover:bg-brand-300"
-      >
-        See all tasks
-      </Link>
-      <Link
-        href={accountHref}
-        className="mt-2 text-center text-xs font-semibold text-navy-300 hover:text-white"
-      >
-        Change illustration
-      </Link>
-    </aside>
   );
 }
 
@@ -199,7 +149,7 @@ export function ColorStatLink({
     <Link
       href={href}
       className={cn(
-        "group rounded-xl border p-3.5 shadow-[0_1px_2px_rgba(15,42,73,0.04)] transition duration-200 hover:-translate-y-px hover:shadow-sm",
+        "group rounded-2xl border p-3.5 shadow-[0_1px_2px_rgba(15,42,73,0.04)] transition duration-200 hover:-translate-y-px hover:shadow-sm",
         colors.card,
       )}
     >

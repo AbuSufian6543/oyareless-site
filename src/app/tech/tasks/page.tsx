@@ -1,4 +1,4 @@
-import { PageHeader } from "@/components/admin/ui";
+import { WorkdeskPageHeader } from "@/components/workdesk/dashboard-panels";
 import { ViewFilter } from "@/components/workdesk/view-filter";
 import { WorkItem, WorkList } from "@/components/workdesk/work-item";
 import { WorkLogSummary } from "@/components/workdesk/work-log";
@@ -57,7 +57,8 @@ export default async function TechTasksPage({
 
   return (
     <div>
-      <PageHeader
+      <WorkdeskPageHeader
+        kicker="My work"
         title="Assigned tasks"
         description={`${openCount} open · ${overdueCount} overdue · ${doneCount} completed`}
       />

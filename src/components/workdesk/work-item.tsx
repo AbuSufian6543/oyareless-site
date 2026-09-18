@@ -155,7 +155,7 @@ export function WorkItem({
     return (
       <li
         className={cn(
-          "flex flex-col gap-3 rounded-2xl border p-4 sm:flex-row sm:items-start sm:justify-between",
+          "flex flex-col gap-3 rounded-2xl border p-3.5 sm:flex-row sm:items-start sm:justify-between",
           shell,
         )}
       >
@@ -216,9 +216,9 @@ export function WorkSection({
   className?: string;
 }) {
   return (
-    <section className={cn("rounded-2xl border border-slate-200/90 bg-gradient-to-b from-slate-50 to-white p-4 sm:p-5", className)}>
-      <div className="mb-4 flex items-end justify-between gap-3">
-        <h2 className="text-base font-bold tracking-tight text-navy-900">{title}</h2>
+    <section className={cn(className)}>
+      <div className="mb-3 flex items-end justify-between gap-3 border-b border-slate-100 pb-2">
+        <h2 className="text-sm font-bold tracking-tight text-navy-900">{title}</h2>
         {href && countLabel ? (
           <Link href={href} className="shrink-0 text-sm font-semibold text-brand-700 hover:underline">
             {countLabel}
