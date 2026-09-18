@@ -166,7 +166,7 @@ export default async function AccountPage({
         </Card>
 
         <Card>
-          <CardTitle description="Boy for a male account, girl for a female account. This cartoon is only on your workdesk.">
+          <CardTitle description="Male or female IT technician. Only you see this illustration on the workdesk.">
             Dashboard illustration
           </CardTitle>
           <PersonaPicker

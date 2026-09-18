@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 import {
@@ -582,13 +582,30 @@ assert(
 );
 
 const dashboard = readFileSync(path.join(process.cwd(), "src/app/admin/page.tsx"), "utf8");
+const calendarUi = readFileSync(
+  path.join(process.cwd(), "src/components/workdesk/workdesk-calendar.tsx"),
+  "utf8",
+);
 assert(
   "workdesk dashboard surfaces today's and upcoming tasks",
   dashboard.includes("Today's tasks") &&
-    dashboard.includes("dueTodayTasks") &&
-    dashboard.includes("upcomingTasks") &&
-    dashboard.includes("MonthCalendarCard") &&
-    dashboard.includes("dashboardPersona"),
+    dashboard.includes("WorkdeskCalendar") &&
+    dashboard.includes("dashboardPersona") &&
+    calendarUi.includes("/admin?day=") &&
+    calendarUi.includes("createTaskAction") &&
+    calendarUi.includes("Assigned to me") &&
+    calendarUi.includes("Assigned to others"),
+);
+
+assert(
+  "workdesk technician illustrations are present",
+  [
+    "tech-boy-scene.png",
+    "tech-girl-scene.png",
+    "tech-boy-avatar.png",
+    "tech-girl-avatar.png",
+    "tech-neutral-scene.png",
+  ].every((file) => existsSync(path.join(process.cwd(), "public/workdesk", file))),
 );
 
 const resetPage = readFileSync(

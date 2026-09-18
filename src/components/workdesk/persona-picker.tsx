@@ -6,8 +6,8 @@ const OPTIONS: Array<{
   value: DashboardPersona;
   label: string;
 }> = [
-  { value: "BOY", label: "Boy" },
-  { value: "GIRL", label: "Girl" },
+  { value: "BOY", label: "Male technician" },
+  { value: "GIRL", label: "Female technician" },
 ];
 
 export function PersonaPicker({
@@ -25,7 +25,7 @@ export function PersonaPicker({
     <form action={action} className={cn(compact ? "mt-3 space-y-2" : "grid gap-3 sm:grid-cols-2")}>
       <input type="hidden" name="next" value={next} />
       {compact ? (
-        <p className="text-xs text-navy-200">Choose the cartoon for your dashboard</p>
+        <p className="text-xs text-navy-200">Choose the technician illustration for your dashboard</p>
       ) : null}
       <div className={cn("grid gap-2", compact ? "grid-cols-2" : "contents")}>
         {OPTIONS.map((option) => {
@@ -55,7 +55,7 @@ export function PersonaPicker({
                   compact ? "text-white" : "text-navy-900",
                 )}
               >
-                {option.label}
+                {compact ? (option.value === "BOY" ? "Male" : "Female") : option.label}
               </span>
             </button>
           );
@@ -63,7 +63,7 @@ export function PersonaPicker({
       </div>
       {!compact ? (
         <p className="sm:col-span-2 text-xs text-slate-500">
-          This only changes the cartoon on your workdesk. It is not shown to customers.
+          This only changes the illustration on your workdesk. It is not shown to customers.
         </p>
       ) : null}
     </form>

@@ -23,13 +23,11 @@ import {
   calendarWeeks,
   ColorStatLink,
   DashboardHero,
-  DashboardProfileCard,
-  MonthCalendarCard,
-  ScheduleCard,
   TaskDonutCard,
   weekdayShort,
 } from "@/components/workdesk/dashboard-panels";
 import { PersonaPicker } from "@/components/workdesk/persona-picker";
+import { WorkdeskCalendar } from "@/components/workdesk/workdesk-calendar";
 import { WorkItem, WorkList, WorkSection } from "@/components/workdesk/work-item";
 import { env } from "@/lib/env";
 import { getCurrentUser } from "@/lib/auth";
@@ -57,8 +55,10 @@ import {
 import {
   addZonedDays,
   isOverdue,
+  parseDateInput,
   startOfMonth,
   startOfNextMonth,
+  startOfPreviousMonth,
   startOfToday,
   startOfTomorrow,
 } from "@/lib/workdesk/dates";
@@ -79,7 +79,7 @@ const ticketInclude = {
 export default async function AdminDashboard({
   searchParams,
 }: {
-  searchParams: Promise<{ denied?: string }>;
+  searchParams: Promise<{ denied?: string; day?: string; error?: string }>;
 }) {
   const user = await getCurrentUser();
   if (!user) return null;
@@ -89,8 +89,10 @@ export default async function AdminDashboard({
   const canSeeApplications = canAccessApplications(user);
   const today = startOfToday();
   const tomorrow = startOfTomorrow();
-  const monthStart = startOfMonth(today);
-  const nextMonth = startOfNextMonth(today);
+  const selectedDay = parseDateInput(params.day ?? "") ?? today;
+  const monthStart = startOfMonth(selectedDay);
+  const nextMonth = startOfNextMonth(selectedDay);
+  const previousMonth = startOfPreviousMonth(selectedDay);
   const weekStart = addZonedDays(today, -6);
   const myId = user.id;
   const dueTodayFilter = { ...OPEN_TASK, dueAt: { gte: today, lt: tomorrow } };
@@ -112,8 +114,6 @@ export default async function AdminDashboard({
     teamOpenTickets,
     unassignedTickets,
     openTickets,
-    dueTodayTasks,
-    upcomingTasks,
     overdueTaskItems,
     myTasks,
     othersTasks,
@@ -147,18 +147,6 @@ export default async function AdminDashboard({
     prisma.ticket.count({ where: { ...OPEN_TICKET, ...ticketAssignedToOthers(myId) } }).catch(() => 0),
     prisma.ticket.count({ where: { ...OPEN_TICKET, ...ticketUnassigned() } }).catch(() => 0),
     prisma.ticket.count({ where: OPEN_TICKET }).catch(() => 0),
-    prisma.internalTask.findMany({
-      where: dueTodayFilter,
-      orderBy: [{ priority: "desc" }, { dueAt: "asc" }],
-      take: 10,
-      include: taskInclude,
-    }),
-    prisma.internalTask.findMany({
-      where: upcomingFilter,
-      orderBy: [{ dueAt: "asc" }, { priority: "desc" }],
-      take: 10,
-      include: taskInclude,
-    }),
     prisma.internalTask.findMany({
       where: overdueFilter,
       orderBy: [{ dueAt: "asc" }, { priority: "desc" }],
@@ -231,7 +219,13 @@ export default async function AdminDashboard({
     prisma.internalTask.count({ where: myDoneFilter }),
     prisma.internalTask.findMany({
       where: { ...OPEN_TASK, dueAt: { gte: monthStart, lt: nextMonth } },
-      select: { id: true, title: true, dueAt: true, priority: true },
+      select: {
+        id: true,
+        title: true,
+        dueAt: true,
+        priority: true,
+        assignees: { include: { user: { select: { id: true, name: true } } } },
+      },
       take: 250,
     }),
     prisma.workdeskEvent
@@ -253,11 +247,26 @@ export default async function AdminDashboard({
   });
 
   const todayKey = calendarDateKey(today);
+  const selectedKey = calendarDateKey(selectedDay);
   const dueCounts: Record<string, number> = {};
+  const mineDay: { id: string; title: string; priority: string; assignees: string[] }[] = [];
+  const othersDay: { id: string; title: string; priority: string; assignees: string[] }[] = [];
+  const unassignedDay: { id: string; title: string; priority: string; assignees: string[] }[] = [];
   for (const task of monthDueTasks) {
     if (!task.dueAt) continue;
     const key = calendarDateKey(task.dueAt);
     dueCounts[key] = (dueCounts[key] ?? 0) + 1;
+    if (key !== selectedKey) continue;
+    const item = {
+      id: task.id,
+      title: task.title,
+      priority: task.priority,
+      assignees: task.assignees.map((row) => row.user.name),
+    };
+    const ids = task.assignees.map((row) => row.user.id);
+    if (ids.length === 0) unassignedDay.push(item);
+    else if (ids.includes(myId)) mineDay.push(item);
+    else othersDay.push(item);
   }
 
   const activityPoints = Array.from({ length: 7 }, (_, index) => {
@@ -269,20 +278,6 @@ export default async function AdminDashboard({
       count: recentTaskEvents.filter((event) => calendarDateKey(event.createdAt) === key).length,
     };
   });
-
-  const scheduleItems = [...dueTodayTasks, ...upcomingTasks].slice(0, 5).map((task, index) => ({
-    id: task.id,
-    href: `/admin/tasks/${task.id}`,
-    title: task.title,
-    when: task.dueAt
-      ? `${isOverdue(task.dueAt, task.status, TASK_DONE) ? "Overdue · " : "Due "}${formatDate(task.dueAt)}`
-      : "No due date",
-    tone: (["sky", "violet", "amber", "emerald", "sky"] as const)[index],
-  }));
-
-  const todayAgenda = monthDueTasks
-    .filter((task) => task.dueAt && calendarDateKey(task.dueAt) === todayKey)
-    .slice(0, 5);
 
   const ticketStats = [
     {
@@ -376,53 +371,68 @@ export default async function AdminDashboard({
         </div>
       )}
 
-      <div className="mb-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_19rem] xl:items-stretch">
-        <DashboardHero
-          hello={hello}
-          firstName={firstName}
-          todayLabel={todayLabel}
-          summary={`${dueTodayCount} due today · ${upcomingCount} upcoming · ${overdueTasks} overdue · ${myOpenTickets} ticket${myOpenTickets === 1 ? "" : "s"} assigned to you`}
-          persona={user.dashboardPersona}
-          actions={
-            <>
-              <Link
-                href="/admin/tasks/new"
-                className="inline-flex items-center gap-2 rounded-lg bg-brand-400 px-4 py-2.5 text-sm font-semibold text-navy-950 transition-colors hover:bg-brand-300"
-              >
-                <Plus className="size-4" aria-hidden="true" />
-                New task
-              </Link>
-              <Link
-                href="/admin/tickets?create=1"
-                className="inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/15"
-              >
-                New ticket
-              </Link>
-            </>
-          }
-        />
-        <DashboardProfileCard
-          hello={hello}
-          firstName={firstName}
-          role={user.role}
-          persona={user.dashboardPersona}
-          newTaskCount={myOpenTasks}
-          homeHref="/admin/tasks"
-          accountHref="/admin/account"
-          picker={
-            user.dashboardPersona ? undefined : (
-              <PersonaPicker
-                action={setDashboardPersonaAction}
-                current={user.dashboardPersona}
-                next="/admin"
-                compact
-              />
-            )
-          }
-        />
-      </div>
+      {params.error === "title" && (
+        <div className="mb-6">
+          <Alert tone="danger">Give the task a title of at least 3 characters.</Alert>
+        </div>
+      )}
 
-      <section className="mb-5">
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_16.75rem]">
+      <DashboardHero
+        hello={hello}
+        firstName={firstName}
+        todayLabel={todayLabel}
+        summary={`${dueTodayCount} due today · ${upcomingCount} upcoming · ${overdueTasks} overdue · ${myOpenTickets} ticket${myOpenTickets === 1 ? "" : "s"} assigned to you`}
+        persona={user.dashboardPersona}
+        accountHref="/admin/account"
+        picker={
+          user.dashboardPersona ? undefined : (
+            <PersonaPicker
+              action={setDashboardPersonaAction}
+              current={user.dashboardPersona}
+              next="/admin"
+              compact
+            />
+          )
+        }
+        actions={
+          <>
+            <Link
+              href={`/admin/tasks/new?due=${selectedKey}`}
+              className="inline-flex items-center gap-2 rounded-lg bg-brand-400 px-4 py-2.5 text-sm font-semibold text-navy-950 transition-colors hover:bg-brand-300"
+            >
+              <Plus className="size-4" aria-hidden="true" />
+              New task
+            </Link>
+            <Link
+              href="/admin/tickets?create=1"
+              className="inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/15"
+            >
+              New ticket
+            </Link>
+          </>
+        }
+      />
+
+        <div className="xl:col-start-2 xl:row-span-2">
+          <WorkdeskCalendar
+            monthLabel={formatDate(monthStart, { month: "long", year: "numeric" })}
+            prevMonthKey={calendarDateKey(previousMonth)}
+            nextMonthKey={calendarDateKey(nextMonth)}
+            weeks={calendarWeeks(monthStart)}
+            todayKey={todayKey}
+            selectedKey={selectedKey}
+            selectedLabel={formatDate(selectedDay, { weekday: "long", month: "long", day: "numeric" })}
+            dueCounts={dueCounts}
+            mine={mineDay}
+            others={othersDay}
+            unassigned={unassignedDay}
+            userId={user.id}
+          />
+        </div>
+
+        <div className="min-w-0">
+      <section className="mt-5 xl:mt-0">
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <ColorStatLink
             href="/admin/tasks?view=today"
@@ -459,47 +469,12 @@ export default async function AdminDashboard({
         </div>
       </section>
 
-      <div className="mb-5 grid gap-5 lg:grid-cols-3">
+      <div className="mt-5 grid gap-5 lg:grid-cols-2">
         <ActivityChartCard points={activityPoints} />
         <TaskDonutCard done={myDoneTasks} open={myOpenTasks} href="/admin/tasks?view=completed" />
-        <ScheduleCard
-          title="Today & upcoming"
-          href="/admin/tasks?view=upcoming"
-          empty="No dated tasks yet. Add a due date when you create or edit a task."
-          items={scheduleItems}
-        />
       </div>
 
-      <div className="mb-8">
-        <MonthCalendarCard
-          monthLabel={formatDate(today, { month: "long", year: "numeric" })}
-          weeks={calendarWeeks(monthStart)}
-          todayKey={todayKey}
-          selectedKey={todayKey}
-          selectedLabel={formatDate(today, { weekday: "long", month: "long", day: "numeric" })}
-          dueCounts={dueCounts}
-          agenda={
-            todayAgenda.length === 0 ? (
-              <p className="text-sm text-navy-300">Nothing due today.</p>
-            ) : (
-              <ul className="space-y-2">
-                {todayAgenda.map((task) => (
-                  <li key={task.id}>
-                    <Link
-                      href={`/admin/tasks/${task.id}`}
-                      className="block rounded-xl bg-fuchsia-500/90 px-3 py-2 text-sm font-semibold text-white hover:bg-fuchsia-400"
-                    >
-                      {task.title}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )
-          }
-        />
-      </div>
-
-      <section className="mb-8">
+      <section className="mb-8 mt-8">
         <h2 className="mb-3 text-sm font-bold uppercase tracking-[0.16em] text-slate-400">Tickets</h2>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {ticketStats.map((stat, index) => (
@@ -810,6 +785,8 @@ export default async function AdminDashboard({
         </Card>
       </div>
       ) : null}
+        </div>
+      </div>
     </>
   );
 }

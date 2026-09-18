@@ -13,7 +13,7 @@ import { emailAdminInbox, notifyAssignees, notifyNewWork, sendWorkdeskReminder }
 import { assignmentNotice, joinStaffNames, taskChangeNotice } from "@/lib/workdesk/notice";
 import { nextTaskReference } from "@/lib/workdesk/references";
 import { revalidateWorkdesk } from "@/lib/workdesk/revalidate";
-import { taskReturnPath, withQuery } from "@/lib/workdesk/return-path";
+import { taskReturnPath, withQuery, dashboardDayPath } from "@/lib/workdesk/return-path";
 import { workdeskAdminMaySetTaskStatus } from "@/lib/workdesk/rules";
 import { PRIORITY_LABELS, TASK_STATUS_LABELS } from "@/lib/workdesk/labels";
 import {
@@ -31,7 +31,10 @@ export async function createTaskAction(formData: FormData): Promise<void> {
   const priority = String(formData.get("priority") ?? "NORMAL") as TicketPriority;
   const dueRaw = String(formData.get("dueAt") ?? "").trim();
   const assignees = await activeAssigneeIds(assigneeIdsFrom(formData));
-  if (title.length < 3) redirect("/admin/tasks/new?error=invalid");
+  const back = dashboardDayPath(String(formData.get("returnTo") ?? ""));
+  if (title.length < 3) {
+    redirect(back ? withQuery(back, "error", "title") : "/admin/tasks/new?error=invalid");
+  }
 
   const task = await prisma.internalTask.create({
     data: {
@@ -105,7 +108,7 @@ export async function createTaskAction(formData: FormData): Promise<void> {
   });
 
   await revalidateWorkdesk({ taskId: task.id, flash: "created" });
-  redirect(`/admin/tasks/${task.id}`);
+  redirect(back ?? `/admin/tasks/${task.id}`);
 }
 
 export async function updateTaskAction(formData: FormData): Promise<void> {

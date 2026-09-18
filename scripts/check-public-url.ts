@@ -16,7 +16,7 @@ import {
   safeStaffReturnPath,
 } from "../src/lib/safe-return";
 import { isDueToday, startOfToday, startOfTomorrow } from "../src/lib/workdesk/dates";
-import { taskReturnPath, withQuery } from "../src/lib/workdesk/return-path";
+import { taskReturnPath, withQuery, dashboardDayPath } from "../src/lib/workdesk/return-path";
 
 let failed = 0;
 
@@ -251,6 +251,14 @@ assert(
   "notify=none can be added without leaving the tasks board",
   withQuery("/admin/tasks?view=closed", "notify", "none") ===
     "/admin/tasks?view=closed&notify=none",
+);
+assert(
+  "calendar create-task returnTo stays on the dashboard day",
+  dashboardDayPath("/admin?day=2026-09-18") === "/admin?day=2026-09-18" &&
+    dashboardDayPath("/admin") === "/admin" &&
+    dashboardDayPath("/admin?day=nope") === "/admin" &&
+    dashboardDayPath("/admin/tasks") === null &&
+    dashboardDayPath("https://evil.example/admin?day=2026-09-18") === null,
 );
 
 const noonToday = startOfToday();

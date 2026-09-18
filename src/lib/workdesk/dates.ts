@@ -33,6 +33,11 @@ export function startOfMonth(date = new Date()): Date {
   return zonedWallTime(parts.year, parts.month, 1, 0, 0);
 }
 
+export function startOfPreviousMonth(date = new Date()): Date {
+  const parts = zonedParts(date);
+  return zonedWallTime(parts.year, parts.month - 1, 1, 0, 0);
+}
+
 export function startOfNextMonth(date = new Date()): Date {
   const parts = zonedParts(date);
   return zonedWallTime(parts.year, parts.month + 1, 1, 0, 0);

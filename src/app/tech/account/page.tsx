@@ -64,7 +64,7 @@ export default async function TechAccountPage({
           </form>
         </Card>
         <Card>
-          <CardTitle description="Boy for a male account, girl for a female account. Only you see this cartoon.">
+          <CardTitle description="Male or female IT technician. Only you see this illustration on the workdesk.">
             Dashboard illustration
           </CardTitle>
           <PersonaPicker

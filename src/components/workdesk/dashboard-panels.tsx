@@ -14,6 +14,8 @@ export function DashboardHero({
   summary,
   persona,
   actions,
+  picker,
+  accountHref,
 }: {
   hello: string;
   firstName: string;
@@ -21,12 +23,14 @@ export function DashboardHero({
   summary: string;
   persona: DashboardPersona | null;
   actions: ReactNode;
+  picker?: ReactNode;
+  accountHref?: string;
 }) {
   return (
     <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-navy-950 via-navy-900 to-brand-800 px-6 py-7 text-white shadow-[0_18px_40px_-24px_rgba(7,30,57,0.8)] sm:px-8">
       <div className="pointer-events-none absolute -right-10 -top-16 size-56 rounded-full bg-accent-400/20 blur-2xl" />
       <div className="pointer-events-none absolute -bottom-20 left-24 size-48 rounded-full bg-brand-400/20 blur-2xl" />
-      <div className="relative grid items-center gap-4 lg:grid-cols-[minmax(0,1fr)_15rem]">
+      <div className="relative grid items-center gap-5 lg:grid-cols-[minmax(0,1fr)_min(17rem,36%)]">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-accent-200">
             {todayLabel}
@@ -41,8 +45,17 @@ export function DashboardHero({
             {summary}
           </p>
           <div className="mt-5 flex flex-wrap gap-2">{actions}</div>
+          {picker}
+          {accountHref ? (
+            <Link
+              href={accountHref}
+              className="mt-3 inline-block text-xs font-semibold text-navy-200 hover:text-white"
+            >
+              Change illustration
+            </Link>
+          ) : null}
         </div>
-        <div className="mx-auto w-full max-w-[16rem] lg:max-w-none">
+        <div className="mx-auto w-full max-w-sm overflow-hidden rounded-2xl bg-navy-950/30 ring-1 ring-white/10 lg:max-w-none">
           <StaffIllustration persona={persona} />
         </div>
       </div>
@@ -94,7 +107,7 @@ export function DashboardProfileCard({
       {picker}
       <Link
         href={homeHref}
-        className="mt-auto inline-flex items-center justify-center rounded-full bg-gradient-to-r from-fuchsia-400 to-brand-400 px-4 py-2 text-xs font-bold uppercase tracking-wider text-navy-950 hover:from-fuchsia-300 hover:to-brand-300"
+        className="mt-auto inline-flex items-center justify-center rounded-full bg-brand-400 px-4 py-2 text-xs font-bold uppercase tracking-wider text-navy-950 hover:bg-brand-300"
       >
         See all tasks
       </Link>
@@ -225,7 +238,7 @@ export function TaskDonutCard({
           <defs>
             <linearGradient id="taskDonut" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%" stopColor="#22b8d8" />
-              <stop offset="100%" stopColor="#c026d3" />
+              <stop offset="100%" stopColor="#1478d4" />
             </linearGradient>
           </defs>
           <text
@@ -249,7 +262,7 @@ export function TaskDonutCard({
         </svg>
         <ul className="space-y-2 text-sm">
           <li className="flex items-center gap-2">
-            <span className="size-2.5 rounded-full bg-fuchsia-500" />
+            <span className="size-2.5 rounded-full bg-brand-500" />
             <span className="text-slate-600">Finished</span>
             <span className="ml-auto font-bold tabular-nums text-navy-900">{done}</span>
           </li>
@@ -287,15 +300,15 @@ export function ActivityChartCard({
       <svg viewBox={`0 0 ${width} ${height}`} className="mt-4 h-28 w-full" aria-hidden="true">
         <defs>
           <linearGradient id="activityFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#e879f9" stopOpacity="0.45" />
-            <stop offset="100%" stopColor="#22b8d8" stopOpacity="0.05" />
+            <stop offset="0%" stopColor="#22b8d8" stopOpacity="0.45" />
+            <stop offset="100%" stopColor="#1478d4" stopOpacity="0.05" />
           </linearGradient>
         </defs>
         <polygon points={area} fill="url(#activityFill)" />
         <polyline
           points={line}
           fill="none"
-          stroke="#f0abfc"
+          stroke="#22b8d8"
           strokeWidth="3"
           strokeLinejoin="round"
           strokeLinecap="round"
@@ -379,77 +392,6 @@ export function ScheduleCard({
           ))}
         </ul>
       )}
-    </section>
-  );
-}
-
-export function MonthCalendarCard({
-  monthLabel,
-  weeks,
-  todayKey,
-  selectedKey,
-  selectedLabel,
-  dueCounts,
-  agenda,
-}: {
-  monthLabel: string;
-  weeks: string[][];
-  todayKey: string;
-  selectedKey: string;
-  selectedLabel: string;
-  dueCounts: Record<string, number>;
-  agenda: ReactNode;
-}) {
-  const weekday = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-
-  return (
-    <section className="rounded-3xl border border-navy-800 bg-gradient-to-b from-navy-900 to-navy-950 p-5 text-white shadow-[0_18px_40px_-24px_rgba(7,30,57,0.8)]">
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_13.5rem]">
-        <div>
-          <h2 className="text-base font-bold">{monthLabel}</h2>
-          <p className="mt-1 text-xs text-navy-300">Days with a due date are marked</p>
-          <div className="mt-4 grid grid-cols-7 gap-1 text-center text-[10px] font-bold uppercase tracking-wider text-navy-400">
-            {weekday.map((day) => (
-              <span key={day}>{day}</span>
-            ))}
-          </div>
-          <div className="mt-1 grid grid-cols-7 gap-1">
-            {weeks.flat().map((key, index) => {
-              if (!key) {
-                return <span key={`empty-${index}`} className="h-9" />;
-              }
-              const day = Number(key.slice(-2));
-              const isToday = key === todayKey;
-              const isSelected = key === selectedKey;
-              const count = dueCounts[key] ?? 0;
-              return (
-                <span
-                  key={key}
-                  className={cn(
-                    "relative flex h-9 items-center justify-center rounded-lg text-sm font-semibold",
-                    isSelected
-                      ? "bg-fuchsia-500 text-white"
-                      : isToday
-                        ? "bg-white/10 text-white"
-                        : "text-navy-100",
-                  )}
-                >
-                  {day}
-                  {count > 0 ? (
-                    <span className="absolute bottom-1 left-1/2 size-1 -translate-x-1/2 rounded-full bg-accent-300" />
-                  ) : null}
-                </span>
-              );
-            })}
-          </div>
-        </div>
-        <div className="rounded-2xl bg-white/5 p-3">
-          <p className="text-xs font-bold uppercase tracking-wider text-navy-300">
-            {selectedLabel}
-          </p>
-          <div className="mt-3">{agenda}</div>
-        </div>
-      </div>
     </section>
   );
 }
