@@ -7,8 +7,7 @@ import {
 } from "lucide-react";
 
 import { Alert } from "@/components/admin/ui";
-import { ColorStatLink } from "@/components/workdesk/dashboard-panels";
-import { StaffIllustration } from "@/components/workdesk/staff-illustration";
+import { ColorStatLink, WorkdeskPageHeader } from "@/components/workdesk/dashboard-panels";
 import { TaskQuickActions } from "@/components/workdesk/task-quick-actions";
 import { ViewFilter } from "@/components/workdesk/view-filter";
 import { WorkItem, WorkList } from "@/components/workdesk/work-item";
@@ -148,48 +147,35 @@ export default async function AdminTasksPage({
 
   return (
     <div>
-      <div className="mb-6 overflow-hidden rounded-3xl bg-gradient-to-r from-navy-950 via-navy-900 to-brand-800 px-5 py-6 text-white sm:px-7">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-accent-200">
-              Workdesk
-            </p>
-            <h1 className="mt-1 text-3xl font-extrabold tracking-tight">Tasks</h1>
-            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-navy-100">
-              Open a card to update status, reassign, or add a note. Assigned staff are emailed
-              when you create or assign. Use the dashboard calendar to pick a day and create work
-              there.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="hidden h-24 w-36 overflow-hidden rounded-2xl ring-1 ring-white/10 sm:block">
-              <StaffIllustration persona={user.dashboardPersona} className="h-full" />
-            </div>
-            <div className="flex flex-wrap gap-2">
+      <WorkdeskPageHeader
+        kicker="Workdesk"
+        title="Tasks"
+        description="Open a card to update, reassign, or add a note. Use the dashboard calendar to create work on a day."
+        actions={
+          <>
+            <Link
+              href="/admin"
+              className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-navy-800 hover:border-brand-300 hover:bg-brand-50"
+            >
+              Calendar
+            </Link>
+            {canManage ? (
               <Link
-                href="/admin"
-                className="rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm font-semibold text-white hover:bg-white/15"
+                href="/admin/audit?action=task."
+                className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-navy-800 hover:border-brand-300 hover:bg-brand-50"
               >
-                Calendar
+                Audit log
               </Link>
-              {canManage ? (
-                <Link
-                  href="/admin/audit?action=task."
-                  className="rounded-lg border border-white/20 bg-white/10 px-3 py-2 text-sm font-semibold text-white hover:bg-white/15"
-                >
-                  Audit log
-                </Link>
-              ) : null}
-              <Link
-                href="/admin/tasks/new"
-                className="rounded-lg bg-brand-400 px-4 py-2.5 text-sm font-semibold text-navy-950 hover:bg-brand-300"
-              >
-                New task
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
+            ) : null}
+            <Link
+              href="/admin/tasks/new"
+              className="rounded-lg bg-brand-600 px-3.5 py-2 text-sm font-semibold text-white hover:bg-brand-700"
+            >
+              New task
+            </Link>
+          </>
+        }
+      />
       <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <ColorStatLink
           href="/admin/tasks"

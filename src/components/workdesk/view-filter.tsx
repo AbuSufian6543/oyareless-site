@@ -15,7 +15,7 @@ export function ViewFilter({
 }) {
   return (
     <div className="mb-5 overflow-x-auto pb-1">
-      <div className="inline-flex min-w-full gap-1 rounded-2xl border border-slate-200 bg-gradient-to-r from-sky-50 via-white to-violet-50 p-1 sm:min-w-0">
+      <div className="inline-flex min-w-full gap-1 rounded-xl border border-slate-200 bg-white p-1 sm:min-w-0">
         {items.map((item) => (
           <Link
             key={item.href}

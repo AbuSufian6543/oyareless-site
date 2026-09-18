@@ -375,7 +375,6 @@ export default async function AdminDashboard({
         </div>
       )}
 
-      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_16.75rem]">
       <DashboardHero
         hello={hello}
         firstName={firstName}
@@ -387,14 +386,14 @@ export default async function AdminDashboard({
           <>
             <Link
               href={`/admin/tasks/new?due=${selectedKey}`}
-              className="inline-flex items-center gap-2 rounded-lg bg-brand-400 px-4 py-2.5 text-sm font-semibold text-navy-950 transition-colors hover:bg-brand-300"
+              className="inline-flex items-center gap-2 rounded-lg bg-brand-600 px-3.5 py-2 text-sm font-semibold text-white hover:bg-brand-700"
             >
               <Plus className="size-4" aria-hidden="true" />
               New task
             </Link>
             <Link
               href="/admin/tickets?create=1"
-              className="inline-flex items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white hover:bg-white/15"
+              className="inline-flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 py-2 text-sm font-semibold text-navy-800 hover:border-brand-300 hover:bg-brand-50"
             >
               New ticket
             </Link>
@@ -402,7 +401,8 @@ export default async function AdminDashboard({
         }
       />
 
-        <div className="xl:col-start-2 xl:row-span-2">
+      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_16.75rem]">
+        <div className="order-1 xl:order-2 xl:col-start-2">
           <WorkdeskCalendar
             monthLabel={formatDate(monthStart, { month: "long", year: "numeric" })}
             prevMonthKey={calendarDateKey(previousMonth)}
@@ -419,8 +419,8 @@ export default async function AdminDashboard({
           />
         </div>
 
-        <div className="min-w-0">
-      <section className="mt-5 xl:mt-0">
+        <div className="order-2 min-w-0 xl:order-1 xl:col-start-1">
+      <section>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <ColorStatLink
             href="/admin/tasks?view=today"
@@ -457,12 +457,12 @@ export default async function AdminDashboard({
         </div>
       </section>
 
-      <div className="mt-5 grid gap-5 lg:grid-cols-2">
+      <div className="mt-5 grid gap-4 lg:grid-cols-2">
         <ActivityChartCard points={activityPoints} />
         <TaskDonutCard done={myDoneTasks} open={myOpenTasks} href="/admin/tasks?view=completed" />
       </div>
 
-      <section className="mb-8 mt-8">
+      <section className="mb-6 mt-6">
         <h2 className="mb-3 text-sm font-bold uppercase tracking-[0.16em] text-slate-400">Tickets</h2>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {ticketStats.map((stat, index) => (
@@ -477,7 +477,7 @@ export default async function AdminDashboard({
 
       {overdueTaskItems.length > 0 && (
         <WorkSection
-          className="mb-8"
+          className="mb-6"
           title="Overdue"
           href="/admin/tasks?view=overdue"
           countLabel={`View all ${overdueTasks}`}
@@ -502,7 +502,7 @@ export default async function AdminDashboard({
         </WorkSection>
       )}
 
-      <div className="mb-8 grid gap-6 lg:grid-cols-2">
+      <div className="mb-6 grid gap-6 lg:grid-cols-2">
         <WorkSection title="Assigned to me" href="/admin/tasks" countLabel={`View all ${myOpenTasks}`}>
           <WorkList count={myTasks.length} empty="Nothing assigned to you. Create a task or pick one up from the team list.">
             {myTasks.map((task) => (
@@ -549,7 +549,7 @@ export default async function AdminDashboard({
 
       {waitingTasks.length > 0 && (
         <WorkSection
-          className="mb-8"
+          className="mb-6"
           title="Unassigned tasks"
           href="/admin/tasks?view=unassigned"
           countLabel="Assign these"
@@ -573,7 +573,7 @@ export default async function AdminDashboard({
         </WorkSection>
       )}
 
-      <div className="mb-8 grid gap-6 lg:grid-cols-2">
+      <div className="mb-6 grid gap-6 lg:grid-cols-2">
         <WorkSection
           title="Tickets assigned to me"
           href="/admin/tickets?view=mine"
@@ -622,7 +622,7 @@ export default async function AdminDashboard({
 
       {waitingTickets.length > 0 && (
         <WorkSection
-          className="mb-8"
+          className="mb-6"
           title="Unassigned tickets"
           href="/admin/tickets?view=unassigned"
           countLabel="Assign these"
@@ -645,7 +645,7 @@ export default async function AdminDashboard({
         </WorkSection>
       )}
 
-      <div className="mb-8">
+      <div className="mb-6">
           <Card>
             <CardTitle description="Technician and customer updates.">Updates</CardTitle>
             {recentNotifications.length === 0 ? (

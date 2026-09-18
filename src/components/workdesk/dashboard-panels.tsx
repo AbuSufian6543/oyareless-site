@@ -7,6 +7,55 @@ import { zonedParts } from "@/lib/timezone";
 import { cn, formatDate } from "@/lib/utils";
 import { staffRoleLabel } from "@/lib/workdesk/rules";
 
+export function WorkdeskPageHeader({
+  kicker,
+  title,
+  description,
+  persona,
+  accountHref,
+  actions,
+}: {
+  kicker?: string;
+  title: string;
+  description?: string;
+  persona?: DashboardPersona | null;
+  accountHref?: string;
+  actions?: ReactNode;
+}) {
+  const portrait =
+    persona !== undefined ? (
+      <span className="size-12 shrink-0 overflow-hidden rounded-xl ring-1 ring-slate-200">
+        <StaffIllustration persona={persona} size="thumb" />
+      </span>
+    ) : null;
+
+  return (
+    <header className="mb-5 flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3.5 shadow-[0_1px_2px_rgba(15,42,73,0.04)] sm:flex-row sm:items-center sm:justify-between sm:px-5">
+      <div className="flex min-w-0 items-center gap-3">
+        {accountHref && portrait ? (
+          <Link href={accountHref} className="shrink-0" title="Change illustration">
+            {portrait}
+          </Link>
+        ) : (
+          portrait
+        )}
+        <div className="min-w-0">
+          {kicker ? (
+            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+              {kicker}
+            </p>
+          ) : null}
+          <h1 className="truncate text-xl font-bold tracking-tight text-navy-900">{title}</h1>
+          {description ? (
+            <p className="mt-0.5 max-w-2xl text-sm leading-snug text-slate-500">{description}</p>
+          ) : null}
+        </div>
+      </div>
+      {actions ? <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div> : null}
+    </header>
+  );
+}
+
 export function DashboardHero({
   hello,
   firstName,
@@ -14,7 +63,6 @@ export function DashboardHero({
   summary,
   persona,
   actions,
-  picker,
   accountHref,
 }: {
   hello: string;
@@ -27,39 +75,14 @@ export function DashboardHero({
   accountHref?: string;
 }) {
   return (
-    <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-navy-950 via-navy-900 to-brand-800 px-6 py-7 text-white shadow-[0_18px_40px_-24px_rgba(7,30,57,0.8)] sm:px-8">
-      <div className="pointer-events-none absolute -right-10 -top-16 size-56 rounded-full bg-accent-400/20 blur-2xl" />
-      <div className="pointer-events-none absolute -bottom-20 left-24 size-48 rounded-full bg-brand-400/20 blur-2xl" />
-      <div className="relative grid items-center gap-5 lg:grid-cols-[minmax(0,1fr)_min(17rem,36%)]">
-        <div>
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-accent-200">
-            {todayLabel}
-          </p>
-          <p className="mt-3 text-sm font-medium text-brand-100">
-            {hello}, {firstName}
-          </p>
-          <h1 className="mt-1 max-w-xl text-3xl font-extrabold tracking-tight sm:text-4xl">
-            Check your daily tasks &amp; schedules
-          </h1>
-          <p className="mt-2 max-w-lg text-sm leading-relaxed text-navy-100">
-            {summary}
-          </p>
-          <div className="mt-5 flex flex-wrap gap-2">{actions}</div>
-          {picker}
-          {accountHref ? (
-            <Link
-              href={accountHref}
-              className="mt-3 inline-block text-xs font-semibold text-navy-200 hover:text-white"
-            >
-              Change illustration
-            </Link>
-          ) : null}
-        </div>
-        <div className="mx-auto w-full max-w-sm overflow-hidden rounded-2xl ring-1 ring-white/15 lg:max-w-none">
-          <StaffIllustration persona={persona} />
-        </div>
-      </div>
-    </section>
+    <WorkdeskPageHeader
+      kicker={todayLabel}
+      title={`${hello}, ${firstName}`}
+      description={summary}
+      persona={persona}
+      accountHref={accountHref}
+      actions={actions}
+    />
   );
 }
 
@@ -88,8 +111,8 @@ export function DashboardProfileCard({
         My profile
       </p>
       <div className="mt-4 flex items-center gap-3">
-        <div className="size-16 overflow-hidden rounded-full bg-white ring-2 ring-accent-400/40">
-          <StaffIllustration persona={persona} />
+        <div className="size-12 overflow-hidden rounded-xl bg-white ring-1 ring-slate-200">
+          <StaffIllustration persona={persona} size="thumb" />
         </div>
         <div className="min-w-0">
           <p className="text-sm text-navy-200">
@@ -176,22 +199,22 @@ export function ColorStatLink({
     <Link
       href={href}
       className={cn(
-        "group rounded-2xl border p-4 shadow-[0_1px_2px_rgba(15,42,73,0.05)] transition duration-200 hover:-translate-y-0.5 hover:shadow-md",
+        "group rounded-xl border p-3.5 shadow-[0_1px_2px_rgba(15,42,73,0.04)] transition duration-200 hover:-translate-y-px hover:shadow-sm",
         colors.card,
       )}
     >
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[0.7rem] font-bold uppercase tracking-wider text-slate-500">
+          <p className="text-[0.68rem] font-bold uppercase tracking-wider text-slate-500">
             {label}
           </p>
-          <p className={cn("mt-2 text-3xl font-extrabold tabular-nums tracking-tight", colors.value)}>
+          <p className={cn("mt-1 text-2xl font-extrabold tabular-nums tracking-tight", colors.value)}>
             {value}
           </p>
-          {hint ? <p className="mt-1 text-xs text-slate-500">{hint}</p> : null}
+          {hint ? <p className="mt-0.5 text-xs text-slate-500">{hint}</p> : null}
         </div>
-        <span className={cn("flex size-11 items-center justify-center rounded-xl", colors.icon)}>
-          <Icon className="size-5" aria-hidden={true} />
+        <span className={cn("flex size-9 items-center justify-center rounded-lg", colors.icon)}>
+          <Icon className="size-4" aria-hidden={true} />
         </span>
       </div>
     </Link>
@@ -214,15 +237,15 @@ export function TaskDonutCard({
   const dash = (percent / 100) * circumference;
 
   return (
-    <section className="rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_1px_2px_rgba(15,42,73,0.05)]">
+    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_1px_2px_rgba(15,42,73,0.04)]">
       <div className="flex items-start justify-between gap-3">
-        <h2 className="text-base font-bold text-navy-900">Task progress</h2>
+        <h2 className="text-sm font-bold text-navy-900">Task progress</h2>
         <Link href={href} className="text-xs font-semibold text-brand-700 hover:underline">
           Details
         </Link>
       </div>
       <div className="mt-4 flex items-center gap-4">
-        <svg viewBox="0 0 120 120" className="size-28 shrink-0" aria-hidden="true">
+        <svg viewBox="0 0 120 120" className="size-24 shrink-0" aria-hidden="true">
           <circle cx="60" cy="60" r={radius} fill="none" stroke="#e2e8f0" strokeWidth="12" />
           <circle
             cx="60"
@@ -294,10 +317,10 @@ export function ActivityChartCard({
   const area = `0,${height} ${line} ${width},${height}`;
 
   return (
-    <section className="rounded-3xl border border-slate-200 bg-gradient-to-b from-navy-950 to-navy-900 p-5 text-white shadow-[0_1px_2px_rgba(15,42,73,0.05)]">
-      <h2 className="text-base font-bold">Activity</h2>
-      <p className="mt-1 text-xs text-navy-300">Task updates over the last 7 days</p>
-      <svg viewBox={`0 0 ${width} ${height}`} className="mt-4 h-28 w-full" aria-hidden="true">
+    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_1px_2px_rgba(15,42,73,0.04)]">
+      <h2 className="text-sm font-bold text-navy-900">Activity</h2>
+      <p className="mt-0.5 text-xs text-slate-500">Task updates over the last 7 days</p>
+      <svg viewBox={`0 0 ${width} ${height}`} className="mt-3 h-24 w-full" aria-hidden="true">
         <defs>
           <linearGradient id="activityFill" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#22b8d8" stopOpacity="0.45" />
@@ -314,10 +337,10 @@ export function ActivityChartCard({
           strokeLinecap="round"
         />
         {coords.map((point) => (
-          <circle key={point.key} cx={point.x} cy={point.y} r="4" fill="#ffffff" />
+          <circle key={point.key} cx={point.x} cy={point.y} r="3.5" fill="#1478d4" stroke="#ffffff" strokeWidth="2" />
         ))}
       </svg>
-      <div className="mt-1 flex justify-between text-[10px] font-semibold uppercase tracking-wider text-navy-400">
+      <div className="mt-1 flex justify-between text-[10px] font-semibold uppercase tracking-wider text-slate-400">
         {points.map((point) => (
           <span key={point.key}>{point.label}</span>
         ))}

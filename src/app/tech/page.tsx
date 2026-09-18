@@ -6,8 +6,7 @@ import {
   TriangleAlert,
 } from "lucide-react";
 
-import { ColorStatLink } from "@/components/workdesk/dashboard-panels";
-import { StaffIllustration } from "@/components/workdesk/staff-illustration";
+import { ColorStatLink, WorkdeskPageHeader } from "@/components/workdesk/dashboard-panels";
 import { WorkItem, WorkList, WorkSection } from "@/components/workdesk/work-item";
 import { prisma } from "@/lib/prisma";
 import { technicianOrRedirect, technicianTaskWhere, technicianTicketWhere } from "@/lib/workdesk/access";
@@ -116,20 +115,13 @@ export default async function TechHomePage() {
 
   return (
     <div>
-      <section className="mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-navy-950 via-navy-900 to-brand-800 px-5 py-6 text-white sm:px-7">
-        <div className="grid items-center gap-5 lg:grid-cols-[minmax(0,1fr)_min(16rem,34%)]">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-accent-200">My work</p>
-            <h1 className="mt-1 text-3xl font-extrabold tracking-tight">Hi, {firstName}</h1>
-            <p className="mt-2 max-w-xl text-sm leading-relaxed text-navy-100">
-              Your assigned tickets and tasks. Overdue work is highlighted so it is easy to see first.
-            </p>
-          </div>
-          <div className="mx-auto hidden w-full max-w-xs overflow-hidden rounded-2xl ring-1 ring-white/10 sm:block lg:max-w-none">
-            <StaffIllustration persona={user.dashboardPersona} />
-          </div>
-        </div>
-      </section>
+      <WorkdeskPageHeader
+        kicker="My work"
+        title={`Hi, ${firstName}`}
+        description="Your assigned tickets and tasks. Overdue work is listed first when it needs attention."
+        persona={user.dashboardPersona}
+        accountHref="/tech/account"
+      />
 
       <div className="mb-8 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         {stats.map((stat, index) => {
