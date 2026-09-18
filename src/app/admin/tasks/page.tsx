@@ -162,8 +162,8 @@ export default async function AdminTasksPage({
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <div className="hidden h-24 w-36 overflow-hidden rounded-2xl bg-navy-950/40 ring-1 ring-white/10 sm:block">
-              <StaffIllustration persona={user.dashboardPersona} className="h-full w-full object-cover" />
+            <div className="hidden h-24 w-36 overflow-hidden rounded-2xl ring-1 ring-white/10 sm:block">
+              <StaffIllustration persona={user.dashboardPersona} className="h-full" />
             </div>
             <div className="flex flex-wrap gap-2">
               <Link

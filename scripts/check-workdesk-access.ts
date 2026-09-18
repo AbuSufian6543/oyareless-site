@@ -599,13 +599,24 @@ assert(
 
 assert(
   "workdesk technician illustrations are present",
-  [
-    "tech-boy-scene.png",
-    "tech-girl-scene.png",
-    "tech-boy-avatar.png",
-    "tech-girl-avatar.png",
-    "tech-neutral-scene.png",
-  ].every((file) => existsSync(path.join(process.cwd(), "public/workdesk", file))),
+  ["rack.png", "engineering.png", "bench.png"].every((file) =>
+    existsSync(path.join(process.cwd(), "public/workdesk", file)),
+  ),
+);
+
+const illustrationLib = readFileSync(
+  path.join(process.cwd(), "src/lib/workdesk/illustrations.ts"),
+  "utf8",
+);
+assert(
+  "workdesk default illustration is the rack technician",
+  illustrationLib.includes('DEFAULT_DASHBOARD_PERSONA = "RACK"') &&
+    schema.includes("enum DashboardPersona") &&
+    schema.includes("RACK") &&
+    schema.includes("ENGINEERING") &&
+    schema.includes("BENCH") &&
+    !schema.includes("BOY") &&
+    !schema.includes("GIRL"),
 );
 
 const resetPage = readFileSync(

@@ -34,7 +34,7 @@ export type SessionUser = {
   name: string;
   role: Role;
   avatarUrl: string | null;
-  dashboardPersona: DashboardPersona | null;
+  dashboardPersona: DashboardPersona;
   mustChangePassword: boolean;
   twoFactorEnabled: boolean;
 };
@@ -150,7 +150,7 @@ export const getCurrentUser = cache(async (): Promise<SessionUser | null> => {
     name: user.name,
     role: user.role,
     avatarUrl: user.avatarUrl,
-    dashboardPersona: user.dashboardPersona,
+    dashboardPersona: user.dashboardPersona ?? "RACK",
     mustChangePassword: user.mustChangePassword,
     twoFactorEnabled: user.twoFactorEnabled,
   };

@@ -22,8 +22,11 @@ import {
   stashTwoFactorRecoveryCodes,
 } from "@/lib/two-factor-recovery";
 import { staffAccountPath } from "@/lib/workdesk/access";
+import { DASHBOARD_ILLUSTRATIONS } from "@/lib/workdesk/illustrations";
 
-const PERSONAS = new Set<DashboardPersona>(["BOY", "GIRL"]);
+const PERSONAS = new Set<DashboardPersona>(
+  Object.keys(DASHBOARD_ILLUSTRATIONS) as DashboardPersona[],
+);
 
 export async function updateProfileAction(formData: FormData): Promise<void> {
   const user = await getCurrentUser();

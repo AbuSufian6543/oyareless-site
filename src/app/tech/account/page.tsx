@@ -39,7 +39,7 @@ export default async function TechAccountPage({
   const message = messageKey ? MESSAGES[messageKey] : null;
 
   return (
-    <div className="max-w-xl">
+    <div className="max-w-3xl">
       <PageHeader title="My account" description="Update your name, phone, and password." />
       {params.change && (
         <div className="mb-5">
@@ -64,7 +64,7 @@ export default async function TechAccountPage({
           </form>
         </Card>
         <Card>
-          <CardTitle description="Male or female IT technician. Only you see this illustration on the workdesk.">
+          <CardTitle description="The rack technician is used until you pick another. Only you see this on the workdesk.">
             Dashboard illustration
           </CardTitle>
           <PersonaPicker

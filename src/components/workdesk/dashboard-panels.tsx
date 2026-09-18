@@ -55,7 +55,7 @@ export function DashboardHero({
             </Link>
           ) : null}
         </div>
-        <div className="mx-auto w-full max-w-sm overflow-hidden rounded-2xl bg-navy-950/30 ring-1 ring-white/10 lg:max-w-none">
+        <div className="mx-auto w-full max-w-sm overflow-hidden rounded-2xl ring-1 ring-white/15 lg:max-w-none">
           <StaffIllustration persona={persona} />
         </div>
       </div>
@@ -88,8 +88,8 @@ export function DashboardProfileCard({
         My profile
       </p>
       <div className="mt-4 flex items-center gap-3">
-        <div className="size-16 overflow-hidden rounded-full bg-navy-800 ring-2 ring-accent-400/40">
-          <StaffIllustration persona={persona} crop="avatar" />
+        <div className="size-16 overflow-hidden rounded-full bg-white ring-2 ring-accent-400/40">
+          <StaffIllustration persona={persona} />
         </div>
         <div className="min-w-0">
           <p className="text-sm text-navy-200">

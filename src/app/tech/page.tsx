@@ -125,7 +125,7 @@ export default async function TechHomePage() {
               Your assigned tickets and tasks. Overdue work is highlighted so it is easy to see first.
             </p>
           </div>
-          <div className="mx-auto hidden w-full max-w-xs overflow-hidden rounded-2xl bg-navy-950/30 ring-1 ring-white/10 sm:block lg:max-w-none">
+          <div className="mx-auto hidden w-full max-w-xs overflow-hidden rounded-2xl ring-1 ring-white/10 sm:block lg:max-w-none">
             <StaffIllustration persona={user.dashboardPersona} />
           </div>
         </div>

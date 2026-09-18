@@ -16,7 +16,6 @@ import {
   Users,
 } from "lucide-react";
 
-import { setDashboardPersonaAction } from "@/app/admin/account/actions";
 import { Alert, Badge, Card, CardTitle, EmptyState } from "@/components/admin/ui";
 import {
   ActivityChartCard,
@@ -26,7 +25,6 @@ import {
   TaskDonutCard,
   weekdayShort,
 } from "@/components/workdesk/dashboard-panels";
-import { PersonaPicker } from "@/components/workdesk/persona-picker";
 import { WorkdeskCalendar } from "@/components/workdesk/workdesk-calendar";
 import { WorkItem, WorkList, WorkSection } from "@/components/workdesk/work-item";
 import { env } from "@/lib/env";
@@ -385,16 +383,6 @@ export default async function AdminDashboard({
         summary={`${dueTodayCount} due today · ${upcomingCount} upcoming · ${overdueTasks} overdue · ${myOpenTickets} ticket${myOpenTickets === 1 ? "" : "s"} assigned to you`}
         persona={user.dashboardPersona}
         accountHref="/admin/account"
-        picker={
-          user.dashboardPersona ? undefined : (
-            <PersonaPicker
-              action={setDashboardPersonaAction}
-              current={user.dashboardPersona}
-              next="/admin"
-              compact
-            />
-          )
-        }
         actions={
           <>
             <Link
