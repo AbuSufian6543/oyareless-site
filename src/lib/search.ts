@@ -183,6 +183,7 @@ export async function searchSite(query: string): Promise<SearchHit[]> {
 
   const tools: SearchHit[] = [
     { title: "Internet speed test", href: "/speed-test", kind: "Tool", snippet: "Download, upload, latency and jitter." },
+    { title: "Internet availability", href: "/internet-availability", kind: "Tool", snippet: "Check fibre and copper speeds at a street address." },
     { title: "Network tools", href: "/network-tools", kind: "Tool", snippet: "DNS, TCP, WHOIS, subnet and cable calculators." },
     { title: "Cybersecurity tools", href: "/cybersecurity-tools", kind: "Tool", snippet: "TLS, headers, SPF/DKIM/DMARC, DNSBL." },
     { title: "Firewalls", href: "/firewalls", kind: "Service", snippet: "Barracuda, Fortinet, Juniper and similar next-generation firewalls." },

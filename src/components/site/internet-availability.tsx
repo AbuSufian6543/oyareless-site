@@ -3,8 +3,10 @@
 import { useState } from "react";
 import { Check, Loader2, MapPin, Plus, Wifi } from "lucide-react";
 
+import { PageBreadcrumbs } from "@/components/site/page-breadcrumbs";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { TechBackdrop } from "@/components/visuals/tech-backdrop";
+import { crumbs } from "@/lib/seo";
 import {
   LOCATION_TYPES,
   PROVINCES,
@@ -29,7 +31,7 @@ const emptyForm = {
   postalCode: "",
 };
 
-export function InternetAvailabilityChecker() {
+export function InternetAvailabilityChecker({ asPage = false }: { asPage?: boolean }) {
   const [form, setForm] = useState(emptyForm);
   const [locations, setLocations] = useState<LocationRow[]>([]);
   const [nextLocationId, setNextLocationId] = useState(1);
@@ -80,21 +82,35 @@ export function InternetAvailabilityChecker() {
   }
 
   return (
-    <section id="availability" className="relative isolate scroll-mt-28 overflow-hidden bg-navy-950 py-14 text-white lg:py-20">
-      <TechBackdrop network density={0.62} glow="left" mood="network" scrim="section" />
+    <section id="availability" className={cn("relative isolate scroll-mt-28 overflow-hidden bg-navy-950 text-white", asPage ? "py-10 lg:py-16" : "py-14 lg:py-20")}>
+      <TechBackdrop network density={asPage ? 0.72 : 0.62} glow={asPage ? "center" : "left"} mood="network" scrim="section" />
       <div className="container-page relative">
-        <div className="mx-auto max-w-5xl">
+        <div className={cn("mx-auto max-w-5xl", asPage && "text-center")}>
+          {asPage ? (
+            <div className="mb-8 text-left">
+              <PageBreadcrumbs
+                tone="onDark"
+                items={crumbs({ name: "Internet availability", href: "/internet-availability" })}
+              />
+            </div>
+          ) : null}
           <p className="eyebrow-pill">Fibre and copper</p>
-          <h2 className="mt-4 max-w-2xl text-balance-tight text-3xl font-bold leading-tight text-white lg:text-[2.5rem]">
-            Check internet availability
-          </h2>
-          <p className="mt-3 max-w-2xl text-base leading-relaxed text-navy-200 lg:text-lg">
+          {asPage ? (
+            <h1 className="mx-auto mt-5 max-w-3xl text-balance-tight text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
+              Internet availability
+            </h1>
+          ) : (
+            <h2 className="mt-4 max-w-2xl text-balance-tight text-3xl font-bold leading-tight text-white lg:text-[2.5rem]">
+              Check internet availability
+            </h2>
+          )}
+          <p className={cn("mt-3 max-w-2xl text-base leading-relaxed text-navy-200 lg:text-lg", asPage && "mx-auto mt-4")}>
             Enter the service address. WirelessCom will show the fibre and copper speeds available at that location.
           </p>
 
           <form
             onSubmit={onSubmit}
-            className="scheme-dark mt-8 rounded-2xl border border-white/10 bg-navy-950/70 p-5 shadow-[0_24px_60px_rgb(4_19_37_/_0.45)] backdrop-blur-md sm:p-7"
+            className="scheme-dark mt-8 rounded-2xl border border-white/10 bg-navy-950/70 p-5 text-left shadow-[0_24px_60px_rgb(4_19_37_/_0.45)] backdrop-blur-md sm:p-7"
           >
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-12">
               <Field label="Street number" required className="lg:col-span-2">
@@ -314,7 +330,7 @@ function AvailabilityResult({
   onMore: () => void;
 }) {
   return (
-    <div className="mt-6 space-y-5">
+    <div className="mt-6 space-y-5 text-left">
       <div
         className={cn(
           "rounded-xl border px-5 py-4 text-sm font-semibold",

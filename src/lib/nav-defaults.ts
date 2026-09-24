@@ -61,6 +61,7 @@ export const DEFAULT_NAV: DefaultNavItem[] = [
     order: 2,
     children: [
       { label: "Internet Speed Test", href: "/speed-test" },
+      { label: "Internet Availability", href: "/internet-availability" },
       { label: "Network Tools", href: "/network-tools" },
       { label: "Cybersecurity Tools", href: "/cybersecurity-tools" },
       { label: "Network Status", href: "/network-status" },
@@ -138,6 +139,7 @@ export const DEFAULT_NAV: DefaultNavItem[] = [
     order: 2,
     children: [
       { label: "Internet Speed Test", href: "/speed-test" },
+      { label: "Internet Availability", href: "/internet-availability" },
       { label: "Network Tools", href: "/network-tools" },
       { label: "Cybersecurity Tools", href: "/cybersecurity-tools" },
       { label: "Network Status", href: "/network-status" },
