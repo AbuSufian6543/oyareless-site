@@ -94,35 +94,63 @@ export function NetworkCanvas({
     let frame = 0;
     let running = false;
 
+    const makeNode = (index: number): Node => {
+      const sensor = mood === "ops" && index % 9 === 0;
+      return {
+        x: Math.random() * width,
+        y: Math.random() * height,
+        vx: (Math.random() - 0.5) * (mood === "ops" ? 0.12 : 0.19),
+        vy: (Math.random() - 0.5) * (mood === "ops" ? 0.12 : 0.19),
+        r: sensor
+          ? 2.1 + Math.random() * 0.6
+          : mood === "ai" && index % 7 === 0
+            ? 2.2 + Math.random() * 0.8
+            : 1 + Math.random() * 1.5,
+        sensor,
+      };
+    };
+
     const resize = () => {
       const rect = canvas.getBoundingClientRect();
       if (rect.width === 0 || rect.height === 0) return;
 
+      const nextW = rect.width;
+      const nextH = rect.height;
+      if (Math.abs(nextW - width) < 0.5 && Math.abs(nextH - height) < 0.5) return;
+
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      width = rect.width;
-      height = rect.height;
-      canvas.width = Math.round(width * dpr);
-      canvas.height = Math.round(height * dpr);
+      canvas.width = Math.round(nextW * dpr);
+      canvas.height = Math.round(nextH * dpr);
       context.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+      const previousW = width;
+      const previousH = height;
+      width = nextW;
+      height = nextH;
 
       const target = Math.round(((width * height) / NODE_AREA) * density);
       const count = Math.max(MIN_NODES, Math.min(MAX_NODES, target));
 
-      nodes = Array.from({ length: count }, (_, index) => {
-        const sensor = mood === "ops" && index % 9 === 0;
-        return {
-          x: Math.random() * width,
-          y: Math.random() * height,
-          vx: (Math.random() - 0.5) * (mood === "ops" ? 0.12 : 0.19),
-          vy: (Math.random() - 0.5) * (mood === "ops" ? 0.12 : 0.19),
-          r: sensor
-            ? 2.1 + Math.random() * 0.6
-            : mood === "ai" && index % 7 === 0
-              ? 2.2 + Math.random() * 0.8
-              : 1 + Math.random() * 1.5,
-          sensor,
-        };
-      });
+      // The section grows when results appear. Keep the existing field and
+      // map it into the new box so the bitmap is not stretched by CSS.
+      if (nodes.length > 0 && previousW > 0 && previousH > 0) {
+        const scaleX = width / previousW;
+        const scaleY = height / previousH;
+        for (const node of nodes) {
+          node.x = Math.max(0, Math.min(width, node.x * scaleX));
+          node.y = Math.max(0, Math.min(height, node.y * scaleY));
+        }
+        if (nodes.length < count) {
+          for (let index = nodes.length; index < count; index += 1) {
+            const node = makeNode(index);
+            node.y = previousH + Math.random() * Math.max(height - previousH, 1);
+            nodes.push(node);
+          }
+        }
+        return;
+      }
+
+      nodes = Array.from({ length: count }, (_, index) => makeNode(index));
       pulses = [];
       rings = [];
     };
@@ -283,8 +311,13 @@ export function NetworkCanvas({
         resize();
         draw(false);
       };
+      const boxObserver = new ResizeObserver(onResizeStatic);
+      boxObserver.observe(canvas.parentElement ?? canvas);
       window.addEventListener("resize", onResizeStatic);
-      return () => window.removeEventListener("resize", onResizeStatic);
+      return () => {
+        boxObserver.disconnect();
+        window.removeEventListener("resize", onResizeStatic);
+      };
     }
 
     const observer = new IntersectionObserver(
@@ -305,12 +338,16 @@ export function NetworkCanvas({
       draw(!running);
     };
 
+    const boxObserver = new ResizeObserver(onResize);
+    boxObserver.observe(canvas.parentElement ?? canvas);
+
     document.addEventListener("visibilitychange", onVisibility);
     window.addEventListener("resize", onResize);
 
     return () => {
       stop();
       observer.disconnect();
+      boxObserver.disconnect();
       document.removeEventListener("visibilitychange", onVisibility);
       window.removeEventListener("resize", onResize);
     };
