@@ -6,26 +6,31 @@ import { prisma } from "@/lib/prisma";
 import type { TicketStatus } from "@/generated/prisma/client";
 import { technicianOrRedirect, technicianTicketWhere } from "@/lib/workdesk/access";
 import { ticketAssigneeNames } from "@/lib/workdesk/board";
+import { cleanWorkQuery, ticketSearchWhere } from "@/lib/workdesk/list-search";
 import { WORK_LOG_LIST_INCLUDE, workLogTotals } from "@/lib/workdesk/work-log-query";
+import { WorkSearch } from "@/components/workdesk/work-search";
 
 export const metadata = { title: "My tickets" };
 
 export default async function TechTicketsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ view?: string }>;
+  searchParams: Promise<{ view?: string; q?: string }>;
 }) {
   const user = await technicianOrRedirect();
   const params = await searchParams;
+  const query = cleanWorkQuery(params.q);
+  const searchWhere = ticketSearchWhere(query);
   const view = params.view === "done" || params.view === "all" ? params.view : "open";
   const base = technicianTicketWhere(user.id);
   const doneStatuses: TicketStatus[] = ["RESOLVED", "CLOSED"];
-  const where =
+  const viewWhere =
     view === "done"
       ? { ...base, status: { in: doneStatuses } }
       : view === "all"
         ? base
         : { ...base, status: { notIn: doneStatuses } };
+  const where = searchWhere ? { AND: [base, searchWhere] } : viewWhere;
 
   const [tickets, openCount, doneCount] = await Promise.all([
     prisma.ticket.findMany({
@@ -48,6 +53,7 @@ export default async function TechTicketsPage({
         title="Assigned tickets"
         description={`${openCount} open · ${doneCount} completed`}
       />
+      <WorkSearch action="/tech/tickets" query={query} kind="ticket" />
       <ViewFilter
         items={[
           { href: "/tech/tickets", label: "Open", active: view === "open", count: openCount },
@@ -57,7 +63,7 @@ export default async function TechTicketsPage({
       />
       <WorkList
         count={tickets.length}
-        empty={view === "done" ? "No completed tickets yet." : "Nothing assigned in this view."}
+        empty={query ? `No tickets match “${query}”.` : view === "done" ? "No completed tickets yet." : "Nothing assigned in this view."}
       >
         {tickets.map((ticket) => {
           const log = workLogTotals(ticket);

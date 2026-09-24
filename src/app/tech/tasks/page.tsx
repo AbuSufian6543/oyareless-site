@@ -6,7 +6,9 @@ import { prisma } from "@/lib/prisma";
 import type { TaskStatus } from "@/generated/prisma/client";
 import { technicianOrRedirect, technicianTaskWhere } from "@/lib/workdesk/access";
 import { isOverdue, startOfToday } from "@/lib/workdesk/dates";
+import { cleanWorkQuery, taskSearchWhere } from "@/lib/workdesk/list-search";
 import { WORK_LOG_LIST_INCLUDE, workLogTotals } from "@/lib/workdesk/work-log-query";
+import { WorkSearch } from "@/components/workdesk/work-search";
 
 export const metadata = { title: "My tasks" };
 
@@ -15,10 +17,12 @@ const TASK_DONE = ["COMPLETED", "CLOSED"] as const;
 export default async function TechTasksPage({
   searchParams,
 }: {
-  searchParams: Promise<{ view?: string }>;
+  searchParams: Promise<{ view?: string; q?: string }>;
 }) {
   const user = await technicianOrRedirect();
   const params = await searchParams;
+  const query = cleanWorkQuery(params.q);
+  const searchWhere = taskSearchWhere(query);
   const view =
     params.view === "done" || params.view === "all" || params.view === "overdue"
       ? params.view
@@ -26,7 +30,7 @@ export default async function TechTasksPage({
   const base = technicianTaskWhere(user.id);
   const today = startOfToday();
   const doneStatuses: TaskStatus[] = ["COMPLETED", "CLOSED"];
-  const where =
+  const viewWhere =
     view === "done"
       ? { ...base, status: { in: doneStatuses } }
       : view === "all"
@@ -34,6 +38,7 @@ export default async function TechTasksPage({
         : view === "overdue"
           ? { ...base, status: { notIn: doneStatuses }, dueAt: { lt: today } }
           : { ...base, status: { notIn: doneStatuses } };
+  const where = searchWhere ? { AND: [base, searchWhere] } : viewWhere;
 
   const [tasks, openCount, doneCount, overdueCount] = await Promise.all([
     prisma.internalTask.findMany({
@@ -62,6 +67,7 @@ export default async function TechTasksPage({
         title="Assigned tasks"
         description={`${openCount} open · ${overdueCount} overdue · ${doneCount} completed`}
       />
+      <WorkSearch action="/tech/tasks" query={query} kind="task" />
       <ViewFilter
         items={[
           { href: "/tech/tasks", label: "Open", active: view === "open", count: openCount },
@@ -73,11 +79,13 @@ export default async function TechTasksPage({
       <WorkList
         count={tasks.length}
         empty={
-          view === "done"
-            ? "No completed tasks yet."
-            : view === "overdue"
-              ? "Nothing overdue. Nice work."
-              : "Nothing assigned in this view."
+          query
+            ? `No tasks match “${query}”.`
+            : view === "done"
+              ? "No completed tasks yet."
+              : view === "overdue"
+                ? "Nothing overdue. Nice work."
+                : "Nothing assigned in this view."
         }
       >
         {tasks.map((task) => {

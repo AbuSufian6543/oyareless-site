@@ -17,7 +17,9 @@ import {
   ticketUnassigned,
 } from "@/lib/workdesk/board";
 import { listAssignableStaff } from "@/lib/workdesk/staff";
+import { cleanWorkQuery, ticketSearchWhere } from "@/lib/workdesk/list-search";
 import { WORK_LOG_LIST_INCLUDE, workLogTotals } from "@/lib/workdesk/work-log-query";
+import { WorkSearch } from "@/components/workdesk/work-search";
 
 export const metadata = { title: "Tickets" };
 
@@ -31,18 +33,20 @@ function parseView(value: string | undefined): TicketView {
 export default async function AdminTicketsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ view?: string; create?: string; error?: string }>;
+  searchParams: Promise<{ view?: string; create?: string; error?: string; q?: string }>;
 }) {
   const user = await requireAdminRole("EMPLOYEE");
   const params = await searchParams;
   const view = parseView(params.view);
+  const query = cleanWorkQuery(params.q);
+  const searchWhere = ticketSearchWhere(query);
   const createOpen = params.create === "1" || params.error === "invalid";
 
   const mineFilter = { ...OPEN_TICKET, ...ticketAssignedTo(user.id) };
   const teamFilter = { ...OPEN_TICKET, ...ticketAssignedToOthers(user.id) };
   const unassignedFilter = { ...OPEN_TICKET, ...ticketUnassigned() };
 
-  const where =
+  const viewWhere =
     view === "mine"
       ? mineFilter
       : view === "team"
@@ -52,13 +56,14 @@ export default async function AdminTicketsPage({
           : view === "open"
             ? OPEN_TICKET
             : undefined;
+  const where = searchWhere ?? viewWhere;
 
   const [tickets, customers, staff, mineCount, teamCount, unassignedCount, openCount, allCount] =
     await Promise.all([
       prisma.ticket.findMany({
         where,
         orderBy: { updatedAt: "desc" },
-        take: 200,
+        take: searchWhere ? 40 : 200,
         include: {
           customer: { select: { name: true } },
           assignedTo: { select: { id: true, name: true } },
@@ -146,6 +151,7 @@ export default async function AdminTicketsPage({
         </form>
       </details>
 
+      <WorkSearch action="/admin/tickets" query={query} kind="ticket" />
       <ViewFilter
         items={[
           { href: "/admin/tickets", label: "Open", active: view === "open", count: openCount },
@@ -159,13 +165,15 @@ export default async function AdminTicketsPage({
       <WorkList
         count={tickets.length}
         empty={
-          view === "mine"
-            ? "No open tickets are assigned to you."
-            : view === "team"
-              ? "No open tickets are assigned to other staff."
-              : view === "unassigned"
-                ? "Every open ticket has an assignee."
-                : "No tickets in this view."
+          query
+            ? `No tickets match “${query}”.`
+            : view === "mine"
+              ? "No open tickets are assigned to you."
+              : view === "team"
+                ? "No open tickets are assigned to other staff."
+                : view === "unassigned"
+                  ? "Every open ticket has an assignee."
+                  : "No tickets in this view."
         }
       >
         {tickets.map((ticket) => {

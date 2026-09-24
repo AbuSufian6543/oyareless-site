@@ -17,7 +17,9 @@ import {
   taskUnassigned,
 } from "@/lib/workdesk/board";
 import { isOverdue, startOfToday, startOfTomorrow } from "@/lib/workdesk/dates";
+import { cleanWorkQuery, taskSearchWhere } from "@/lib/workdesk/list-search";
 import { WORK_LOG_LIST_INCLUDE, workLogTotals } from "@/lib/workdesk/work-log-query";
+import { WorkSearch } from "@/components/workdesk/work-search";
 
 export const metadata = { title: "Tasks" };
 
@@ -66,11 +68,13 @@ function emptyCopy(view: TaskView): string {
 export default async function AdminTasksPage({
   searchParams,
 }: {
-  searchParams: Promise<{ view?: string; notify?: string }>;
+  searchParams: Promise<{ view?: string; notify?: string; q?: string }>;
 }) {
   const user = await requireAdminRole("EMPLOYEE");
   const params = await searchParams;
   const view = parseView(params.view);
+  const query = cleanWorkQuery(params.q);
+  const searchWhere = taskSearchWhere(query);
   const today = startOfToday();
   const tomorrow = startOfTomorrow();
   const returnTo = view === "mine" ? "/admin/tasks" : `/admin/tasks?view=${view}`;
@@ -84,7 +88,7 @@ export default async function AdminTasksPage({
   const completedFilter = { status: "COMPLETED" as const };
   const closedFilter = { status: "CLOSED" as const };
 
-  const where =
+  const viewWhere =
     view === "mine"
       ? mineFilter
       : view === "team"
@@ -102,6 +106,7 @@ export default async function AdminTasksPage({
                   : view === "closed"
                     ? closedFilter
                     : OPEN_TASK;
+  const where = searchWhere ?? viewWhere;
 
   const [
     tasks,
@@ -117,11 +122,12 @@ export default async function AdminTasksPage({
   ] = await Promise.all([
     prisma.internalTask.findMany({
       where,
-      orderBy:
-        view === "completed" || view === "closed"
+      orderBy: searchWhere
+        ? [{ updatedAt: "desc" }]
+        : view === "completed" || view === "closed"
           ? [{ updatedAt: "desc" }]
           : [{ status: "asc" }, { dueAt: "asc" }, { createdAt: "desc" }],
-      take: 200,
+      take: searchWhere ? 40 : 200,
       include: {
         assignees: { include: { user: { select: { id: true, name: true } } } },
         ...WORK_LOG_LIST_INCLUDE,
@@ -177,6 +183,7 @@ export default async function AdminTasksPage({
           <Alert tone="warning">Assign someone before sending a notification.</Alert>
         </div>
       ) : null}
+      <WorkSearch action="/admin/tasks" query={query} kind="task" />
       <ViewFilter
         items={[
           { href: "/admin/tasks", label: "Assigned to me", active: view === "mine", count: mineCount },
@@ -190,7 +197,7 @@ export default async function AdminTasksPage({
           { href: "/admin/tasks?view=all", label: "All open", active: view === "all", count: allCount },
         ]}
       />
-      <WorkList count={tasks.length} empty={emptyCopy(view)}>
+      <WorkList count={tasks.length} empty={query ? `No tasks match “${query}”.` : emptyCopy(view)}>
         {tasks.map((task) => {
           const done = task.status === "COMPLETED" || task.status === "CLOSED";
           const log = workLogTotals(task);
