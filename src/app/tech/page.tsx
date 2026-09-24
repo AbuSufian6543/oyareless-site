@@ -8,17 +8,25 @@ import {
 
 import { ColorStatLink, WorkdeskPageHeader } from "@/components/workdesk/dashboard-panels";
 import { WorkItem, WorkList, WorkSection } from "@/components/workdesk/work-item";
+import { WorkSearch } from "@/components/workdesk/work-search";
 import { prisma } from "@/lib/prisma";
 import { technicianOrRedirect, technicianTaskWhere, technicianTicketWhere } from "@/lib/workdesk/access";
 import { ticketAssigneeNames } from "@/lib/workdesk/board";
 import { isOverdue, startOfToday } from "@/lib/workdesk/dates";
+import { cleanWorkQuery, taskSearchWhere, ticketSearchWhere } from "@/lib/workdesk/list-search";
 
 export const metadata = { title: "My work" };
 
 const TASK_DONE = ["COMPLETED", "CLOSED"] as const;
 
-export default async function TechHomePage() {
+export default async function TechHomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
   const user = await technicianOrRedirect();
+  const params = await searchParams;
+  const query = cleanWorkQuery(params.q);
   const ticketWhere = technicianTicketWhere(user.id);
   const taskWhere = technicianTaskWhere(user.id);
   const today = startOfToday();
@@ -75,6 +83,33 @@ export default async function TechHomePage() {
     }),
   ]);
 
+  const taskLookup = taskSearchWhere(query);
+  const ticketLookup = ticketSearchWhere(query);
+  const [foundTasks, foundTickets] = query
+    ? await Promise.all([
+        taskLookup
+          ? prisma.internalTask.findMany({
+              where: { AND: [taskWhere, taskLookup] },
+              orderBy: { updatedAt: "desc" },
+              take: 6,
+              include: { assignees: { include: { user: { select: { name: true } } } } },
+            })
+          : [],
+        ticketLookup
+          ? prisma.ticket.findMany({
+              where: { AND: [ticketWhere, ticketLookup] },
+              orderBy: { updatedAt: "desc" },
+              take: 6,
+              include: {
+                customer: { select: { name: true } },
+                assignedTo: { select: { name: true } },
+                assignees: { include: { user: { select: { name: true } } } },
+              },
+            })
+          : [],
+      ])
+    : [[], []];
+
   const firstName = user.name.split(" ")[0] || user.name;
   const stats = [
     {
@@ -122,6 +157,49 @@ export default async function TechHomePage() {
         persona={user.dashboardPersona}
         accountHref="/tech/account"
       />
+
+      <WorkSearch action="/tech" query={query} kind="both" />
+      {query ? (
+        <div className="mb-6 grid gap-4 lg:grid-cols-2">
+          <WorkSection title="Tasks" href={`/tech/tasks?q=${encodeURIComponent(query)}`} countLabel="All task matches">
+            <WorkList count={foundTasks.length} empty={`No tasks match “${query}”.`}>
+              {foundTasks.map((task) => (
+                <WorkItem
+                  key={task.id}
+                  kind="task"
+                  href={`/tech/tasks/${task.id}`}
+                  reference={task.reference}
+                  title={task.title}
+                  status={task.status}
+                  priority={task.priority}
+                  dueAt={task.dueAt}
+                  overdue={isOverdue(task.dueAt, task.status, TASK_DONE)}
+                  assignees={task.assignees.map((row) => row.user.name)}
+                  you={user.name}
+                />
+              ))}
+            </WorkList>
+          </WorkSection>
+          <WorkSection title="Tickets" href={`/tech/tickets?q=${encodeURIComponent(query)}`} countLabel="All ticket matches">
+            <WorkList count={foundTickets.length} empty={`No tickets match “${query}”.`}>
+              {foundTickets.map((ticket) => (
+                <WorkItem
+                  key={ticket.id}
+                  kind="ticket"
+                  href={`/tech/tickets/${ticket.id}`}
+                  reference={ticket.reference}
+                  title={ticket.subject}
+                  status={ticket.status}
+                  priority={ticket.priority}
+                  subtitle={ticket.customer.name}
+                  assignees={ticketAssigneeNames(ticket)}
+                  you={user.name}
+                />
+              ))}
+            </WorkList>
+          </WorkSection>
+        </div>
+      ) : null}
 
       <div className="mb-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
         {stats.map((stat, index) => {

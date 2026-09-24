@@ -27,6 +27,7 @@ import {
 } from "@/components/workdesk/dashboard-panels";
 import { WorkdeskCalendar } from "@/components/workdesk/workdesk-calendar";
 import { WorkItem, WorkList, WorkSection } from "@/components/workdesk/work-item";
+import { WorkSearch } from "@/components/workdesk/work-search";
 import { env } from "@/lib/env";
 import { getCurrentUser } from "@/lib/auth";
 import { getResolvedMail } from "@/lib/mail-settings";
@@ -50,6 +51,7 @@ import {
   ticketAssigneeNames,
   ticketUnassigned,
 } from "@/lib/workdesk/board";
+import { cleanWorkQuery, taskSearchWhere, ticketSearchWhere } from "@/lib/workdesk/list-search";
 import {
   addZonedDays,
   isOverdue,
@@ -77,11 +79,12 @@ const ticketInclude = {
 export default async function AdminDashboard({
   searchParams,
 }: {
-  searchParams: Promise<{ denied?: string; day?: string; error?: string }>;
+  searchParams: Promise<{ denied?: string; day?: string; error?: string; q?: string }>;
 }) {
   const user = await getCurrentUser();
   if (!user) return null;
   const params = await searchParams;
+  const query = cleanWorkQuery(params.q);
   const canSeeCms = canAccessContent(user);
   const canSeeEnquiries = canAccessEnquiries(user);
   const canSeeApplications = canAccessApplications(user);
@@ -233,6 +236,29 @@ export default async function AdminDashboard({
       })
       .catch(() => []),
   ]);
+
+  const taskLookup = taskSearchWhere(query);
+  const ticketLookup = ticketSearchWhere(query);
+  const [foundTasks, foundTickets] = query
+    ? await Promise.all([
+        taskLookup
+          ? prisma.internalTask.findMany({
+              where: taskLookup,
+              orderBy: { updatedAt: "desc" },
+              take: 6,
+              include: taskInclude,
+            })
+          : [],
+        ticketLookup
+          ? prisma.ticket.findMany({
+              where: ticketLookup,
+              orderBy: { updatedAt: "desc" },
+              take: 6,
+              include: ticketInclude,
+            })
+          : [],
+      ])
+    : [[], []];
 
   const firstName = user.name.trim().split(/\s+/)[0] || user.name;
   const hour = zonedHour();
@@ -403,6 +429,55 @@ export default async function AdminDashboard({
               </>
             }
           />
+          <div className="mt-4">
+            <WorkSearch
+              action="/admin"
+              query={query}
+              kind="both"
+              hidden={params.day ? { day: params.day } : undefined}
+            />
+            {query ? (
+              <div className="mb-4 grid gap-4 lg:grid-cols-2">
+                <WorkSection title="Tasks" href={`/admin/tasks?q=${encodeURIComponent(query)}`} countLabel="All task matches">
+                  <WorkList count={foundTasks.length} empty={`No tasks match “${query}”.`}>
+                    {foundTasks.map((task) => (
+                      <WorkItem
+                        key={task.id}
+                        kind="task"
+                        href={`/admin/tasks/${task.id}`}
+                        reference={task.reference}
+                        title={task.title}
+                        status={task.status}
+                        priority={task.priority}
+                        dueAt={task.dueAt}
+                        overdue={isOverdue(task.dueAt, task.status, TASK_DONE)}
+                        assignees={task.assignees.map((row) => row.user.name)}
+                        you={user.name}
+                      />
+                    ))}
+                  </WorkList>
+                </WorkSection>
+                <WorkSection title="Tickets" href={`/admin/tickets?q=${encodeURIComponent(query)}`} countLabel="All ticket matches">
+                  <WorkList count={foundTickets.length} empty={`No tickets match “${query}”.`}>
+                    {foundTickets.map((ticket) => (
+                      <WorkItem
+                        key={ticket.id}
+                        kind="ticket"
+                        href={`/admin/tickets/${ticket.id}`}
+                        reference={ticket.reference}
+                        title={ticket.subject}
+                        status={ticket.status}
+                        priority={ticket.priority}
+                        subtitle={ticket.customer.name}
+                        assignees={ticketAssigneeNames(ticket)}
+                        you={user.name}
+                      />
+                    ))}
+                  </WorkList>
+                </WorkSection>
+              </div>
+            ) : null}
+          </div>
         </div>
 
         <div className="order-2 xl:col-start-2 xl:row-span-2 xl:row-start-1">

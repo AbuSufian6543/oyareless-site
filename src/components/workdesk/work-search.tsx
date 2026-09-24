@@ -4,16 +4,27 @@ export function WorkSearch({
   action,
   query,
   kind,
+  hidden,
 }: {
   action: string;
   query: string;
-  kind: "task" | "ticket";
+  kind: "task" | "ticket" | "both";
+  hidden?: Record<string, string>;
 }) {
   const placeholder =
-    kind === "task" ? "Search by name or WT number" : "Search by name or WC number";
+    kind === "task"
+      ? "Search by name or WT number"
+      : kind === "ticket"
+        ? "Search by name or WC number"
+        : "Search tasks and tickets by name, WT, or WC";
 
   return (
     <form action={action} method="get" className="mb-4" role="search">
+      {hidden
+        ? Object.entries(hidden).map(([name, value]) =>
+            value ? <input key={name} type="hidden" name={name} value={value} /> : null,
+          )
+        : null}
       <label className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 shadow-sm focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-500/15">
         <Search className="size-4 shrink-0 text-slate-400" aria-hidden="true" />
         <span className="sr-only">{placeholder}</span>
@@ -42,7 +53,9 @@ export function WorkSearch({
       </label>
       {query ? (
         <p className="mt-2 text-xs text-slate-500">
-          Matches for “{query}” across every {kind} you can open, including closed ones.
+          {kind === "both"
+            ? `Matches for “${query}” in tasks and tickets, including closed ones.`
+            : `Matches for “${query}” across every ${kind} you can open, including closed ones.`}
         </p>
       ) : null}
     </form>
