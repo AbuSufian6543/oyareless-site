@@ -39,6 +39,7 @@ export type AuditAction =
   | "nav.updated"
   | "redirect.updated"
   | "submission.updated"
+  | "submission.deleted"
   | "testimonial.updated"
   | "collection.created"
   | "collection.updated"
@@ -115,6 +116,7 @@ const ACTION_LABELS: Record<string, string> = {
   "task.product_removed": "Task product removed",
   "product.created": "Product added",
   "product.updated": "Product updated",
+  "submission.deleted": "Inbox message deleted",
   "portal_user.invited": "Portal invite sent",
   "portal_user.invite_resent": "Portal invite resent",
 };

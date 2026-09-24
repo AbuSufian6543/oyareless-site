@@ -1,11 +1,13 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Mail, Phone } from "lucide-react";
+import { Mail, Phone, Trash2 } from "lucide-react";
 
 import {
   createTaskFromSubmissionAction,
+  deleteSubmissionAction,
   updateSubmissionAction,
 } from "@/app/admin/submissions/actions";
+import { ConfirmDeleteForm } from "@/components/admin/confirm-delete-form";
 import {
   Alert,
   Badge,
@@ -18,7 +20,7 @@ import {
 import { AssigneeChecklist } from "@/components/workdesk/assignee-checklist";
 import { requireStaffAccess } from "@/lib/admin-guard";
 import { prisma } from "@/lib/prisma";
-import { canAccessEnquiries } from "@/lib/staff-access";
+import { canAccessEnquiries, canDeleteEnquiries } from "@/lib/staff-access";
 import { formatDateTime, telHref } from "@/lib/utils";
 import { findEnquiryTask } from "@/lib/workdesk/enquiry-task";
 import { listAssignableStaff } from "@/lib/workdesk/staff";
@@ -32,7 +34,8 @@ export default async function SubmissionDetailPage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ saved?: string }>;
 }) {
-  await requireStaffAccess(canAccessEnquiries);
+  const user = await requireStaffAccess(canAccessEnquiries);
+  const canDelete = canDeleteEnquiries(user);
   const { id } = await params;
   const query = await searchParams;
 
@@ -175,6 +178,27 @@ export default async function SubmissionDetailPage({
               </button>
             </form>
           </Card>
+
+          {canDelete && (
+            <Card className="border-red-200">
+              <CardTitle description="Removes this inbox message. A task opened from it stays on the workdesk. This cannot be undone.">
+                Delete this message
+              </CardTitle>
+              <ConfirmDeleteForm
+                action={deleteSubmissionAction}
+                id={submission.id}
+                message={`Delete the inbox message from ${submission.name}? This cannot be undone.`}
+              >
+                <button
+                  type="submit"
+                  className="inline-flex items-center gap-2 rounded-lg border border-red-300 bg-red-50 px-4 py-2.5 text-sm font-semibold text-red-700 transition-colors hover:bg-red-100"
+                >
+                  <Trash2 className="size-4" aria-hidden="true" />
+                  Delete message
+                </button>
+              </ConfirmDeleteForm>
+            </Card>
+          )}
         </div>
 
         <aside className="space-y-5">

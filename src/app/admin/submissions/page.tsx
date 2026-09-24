@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { Download, Inbox } from "lucide-react";
 
-import { bulkSubmissionAction } from "@/app/admin/submissions/actions";
+import {
+  bulkSubmissionAction,
+  deleteSubmissionsAction,
+} from "@/app/admin/submissions/actions";
+import { DeleteSelectedButton } from "@/app/admin/submissions/delete-selected";
 import {
   Alert,
   Badge,
@@ -11,7 +15,7 @@ import {
 } from "@/components/admin/ui";
 import { requireStaffAccess } from "@/lib/admin-guard";
 import { prisma } from "@/lib/prisma";
-import { canAccessEnquiries } from "@/lib/staff-access";
+import { canAccessEnquiries, canDeleteEnquiries } from "@/lib/staff-access";
 import { cn, formatDateTime, truncate } from "@/lib/utils";
 
 export const metadata = { title: "Inbox" };
@@ -37,9 +41,10 @@ const TYPE_TONES: Record<string, "info" | "warning" | "success" | "navy"> = {
 export default async function SubmissionsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; updated?: string }>;
+  searchParams: Promise<{ status?: string; updated?: string; deleted?: string }>;
 }) {
-  await requireStaffAccess(canAccessEnquiries);
+  const user = await requireStaffAccess(canAccessEnquiries);
+  const canDelete = canDeleteEnquiries(user);
   const params = await searchParams;
   const filter = params.status ?? "NEW";
 
@@ -77,6 +82,12 @@ export default async function SubmissionsPage({
       {params.updated && (
         <div className="mb-5">
           <Alert tone="success">The selected messages were updated.</Alert>
+        </div>
+      )}
+
+      {params.deleted && (
+        <div className="mb-5">
+          <Alert tone="success">The selected inbox messages were deleted.</Alert>
         </div>
       )}
 
@@ -143,6 +154,12 @@ export default async function SubmissionsPage({
               >
                 Apply
               </button>
+              {canDelete && (
+                <>
+                  <input type="hidden" name="returnStatus" value={filter} />
+                  <DeleteSelectedButton action={deleteSubmissionsAction} />
+                </>
+              )}
             </div>
 
             <ul className="divide-y divide-slate-100">

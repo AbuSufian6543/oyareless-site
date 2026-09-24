@@ -17,6 +17,7 @@ import {
   canAccessConfiguration,
   canAccessContent,
   canAccessEnquiries,
+  canDeleteEnquiries,
   canAccessKnowledge,
   canAccessOperations,
   canAccessPortalUsers,
@@ -90,6 +91,11 @@ const manager = { role: "MANAGER" as const };
 assert("manager has workdesk", canAccessWorkdesk(manager));
 assert("manager has knowledge", canAccessKnowledge(manager));
 assert("manager has enquiries", canAccessEnquiries(manager));
+assert("manager can delete enquiries", canDeleteEnquiries(manager));
+assert("admin can delete enquiries", canDeleteEnquiries({ role: "ADMIN" }));
+assert("editor can open enquiries", canAccessEnquiries({ role: "EDITOR" }));
+assert("editor cannot delete enquiries", !canDeleteEnquiries({ role: "EDITOR" }));
+assert("employee cannot delete enquiries", !canDeleteEnquiries({ role: "EMPLOYEE" }));
 assert("manager has operations", canAccessOperations(manager));
 assert("manager has portal users", canAccessPortalUsers(manager));
 assert("manager does not have applications", !canAccessApplications(manager));
@@ -342,6 +348,23 @@ const enquiryTask = readFileSync(
   path.join(process.cwd(), "src/lib/workdesk/enquiry-task.ts"),
   "utf8",
 );
+const inboxActions = readFileSync(
+  path.join(process.cwd(), "src/app/admin/submissions/actions.ts"),
+  "utf8",
+);
+const inboxPage = readFileSync(
+  path.join(process.cwd(), "src/app/admin/submissions/page.tsx"),
+  "utf8",
+);
+assert(
+  "inbox delete is limited to managers and admins",
+  inboxActions.includes("canDeleteEnquiries") &&
+    inboxActions.includes("deleteInboxMessages") &&
+    inboxActions.includes('enquiryKind: "submission"') &&
+    inboxPage.includes("canDeleteEnquiries") &&
+    inboxPage.includes("DeleteSelectedButton"),
+);
+
 assert(
   "inbox and quotes open workdesk tasks with assignable staff",
   enquiryTask.includes("createOrOpenEnquiryTask") &&

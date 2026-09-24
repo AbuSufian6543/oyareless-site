@@ -41,6 +41,16 @@ export function canAccessEnquiries(user: RoleHolder): boolean {
   return user.role === "MANAGER" || roleMeetsMinimum(user.role, "EDITOR");
 }
 
+/**
+ * Permanent removal of inbox messages and quote requests.
+ * Editors can triage Enquiries; only managers and admins can delete them.
+ * Manager sits below Editor in rank, so this cannot be a minimum-rank check.
+ */
+export function canDeleteEnquiries(user: RoleHolder): boolean {
+  if (!user) return false;
+  return user.role === "MANAGER" || roleMeetsMinimum(user.role, "ADMIN");
+}
+
 /** Career applications stay with editors and above — not managers. */
 export function canAccessApplications(user: RoleHolder): boolean {
   return canAccessContent(user);
