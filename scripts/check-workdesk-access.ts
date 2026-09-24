@@ -356,6 +356,17 @@ const inboxPage = readFileSync(
   path.join(process.cwd(), "src/app/admin/submissions/page.tsx"),
   "utf8",
 );
+const notificationActions = readFileSync(
+  path.join(process.cwd(), "src/app/admin/notifications/actions.ts"),
+  "utf8",
+);
+assert(
+  "notification clear deletes only the signed-in staff member's rows",
+  notificationActions.includes("requireWorkdeskStaff") &&
+    notificationActions.includes("where: { id, userId: staff.id }") &&
+    notificationActions.includes("where: { userId: staff.id }"),
+);
+
 assert(
   "inbox delete is limited to managers and admins",
   inboxActions.includes("canDeleteEnquiries") &&

@@ -1,7 +1,10 @@
-import Link from "next/link";
-
-import { techMarkNotificationsReadAction } from "@/app/tech/actions";
+import {
+  clearWorkdeskNotificationAction,
+  clearWorkdeskNotificationsAction,
+  markWorkdeskNotificationsReadAction,
+} from "@/app/admin/notifications/actions";
 import { PageHeader } from "@/components/admin/ui";
+import { NotificationInbox } from "@/components/workdesk/notification-inbox";
 import { prisma } from "@/lib/prisma";
 import { formatDateTime } from "@/lib/utils";
 import { technicianOrRedirect, workdeskHref } from "@/lib/workdesk/access";
@@ -20,28 +23,21 @@ export default async function TechNotificationsPage() {
     <div>
       <PageHeader
         title="Notifications"
-        actions={
-          <form action={techMarkNotificationsReadAction}>
-            <button type="submit" className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-semibold hover:bg-slate-50">
-              Mark all read
-            </button>
-          </form>
-        }
+        description="Assignments and updates on your work. Clearing a notification only removes it from your list."
       />
-      <ul className="divide-y divide-slate-200 rounded-xl border border-slate-200 bg-white">
-        {items.map((item) => (
-          <li key={item.id} className={item.readAt ? "px-4 py-3" : "bg-brand-50/60 px-4 py-3"}>
-            <Link href={workdeskHref(user.role, item)} className="block">
-              <p className="font-semibold text-navy-900">{item.title}</p>
-              <p className="text-sm text-slate-600">{item.body}</p>
-              <p className="mt-1 text-xs text-slate-400">{formatDateTime(item.createdAt)}</p>
-            </Link>
-          </li>
-        ))}
-        {items.length === 0 && (
-          <li className="px-4 py-8 text-center text-sm text-slate-500">No notifications yet.</li>
-        )}
-      </ul>
+      <NotificationInbox
+        items={items.map((item) => ({
+          id: item.id,
+          title: item.title,
+          body: item.body,
+          when: formatDateTime(item.createdAt),
+          href: workdeskHref(user.role, item),
+          unread: item.readAt == null,
+        }))}
+        markAllRead={markWorkdeskNotificationsReadAction}
+        clearOne={clearWorkdeskNotificationAction}
+        clearAll={clearWorkdeskNotificationsAction}
+      />
     </div>
   );
 }
