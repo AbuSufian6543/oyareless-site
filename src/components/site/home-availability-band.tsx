@@ -1,31 +1,31 @@
 import { ArrowRight, Wifi } from "lucide-react";
+import Link from "next/link";
 
-import { ButtonLink } from "@/components/ui/button";
-
+/**
+ * A single chip on the seam under the home hero. The full address form lives
+ * on Internet services; this only points there.
+ */
 export function HomeAvailabilityBand() {
   return (
-    <section className="bg-white py-10 lg:py-14">
-      <div className="container-page">
-        <div className="surface-card flex flex-col gap-6 px-6 py-6 sm:flex-row sm:items-center sm:justify-between lg:px-8">
-          <div className="flex items-start gap-4">
-            <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
-              <Wifi className="size-5" aria-hidden="true" />
-            </span>
-            <div>
-              <h2 className="text-xl font-bold text-navy-900">
-                Check internet availability at your location
-              </h2>
-              <p className="mt-1 max-w-xl text-sm leading-relaxed text-slate-600">
-                See which fibre and copper speeds WirelessCom can deliver to your street before you call.
-              </p>
-            </div>
-          </div>
-          <ButtonLink href="/internet-services#availability" variant="primary" size="md" className="shrink-0">
-            Check availability
-            <ArrowRight className="size-4" aria-hidden="true" />
-          </ButtonLink>
-        </div>
+    <div className="relative z-20 -mt-5">
+      <div className="container-page flex justify-center px-4">
+        <Link
+          href="/internet-services#availability"
+          className="group inline-flex max-w-full items-center gap-2.5 rounded-full border border-white/15 bg-navy-950/90 py-1.5 pl-1.5 pr-3.5 text-sm text-white shadow-[0_12px_32px_rgb(4_19_37_/_0.38)] backdrop-blur-md transition-colors hover:border-accent-400/45"
+        >
+          <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-accent-500/15 text-accent-300">
+            <Wifi className="size-3.5" aria-hidden="true" />
+          </span>
+          <span className="truncate text-white/85">Fibre and copper at your address</span>
+          <span className="inline-flex shrink-0 items-center gap-1 font-semibold text-accent-300">
+            Check
+            <ArrowRight
+              className="size-3.5 transition-transform group-hover:translate-x-0.5"
+              aria-hidden="true"
+            />
+          </span>
+        </Link>
       </div>
-    </section>
+    </div>
   );
 }
