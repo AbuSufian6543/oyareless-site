@@ -4,6 +4,7 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { BlockList } from "@/components/blocks/block-renderer";
 import { JsonLd } from "@/components/site/json-ld";
 import { CmsPageFrame } from "@/components/site/cms-page-frame";
+import { InternetAvailabilityChecker } from "@/components/site/internet-availability";
 import { PageBreadcrumbs } from "@/components/site/page-breadcrumbs";
 import { getPublishedPage, pageJsonLd, pageMetadata } from "@/lib/pages";
 import { crumbs } from "@/lib/seo";
@@ -44,11 +45,27 @@ export default async function CmsPage({ params }: Props) {
     notFound();
   }
 
+  let checkerAt = -1;
+  if (slug === "internet-services") {
+    for (let index = page.blocks.length - 1; index >= 0; index -= 1) {
+      if (page.blocks[index]?.type === "cta") {
+        checkerAt = index;
+        break;
+      }
+    }
+  }
+  const beforeChecker = checkerAt > 0 ? page.blocks.slice(0, checkerAt) : page.blocks;
+  const afterChecker = checkerAt > 0 ? page.blocks.slice(checkerAt) : [];
+
   return (
     <CmsPageFrame slug={page.slug} enabled={page.visitorThemeToggle}>
       <PageBreadcrumbs items={crumbs({ name: page.title, href: `/${slug}` })} />
       <JsonLd data={pageJsonLd(page)} />
-      <BlockList blocks={page.blocks} slideshow={page.slideshow} sourcePage={`/${slug}`} />
+      <BlockList blocks={beforeChecker} slideshow={page.slideshow} sourcePage={`/${slug}`} />
+      {slug === "internet-services" ? <InternetAvailabilityChecker /> : null}
+      {afterChecker.length > 0 ? (
+        <BlockList blocks={afterChecker} sourcePage={`/${slug}`} />
+      ) : null}
     </CmsPageFrame>
   );
 }

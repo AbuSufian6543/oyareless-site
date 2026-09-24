@@ -1,6 +1,7 @@
 import { Phone } from "lucide-react";
 import Link from "next/link";
 
+import { HomeAvailabilityBand } from "@/components/site/home-availability-band";
 import {
   PhotographicHero,
   photoHeroCopy,
@@ -120,6 +121,8 @@ export function FallbackHome() {
           </div>
         </div>
       </PhotographicHero>
+
+      <HomeAvailabilityBand />
 
       <section id="work" className="scroll-mt-24 bg-white py-20 lg:py-28">
         <div className="container-page">
