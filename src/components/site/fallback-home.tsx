@@ -1,4 +1,4 @@
-import { Phone } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 
 import { HomeAvailabilityBand } from "@/components/site/home-availability-band";
@@ -7,7 +7,7 @@ import {
   photoHeroCopy,
 } from "@/components/site/photographic-hero";
 import { ButtonLink } from "@/components/ui/button";
-import { BlockIcon } from "@/components/ui/icon";
+import { SectionImage } from "@/components/visuals/section-image";
 
 const FACTS = [
   { value: "2005", label: "Serving Northern Ontario since" },
@@ -18,48 +18,32 @@ const FACTS = [
 
 const PLATFORMS = [
   {
-    icon: "network",
     kicker: "Networks & IT",
     title: "The LAN, the firewall, and the path to the cloud",
-    body: "Switching, routing, Wi-Fi, structured cabling, Microsoft 365, and next-generation firewalls we size, install, and support. Cisco, UniFi, Fortinet, Barracuda, Juniper and similar platforms we are trained on.",
+    body: "Switching, routing, Wi-Fi, structured cabling, Microsoft 365, and next-generation firewalls we size, install, and support.",
     href: "/it-services",
+    image: "/images/cabling-install-1400.webp",
+    imageAlt:
+      "Technician's hands terminating blue and white network cables into a rack-mounted patch panel",
   },
   {
-    icon: "cctv",
     kicker: "Building security",
     title: "Cameras, alarms, and who gets through the door",
-    body: "IP video, intrusion panels, access control, and 24/7 monitoring where you contract it. One team owns the recorders and the network they sit on.",
+    body: "IP video, alarms, and access control, with 24/7 monitoring where you contract it. Analytics on the cameras, and an attendant on the phones, are options on the systems we install.",
     href: "/security-services",
+    image: "/images/surveillance-1400.webp",
+    imageAlt:
+      "Dome and bullet security cameras mounted under the soffit of a modern commercial building at dusk",
   },
   {
-    icon: "phone",
     kicker: "Voice & radio",
     title: "Desk phones, hosted PBX, and licensed radio",
     body: "VoIP for the office. Hytera DMR handhelds, mobiles, and repeaters as an authorized dealer — sales, rentals, and service.",
     href: "/telephone-services",
+    image: "/images/two-way-radio-1400.webp",
+    imageAlt:
+      "Three rugged professional handheld two-way radios on a dark surface with blue rim lighting",
   },
-] as const;
-
-const MORE_LINKS = [
-  { href: "/ev-charging-solutions", label: "EV Charging" },
-  { href: "/fleet-vehicle-tracking", label: "Fleet Tracking" },
-  { href: "/web-development", label: "Web Development" },
-  { href: "/video-services", label: "Video & Broadcasting" },
-  { href: "/two-way-radios", label: "Two-Way Radios" },
-  { href: "/data-cabling-fiber-optic", label: "Data Cabling & Fiber" },
-  { href: "/network-status", label: "Network Status" },
-  { href: "/live", label: "Live Streams" },
-] as const;
-
-const INDUSTRIES = [
-  "Small and medium business",
-  "Professional offices",
-  "Healthcare",
-  "Retail",
-  "Manufacturing",
-  "Construction",
-  "Municipal organizations",
-  "Schools and nonprofits",
 ] as const;
 
 /**
@@ -124,69 +108,80 @@ export function FallbackHome() {
 
       <HomeAvailabilityBand />
 
-      <section id="work" className="scroll-mt-24 bg-white py-20 lg:py-28">
+      <section id="work" className="scroll-mt-24 bg-white pt-14 pb-16 lg:pt-16 lg:pb-20">
         <div className="container-page">
-          <p className="eyebrow text-brand-700">What we put in</p>
-          <h2 className="mt-2 max-w-2xl text-3xl font-bold tracking-tight text-navy-900 lg:text-4xl">
-            Three kinds of work. One provider.
-          </h2>
-          <p className="mt-4 max-w-2xl text-lg leading-relaxed text-slate-600">
-            Most sites need the network, the building security, and a way to
-            talk. Buying them from one team means they are designed to work
-            together.
-          </p>
+          <div className="grid gap-8 lg:grid-cols-12 lg:items-end lg:gap-12">
+            <div className="lg:col-span-7">
+              <p className="eyebrow text-brand-700">What we put in</p>
+              <h2 className="mt-2 max-w-xl text-3xl font-bold tracking-tight text-navy-900 lg:text-4xl">
+                Three kinds of work. One provider.
+              </h2>
+              <p className="mt-4 max-w-xl text-lg leading-relaxed text-slate-600">
+                Most sites need the network, the building security, and a way
+                to talk. Buying them from one team means they are designed to
+                work together.
+              </p>
+            </div>
+            <div className="border-l-2 border-brand-600 pl-5 lg:col-span-5">
+              <p className="eyebrow text-brand-700">How we work</p>
+              <p className="mt-2 text-lg font-semibold tracking-tight text-navy-900">
+                Designed together, supported here.
+              </p>
+              <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                We plan the network, the cameras, and the phones as one job,
+                document it, and answer from Sault Ste. Marie.
+              </p>
+            </div>
+          </div>
 
-          <ul className="mt-12 grid gap-6 lg:grid-cols-3">
+          <ul className="mt-10 grid gap-6 lg:mt-12 lg:grid-cols-3">
             {PLATFORMS.map((platform) => (
-              <li key={platform.title}>
+              <li key={platform.href}>
                 <Link
                   href={platform.href}
-                  className="surface-card surface-card-hover flex h-full flex-col p-7"
+                  className="group surface-card surface-card-hover flex h-full flex-col overflow-hidden"
                 >
-                  <span className="flex size-11 items-center justify-center rounded-lg bg-brand-50 text-brand-700">
-                    <BlockIcon name={platform.icon} className="size-5.5" />
-                  </span>
-                  <p className="mt-5 text-[0.6875rem] font-bold uppercase tracking-[0.14em] text-brand-700">
-                    {platform.kicker}
-                  </p>
-                  <h3 className="mt-2 text-lg font-bold text-navy-900">
-                    {platform.title}
-                  </h3>
-                  <p className="mt-3 flex-1 text-[0.9375rem] leading-relaxed text-slate-600">
-                    {platform.body}
-                  </p>
-                  <span className="mt-5 text-sm font-semibold text-brand-700">
-                    Learn more
-                  </span>
+                  <div className="relative aspect-[16/10] overflow-hidden bg-navy-900">
+                    <SectionImage
+                      src={platform.image}
+                      alt={platform.imageAlt}
+                      fill
+                      sizes="(min-width: 1024px) 30vw, 100vw"
+                      className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                    />
+                  </div>
+                  <div className="flex flex-1 flex-col p-6">
+                    <p className="text-[0.6875rem] font-bold uppercase tracking-[0.14em] text-brand-700">
+                      {platform.kicker}
+                    </p>
+                    <h3 className="mt-2 text-lg font-bold text-navy-900">
+                      {platform.title}
+                    </h3>
+                    <p className="mt-3 flex-1 text-[0.9375rem] leading-relaxed text-slate-600">
+                      {platform.body}
+                    </p>
+                    <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700">
+                      Learn more
+                      <ArrowUpRight
+                        className="size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                        aria-hidden="true"
+                      />
+                    </span>
+                  </div>
                 </Link>
               </li>
             ))}
           </ul>
+
+          <p className="mt-8 max-w-3xl text-base leading-relaxed text-slate-600">
+            The same team works with offices, clinics, shops, plants, job
+            sites, municipalities, schools, and nonprofits across Northern
+            Ontario.
+          </p>
         </div>
       </section>
 
-      <section className="border-t border-slate-100 bg-white py-12 lg:py-16">
-        <div className="container-page">
-          <p className="eyebrow text-brand-700">More services and tools</p>
-          <h2 className="mt-2 max-w-2xl text-2xl font-bold tracking-tight text-navy-900">
-            EV charging, fleet tracking, web work, status, and live streams
-          </h2>
-          <ul className="mt-6 flex flex-wrap gap-2">
-            {MORE_LINKS.map((link) => (
-              <li key={link.href}>
-                <Link
-                  href={link.href}
-                  className="inline-flex rounded-full border border-slate-200 bg-slate-50 px-3.5 py-1.5 text-sm font-medium text-navy-800 transition-colors hover:border-brand-300 hover:bg-brand-50 hover:text-brand-800"
-                >
-                  {link.label}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      <section className="bg-white py-16 lg:py-20">
+      <section className="bg-white pb-16 lg:pb-20">
         <div className="container-page">
           <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-navy-900 via-navy-800 to-brand-900 p-8 lg:p-12">
             <div className="bg-tech-grid absolute inset-0" aria-hidden="true" />
@@ -220,100 +215,17 @@ export function FallbackHome() {
         </div>
       </section>
 
-      <section className="bg-slate-50 py-20 lg:py-24">
-        <div className="container-page grid gap-12 lg:grid-cols-2 lg:items-center">
-          <div>
-            <p className="eyebrow text-brand-700">How we work</p>
-            <h2 className="mt-2 text-3xl font-bold tracking-tight text-navy-900">
-              Designed together, supported here
-            </h2>
-            <p className="mt-4 text-lg leading-relaxed text-slate-600">
-              A camera that cannot talk to the recorder, a phone system on an
-              undersized circuit, a firewall nobody owns — those are what we
-              are hired to unwind. We plan the LAN, the security, and the
-              voice as one job, document it, and answer from Sault Ste. Marie.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <ButtonLink href="/request-quote" variant="primary">
-                Request a quote
-              </ButtonLink>
-              <ButtonLink href="tel:18007053189" variant="outline">
-                <Phone className="size-4" aria-hidden="true" />
-                1-800-705-3189
-              </ButtonLink>
-            </div>
-          </div>
-          <ul className="space-y-4">
-            {[
-              "Industry-standard installs, permits where the work needs them",
-              "Firewalls and Wi-Fi we can still support years later",
-              "Authorized Hytera dealer for two-way radio",
-              "Practical AI only on cameras and phones we actually install",
-            ].map((point) => (
-              <li
-                key={point}
-                className="flex gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3.5 text-sm leading-relaxed text-navy-800"
-              >
-                <span
-                  className="mt-1.5 size-1.5 shrink-0 rounded-full bg-accent-500"
-                  aria-hidden="true"
-                />
-                {point}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      <section className="bg-white py-16 lg:py-20">
-        <div className="container-page">
-          <p className="eyebrow text-brand-700">Who we serve</p>
-          <h2 className="mt-2 text-3xl font-bold tracking-tight text-navy-900">
-            Organizations across Northern Ontario
-          </h2>
-          <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {INDUSTRIES.map((name) => (
-              <li
-                key={name}
-                className="rounded-lg border border-slate-200 px-4 py-3 text-sm font-medium text-navy-800"
-              >
-                {name}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      <section className="bg-navy-950 py-16 text-white">
-        <div className="container-page flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-          <div className="max-w-xl">
-            <p className="eyebrow-pill">When it earns its keep</p>
-            <h2 className="mt-4 text-2xl font-bold tracking-tight lg:text-3xl">
-              Analytics on cameras. An attendant on phones.
-            </h2>
-            <p className="mt-3 text-navy-200 leading-relaxed">
-              Those are options on systems we design and install — not a
-              chatbot on this website, and not the whole company. Firewalls,
-              cabling, radio, and support are still the core of the work.
-            </p>
-          </div>
-          <ButtonLink href="/ai-services" variant="onDark">
-            AI on cameras &amp; phones
-          </ButtonLink>
-        </div>
-      </section>
-
-      <section className="relative isolate overflow-hidden bg-gradient-to-br from-navy-900 via-navy-800 to-brand-900 py-16 text-white">
+      <section className="relative isolate overflow-hidden bg-gradient-to-br from-navy-900 via-navy-800 to-brand-900 py-20 text-white lg:py-24">
         <div
           className="pointer-events-none absolute inset-0 bg-tech-grid"
           aria-hidden="true"
         />
         <div className="container-page relative z-10 flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight text-white">
+            <h2 className="text-2xl font-bold tracking-tight text-white lg:text-3xl">
               Ready to talk about the site?
             </h2>
-            <p className="mt-2 max-w-xl text-navy-100">
+            <p className="mt-3 max-w-xl text-lg text-navy-100">
               Tell us what you need. We will put together a plan and a fixed
               quote. Already a client? Start remote support or call.
             </p>

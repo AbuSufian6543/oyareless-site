@@ -33,10 +33,24 @@ const NEXT = [
   },
 ] as const;
 
-export default function InternetAvailabilityPage() {
+type Props = {
+  searchParams: Promise<{ city?: string | string[]; province?: string | string[] }>;
+};
+
+function firstParam(value: string | string[] | undefined): string | undefined {
+  return Array.isArray(value) ? value[0] : value;
+}
+
+export default async function InternetAvailabilityPage({ searchParams }: Props) {
+  const params = await searchParams;
+
   return (
     <>
-      <InternetAvailabilityChecker asPage />
+      <InternetAvailabilityChecker
+        asPage
+        initialCity={firstParam(params.city)}
+        initialProvince={firstParam(params.province)}
+      />
       <section className="border-t border-slate-200 bg-white py-12 lg:py-16">
         <div className="container-page">
           <h2 className="text-2xl font-bold tracking-tight text-navy-900">After you check the address</h2>

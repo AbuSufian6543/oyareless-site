@@ -15,6 +15,10 @@ import {
   STREET_TYPES,
 } from "@/lib/internet-availability/catalog";
 import {
+  availabilityCity,
+  availabilityProvince,
+} from "@/lib/internet-availability/place";
+import {
   addressFromAvailabilityPayload,
   availabilitySpeedSummary,
   type AvailabilityContinuation,
@@ -37,8 +41,20 @@ const emptyForm = {
   postalCode: "",
 };
 
-export function InternetAvailabilityChecker({ asPage = false }: { asPage?: boolean }) {
-  const [form, setForm] = useState(emptyForm);
+export function InternetAvailabilityChecker({
+  asPage = false,
+  initialCity,
+  initialProvince,
+}: {
+  asPage?: boolean;
+  initialCity?: string;
+  initialProvince?: string;
+}) {
+  const [form, setForm] = useState({
+    ...emptyForm,
+    city: availabilityCity(initialCity),
+    province: availabilityProvince(initialProvince),
+  });
   const [locations, setLocations] = useState<LocationRow[]>([]);
   const [nextLocationId, setNextLocationId] = useState(1);
   const [pending, setPending] = useState(false);
