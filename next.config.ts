@@ -108,6 +108,27 @@ const nextConfig: NextConfig = {
         ],
       },
       {
+        // Photographs keep their pixel size. A day of caching makes the
+        // next visit instant; stale-while-revalidate still picks up a
+        // replaced file without waiting on the old one forever.
+        source: "/images/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=86400, stale-while-revalidate=604800",
+          },
+        ],
+      },
+      {
+        source: "/brand/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=86400, stale-while-revalidate=604800",
+          },
+        ],
+      },
+      {
         source: "/_next/static/:path*",
         headers: [
           { key: "Access-Control-Allow-Origin", value: "*" },

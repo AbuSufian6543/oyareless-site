@@ -3,13 +3,13 @@ import Script from "next/script";
 import { TAWK_EMBED_URL } from "@/lib/tawk";
 
 /**
- * Official Tawk.to loader, run after the page is interactive so it cannot
- * block first paint. Public pages only — do not import this from admin,
- * portal, or login layouts.
+ * Official Tawk.to loader. It waits until the page has loaded so the hero
+ * photograph and fonts are not competing with the chat script.
+ * Public pages only — do not import this from admin, portal, or login layouts.
  */
 export function TawkChat() {
   return (
-    <Script id="tawk-to-widget" strategy="afterInteractive">
+    <Script id="tawk-to-widget" strategy="lazyOnload">
       {`var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
 (function(){
 var s1=document.createElement("script");

@@ -1,3 +1,4 @@
+import { preload } from "react-dom";
 import Image from "next/image";
 
 import { canonicalServicePhotoUrl } from "@/lib/service-photos";
@@ -68,6 +69,15 @@ export function SectionImage({
 
   const name = builtName(src);
 
+  if (priority && name) {
+    preload(`/images/${name}-${name === "office" ? 2048 : 900}.avif`, {
+      as: "image",
+      imageSrcSet: srcSet(name, "avif"),
+      imageSizes: sizes,
+      fetchPriority: "high",
+    });
+  }
+
   if (!name) {
     const remote = /^https?:\/\//i.test(src);
     const unoptimized =
@@ -112,7 +122,7 @@ export function SectionImage({
         height={fill ? undefined : 875}
         loading={priority ? "eager" : "lazy"}
         fetchPriority={priority ? "high" : "auto"}
-        decoding="async"
+        decoding={priority ? "sync" : "async"}
         className={cn(fill && "size-full object-cover", className)}
       />
     </picture>

@@ -95,6 +95,6 @@ export const config = {
   // Only inspect paths that could be legacy URLs; skip assets and API routes.
   matcher: [
     "/uploads/private/:path*",
-    "/((?!api|_next/static|_next/image|brand|uploads|favicon|apple-icon|apple-touch-icon|icon\\.png|icon-192|robots.txt|sitemap.xml|manifest).*)",
+    "/((?!api|_next/static|_next/image|brand|uploads|images|favicon|apple-icon|apple-touch-icon|icon\\.png|icon-192|robots.txt|sitemap.xml|manifest).*)",
   ],
 };

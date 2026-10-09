@@ -217,8 +217,10 @@ const IMAGES = [
     origin: "owned",
     cover: false,
     widths: [4096, 2800, 2048, 1400, 1024, 960],
-    avifQuality: 90,
-    webpQuality: 95,
+    avifQuality: 82,
+    avifEffort: 9,
+    chroma: "4:4:4",
+    webpQuality: 90,
     sharpen: false,
     allowUpscale: false,
     source: "WirelessCom.Ca Inc. hero photograph, kept at its native 1024×472 frame",
@@ -283,7 +285,11 @@ async function main() {
 
       await writeFile(
         path.join(OUT, `${image.name}-${width}.avif`),
-        await resized.clone().avif({ quality: avifQuality, effort: 6 }).toBuffer(),
+        await resized.clone().avif({
+          quality: avifQuality,
+          effort: image.avifEffort ?? 6,
+          ...(image.chroma ? { chromaSubsampling: image.chroma } : {}),
+        }).toBuffer(),
       );
       await writeFile(
         path.join(OUT, `${image.name}-${width}.webp`),
