@@ -68,7 +68,7 @@ export function PhotographicHero({
     <section
       id={id}
       className={cn(
-        "relative isolate flex min-h-[32rem] flex-col overflow-hidden lg:min-h-[38rem]",
+        "relative isolate flex min-h-[32rem] flex-col overflow-hidden lg:aspect-[1024/472] lg:min-h-[40rem]",
         light ? "bg-slate-50 text-navy-900" : "bg-navy-950 text-white",
         className,
       )}
@@ -80,7 +80,7 @@ export function PhotographicHero({
           fill
           priority
           sizes="100vw"
-          className="size-full object-cover object-[58%_46%] sm:object-[68%_44%] lg:object-[76%_42%]"
+          className="size-full object-cover object-[32%_center] sm:object-center lg:object-center"
         />
       </div>
 

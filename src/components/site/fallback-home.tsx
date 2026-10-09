@@ -70,7 +70,7 @@ export function FallbackHome() {
   return (
     <>
       <PhotographicHero
-        src="/images/office-1400.webp"
+        src="/images/office-1024.webp"
         footer={
           <div className="container-page grid gap-7 py-7 sm:grid-cols-2 lg:grid-cols-4 lg:gap-0 lg:divide-x lg:divide-white/10">
             {FACTS.map((fact) => (

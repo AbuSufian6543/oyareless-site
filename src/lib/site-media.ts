@@ -23,7 +23,7 @@ export type SitePicture = {
 };
 
 export const SITE_PICTURES: SitePicture[] = [
-  photo("office", "Sault Ste. Marie office", "The WirelessCom.Ca Inc. office at 97 White Oak Drive East in Sault Ste. Marie, photographed at dusk"),
+  photo("office", "Sault Ste. Marie office", "WirelessCom.Ca Inc. office, a dark blue commercial building with the company sign, photographed at dusk"),
   ...catalogServicePictures(),
   photo("server-rack", "IT services — server rack", "Row of rack-mounted enterprise servers in a dark data center aisle lit by blue status indicators"),
   photo("wifi", "Wi-Fi access point", "White enterprise Wi-Fi access point mounted on a dark office ceiling with a blue status ring"),
