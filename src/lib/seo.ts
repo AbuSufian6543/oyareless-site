@@ -7,6 +7,7 @@ import {
   isLoopbackHost,
   publicUrl,
 } from "@/lib/public-url";
+import { SERVICE_AREAS } from "@/lib/service-areas";
 import {
   DEFAULT_SETTINGS,
   formattedAddress,
@@ -111,6 +112,17 @@ export function openingHoursSpec(businessHours: string) {
   };
 }
 
+function servedPlaces() {
+  return [
+    ...SERVICE_AREAS.map((area) => ({
+      "@type": area.schemaType,
+      name: area.name,
+    })),
+    { "@type": "AdministrativeArea", name: "Northern Ontario" },
+    { "@type": "AdministrativeArea", name: "Ontario" },
+  ];
+}
+
 export function localBusinessJsonLd(settings: SiteSettings) {
   const logo = absoluteUrl(settings.logoUrl);
   const image = absoluteUrl(settings.ogImageUrl);
@@ -148,11 +160,7 @@ export function localBusinessJsonLd(settings: SiteSettings) {
       latitude: 46.5369,
       longitude: -84.332,
     },
-    areaServed: [
-      { "@type": "City", name: "Sault Ste. Marie" },
-      { "@type": "AdministrativeArea", name: "Northern Ontario" },
-      { "@type": "AdministrativeArea", name: "Ontario" },
-    ],
+    areaServed: servedPlaces(),
     contactPoint: [
       {
         "@type": "ContactPoint",
@@ -242,10 +250,7 @@ export function serviceJsonLd(options: {
     description: options.description,
     url: absoluteUrl(options.path),
     provider: { "@id": BUSINESS_ID },
-    areaServed: [
-      { "@type": "City", name: "Sault Ste. Marie" },
-      { "@type": "AdministrativeArea", name: "Northern Ontario" },
-    ],
+    areaServed: servedPlaces(),
     ...(options.brand
       ? { brand: { "@type": "Brand", name: options.brand } }
       : {}),

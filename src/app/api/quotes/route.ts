@@ -18,7 +18,7 @@ const schema = z.object({
   details: z.string().trim().min(10).max(8000),
   timeframe: z.string().trim().max(80).optional().or(z.literal("")),
   budgetRange: z.string().trim().max(80).optional().or(z.literal("")),
-  serviceAreas: z.array(z.string().max(80)).max(11).default([]),
+  serviceAreas: z.array(z.string().max(80)).max(24).default([]),
   website_url: z.string().max(0).optional().or(z.literal("")),
   sourcePage: z.string().max(200).optional(),
 });

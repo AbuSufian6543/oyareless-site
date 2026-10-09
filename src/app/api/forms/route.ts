@@ -9,24 +9,52 @@ import {
   submissionNotificationEmail,
 } from "@/lib/mail";
 
-const schema = z.object({
-  type: z.enum(["CONTACT", "SUPPORT", "QUOTE", "CALLBACK"]).default("CONTACT"),
-  name: z.string().trim().min(2, "Please enter your name.").max(120),
-  email: z.string().trim().email("Please enter a valid email address.").max(200),
-  phone: z.string().trim().max(50).optional().or(z.literal("")),
-  company: z.string().trim().max(160).optional().or(z.literal("")),
-  subject: z.string().trim().max(200).optional().or(z.literal("")),
-  message: z.string().trim().min(5, "Please include a message.").max(5000),
-  sourcePage: z.string().trim().max(300).optional().or(z.literal("")),
+const schema = z
+  .object({
+    type: z.enum(["CONTACT", "SUPPORT", "QUOTE", "CALLBACK"]).default("CONTACT"),
+    name: z.string().trim().min(2, "Please enter your name.").max(120),
+    email: z.string().trim().max(200).optional().or(z.literal("")),
+    phone: z.string().trim().max(50).optional().or(z.literal("")),
+    company: z.string().trim().max(160).optional().or(z.literal("")),
+    subject: z.string().trim().max(200).optional().or(z.literal("")),
+    message: z.string().trim().min(5, "Please include a message.").max(5000),
+    sourcePage: z.string().trim().max(300).optional().or(z.literal("")),
 
-  addressLine1: z.string().trim().max(200).optional().or(z.literal("")),
-  city: z.string().trim().max(120).optional().or(z.literal("")),
-  postalCode: z.string().trim().max(30).optional().or(z.literal("")),
-  serviceInterest: z.string().trim().max(160).optional().or(z.literal("")),
+    addressLine1: z.string().trim().max(300).optional().or(z.literal("")),
+    city: z.string().trim().max(120).optional().or(z.literal("")),
+    postalCode: z.string().trim().max(30).optional().or(z.literal("")),
+    serviceInterest: z.string().trim().max(160).optional().or(z.literal("")),
 
-  /** Honeypot: must stay empty. */
-  website_url: z.string().max(0).optional().or(z.literal("")),
-});
+    /** Honeypot: must stay empty. */
+    website_url: z.string().max(0).optional().or(z.literal("")),
+  })
+  .superRefine((data, ctx) => {
+    const email = data.email?.trim() ?? "";
+    if (email && !z.string().email().safeParse(email).success) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["email"],
+        message: "Please enter a valid email address.",
+      });
+    }
+    if (data.type !== "CALLBACK" && !email) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["email"],
+        message: "Please enter a valid email address.",
+      });
+    }
+    if (data.type === "CALLBACK") {
+      const digits = (data.phone ?? "").replace(/\D/g, "");
+      if (digits.length < 10) {
+        ctx.addIssue({
+          code: "custom",
+          path: ["phone"],
+          message: "Please enter a phone number we can call.",
+        });
+      }
+    }
+  });
 
 export async function POST(request: Request) {
   const ip = clientIp(request);
@@ -68,6 +96,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Thank you." }, { status: 200 });
   }
 
+  const email = data.email?.trim().toLowerCase() ?? "";
   const extra: Record<string, string> = {};
   if (data.addressLine1) extra.address = data.addressLine1;
   if (data.city) extra.city = data.city;
@@ -80,7 +109,7 @@ export async function POST(request: Request) {
       data: {
         type: data.type,
         name: data.name,
-        email: data.email.toLowerCase(),
+        email,
         phone: data.phone || null,
         company: data.company || null,
         subject: data.subject || null,
@@ -107,7 +136,7 @@ export async function POST(request: Request) {
   const notification = submissionNotificationEmail({
     type: data.type,
     name: data.name,
-    email: data.email,
+    email,
     phone: data.phone,
     company: data.company,
     subject: data.subject,
@@ -120,7 +149,7 @@ export async function POST(request: Request) {
   const sent = await sendMail({
     subject: notification.subject,
     html: notification.html,
-    replyTo: data.email,
+    replyTo: email || undefined,
   });
 
   if (sent.ok) {
@@ -128,12 +157,14 @@ export async function POST(request: Request) {
       .update({ where: { id: submissionId }, data: { emailSentAt: new Date() } })
       .catch(() => undefined);
 
-    const ack = submissionAckEmail({
-      name: data.name,
-      type: data.type,
-      message: data.message,
-    });
-    await sendMail({ to: data.email, subject: ack.subject, html: ack.html });
+    if (email) {
+      const ack = submissionAckEmail({
+        name: data.name,
+        type: data.type,
+        message: data.message,
+      });
+      await sendMail({ to: email, subject: ack.subject, html: ack.html });
+    }
   }
 
   return NextResponse.json({ message: "Thank you — your message was sent." });

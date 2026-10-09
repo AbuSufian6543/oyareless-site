@@ -127,7 +127,7 @@ export function presentAvailability(
 ): AvailabilityView {
   const needsSelection = Boolean(result.needsSelection);
   const matches = (result.addressMatches ?? []).map((match) => ({
-    label: formatAddress(match.address ?? {}),
+    label: formatAvailabilityAddress(match.address ?? {}),
     detail: [result.addressMatch, match.rateBand ? `Rate Band ${match.rateBand}` : ""]
       .filter(Boolean)
       .join(" · "),
@@ -406,6 +406,21 @@ function technicalDetails(points: ServicePoint[]): AvailabilityView["services"] 
   });
 }
 
+/** Customer-facing speeds only. Technical wholesale rows stay off the quote. */
+export function availabilitySpeedSummary(
+  services: AvailabilityView["services"],
+): string {
+  if (!services || services.groups.length === 0) return "";
+  const lines = services.groups.map((group) => {
+    const technologies = group.technologies
+      .map((technology) => `${technology.name}: ${technology.tiers.join(", ")}`)
+      .join("; ");
+    return `${group.title} — ${technologies}`;
+  });
+  if (services.rateBand) lines.push(`Rate band: ${services.rateBand}`);
+  return lines.join("\n");
+}
+
 function humanize(value: string): string {
   return value
     .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
@@ -413,7 +428,44 @@ function humanize(value: string): string {
     .replace(/^./, (character) => character.toUpperCase());
 }
 
-function formatAddress(address: AddressParts): string {
+export function addressFromAvailabilityPayload(payload: Record<string, unknown>): string {
+  if (payload.mode === "qid") return "";
+  const read = (key: string) => {
+    const value = payload[key];
+    return typeof value === "string" ? value.trim() : "";
+  };
+  const locations = Array.isArray(payload.locations)
+    ? payload.locations.flatMap((row) => {
+        if (!row || typeof row !== "object") return [];
+        const type = "type" in row && typeof row.type === "string" ? row.type : "";
+        const value = "value" in row && typeof row.value === "string" ? row.value : "";
+        return type || value ? [{ type, value }] : [];
+      })
+    : [];
+  const street = [
+    read("streetNumber"),
+    read("streetNumberSuffix"),
+    read("streetName"),
+    read("streetType"),
+    read("streetDirection"),
+  ]
+    .filter(Boolean)
+    .join(" ");
+  if (!street && !read("city")) return "";
+  return formatAvailabilityAddress({
+    streetNumber: read("streetNumber"),
+    streetNumberSuffix: read("streetNumberSuffix"),
+    streetName: read("streetName"),
+    streetType: read("streetType"),
+    streetDirection: read("streetDirection"),
+    city: read("city"),
+    province: read("province"),
+    postalCode: read("postalCode"),
+    locations,
+  });
+}
+
+export function formatAvailabilityAddress(address: AddressParts): string {
   const street = [
     address.streetNumber,
     address.streetNumberSuffix,

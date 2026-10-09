@@ -124,7 +124,9 @@ export async function createTaskFromSubmissionAction(
 
   const description = [
     `From inbox (${submission.type.toLowerCase()})`,
-    `${submission.name} <${submission.email}>`,
+    submission.email.includes("@")
+      ? `${submission.name} <${submission.email}>`
+      : submission.name,
     submission.phone ? `Phone: ${submission.phone}` : "",
     submission.company ? `Company: ${submission.company}` : "",
     "",

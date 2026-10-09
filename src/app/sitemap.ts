@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 
 import { env } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
+import { SERVICE_AREAS, serviceAreaPath } from "@/lib/service-areas";
 
 export const revalidate = 3600;
 
@@ -28,6 +29,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { path: "/knowledge-base", changeFrequency: "weekly", priority: 0.5 },
     { path: "/case-studies", changeFrequency: "monthly", priority: 0.5 },
     { path: "/careers", changeFrequency: "weekly", priority: 0.5 },
+    { path: "/service-area", changeFrequency: "monthly", priority: 0.6 },
+    ...SERVICE_AREAS.map((area) => ({
+      path: serviceAreaPath(area.slug),
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    })),
     { path: "/network-status", changeFrequency: "hourly", priority: 0.4 },
     { path: "/system-status", changeFrequency: "hourly", priority: 0.3 },
   ];

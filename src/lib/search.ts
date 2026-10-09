@@ -1,6 +1,7 @@
 import "server-only";
 
 import { prisma } from "@/lib/prisma";
+import { SERVICE_AREAS, serviceAreaPath } from "@/lib/service-areas";
 
 export type SearchHit = {
   title: string;
@@ -181,6 +182,25 @@ export async function searchSite(query: string): Promise<SearchHit[]> {
     });
   }
 
+  const places: SearchHit[] = [
+    {
+      title: "Where we work",
+      href: "/service-area",
+      kind: "Service area",
+      snippet: "Communities technicians reach from the Sault Ste. Marie shop.",
+    },
+    ...SERVICE_AREAS.map((area) => ({
+      title: area.name,
+      href: serviceAreaPath(area.slug),
+      kind: "Service area",
+      snippet: area.description,
+    })),
+  ].filter((place) => {
+    const query = q.toLowerCase();
+    if (place.title.toLowerCase().includes(query)) return true;
+    return query.length >= 4 && place.snippet.toLowerCase().includes(query);
+  });
+
   const tools: SearchHit[] = [
     { title: "Internet speed test", href: "/speed-test", kind: "Tool", snippet: "Download, upload, latency and jitter." },
     { title: "Internet availability", href: "/internet-availability", kind: "Tool", snippet: "Check fibre and copper speeds at a street address." },
@@ -198,5 +218,5 @@ export async function searchSite(query: string): Promise<SearchHit[]> {
       tool.snippet.toLowerCase().includes(q.toLowerCase()),
   );
 
-  return [...tools, ...hits].slice(0, 40);
+  return [...places, ...tools, ...hits].slice(0, 40);
 }

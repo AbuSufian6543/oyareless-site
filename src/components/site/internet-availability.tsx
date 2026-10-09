@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Check, Loader2, MapPin, Plus, Wifi } from "lucide-react";
 
+import { AvailabilityFollowUp } from "@/components/site/availability-follow-up";
 import { PageBreadcrumbs } from "@/components/site/page-breadcrumbs";
-import { Button, ButtonLink } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { TechBackdrop } from "@/components/visuals/tech-backdrop";
 import { crumbs } from "@/lib/seo";
 import {
@@ -13,7 +14,12 @@ import {
   STREET_DIRECTIONS,
   STREET_TYPES,
 } from "@/lib/internet-availability/catalog";
-import type { AvailabilityContinuation, AvailabilityView } from "@/lib/internet-availability/present";
+import {
+  addressFromAvailabilityPayload,
+  availabilitySpeedSummary,
+  type AvailabilityContinuation,
+  type AvailabilityView,
+} from "@/lib/internet-availability/present";
 import { cn } from "@/lib/utils";
 
 const fieldClass = "field-dark";
@@ -38,6 +44,8 @@ export function InternetAvailabilityChecker({ asPage = false }: { asPage?: boole
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState<AvailabilityView | null>(null);
+  const [followUp, setFollowUp] = useState<{ address: string; note: string; speeds: string } | null>(null);
+  const selectionLabel = useRef("");
 
   function update(name: keyof typeof emptyForm, value: string) {
     setForm((current) => ({ ...current, [name]: value }));
@@ -46,6 +54,7 @@ export function InternetAvailabilityChecker({ asPage = false }: { asPage?: boole
   async function submit(payload: Record<string, unknown>) {
     setPending(true);
     setError("");
+    setFollowUp(null);
     try {
       const response = await fetch("/api/internet-availability", {
         method: "POST",
@@ -59,6 +68,14 @@ export function InternetAvailabilityChecker({ asPage = false }: { asPage?: boole
         return;
       }
       setResult(data);
+      const address = addressFromAvailabilityPayload(payload) || selectionLabel.current;
+      if (!data.needsSelection && address) {
+        setFollowUp({
+          address,
+          note: data.message,
+          speeds: availabilitySpeedSummary(data.services),
+        });
+      }
     } catch {
       setResult(null);
       setError("We could not check that address. Please try again.");
@@ -69,6 +86,7 @@ export function InternetAvailabilityChecker({ asPage = false }: { asPage?: boole
 
   function onSubmit(event: React.FormEvent) {
     event.preventDefault();
+    selectionLabel.current = "";
     const filled = locations.filter((row) => row.type || row.value);
     if (filled.some((row) => !row.type || !row.value)) {
       setError("Each location needs both a type and a value.");
@@ -234,7 +252,9 @@ export function InternetAvailabilityChecker({ asPage = false }: { asPage?: boole
                   size="lg"
                   onClick={() => {
                     setResult(null);
+                    setFollowUp(null);
                     setError("");
+                    selectionLabel.current = "";
                   }}
                 >
                   Check another address
@@ -253,7 +273,8 @@ export function InternetAvailabilityChecker({ asPage = false }: { asPage?: boole
             <AvailabilityResult
               result={result}
               pending={pending}
-              onSelect={(continuation) => {
+              onSelect={(continuation, label) => {
+                selectionLabel.current = label;
                 if (continuation.mode === "qid") {
                   void submit({
                     mode: "qid",
@@ -289,6 +310,15 @@ export function InternetAvailabilityChecker({ asPage = false }: { asPage?: boole
                 });
               }}
             />
+          ) : null}
+          {followUp ? (
+            <div className="mt-6">
+              <AvailabilityFollowUp
+                address={followUp.address}
+                note={followUp.note}
+                speeds={followUp.speeds}
+              />
+            </div>
           ) : null}
         </div>
       </div>
@@ -326,7 +356,7 @@ function AvailabilityResult({
 }: {
   result: AvailabilityView;
   pending: boolean;
-  onSelect: (continuation: AvailabilityContinuation) => void;
+  onSelect: (continuation: AvailabilityContinuation, label: string) => void;
   onMore: () => void;
 }) {
   return (
@@ -359,7 +389,7 @@ function AvailabilityResult({
                 <button
                   type="button"
                   disabled={pending}
-                  onClick={() => onSelect(match.continuation)}
+                  onClick={() => onSelect(match.continuation, match.label)}
                   className="rounded-lg bg-accent-500 px-3.5 py-2 text-sm font-semibold text-navy-950 hover:bg-accent-400 disabled:opacity-60"
                 >
                   Use this address
@@ -431,11 +461,6 @@ function AvailabilityResult({
               </div>
             </details>
           ) : null}
-          <div className="mt-5">
-            <ButtonLink href="/request-quote" variant="accent" size="sm">
-              Request this service
-            </ButtonLink>
-          </div>
         </div>
       ) : null}
     </div>

@@ -205,7 +205,7 @@ export default async function SubmissionsPage({
                     </div>
 
                     <p className="mt-0.5 text-xs text-slate-500">
-                      {submission.email}
+                      {[submission.email, submission.phone].filter(Boolean).join(" · ") || "No email or phone"}
                       {submission.company ? ` · ${submission.company}` : ""}
                       {submission.assignedTo?.name
                         ? ` · assigned to ${submission.assignedTo.name}`

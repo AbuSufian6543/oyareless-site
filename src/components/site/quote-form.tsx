@@ -4,33 +4,18 @@ import { useState } from "react";
 import { LoaderCircle } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-
-const AREAS = [
-  "IT services",
-  "Cybersecurity",
-  "Firewalls",
-  "AI cameras & phones",
-  "Networking / Wi-Fi",
-  "VoIP telephone",
-  "Video surveillance",
-  "Mobile security trailer",
-  "Alarm systems",
-  "Door intercom",
-  "Panic buttons",
-  "Access control",
-  "Cabling / fiber",
-  "Two-way radio",
-  "EV charging",
-  "Web development",
-  "Other",
-];
+import { QUOTE_SERVICE_AREAS } from "@/lib/quote-options";
 
 export function QuoteForm({
   preselected = [],
   defaultDetails = "",
+  defaultSiteAddress = "",
+  notice = "",
 }: {
   preselected?: string[];
   defaultDetails?: string;
+  defaultSiteAddress?: string;
+  notice?: string;
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -41,7 +26,7 @@ export function QuoteForm({
     setBusy(true);
     setError("");
     const form = new FormData(event.currentTarget);
-    const serviceAreas = AREAS.filter((area) => form.get(`area-${area}`) === "on");
+    const serviceAreas = QUOTE_SERVICE_AREAS.filter((area) => form.get(`area-${area}`) === "on");
     try {
       const response = await fetch("/api/quotes", {
         method: "POST",
@@ -82,17 +67,22 @@ export function QuoteForm({
   return (
     <form onSubmit={(event) => void submit(event)} className="space-y-5">
       <input type="text" name="website_url" tabIndex={-1} autoComplete="off" className="hidden" />
+      {notice ? (
+        <p className="rounded-lg border border-brand-200 bg-brand-50 px-4 py-3 text-sm leading-relaxed text-navy-800">
+          {notice}
+        </p>
+      ) : null}
       <div className="grid gap-4 sm:grid-cols-2">
         <Field name="contactName" label="Your name" required />
         <Field name="email" label="Email" type="email" required />
         <Field name="phone" label="Phone" />
         <Field name="companyName" label="Company" />
       </div>
-      <Field name="siteAddress" label="Site address" />
+      <Field name="siteAddress" label="Site address" defaultValue={defaultSiteAddress} />
       <fieldset>
         <legend className="mb-2 text-sm font-semibold text-navy-800">Services of interest</legend>
         <div className="grid gap-2 sm:grid-cols-2">
-          {AREAS.map((area) => (
+          {QUOTE_SERVICE_AREAS.map((area) => (
             <label key={area} className="flex items-center gap-2 text-sm text-navy-800">
               <input
                 type="checkbox"
@@ -134,12 +124,14 @@ function Field({
   type = "text",
   required,
   placeholder,
+  defaultValue,
 }: {
   name: string;
   label: string;
   type?: string;
   required?: boolean;
   placeholder?: string;
+  defaultValue?: string;
 }) {
   return (
     <label className="block">
@@ -149,6 +141,7 @@ function Field({
         type={type}
         required={required}
         placeholder={placeholder}
+        defaultValue={defaultValue}
         className="field"
       />
     </label>
