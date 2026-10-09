@@ -78,7 +78,7 @@ export function PhotographicHero({
           alt={alt}
           fill
           priority
-          sizes="100vw"
+          sizes="(min-width: 768px) 200vw, 100vw"
           className="size-full object-cover object-[32%_center] sm:object-center lg:object-center"
         />
       </div>

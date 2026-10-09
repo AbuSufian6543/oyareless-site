@@ -18,8 +18,8 @@ import { cn } from "@/lib/utils";
  */
 
 const WIDTHS = [560, 900, 1400] as const;
-/** 4× restoration of the 1024×472 frame. Older width names still resolve. */
-const OFFICE_WIDTHS = [960, 1024, 1400, 2048, 2800, 4096] as const;
+/** Hero candidates stay at the sharp sizes. Older width names still resolve. */
+const OFFICE_WIDTHS = [2048, 4096] as const;
 const OFFICE_URL_WIDTHS = [960, 1024, 1400, 2000, 2048, 2800, 3600, 4096] as const;
 const ALL_WIDTHS = Array.from(
   new Set([...WIDTHS, ...OFFICE_WIDTHS, ...OFFICE_URL_WIDTHS]),
@@ -70,7 +70,7 @@ export function SectionImage({
   const name = builtName(src);
 
   if (priority && name) {
-    preload(`/images/${name}-${name === "office" ? 2048 : 900}.avif`, {
+    preload(`/images/${name}-${name === "office" ? 4096 : 900}.avif`, {
       as: "image",
       imageSrcSet: srcSet(name, "avif"),
       imageSizes: sizes,
@@ -116,7 +116,7 @@ export function SectionImage({
       {/* Pre-optimized static derivatives; the optimizer would only re-encode
           what the build already produced. */}
       <img
-        src={`/images/${name}-${name === "office" ? 2048 : 900}.webp`}
+        src={`/images/${name}-${name === "office" ? 4096 : 900}.webp`}
         alt={alt}
         width={fill ? undefined : 1400}
         height={fill ? undefined : 875}
