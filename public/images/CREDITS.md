@@ -124,8 +124,8 @@ provenance stays auditable.
 ## Photographs owned by WirelessCom.Ca Inc.
 
 `office-*` is the WirelessCom.Ca Inc. office photograph used on the home
-hero. It is kept at its native 1024×472 frame and encoded as AVIF and
-WebP without a crop or an upscale. Other company
+hero. The frame is the supplied picture, restored to 4096×1888 pixels
+and encoded as AVIF and WebP with no crop and no color grade. Other company
 photography in `public/brand/` includes
 `internet-1.jpg` through `internet-5.jpg` (wireless relay and antenna
 installations) and `marketing-1.png` / `marketing-2.png` where those

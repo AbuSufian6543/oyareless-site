@@ -17,9 +17,9 @@ import { cn } from "@/lib/utils";
  */
 
 const WIDTHS = [560, 900, 1400] as const;
-/** Native frame is 1024×472. Larger names exist so older URLs still resolve. */
-const OFFICE_WIDTHS = [960, 1024, 2048] as const;
-const OFFICE_URL_WIDTHS = [960, 1024, 1400, 2000, 2048, 2800, 3600] as const;
+/** 4× restoration of the 1024×472 frame. Older width names still resolve. */
+const OFFICE_WIDTHS = [960, 1024, 1400, 2048, 2800, 4096] as const;
+const OFFICE_URL_WIDTHS = [960, 1024, 1400, 2000, 2048, 2800, 3600, 4096] as const;
 const ALL_WIDTHS = Array.from(
   new Set([...WIDTHS, ...OFFICE_WIDTHS, ...OFFICE_URL_WIDTHS]),
 );
@@ -106,7 +106,7 @@ export function SectionImage({
       {/* Pre-optimized static derivatives; the optimizer would only re-encode
           what the build already produced. */}
       <img
-        src={`/images/${name}-${name === "office" ? 1024 : 900}.webp`}
+        src={`/images/${name}-${name === "office" ? 2048 : 900}.webp`}
         alt={alt}
         width={fill ? undefined : 1400}
         height={fill ? undefined : 875}

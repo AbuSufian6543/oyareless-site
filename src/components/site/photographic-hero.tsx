@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 
-import { TechBackdrop } from "@/components/visuals/tech-backdrop";
 import { SectionImage } from "@/components/visuals/section-image";
 import { HOME_OFFICE_ALT } from "@/lib/home-office";
 import { cn } from "@/lib/utils";
@@ -16,11 +15,11 @@ import { cn } from "@/lib/utils";
 export const photoHeroCopy = {
   wrap: "max-w-xl lg:max-w-2xl",
   eyebrow:
-    "mb-5 inline-flex items-center gap-2.5 rounded-full border border-white/18 bg-navy-950/50 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-accent-300 shadow-[0_10px_28px_rgb(4_19_37_/_0.4)] backdrop-blur-md",
+    "mb-5 inline-flex items-center gap-2.5 rounded-full border border-white/25 bg-navy-950/80 px-3.5 py-1.5 text-xs font-bold uppercase tracking-[0.16em] text-white shadow-[0_1px_2px_rgb(4_19_37_/_0.45)]",
   heading:
-    "text-balance-tight text-4xl leading-[1.08] font-bold text-white [text-shadow:0_2px_28px_rgb(4_19_37_/_0.72)] sm:text-5xl lg:text-[3.35rem]",
+    "text-balance-tight text-4xl leading-[1.08] font-bold tracking-tight text-white [text-shadow:0_1px_2px_rgb(4_19_37_/_0.55)] sm:text-5xl lg:text-[3.35rem]",
   sub:
-    "mt-6 max-w-xl text-lg leading-relaxed text-navy-50 [text-shadow:0_1px_18px_rgb(4_19_37_/_0.7)] lg:text-xl",
+    "mt-6 max-w-xl text-lg font-medium leading-relaxed text-white [text-shadow:0_1px_2px_rgb(4_19_37_/_0.65)] lg:text-xl",
   actions: "mt-9 flex flex-wrap gap-3",
   outlineButton:
     "border-white/50 bg-navy-950/30 shadow-[0_8px_24px_rgb(4_19_37_/_0.35)] backdrop-blur-sm hover:border-white hover:bg-white/12",
@@ -106,34 +105,20 @@ export function PhotographicHero({
           </>
         ) : (
           <>
-            <div className="absolute inset-0 bg-navy-950/38 lg:bg-navy-950/12" />
+            <div className="absolute inset-0 bg-navy-950/55 lg:hidden" />
             <div
-              className="absolute inset-0 bg-gradient-to-r from-navy-950/88 via-navy-950/58 to-transparent lg:from-navy-950/78 lg:via-navy-950/36"
+              className="absolute inset-0 hidden bg-gradient-to-r from-navy-950/90 via-navy-950/62 to-transparent lg:block"
               style={{
                 maskImage:
-                  "linear-gradient(to right, black 0%, black 42%, transparent 74%)",
+                  "linear-gradient(to right, black 0%, black 46%, transparent 72%)",
                 WebkitMaskImage:
-                  "linear-gradient(to right, black 0%, black 42%, transparent 74%)",
+                  "linear-gradient(to right, black 0%, black 46%, transparent 72%)",
               }}
             />
-            <div className="absolute -left-24 top-10 h-[28rem] w-[36rem] rounded-full bg-[radial-gradient(circle,rgb(4_19_37_/_0.55)_0%,transparent_72%)] lg:bg-[radial-gradient(circle,rgb(4_19_37_/_0.42)_0%,transparent_72%)]" />
-            <div className="absolute -right-10 bottom-10 hidden h-[22rem] w-[28rem] rounded-full bg-[radial-gradient(circle,rgb(245_186_72_/_0.14)_0%,transparent_70%)] lg:block" />
-            <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-navy-950/50 to-transparent lg:from-navy-950/22" />
-            <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-navy-950/70 to-transparent lg:from-navy-950/45" />
+            <div className="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-navy-950/80 to-transparent lg:h-24 lg:from-navy-950/55" />
           </>
         )}
       </div>
-
-      {light ? null : (
-        <TechBackdrop
-          wash="photo"
-          network
-          density={0.28}
-          glow="none"
-          scrim="none"
-          mood="network"
-        />
-      )}
 
       <div className="container-page relative flex flex-1 flex-col justify-center py-16 lg:py-20">
         {children}

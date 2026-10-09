@@ -216,11 +216,11 @@ const IMAGES = [
     alt: "WirelessCom.Ca Inc. office, a dark blue commercial building with the company sign, photographed at dusk",
     origin: "owned",
     cover: false,
-    widths: [2048, 1024, 960],
-    avifQuality: 78,
-    webpQuality: 92,
+    widths: [4096, 2800, 2048, 1400, 1024, 960],
+    avifQuality: 90,
+    webpQuality: 95,
     sharpen: false,
-    allowUpscale: true,
+    allowUpscale: false,
     source: "WirelessCom.Ca Inc. hero photograph, kept at its native 1024×472 frame",
   },
 ];
@@ -245,7 +245,9 @@ async function main() {
 
   for (const image of IMAGES) {
     let master = image.master;
-    if (!available.has(master)) {
+    if (image.name === "office" && available.has("office-hero-x4.png")) {
+      master = "office-hero-x4.png";
+    } else if (!available.has(master)) {
       if (image.name === "office" && available.has("office-white-oak.png")) {
         master = "office-white-oak.png";
       } else {
