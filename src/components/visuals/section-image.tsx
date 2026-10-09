@@ -18,9 +18,15 @@ import { cn } from "@/lib/utils";
  */
 
 const WIDTHS = [560, 900, 1400] as const;
-/** Hero candidates stay at the sharp sizes. Older width names still resolve. */
-const OFFICE_WIDTHS = [2048, 4096] as const;
+/**
+ * The hero is full-bleed, so the browser picks one of these by viewport.
+ * 4096 stays available for a large retina screen. Smaller screens must not
+ * be sent that file.
+ */
+const OFFICE_WIDTHS = [960, 1400, 2000, 2800, 3600, 4096] as const;
 const OFFICE_URL_WIDTHS = [960, 1024, 1400, 2000, 2048, 2800, 3600, 4096] as const;
+/** Fallback when a browser ignores srcset. Large enough to look sharp, small enough to arrive quickly. */
+const OFFICE_FALLBACK_WIDTH = 1400;
 const ALL_WIDTHS = Array.from(
   new Set([...WIDTHS, ...OFFICE_WIDTHS, ...OFFICE_URL_WIDTHS]),
 );
@@ -70,7 +76,8 @@ export function SectionImage({
   const name = builtName(src);
 
   if (priority && name) {
-    preload(`/images/${name}-${name === "office" ? 4096 : 900}.avif`, {
+    const fallbackWidth = name === "office" ? OFFICE_FALLBACK_WIDTH : 900;
+    preload(`/images/${name}-${fallbackWidth}.avif`, {
       as: "image",
       imageSrcSet: srcSet(name, "avif"),
       imageSizes: sizes,
@@ -116,7 +123,7 @@ export function SectionImage({
       {/* Pre-optimized static derivatives; the optimizer would only re-encode
           what the build already produced. */}
       <img
-        src={`/images/${name}-${name === "office" ? 4096 : 900}.webp`}
+        src={`/images/${name}-${name === "office" ? OFFICE_FALLBACK_WIDTH : 900}.webp`}
         alt={alt}
         width={fill ? undefined : 1400}
         height={fill ? undefined : 875}
