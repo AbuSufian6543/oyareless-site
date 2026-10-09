@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { ArrowRight, ArrowUpRight, ShieldAlert } from "lucide-react";
 
 import {
@@ -33,7 +34,13 @@ const HEIGHTS: Record<string, string> = {
  * readable and the building stays visible. Without a photo the animated mesh
  * is the field.
  */
-export async function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
+export async function TechHeroBlock({
+  block,
+  corner,
+}: {
+  block: BlockOf<"techHero">;
+  corner?: ReactNode;
+}) {
   const { data } = block;
   const light = visitorPageIsLight();
   const settings = await getSettings();
@@ -149,6 +156,7 @@ export async function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
         alt={heroAlt}
         id={block.settings?.anchor || undefined}
         light={light}
+        corner={corner}
         footer={
           data.highlights.length > 0 ? (
             <ul
@@ -192,7 +200,12 @@ export async function TechHeroBlock({ block }: { block: BlockOf<"techHero"> }) {
           mood="network"
         />
       )}
-      <div className="container-page relative">{copy}</div>
+      <div className={cn("container-page relative", corner && "lg:pr-[23rem]")}>{copy}</div>
+      {corner ? (
+        <div className="container-page relative px-5 pb-6">
+          <div className="ml-auto w-full lg:w-[20.5rem]">{corner}</div>
+        </div>
+      ) : null}
     </section>
   );
 }

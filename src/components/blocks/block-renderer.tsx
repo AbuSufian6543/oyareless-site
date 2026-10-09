@@ -31,6 +31,7 @@ import {
   ToolGridBlock,
 } from "@/components/blocks/platform-blocks";
 import { Section, SectionHeading, isDarkBackground } from "@/components/blocks/section";
+import { HomeAvailabilityCard } from "@/components/site/home-availability-band";
 import {
   FeatureGridBlock,
   LogoStripBlock,
@@ -119,7 +120,12 @@ export function BlockRenderer({
     case "jobs":
       return <JobsBlock block={block} />;
     case "techHero":
-      return <TechHeroBlock block={block} />;
+      return (
+        <TechHeroBlock
+          block={block}
+          corner={sourcePage === "/" ? <HomeAvailabilityCard /> : undefined}
+        />
+      );
     case "pillars":
       return <PillarsBlock block={block} />;
     case "capabilityGrid":

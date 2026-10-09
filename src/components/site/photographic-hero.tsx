@@ -52,6 +52,7 @@ export function PhotographicHero({
   id,
   className,
   footer,
+  corner,
   light = false,
   children,
 }: {
@@ -60,6 +61,8 @@ export function PhotographicHero({
   id?: string;
   className?: string;
   footer?: ReactNode;
+  /** Compact panel anchored to the lower-right of the photograph. */
+  corner?: ReactNode;
   light?: boolean;
   children: ReactNode;
 }) {
@@ -120,19 +123,33 @@ export function PhotographicHero({
         )}
       </div>
 
-      <div className="container-page relative flex flex-1 flex-col justify-center py-16 lg:py-20">
+      <div
+        className={cn(
+          "container-page relative flex flex-1 flex-col justify-center py-14 lg:py-16",
+          corner && "lg:pr-[23rem]",
+        )}
+      >
         {children}
       </div>
 
-      {footer ? (
-        <div
-          className={
-            light
-              ? "relative border-t border-slate-200 bg-white/85 backdrop-blur-md"
-              : "relative border-t border-white/12 bg-navy-950/40 backdrop-blur-md"
-          }
-        >
-          {footer}
+      {corner || footer ? (
+        <div className="relative z-20">
+          {corner ? (
+            <div className="container-page pb-3 lg:absolute lg:inset-x-0 lg:bottom-full lg:pb-3">
+              <div className="ml-auto w-full lg:w-[20.5rem]">{corner}</div>
+            </div>
+          ) : null}
+          {footer ? (
+            <div
+              className={
+                light
+                  ? "relative border-t border-slate-200 bg-white/85 backdrop-blur-md"
+                  : "relative border-t border-white/12 bg-navy-950/40 backdrop-blur-md"
+              }
+            >
+              {footer}
+            </div>
+          ) : null}
         </div>
       ) : null}
     </section>

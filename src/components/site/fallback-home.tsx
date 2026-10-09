@@ -1,7 +1,7 @@
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 
-import { HomeAvailabilityBand } from "@/components/site/home-availability-band";
+import { HomeAvailabilityCard } from "@/components/site/home-availability-band";
 import {
   PhotographicHero,
   photoHeroCopy,
@@ -55,6 +55,7 @@ export function FallbackHome() {
     <>
       <PhotographicHero
         src="/images/office-1024.webp"
+        corner={<HomeAvailabilityCard />}
         footer={
           <div className="container-page grid gap-7 py-7 sm:grid-cols-2 lg:grid-cols-4 lg:gap-0 lg:divide-x lg:divide-white/10">
             {FACTS.map((fact) => (
@@ -106,9 +107,7 @@ export function FallbackHome() {
         </div>
       </PhotographicHero>
 
-      <HomeAvailabilityBand />
-
-      <section id="work" className="scroll-mt-24 bg-white pt-14 pb-16 lg:pt-16 lg:pb-20">
+      <section id="work" className="scroll-mt-24 bg-white pt-10 pb-16 lg:pt-12 lg:pb-20">
         <div className="container-page">
           <div className="grid gap-8 lg:grid-cols-12 lg:items-end lg:gap-12">
             <div className="lg:col-span-7">
