@@ -1,11 +1,14 @@
+import { bulkSetTaskStatusAction } from "@/app/workdesk/status-actions";
 import { WorkdeskPageHeader } from "@/components/workdesk/dashboard-panels";
 import { ViewFilter } from "@/components/workdesk/view-filter";
-import { WorkItem, WorkList } from "@/components/workdesk/work-item";
+import { WorkItem } from "@/components/workdesk/work-item";
+import { WorkSelectBox, WorkSelection } from "@/components/workdesk/work-selection";
 import { WorkLogSummary } from "@/components/workdesk/work-log";
 import { prisma } from "@/lib/prisma";
 import type { TaskStatus } from "@/generated/prisma/client";
 import { technicianOrRedirect, technicianTaskWhere } from "@/lib/workdesk/access";
 import { isOverdue, startOfToday } from "@/lib/workdesk/dates";
+import { taskBulkChoices } from "@/lib/workdesk/labels";
 import { cleanWorkQuery, taskSearchWhere } from "@/lib/workdesk/list-search";
 import { WORK_LOG_LIST_INCLUDE, workLogTotals } from "@/lib/workdesk/work-log-query";
 import { WorkSearch } from "@/components/workdesk/work-search";
@@ -29,6 +32,11 @@ export default async function TechTasksPage({
       : "open";
   const base = technicianTaskWhere(user.id);
   const today = startOfToday();
+  const listParams = new URLSearchParams();
+  if (view !== "open") listParams.set("view", view);
+  if (query) listParams.set("q", query);
+  const listQuery = listParams.toString();
+  const returnTo = listQuery ? `/tech/tasks?${listQuery}` : "/tech/tasks";
   const doneStatuses: TaskStatus[] = ["COMPLETED", "CLOSED"];
   const viewWhere =
     view === "done"
@@ -76,8 +84,13 @@ export default async function TechTasksPage({
           { href: "/tech/tasks?view=all", label: "All", active: view === "all" },
         ]}
       />
-      <WorkList
-        count={tasks.length}
+      <WorkSelection
+        ids={tasks.map((task) => task.id)}
+        action={bulkSetTaskStatusAction}
+        statuses={taskBulkChoices(user.role)}
+        returnTo={returnTo}
+        noun="task"
+        summary={`${tasks.length} in this list`}
         empty={
           query
             ? `No tasks match “${query}”.`
@@ -103,13 +116,14 @@ export default async function TechTasksPage({
             overdue={isOverdue(task.dueAt, task.status, TASK_DONE)}
             assignees={task.assignees.map((row) => row.user.name)}
             you={user.name}
+            leading={<WorkSelectBox id={task.id} label={`Select ${task.reference}`} />}
             meta={
               <WorkLogSummary hideEmpty minutes={log.minutes} productCount={log.productCount} />
             }
           />
           );
         })}
-      </WorkList>
+      </WorkSelection>
     </div>
   );
 }

@@ -1,11 +1,14 @@
+import { bulkSetTicketStatusAction } from "@/app/workdesk/status-actions";
 import { PageHeader } from "@/components/admin/ui";
 import { ViewFilter } from "@/components/workdesk/view-filter";
-import { WorkItem, WorkList } from "@/components/workdesk/work-item";
+import { WorkItem } from "@/components/workdesk/work-item";
+import { WorkSelectBox, WorkSelection } from "@/components/workdesk/work-selection";
 import { WorkLogSummary } from "@/components/workdesk/work-log";
 import { prisma } from "@/lib/prisma";
 import type { TicketStatus } from "@/generated/prisma/client";
 import { technicianOrRedirect, technicianTicketWhere } from "@/lib/workdesk/access";
 import { ticketAssigneeNames } from "@/lib/workdesk/board";
+import { ticketBulkChoices } from "@/lib/workdesk/labels";
 import { cleanWorkQuery, ticketSearchWhere } from "@/lib/workdesk/list-search";
 import { WORK_LOG_LIST_INCLUDE, workLogTotals } from "@/lib/workdesk/work-log-query";
 import { WorkSearch } from "@/components/workdesk/work-search";
@@ -22,6 +25,11 @@ export default async function TechTicketsPage({
   const query = cleanWorkQuery(params.q);
   const searchWhere = ticketSearchWhere(query);
   const view = params.view === "done" || params.view === "all" ? params.view : "open";
+  const listParams = new URLSearchParams();
+  if (view !== "open") listParams.set("view", view);
+  if (query) listParams.set("q", query);
+  const listQuery = listParams.toString();
+  const returnTo = listQuery ? `/tech/tickets?${listQuery}` : "/tech/tickets";
   const base = technicianTicketWhere(user.id);
   const doneStatuses: TicketStatus[] = ["RESOLVED", "CLOSED"];
   const viewWhere =
@@ -61,8 +69,13 @@ export default async function TechTicketsPage({
           { href: "/tech/tickets?view=all", label: "All", active: view === "all" },
         ]}
       />
-      <WorkList
-        count={tickets.length}
+      <WorkSelection
+        ids={tickets.map((ticket) => ticket.id)}
+        action={bulkSetTicketStatusAction}
+        statuses={ticketBulkChoices(user.role)}
+        returnTo={returnTo}
+        noun="ticket"
+        summary={`${tickets.length} in this list. Completed marks a ticket resolved.`}
         empty={query ? `No tickets match “${query}”.` : view === "done" ? "No completed tickets yet." : "Nothing assigned in this view."}
       >
         {tickets.map((ticket) => {
@@ -79,13 +92,14 @@ export default async function TechTicketsPage({
             subtitle={ticket.customer.name}
             assignees={ticketAssigneeNames(ticket)}
             you={user.name}
+            leading={<WorkSelectBox id={ticket.id} label={`Select ${ticket.reference}`} />}
             meta={
               <WorkLogSummary hideEmpty minutes={log.minutes} productCount={log.productCount} />
             }
           />
           );
         })}
-      </WorkList>
+      </WorkSelection>
     </div>
   );
 }

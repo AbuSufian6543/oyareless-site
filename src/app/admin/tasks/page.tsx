@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
 
+import { bulkSetTaskStatusAction } from "@/app/workdesk/status-actions";
 import { Alert } from "@/components/admin/ui";
 import { WorkdeskPageHeader } from "@/components/workdesk/dashboard-panels";
 import { TaskQuickActions } from "@/components/workdesk/task-quick-actions";
 import { ViewFilter } from "@/components/workdesk/view-filter";
-import { WorkItem, WorkList } from "@/components/workdesk/work-item";
+import { WorkItem } from "@/components/workdesk/work-item";
 import { WorkLogSummary } from "@/components/workdesk/work-log";
+import { WorkSelectBox, WorkSelection } from "@/components/workdesk/work-selection";
 import { requireAdminRole } from "@/lib/admin-guard";
 import { hasRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -17,6 +19,7 @@ import {
   taskUnassigned,
 } from "@/lib/workdesk/board";
 import { isOverdue, startOfToday, startOfTomorrow } from "@/lib/workdesk/dates";
+import { taskBulkChoices } from "@/lib/workdesk/labels";
 import { cleanWorkQuery, taskSearchWhere } from "@/lib/workdesk/list-search";
 import { WORK_LOG_LIST_INCLUDE, workLogTotals } from "@/lib/workdesk/work-log-query";
 import { WorkSearch } from "@/components/workdesk/work-search";
@@ -77,7 +80,11 @@ export default async function AdminTasksPage({
   const searchWhere = taskSearchWhere(query);
   const today = startOfToday();
   const tomorrow = startOfTomorrow();
-  const returnTo = view === "mine" ? "/admin/tasks" : `/admin/tasks?view=${view}`;
+  const listParams = new URLSearchParams();
+  if (view !== "mine") listParams.set("view", view);
+  if (query) listParams.set("q", query);
+  const listQuery = listParams.toString();
+  const returnTo = listQuery ? `/admin/tasks?${listQuery}` : "/admin/tasks";
 
   const mineFilter = { ...OPEN_TASK, ...taskAssignedTo(user.id) };
   const teamFilter = { ...OPEN_TASK, ...taskAssignedToOthers(user.id) };
@@ -183,21 +190,48 @@ export default async function AdminTasksPage({
           <Alert tone="warning">Assign someone before sending a notification.</Alert>
         </div>
       ) : null}
-      <WorkSearch action="/admin/tasks" query={query} kind="task" />
-      <ViewFilter
-        items={[
-          { href: "/admin/tasks", label: "Assigned to me", active: view === "mine", count: mineCount },
-          { href: "/admin/tasks?view=team", label: "Assigned to others", active: view === "team", count: teamCount },
-          { href: "/admin/tasks?view=unassigned", label: "Unassigned", active: view === "unassigned", count: unassignedCount },
-          { href: "/admin/tasks?view=overdue", label: "Overdue", active: view === "overdue", count: overdueCount, tone: "danger" },
-          { href: "/admin/tasks?view=today", label: "Today", active: view === "today", count: todayCount },
-          { href: "/admin/tasks?view=upcoming", label: "Upcoming", active: view === "upcoming", count: upcomingCount },
-          { href: "/admin/tasks?view=completed", label: "Completed", active: view === "completed", count: completedCount, tone: "success" },
-          { href: "/admin/tasks?view=closed", label: "Closed", active: view === "closed", count: closedCount },
-          { href: "/admin/tasks?view=all", label: "All open", active: view === "all", count: allCount },
-        ]}
-      />
-      <WorkList count={tasks.length} empty={query ? `No tasks match “${query}”.` : emptyCopy(view)}>
+      <section className="mb-4 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-[0_1px_2px_rgba(15,42,73,0.05)]">
+        <div className="px-3 pt-3">
+          <WorkSearch action="/admin/tasks" query={query} kind="task" className="mb-3" />
+        </div>
+        <ViewFilter
+          groups={[
+            {
+              label: "People",
+              items: [
+                { href: "/admin/tasks", label: "Assigned to me", active: !query && view === "mine", count: mineCount },
+                { href: "/admin/tasks?view=team", label: "Assigned to others", active: !query && view === "team", count: teamCount },
+                { href: "/admin/tasks?view=unassigned", label: "Unassigned", active: !query && view === "unassigned", count: unassignedCount },
+                { href: "/admin/tasks?view=all", label: "All open", active: !query && view === "all", count: allCount },
+              ],
+            },
+            {
+              label: "Due",
+              items: [
+                { href: "/admin/tasks?view=overdue", label: "Overdue", active: !query && view === "overdue", count: overdueCount, tone: "danger" },
+                { href: "/admin/tasks?view=today", label: "Today", active: !query && view === "today", count: todayCount },
+                { href: "/admin/tasks?view=upcoming", label: "Upcoming", active: !query && view === "upcoming", count: upcomingCount },
+              ],
+            },
+            {
+              label: "Finished",
+              items: [
+                { href: "/admin/tasks?view=completed", label: "Completed", active: !query && view === "completed", count: completedCount, tone: "success" },
+                { href: "/admin/tasks?view=closed", label: "Closed", active: !query && view === "closed", count: closedCount },
+              ],
+            },
+          ]}
+        />
+      </section>
+      <WorkSelection
+        ids={tasks.map((task) => task.id)}
+        action={bulkSetTaskStatusAction}
+        statuses={taskBulkChoices(user.role)}
+        returnTo={returnTo}
+        noun="task"
+        summary={query ? `${tasks.length} matching this search` : `${tasks.length} in this view`}
+        empty={query ? `No tasks match “${query}”.` : emptyCopy(view)}
+      >
         {tasks.map((task) => {
           const done = task.status === "COMPLETED" || task.status === "CLOSED";
           const log = workLogTotals(task);
@@ -215,6 +249,7 @@ export default async function AdminTasksPage({
               overdue={isOverdue(task.dueAt, task.status, TASK_DONE)}
               assignees={task.assignees.map((row) => row.user.name)}
               you={user.name}
+              leading={<WorkSelectBox id={task.id} label={`Select ${task.reference}`} />}
               meta={
                 <WorkLogSummary hideEmpty minutes={log.minutes} productCount={log.productCount} />
               }
@@ -230,7 +265,7 @@ export default async function AdminTasksPage({
             />
           );
         })}
-      </WorkList>
+      </WorkSelection>
     </div>
   );
 }

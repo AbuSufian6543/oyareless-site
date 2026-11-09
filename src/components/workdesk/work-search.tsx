@@ -5,11 +5,13 @@ export function WorkSearch({
   query,
   kind,
   hidden,
+  className,
 }: {
   action: string;
   query: string;
   kind: "task" | "ticket" | "both";
   hidden?: Record<string, string>;
+  className?: string;
 }) {
   const placeholder =
     kind === "task"
@@ -19,7 +21,7 @@ export function WorkSearch({
         : "Search tasks and tickets by name, WT, or WC";
 
   return (
-    <form action={action} method="get" className="mb-4" role="search">
+    <form action={action} method="get" className={className ?? "mb-4"} role="search">
       {hidden
         ? Object.entries(hidden).map(([name, value]) =>
             value ? <input key={name} type="hidden" name={name} value={value} /> : null,

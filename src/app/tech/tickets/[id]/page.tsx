@@ -126,9 +126,8 @@ export default async function TechTicketPage({
           <CardTitle>Assigned to</CardTitle>
           <AssigneeAvatars names={ticketAssigneeNames(ticket)} you={user.name} />
         </Card>
-        {!closed && (
-          <Card>
-            <CardTitle>Status</CardTitle>
+        <Card>
+          <CardTitle>Status</CardTitle>
             <form action={techUpdateTicketStatusAction} className="space-y-2">
               <input type="hidden" name="ticketId" value={ticket.id} />
               <SelectField
@@ -147,10 +146,9 @@ export default async function TechTicketPage({
               <button type="submit" className="w-full rounded-lg bg-brand-600 px-3 py-2 text-sm font-semibold text-white hover:bg-brand-700">
                 Save status
               </button>
-              <p className="text-xs text-slate-500">Mark resolved when your work is done. An admin closes the ticket after review.</p>
+              <p className="text-xs text-slate-500">Completed marks the ticket resolved. Closed files it.</p>
             </form>
           </Card>
-        )}
         <Card>
           <CardTitle>History</CardTitle>
           <ActivityLog events={ticket.events} />

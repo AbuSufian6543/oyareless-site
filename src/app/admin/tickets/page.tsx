@@ -1,10 +1,12 @@
 import { createStaffTicketAction } from "@/app/admin/tickets/actions";
+import { bulkSetTicketStatusAction } from "@/app/workdesk/status-actions";
 import Link from "next/link";
 import { PageHeader, SelectField, TextAreaField, TextField } from "@/components/admin/ui";
 import { AssigneeChecklist } from "@/components/workdesk/assignee-checklist";
 import { AttachmentField } from "@/components/workdesk/attachment-field";
 import { ViewFilter } from "@/components/workdesk/view-filter";
-import { WorkItem, WorkList } from "@/components/workdesk/work-item";
+import { WorkItem } from "@/components/workdesk/work-item";
+import { WorkSelectBox, WorkSelection } from "@/components/workdesk/work-selection";
 import { WorkLogSummary } from "@/components/workdesk/work-log";
 import { requireAdminRole } from "@/lib/admin-guard";
 import { hasRole } from "@/lib/auth";
@@ -17,6 +19,7 @@ import {
   ticketUnassigned,
 } from "@/lib/workdesk/board";
 import { listAssignableStaff } from "@/lib/workdesk/staff";
+import { ticketBulkChoices } from "@/lib/workdesk/labels";
 import { cleanWorkQuery, ticketSearchWhere } from "@/lib/workdesk/list-search";
 import { WORK_LOG_LIST_INCLUDE, workLogTotals } from "@/lib/workdesk/work-log-query";
 import { WorkSearch } from "@/components/workdesk/work-search";
@@ -41,6 +44,11 @@ export default async function AdminTicketsPage({
   const query = cleanWorkQuery(params.q);
   const searchWhere = ticketSearchWhere(query);
   const createOpen = params.create === "1" || params.error === "invalid";
+  const listParams = new URLSearchParams();
+  if (view !== "open") listParams.set("view", view);
+  if (query) listParams.set("q", query);
+  const listQuery = listParams.toString();
+  const returnTo = listQuery ? `/admin/tickets?${listQuery}` : "/admin/tickets";
 
   const mineFilter = { ...OPEN_TICKET, ...ticketAssignedTo(user.id) };
   const teamFilter = { ...OPEN_TICKET, ...ticketAssignedToOthers(user.id) };
@@ -162,8 +170,17 @@ export default async function AdminTicketsPage({
         ]}
       />
 
-      <WorkList
-        count={tickets.length}
+      <WorkSelection
+        ids={tickets.map((ticket) => ticket.id)}
+        action={bulkSetTicketStatusAction}
+        statuses={ticketBulkChoices(user.role)}
+        returnTo={returnTo}
+        noun="ticket"
+        summary={
+          query
+            ? `${tickets.length} matching this search`
+            : `${tickets.length} in this view. Completed marks a ticket resolved.`
+        }
         empty={
           query
             ? `No tickets match “${query}”.`
@@ -191,13 +208,14 @@ export default async function AdminTicketsPage({
             updatedAt={ticket.updatedAt}
             assignees={ticketAssigneeNames(ticket)}
             you={user.name}
+            leading={<WorkSelectBox id={ticket.id} label={`Select ${ticket.reference}`} />}
             meta={
               <WorkLogSummary hideEmpty minutes={log.minutes} productCount={log.productCount} />
             }
           />
           );
         })}
-      </WorkList>
+      </WorkSelection>
     </div>
   );
 }

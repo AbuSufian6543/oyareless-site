@@ -1,3 +1,5 @@
+import { bulkTaskStatusesForRole, bulkTicketStatusesForRole } from "@/lib/workdesk/rules";
+
 export const TICKET_STATUS_LABELS: Record<string, string> = {
   NEW: "New",
   OPEN: "Open",
@@ -6,6 +8,20 @@ export const TICKET_STATUS_LABELS: Record<string, string> = {
   RESOLVED: "Resolved",
   CLOSED: "Closed",
 };
+
+export function taskBulkChoices(role: string): Array<{ value: string; label: string }> {
+  return bulkTaskStatusesForRole(role).map((value) => ({
+    value,
+    label: TASK_STATUS_LABELS[value] ?? value,
+  }));
+}
+
+export function ticketBulkChoices(role: string): Array<{ value: string; label: string }> {
+  return bulkTicketStatusesForRole(role).map((value) => ({
+    value,
+    label: value === "RESOLVED" ? "Completed" : (TICKET_STATUS_LABELS[value] ?? value),
+  }));
+}
 
 export const TASK_STATUS_LABELS: Record<string, string> = {
   OPEN: "Open",

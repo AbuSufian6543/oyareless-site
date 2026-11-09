@@ -53,6 +53,7 @@ export const TECHNICIAN_TICKET_STATUSES = [
   "IN_PROGRESS",
   "WAITING",
   "RESOLVED",
+  "CLOSED",
 ] as const;
 
 export const ADMIN_TICKET_STATUSES = [
@@ -69,6 +70,7 @@ export const TECHNICIAN_TASK_STATUSES = [
   "IN_PROGRESS",
   "WAITING",
   "COMPLETED",
+  "CLOSED",
 ] as const;
 
 export const ADMIN_TASK_STATUSES = [
@@ -122,4 +124,21 @@ export function workdeskAdminMaySetTicketStatus(status: string): boolean {
 
 export function workdeskAdminMaySetTaskStatus(status: string): boolean {
   return (ADMIN_TASK_STATUSES as readonly string[]).includes(status);
+}
+
+/**
+ * Statuses the list can apply in one step.
+ * Every staff role that works the queue can set these. Viewers and customers cannot.
+ */
+export const BULK_TASK_STATUSES = ["IN_PROGRESS", "WAITING", "COMPLETED", "CLOSED"] as const;
+export const BULK_TICKET_STATUSES = ["IN_PROGRESS", "WAITING", "RESOLVED", "CLOSED"] as const;
+
+export function bulkTaskStatusesForRole(role: string): readonly string[] {
+  if (role === "TECHNICIAN" || roleMeetsMinimum(role, "EMPLOYEE")) return BULK_TASK_STATUSES;
+  return [];
+}
+
+export function bulkTicketStatusesForRole(role: string): readonly string[] {
+  if (role === "TECHNICIAN" || roleMeetsMinimum(role, "EMPLOYEE")) return BULK_TICKET_STATUSES;
+  return [];
 }

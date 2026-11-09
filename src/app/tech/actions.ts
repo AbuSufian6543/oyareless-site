@@ -125,18 +125,20 @@ export async function techUpdateTicketStatusAction(formData: FormData): Promise<
   }
 
   const ticket = await prisma.ticket.findUnique({ where: { id: ticketId } });
-  if (!ticket || ticket.status === "CLOSED") return;
+  if (!ticket || ticket.status === status) return;
 
   await prisma.ticket.update({
     where: { id: ticketId },
     data: {
       status,
-      resolvedAt: status === "RESOLVED" ? new Date() : ticket.resolvedAt,
+      resolvedAt: status === "RESOLVED" ? ticket.resolvedAt ?? new Date() : ticket.resolvedAt,
+      closedAt: status === "CLOSED" ? new Date() : ticket.closedAt,
     },
   });
 
   await recordWorkdeskEvent({
-    kind: status === "RESOLVED" ? "COMPLETED" : "STATUS_CHANGED",
+    kind:
+      status === "CLOSED" ? "CLOSED" : status === "RESOLVED" ? "COMPLETED" : "STATUS_CHANGED",
     summary: `${tech.name} set status to ${TICKET_STATUS_LABELS[status] ?? status}`,
     ticketId,
     actorStaffId: tech.id,
@@ -153,11 +155,11 @@ export async function techUpdateTicketStatusAction(formData: FormData): Promise<
   await notifyWorkdeskUpdate({
     actorId: tech.id,
     title:
-      status === "RESOLVED"
-        ? `${ticket.reference} marked resolved`
+      status === "RESOLVED" || status === "CLOSED"
+        ? `${ticket.reference} marked ${TICKET_STATUS_LABELS[status] ?? status}`
         : `${ticket.reference} status updated`,
     body: `${tech.name} set ${ticket.reference} to ${TICKET_STATUS_LABELS[status] ?? status}`,
-    kind: status === "RESOLVED" ? "RESOLVED" : "UPDATE",
+    kind: status === "RESOLVED" || status === "CLOSED" ? "RESOLVED" : "UPDATE",
     ticketId,
   });
 
@@ -246,18 +248,19 @@ export async function techUpdateTaskStatusAction(formData: FormData): Promise<vo
   }
 
   const task = await prisma.internalTask.findUnique({ where: { id: taskId } });
-  if (!task || task.status === "CLOSED") return;
+  if (!task || task.status === status) return;
 
   await prisma.internalTask.update({
     where: { id: taskId },
     data: {
       status,
-      completedAt: status === "COMPLETED" ? new Date() : task.completedAt,
+      completedAt: status === "COMPLETED" ? task.completedAt ?? new Date() : task.completedAt,
+      closedAt: status === "CLOSED" ? new Date() : task.closedAt,
     },
   });
 
   await recordWorkdeskEvent({
-    kind: status === "COMPLETED" ? "COMPLETED" : "STATUS_CHANGED",
+    kind: status === "CLOSED" ? "CLOSED" : status === "COMPLETED" ? "COMPLETED" : "STATUS_CHANGED",
     summary: `${tech.name} set status to ${TASK_STATUS_LABELS[status] ?? status}`,
     taskId,
     actorStaffId: tech.id,
@@ -274,11 +277,11 @@ export async function techUpdateTaskStatusAction(formData: FormData): Promise<vo
   await notifyWorkdeskUpdate({
     actorId: tech.id,
     title:
-      status === "COMPLETED"
-        ? `${task.reference} marked completed`
+      status === "COMPLETED" || status === "CLOSED"
+        ? `${task.reference} marked ${TASK_STATUS_LABELS[status] ?? status}`
         : `${task.reference} status updated`,
     body: `${tech.name} set ${task.reference} to ${TASK_STATUS_LABELS[status] ?? status}`,
-    kind: status === "COMPLETED" ? "RESOLVED" : "UPDATE",
+    kind: status === "COMPLETED" || status === "CLOSED" ? "RESOLVED" : "UPDATE",
     taskId,
   });
 

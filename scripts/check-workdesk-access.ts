@@ -6,6 +6,8 @@ import {
   roleMeetsMinimum,
   technicianCanSeeTask,
   technicianCanSeeTicket,
+  bulkTaskStatusesForRole,
+  bulkTicketStatusesForRole,
   technicianMaySetTaskStatus,
   technicianMaySetTicketStatus,
   workdeskAdminMaySetTaskStatus,
@@ -153,12 +155,48 @@ assert(
 assert("technician may set IN_PROGRESS", technicianMaySetTicketStatus("IN_PROGRESS"));
 assert("technician may set RESOLVED", technicianMaySetTicketStatus("RESOLVED"));
 assert("technician may not set NEW", !technicianMaySetTicketStatus("NEW"));
-assert("technician may not close a ticket", !technicianMaySetTicketStatus("CLOSED"));
+assert("technician may close a ticket", technicianMaySetTicketStatus("CLOSED"));
 assert("admin may close a ticket", workdeskAdminMaySetTicketStatus("CLOSED"));
 
 assert("technician may set COMPLETED", technicianMaySetTaskStatus("COMPLETED"));
-assert("technician may not close a task", !technicianMaySetTaskStatus("CLOSED"));
+assert("technician may close a task", technicianMaySetTaskStatus("CLOSED"));
 assert("admin may close a task", workdeskAdminMaySetTaskStatus("CLOSED"));
+
+assert(
+  "office staff can bulk-mark tasks in progress, waiting, completed, or closed",
+  ["IN_PROGRESS", "WAITING", "COMPLETED", "CLOSED"].every((status) =>
+    bulkTaskStatusesForRole("EMPLOYEE").includes(status) &&
+    bulkTaskStatusesForRole("MANAGER").includes(status) &&
+    bulkTaskStatusesForRole("EDITOR").includes(status) &&
+    bulkTaskStatusesForRole("ADMIN").includes(status) &&
+    bulkTaskStatusesForRole("SUPERADMIN").includes(status),
+  ),
+);
+assert(
+  "technicians can bulk-mark assigned tasks in progress, waiting, completed, or closed",
+  ["IN_PROGRESS", "WAITING", "COMPLETED", "CLOSED"].every((status) =>
+    bulkTaskStatusesForRole("TECHNICIAN").includes(status),
+  ),
+);
+assert(
+  "office staff can bulk-mark tickets in progress, waiting, completed, or closed",
+  ["IN_PROGRESS", "WAITING", "RESOLVED", "CLOSED"].every((status) =>
+    bulkTicketStatusesForRole("EMPLOYEE").includes(status),
+  ),
+);
+assert(
+  "technicians can bulk-mark tickets in progress, waiting, completed, or closed",
+  ["IN_PROGRESS", "WAITING", "RESOLVED", "CLOSED"].every((status) =>
+    bulkTicketStatusesForRole("TECHNICIAN").includes(status),
+  ),
+);
+assert(
+  "viewers and customers cannot bulk-change task or ticket status",
+  bulkTaskStatusesForRole("VIEWER").length === 0 &&
+    bulkTicketStatusesForRole("VIEWER").length === 0 &&
+    bulkTaskStatusesForRole("CUSTOMER").length === 0 &&
+    bulkTicketStatusesForRole("CUSTOMER").length === 0,
+);
 
 assert(
   "customers do not see assignment or internal notes in history",

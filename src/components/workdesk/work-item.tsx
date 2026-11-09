@@ -86,6 +86,7 @@ export function WorkItem({
   you,
   meta,
   actions,
+  leading,
 }: {
   href: string;
   kind: "ticket" | "task";
@@ -101,6 +102,7 @@ export function WorkItem({
   you?: string;
   meta?: ReactNode;
   actions?: ReactNode;
+  leading?: ReactNode;
 }) {
   const accent = cardAccent(kind, priority, overdue);
   const surface = cardSurface(kind, priority, overdue, status);
@@ -151,7 +153,7 @@ export function WorkItem({
     surface,
   );
 
-  if (actions) {
+  if (actions || leading) {
     return (
       <li
         className={cn(
@@ -159,10 +161,15 @@ export function WorkItem({
           shell,
         )}
       >
-        <Link href={href} className="min-w-0 flex-1 rounded-xl px-1 py-0.5 hover:bg-slate-50/80">
-          {body}
-        </Link>
-        <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">{actions}</div>
+        <div className="flex min-w-0 flex-1 items-start gap-1">
+          {leading}
+          <Link href={href} className="min-w-0 flex-1 rounded-xl px-1 py-0.5 hover:bg-slate-50/80">
+            {body}
+          </Link>
+        </div>
+        {actions ? (
+          <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">{actions}</div>
+        ) : null}
       </li>
     );
   }
