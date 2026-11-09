@@ -20,6 +20,7 @@ import {
   listTicketAssigneeIds,
   staffNamesFor,
 } from "@/lib/workdesk/staff";
+import { deferWork } from "@/lib/workdesk/defer";
 import { renderTaskEmailCard, type TaskMailSnapshot } from "@/lib/workdesk/task-mail";
 
 function escapeHtml(value: string): string {
@@ -143,17 +144,24 @@ export async function emailAdminInbox(input: {
   taskId?: string;
   emailCard?: string;
 }): Promise<void> {
-  const card = input.emailCard ?? (await taskEmailCard(input.taskId));
-  await sendMail({
-    subject: input.title,
-    html: staffEmailDocument(
-      input.title,
-      `<p style="margin:0 0 16px;font-size:15px;color:#3c4e63;line-height:1.65;">${escapeHtml(input.detail)}</p>
+  const title = input.title;
+  const detail = input.detail;
+  const href = input.href;
+  const taskId = input.taskId;
+  const prepared = input.emailCard;
+  deferWork(async () => {
+    const card = prepared ?? (await taskEmailCard(taskId));
+    await sendMail({
+      subject: title,
+      html: staffEmailDocument(
+        title,
+        `<p style="margin:0 0 16px;font-size:15px;color:#3c4e63;line-height:1.65;">${escapeHtml(detail)}</p>
        ${card}
-       ${emailActionLink(publicUrl(input.href), "Open admin")}`,
-    ),
-  }).catch((error) => {
-    console.error("[workdesk] admin inbox email failed:", error);
+       ${emailActionLink(publicUrl(href), "Open admin")}`,
+      ),
+    }).catch((error) => {
+      console.error("[workdesk] admin inbox email failed:", error);
+    });
   });
 }
 
@@ -191,19 +199,33 @@ export async function notifyStaff(input: {
       console.error("[workdesk] in-site notification failed:", error);
     }
 
-    const emailCard = input.emailCard ?? (await taskEmailCard(input.taskId));
-    for (const user of users) {
-      await emailStaffAssignment({
-        to: user.email,
-        name: user.name,
-        role: user.role,
-        title: input.title,
-        detail: input.body,
-        ticketId: input.ticketId,
-        taskId: input.taskId,
-        emailCard,
-      });
-    }
+    const recipients = users.map((user) => ({
+      email: user.email,
+      name: user.name,
+      role: user.role,
+    }));
+    const emailCard = input.emailCard;
+    const ticketId = input.ticketId;
+    const taskId = input.taskId;
+    const title = input.title;
+    const body = input.body;
+    deferWork(async () => {
+      const card = emailCard ?? (await taskEmailCard(taskId));
+      await Promise.all(
+        recipients.map((user) =>
+          emailStaffAssignment({
+            to: user.email,
+            name: user.name,
+            role: user.role,
+            title,
+            detail: body,
+            ticketId,
+            taskId,
+            emailCard: card,
+          }),
+        ),
+      );
+    });
   } catch (error) {
     console.error("[workdesk] staff notification failed:", error);
   }

@@ -1,6 +1,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 
+import { parseFlashNotice, parseFlashValue } from "../src/lib/flash-client";
+
 import {
   CUSTOMER_VISIBLE_EVENT_KINDS,
   roleMeetsMinimum,
@@ -630,6 +632,33 @@ assert(
         !taskFn.includes("listWorkdeskManagerIds")
       );
     })(),
+);
+assert(
+  "staff mail is queued after the in-site notice so the click does not wait on SMTP",
+  (() => {
+    const start = notifyLib.indexOf("export async function notifyStaff");
+    const end = notifyLib.indexOf("export async function notifyAssignee");
+    const staffFn = notifyLib.slice(start, end);
+    return (
+      notifyLib.includes("deferWork") &&
+      staffFn.includes("createWorkdeskNotifications") &&
+      staffFn.includes("deferWork") &&
+      staffFn.indexOf("createWorkdeskNotifications") < staffFn.indexOf("deferWork") &&
+      notifyLib.includes("export async function emailAdminInbox") &&
+      notifyLib.slice(
+        notifyLib.indexOf("export async function emailAdminInbox"),
+        notifyLib.indexOf("export async function notifyStaff"),
+      ).includes("deferWork")
+    );
+  })(),
+);
+assert(
+  "a status popup can say it worked or it did not",
+  parseFlashNotice("n:ok:1:Updated%204%20tasks.")?.tone === "ok" &&
+    parseFlashNotice("n:ok:1:Updated%204%20tasks.")?.message === "Updated 4 tasks." &&
+    parseFlashNotice("n:err:2:Couldn't%20update%20the%20status.%20Try%20again.")?.tone === "err" &&
+    parseFlashValue("saved:1") === "saved" &&
+    parseFlashNotice("saved:1") === null,
 );
 
 assert(

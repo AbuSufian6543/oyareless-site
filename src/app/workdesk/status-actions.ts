@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 
 import type { TaskStatus, TicketStatus } from "@/generated/prisma/client";
+import { setFlashNotice } from "@/lib/flash";
 import { prisma } from "@/lib/prisma";
 import { recordTaskAudit, recordTicketAudit } from "@/lib/workdesk/audit";
 import {
@@ -43,6 +44,10 @@ export async function bulkSetTaskStatusAction(formData: FormData): Promise<void>
   const status = String(formData.get("status") ?? "");
   const ids = selectedIds(formData);
   if (!bulkTaskStatusesForRole(staff.role).includes(status) || ids.length === 0) {
+    await setFlashNotice(
+      "err",
+      ids.length === 0 ? "Select at least one task." : "That status isn't available.",
+    );
     redirect(returnTo);
   }
 
@@ -61,6 +66,7 @@ export async function bulkSetTaskStatusAction(formData: FormData): Promise<void>
   });
 
   let changed = 0;
+  try {
   for (const task of tasks) {
     const allowed =
       isWorkdeskAdmin(staff) ||
@@ -105,8 +111,17 @@ export async function bulkSetTaskStatusAction(formData: FormData): Promise<void>
     });
     changed += 1;
   }
+  } catch (error) {
+    console.error("[workdesk] bulk task status failed:", error);
+    await setFlashNotice("err", "Couldn't update the status. Try again.");
+    redirect(returnTo);
+  }
 
-  if (changed > 0) await revalidateWorkdesk({ taskId: ids[0], flash: "updated" });
+  if (changed > 0) await revalidateWorkdesk({ taskId: ids[0], flash: false });
+  await setFlashNotice(
+    "ok",
+    changed === 0 ? "Nothing changed." : changed === 1 ? "Updated 1 task." : `Updated ${changed} tasks.`,
+  );
   redirect(returnTo);
 }
 
@@ -117,6 +132,10 @@ export async function bulkSetTicketStatusAction(formData: FormData): Promise<voi
   const status = String(formData.get("status") ?? "");
   const ids = selectedIds(formData);
   if (!bulkTicketStatusesForRole(staff.role).includes(status) || ids.length === 0) {
+    await setFlashNotice(
+      "err",
+      ids.length === 0 ? "Select at least one ticket." : "That status isn't available.",
+    );
     redirect(returnTo);
   }
 
@@ -137,6 +156,7 @@ export async function bulkSetTicketStatusAction(formData: FormData): Promise<voi
   });
 
   let changed = 0;
+  try {
   for (const ticket of tickets) {
     const allowed =
       isWorkdeskAdmin(staff) ||
@@ -194,7 +214,16 @@ export async function bulkSetTicketStatusAction(formData: FormData): Promise<voi
     });
     changed += 1;
   }
+  } catch (error) {
+    console.error("[workdesk] bulk ticket status failed:", error);
+    await setFlashNotice("err", "Couldn't update the status. Try again.");
+    redirect(returnTo);
+  }
 
-  if (changed > 0) await revalidateWorkdesk({ ticketId: ids[0], flash: "updated" });
+  if (changed > 0) await revalidateWorkdesk({ ticketId: ids[0], flash: false });
+  await setFlashNotice(
+    "ok",
+    changed === 0 ? "Nothing changed." : changed === 1 ? "Updated 1 ticket." : `Updated ${changed} tickets.`,
+  );
   redirect(returnTo);
 }

@@ -34,6 +34,10 @@ async function getClient(): Promise<{
       : undefined,
     pool: true,
     maxConnections: 3,
+    // A quiet or unreachable host must not hold a request open for a minute.
+    connectionTimeout: 10_000,
+    greetingTimeout: 10_000,
+    socketTimeout: 20_000,
   });
 
   cached = { key, transporter, config };

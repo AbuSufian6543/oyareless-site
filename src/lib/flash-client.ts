@@ -3,12 +3,17 @@ export const FLASH_EVENT = "wc-flash";
 
 export type FlashKind = "saved" | "created" | "deleted" | "updated" | "notified" | "logged";
 
+export type FlashNotice = {
+  tone: "ok" | "err";
+  message: string;
+};
+
 export const FLASH_MESSAGES: Record<FlashKind, string> = {
   saved: "Saved.",
   created: "Created.",
   deleted: "Deleted.",
   updated: "Updated.",
-  notified: "Notification sent.",
+  notified: "Reminder sent.",
   logged: "Work log updated.",
 };
 
@@ -26,6 +31,21 @@ export function parseFlashValue(value: string | undefined | null): FlashKind | n
     return kind;
   }
   return null;
+}
+
+/** Cookie shape `n:ok:timestamp:message` for a sentence the toast can show as success or failure. */
+export function parseFlashNotice(value: string | undefined | null): FlashNotice | null {
+  if (!value || !value.startsWith("n:")) return null;
+  const parts = value.split(":");
+  const tone = parts[1];
+  if ((tone !== "ok" && tone !== "err") || parts.length < 4) return null;
+  try {
+    const message = decodeURIComponent(parts.slice(3).join(":")).trim();
+    if (!message) return null;
+    return { tone, message: message.slice(0, 140) };
+  } catch {
+    return null;
+  }
 }
 
 /** Shows the staff toast immediately after an in-place save (no redirect). */
