@@ -495,6 +495,18 @@ export default async function SettingsPage({
         </Card>
 
         <Card>
+          <CardTitle description="This is the Tawk.to chat already on the site. Uncheck and save to stop loading the bubble on public pages. The Tawk account itself stays as it is.">
+            Live chat
+          </CardTitle>
+          <CheckboxField
+            label="Show the Tawk.to live chat widget"
+            name="showLiveChatCta"
+            defaultChecked={settings.showLiveChatCta}
+            description="Chat bubble on public pages only. It does not load in admin, login, or the client portal."
+          />
+        </Card>
+
+        <Card>
           <CardTitle description="Keep this minimal — anything added here runs on every public page.">
             Privacy & analytics
           </CardTitle>
@@ -504,12 +516,6 @@ export default async function SettingsPage({
               name="cookieBannerEnabled"
               defaultChecked={settings.cookieBannerEnabled}
               description="Recommended for PIPEDA compliance when analytics are enabled."
-            />
-            <CheckboxField
-              label="Show the Tawk.to live chat widget"
-              name="showLiveChatCta"
-              defaultChecked={settings.showLiveChatCta}
-              description="Chat bubble on public pages only. It does not load in admin, login, or the client portal."
             />
             <TextAreaField
               label="Analytics snippet"
