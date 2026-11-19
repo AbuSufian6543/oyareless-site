@@ -2,6 +2,14 @@ import Link from "next/link";
 import { FileText, Search } from "lucide-react";
 
 import {
+  deleteAllApplicationsAction,
+  deleteApplicationsAction,
+} from "@/app/admin/applications/actions";
+import {
+  ApplicationSelectBox,
+  ApplicationSelection,
+} from "@/components/admin/application-selection";
+import {
   Alert,
   Badge,
   Card,
@@ -10,6 +18,8 @@ import {
   PageHeader,
 } from "@/components/admin/ui";
 import { requireStaffAccess } from "@/lib/admin-guard";
+import { applicationListPath, applicationListWhere } from "@/lib/application-list";
+import { getCurrentUser, hasRole } from "@/lib/auth";
 import { canAccessApplications } from "@/lib/staff-access";
 import {
   jobApplicationStatusLabel,
@@ -20,7 +30,6 @@ import { getResolvedMail } from "@/lib/mail-settings";
 import { getResolvedTurnstile } from "@/lib/turnstile";
 import { prisma } from "@/lib/prisma";
 import { cn, formatBytes, formatDateTime } from "@/lib/utils";
-import type { JobApplicationStatus } from "@/generated/prisma/client";
 
 export const metadata = { title: "Applications" };
 
@@ -36,32 +45,15 @@ export default async function AdminApplicationsPage({
     status?: string;
     q?: string;
     deleted?: string;
+    none?: string;
   }>;
 }) {
   await requireStaffAccess(canAccessApplications);
   const params = await searchParams;
-  const filter = params.status ?? "NEW";
-  const query = (params.q ?? "").trim();
-  const statusFilter =
-    filter !== "all" &&
-    JOB_APPLICATION_STATUSES.some((item) => item.value === filter)
-      ? (filter as JobApplicationStatus)
-      : undefined;
+  const listed = applicationListWhere(params.status, params.q);
+  const { filter, query, where } = listed;
 
-  const where = {
-    ...(statusFilter ? { status: statusFilter } : {}),
-    ...(query
-      ? {
-          OR: [
-            { name: { contains: query, mode: "insensitive" as const } },
-            { email: { contains: query, mode: "insensitive" as const } },
-            { jobTitle: { contains: query, mode: "insensitive" as const } },
-          ],
-        }
-      : {}),
-  };
-
-  const [applications, counts, mail, turnstile] = await Promise.all([
+  const [applications, counts, matchingCount, mail, turnstile, user] = await Promise.all([
     prisma.jobApplication.findMany({
       where,
       orderBy: { createdAt: "desc" },
@@ -69,8 +61,10 @@ export default async function AdminApplicationsPage({
       include: { job: { select: { slug: true } } },
     }),
     prisma.jobApplication.groupBy({ by: ["status"], _count: true }),
+    prisma.jobApplication.count({ where }),
     getResolvedMail(),
     getResolvedTurnstile(),
+    getCurrentUser(),
   ]);
 
   const countFor = (status: string) =>
@@ -78,12 +72,12 @@ export default async function AdminApplicationsPage({
       ? counts.reduce((total, row) => total + row._count, 0)
       : (counts.find((row) => row.status === status)?._count ?? 0);
 
+  const canDelete = hasRole(user, "ADMIN");
+  const deletedCount = Number.parseInt(params.deleted ?? "", 10);
+  const returnTo = applicationListPath(filter, query);
+
   function hrefFor(status: string) {
-    const search = new URLSearchParams();
-    if (status !== "NEW") search.set("status", status);
-    if (query) search.set("q", query);
-    const qs = search.toString();
-    return qs ? `/admin/applications?${qs}` : "/admin/applications";
+    return applicationListPath(status, query);
   }
 
   return (
@@ -95,7 +89,17 @@ export default async function AdminApplicationsPage({
 
       {params.deleted && (
         <div className="mb-5">
-          <Alert tone="success">The application was deleted.</Alert>
+          <Alert tone="success">
+            {Number.isFinite(deletedCount) && deletedCount > 1
+              ? `${deletedCount} applications were deleted.`
+              : "The application was deleted."}
+          </Alert>
+        </div>
+      )}
+
+      {params.none && (
+        <div className="mb-5">
+          <Alert tone="warning">Nothing was deleted.</Alert>
         </div>
       )}
 
@@ -182,6 +186,54 @@ export default async function AdminApplicationsPage({
             description="When someone applies from /careers, their details and PDF résumé appear here."
           />
         </Card>
+      ) : canDelete ? (
+        <ApplicationSelection
+          ids={applications.map((application) => application.id)}
+          deleteAction={deleteApplicationsAction}
+          deleteAllAction={deleteAllApplicationsAction}
+          returnTo={returnTo}
+          filter={filter}
+          query={query}
+          matchingCount={matchingCount}
+        >
+          <DataTable headers={["Select", "Applicant", "Role", "Status", "Received", "Résumé"]}>
+            {applications.map((application) => (
+              <tr key={application.id} className="hover:bg-slate-50/70">
+                <td className="w-12 px-2 py-3.5">
+                  <ApplicationSelectBox
+                    id={application.id}
+                    label={`Select ${application.name}`}
+                  />
+                </td>
+                <td className="px-4 py-3.5">
+                  <Link
+                    href={`/admin/applications/${application.id}`}
+                    className="font-semibold text-navy-900 hover:text-brand-700"
+                  >
+                    {application.name}
+                  </Link>
+                  <span className="mt-0.5 block text-xs text-slate-500">
+                    {application.email}
+                  </span>
+                </td>
+                <td className="px-4 py-3.5 text-sm text-slate-600">
+                  {application.jobTitle}
+                </td>
+                <td className="px-4 py-3.5">
+                  <Badge tone={jobApplicationStatusTone(application.status)}>
+                    {jobApplicationStatusLabel(application.status)}
+                  </Badge>
+                </td>
+                <td className="px-4 py-3.5 text-slate-500">
+                  {formatDateTime(application.createdAt)}
+                </td>
+                <td className="px-4 py-3.5 text-xs text-slate-500">
+                  {formatBytes(application.sizeBytes)}
+                </td>
+              </tr>
+            ))}
+          </DataTable>
+        </ApplicationSelection>
       ) : (
         <DataTable headers={["Applicant", "Role", "Status", "Received", "Résumé"]}>
           {applications.map((application) => (

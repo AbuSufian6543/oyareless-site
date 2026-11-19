@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import path from "node:path";
 
+import { applicationListPath, applicationListWhere } from "../src/lib/application-list";
 import { RESUME_MAX_BYTES, RESUME_MAX_MB } from "../src/lib/careers";
 
 let failed = 0;
@@ -147,6 +148,30 @@ assert(
   !applicationActions.includes("recordAudit") &&
     applicationActions.includes("updateApplicationAction") &&
     applicationActions.includes("deleteApplicationAction"),
+);
+
+const applicationPage = read("src/app/admin/applications/page.tsx");
+const applicationSelection = read("src/components/admin/application-selection.tsx");
+const newList = applicationListWhere(undefined, "  Ada  ");
+const allList = applicationListWhere("all", "");
+assert(
+  "admins can mark applications and delete the selection or the current list",
+  newList.where.status === "NEW" &&
+    newList.query === "Ada" &&
+    !("status" in allList.where) &&
+    applicationListPath("NEW", "") === "/admin/applications" &&
+    applicationListPath("all", "Ada").includes("status=all") &&
+    applicationPage.includes('hasRole(user, "ADMIN")') &&
+    applicationPage.includes("deleteApplicationsAction") &&
+    applicationPage.includes("deleteAllApplicationsAction") &&
+    applicationSelection.includes("Mark all") &&
+    applicationSelection.includes('label="Delete"') &&
+    applicationSelection.includes('label="Delete all"') &&
+    applicationActions.includes("deleteApplicationsAction") &&
+    applicationActions.includes("deleteAllApplicationsAction") &&
+    applicationActions.includes('scope') &&
+    applicationActions.includes("deletePrivateResume") &&
+    applicationActions.includes('requireRole("ADMIN")'),
 );
 
 process.exit(failed === 0 ? 0 : 1);
