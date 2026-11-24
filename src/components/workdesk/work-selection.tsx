@@ -153,9 +153,12 @@ export function WorkSelection({
 
   if (ids.length === 0) {
     return (
-      <p className="rounded-2xl border border-dashed border-slate-200 bg-gradient-to-b from-slate-50 to-white px-4 py-10 text-center text-sm text-slate-500">
-        {empty}
-      </p>
+      <div className="flex min-w-0 items-center gap-3 rounded-xl border border-dashed border-slate-200 bg-white px-3 py-3">
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-bold text-slate-400" aria-hidden="true">
+          —
+        </span>
+        <p className="min-w-0 text-sm text-slate-600">{empty}</p>
+      </div>
     );
   }
 
@@ -167,7 +170,7 @@ export function WorkSelection({
   return (
     <SelectionContext.Provider value={value}>
       {showBar ? (
-        <form action={action} className="sticky top-14 z-20 mb-3 rounded-xl border border-slate-200 bg-white/95 p-2.5 shadow-sm backdrop-blur lg:top-0">
+        <form action={action} className="wc-rise sticky top-14 z-20 mb-3 rounded-xl border border-slate-200 bg-white/95 p-2.5 shadow-sm backdrop-blur lg:top-0">
           <input type="hidden" name="returnTo" value={returnTo} />
           {visible.map((id) => (
             <input key={id} type="hidden" name="ids" value={id} />

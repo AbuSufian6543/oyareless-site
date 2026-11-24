@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { ComponentType, ReactNode } from "react";
 
+import { CountUp } from "@/components/workdesk/count-up";
 import { StaffIllustration } from "@/components/workdesk/staff-illustration";
 import type { DashboardPersona } from "@/generated/prisma/client";
 import { zonedParts } from "@/lib/timezone";
@@ -33,7 +34,7 @@ export function WorkdeskPageHeader({
   return (
     <header
       className={cn(
-        "mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between",
+        "wc-enter mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between",
         className,
       )}
     >
@@ -136,6 +137,7 @@ export function ColorStatLink({
   hint,
   tone = "sky",
   Icon,
+  index = 0,
 }: {
   href: string;
   label: string;
@@ -143,13 +145,15 @@ export function ColorStatLink({
   hint?: string;
   tone?: StatTone;
   Icon: ComponentType<{ className?: string; "aria-hidden"?: boolean }>;
+  index?: number;
 }) {
   const colors = STAT_TONES[tone];
   return (
     <Link
       href={href}
+      style={{ animationDelay: `${index * 50}ms` }}
       className={cn(
-        "group rounded-xl border p-3 shadow-[0_1px_2px_rgba(15,42,73,0.04)] transition duration-200 hover:shadow-sm",
+        "wc-row group rounded-xl border p-3 shadow-[0_1px_2px_rgba(15,42,73,0.04)] transition duration-200 hover:-translate-y-px hover:shadow-sm",
         colors.card,
       )}
     >
@@ -159,7 +163,7 @@ export function ColorStatLink({
             {label}
           </p>
           <p className={cn("mt-1 text-2xl font-extrabold tabular-nums tracking-tight", colors.value)}>
-            {value}
+            <CountUp value={value} />
           </p>
           {hint ? <p className="mt-0.5 text-xs text-slate-500">{hint}</p> : null}
         </div>
@@ -187,7 +191,7 @@ export function TaskDonutCard({
   const dash = (percent / 100) * circumference;
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_1px_2px_rgba(15,42,73,0.04)]">
+    <section className="wc-row min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_1px_2px_rgba(15,42,73,0.04)]" style={{ animationDelay: "80ms" }}>
       <div className="flex items-start justify-between gap-3">
         <h2 className="text-sm font-bold text-navy-900">Task progress</h2>
         <Link href={href} className="text-xs font-semibold text-brand-700 hover:underline">
@@ -205,6 +209,7 @@ export function TaskDonutCard({
             stroke="url(#taskDonut)"
             strokeWidth="12"
             strokeLinecap="round"
+            className="wc-draw"
             strokeDasharray={`${dash} ${circumference - dash}`}
             transform="rotate(-90 60 60)"
           />
@@ -267,7 +272,7 @@ export function ActivityChartCard({
   const area = `0,${height} ${line} ${width},${height}`;
 
   return (
-    <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_1px_2px_rgba(15,42,73,0.04)]">
+    <section className="wc-row min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_1px_2px_rgba(15,42,73,0.04)]" style={{ animationDelay: "40ms" }}>
       <h2 className="text-sm font-bold text-navy-900">Activity</h2>
       <p className="mt-0.5 text-xs text-slate-500">Task updates over the last 7 days</p>
       <svg viewBox={`0 0 ${width} ${height}`} className="mt-3 h-24 w-full" aria-hidden="true">
@@ -279,6 +284,7 @@ export function ActivityChartCard({
         </defs>
         <polygon points={area} fill="url(#activityFill)" />
         <polyline
+          className="wc-draw"
           points={line}
           fill="none"
           stroke="#22b8d8"

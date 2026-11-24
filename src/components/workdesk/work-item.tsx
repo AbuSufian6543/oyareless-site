@@ -38,10 +38,12 @@ export function AssigneeAvatars({
   names,
   you,
   compact = false,
+  hideNames = false,
 }: {
   names: string[];
   you?: string;
   compact?: boolean;
+  hideNames?: boolean;
 }) {
   if (names.length === 0) {
     return <span className="text-xs font-medium text-slate-400">Unassigned</span>;
@@ -65,7 +67,7 @@ export function AssigneeAvatars({
           </span>
         ))}
       </span>
-      <span className={cn("truncate text-xs text-slate-600", compact && "hidden xl:inline")}>
+      <span className={cn("truncate text-xs text-slate-600", (compact || hideNames) && "hidden", compact && !hideNames && "xl:inline")}>
         {names.join(", ")}
         {you && names.includes(you) ? " · you" : ""}
       </span>
@@ -204,9 +206,12 @@ export function WorkList({
 }) {
   if (count === 0) {
     return (
-      <p className="rounded-2xl border border-dashed border-slate-200 bg-gradient-to-b from-slate-50 to-white px-4 py-10 text-center text-sm text-slate-500">
-        {empty}
-      </p>
+      <div className="wc-row flex min-w-0 items-center gap-3 rounded-xl border border-dashed border-slate-200 bg-white px-3 py-3">
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-bold text-slate-400" aria-hidden="true">
+          —
+        </span>
+        <p className="min-w-0 text-sm text-slate-600">{empty}</p>
+      </div>
     );
   }
 
@@ -231,7 +236,7 @@ export function WorkSection({
   className?: string;
 }) {
   return (
-    <section className={cn(className)}>
+    <section className={cn("min-w-0", className)}>
       <div className="mb-3 flex items-end justify-between gap-3 border-b border-slate-100 pb-2">
         <h2 className="text-sm font-bold tracking-tight text-navy-900">{title}</h2>
         {href && countLabel ? (

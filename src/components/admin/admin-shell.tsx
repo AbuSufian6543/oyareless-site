@@ -405,7 +405,7 @@ export function AdminShell({
         </div>
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8">
-          <div className="mx-auto max-w-7xl">{children}</div>
+          <div key={pathname} className="wc-enter mx-auto max-w-7xl">{children}</div>
         </main>
       </div>
       <Suspense fallback={null}>

@@ -5,6 +5,7 @@ import type { Prisma } from "@/generated/prisma/client";
 import { bulkSetTaskStatusAction } from "@/app/workdesk/status-actions";
 import { Alert } from "@/components/admin/ui";
 import { WorkdeskPageHeader } from "@/components/workdesk/dashboard-panels";
+import { ListScroll } from "@/components/workdesk/list-scroll";
 import { SortSelect } from "@/components/workdesk/sort-select";
 import { TaskQuickActions } from "@/components/workdesk/task-quick-actions";
 import { TaskRow, TaskTableHead } from "@/components/workdesk/task-row";
@@ -247,6 +248,7 @@ export default async function AdminTasksPage({
 
   return (
     <div>
+      <ListScroll storageKey={`tasks:${returnTo}`} />
       <WorkdeskPageHeader
         className="mb-3"
         kicker="Workdesk"
@@ -287,7 +289,7 @@ export default async function AdminTasksPage({
         <div className="flex flex-col gap-2 xl:flex-row xl:items-center">
           <WorkSearch action="/admin/tasks" query={query} kind="task" compact className="mb-0 min-w-0 xl:w-80" />
           <div className="flex min-w-0 flex-1 items-center gap-2">
-            <nav className="flex min-w-0 flex-1 gap-1 overflow-x-auto" aria-label="Filter tasks">
+            <nav className="flex min-w-0 flex-1 gap-1 overflow-x-auto px-0.5 pb-1" aria-label="Filter tasks">
               {peopleChips.map((item) => (
                 <FilterLink
                   key={item.view}
@@ -351,12 +353,14 @@ export default async function AdminTasksPage({
           </div>
           <TaskTableHead leading={<WorkSelectAll ids={ids} />} />
           <ul className="divide-y divide-slate-100">
-            {tasks.map((task) => {
+            {tasks.map((task, index) => {
               const done = task.status === "COMPLETED" || task.status === "CLOSED";
               return (
                 <TaskRow
                   key={task.id}
-                  href={`/admin/tasks/${task.id}`}
+                  variant="table"
+                  index={index}
+                  href={`/admin/tasks/${task.id}?from=${encodeURIComponent(returnTo)}`}
                   reference={task.reference}
                   title={task.title}
                   status={task.status}
@@ -404,7 +408,7 @@ function FilterLink({
       href={href}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border px-2.5 text-sm font-semibold",
+        "inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg border px-2.5 text-sm font-semibold transition-colors duration-200",
         active
           ? "border-navy-900 bg-navy-900 text-white"
           : "border-transparent bg-slate-50 text-navy-800 hover:border-slate-200 hover:bg-white",

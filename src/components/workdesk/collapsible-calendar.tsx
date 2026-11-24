@@ -3,6 +3,8 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 
+import { cn } from "@/lib/utils";
+
 const STORAGE_KEY = "wc-calendar-open";
 
 export function CollapsibleCalendar({ children }: { children: ReactNode }) {
@@ -30,7 +32,9 @@ export function CollapsibleCalendar({ children }: { children: ReactNode }) {
         {open ? <ChevronUp className="size-3.5" aria-hidden="true" /> : <ChevronDown className="size-3.5" aria-hidden="true" />}
         {open ? "Hide calendar" : "Show calendar"}
       </button>
-      {open ? children : null}
+      <div className={cn("wc-collapse grid transition-[grid-template-rows] duration-200", open ? "grid-rows-[1fr]" : "grid-rows-[0fr]")}>
+        <div className={cn("min-h-0", open ? "overflow-visible" : "overflow-hidden")}>{children}</div>
+      </div>
     </div>
   );
 }

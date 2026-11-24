@@ -81,7 +81,7 @@ export function WorkdeskCalendar({
               aria-current={isSelected ? "date" : undefined}
               aria-label={`${key}${count ? `, ${count} task${count === 1 ? "" : "s"}` : ""}`}
               className={cn(
-                "relative flex h-8 items-center justify-center rounded-md text-xs font-semibold transition",
+                "relative flex h-8 items-center justify-center rounded-md text-xs font-semibold transition-colors duration-150",
                 isSelected
                   ? "bg-brand-600 text-white"
                   : isToday
