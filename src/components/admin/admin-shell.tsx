@@ -44,6 +44,7 @@ import {
 } from "lucide-react";
 
 import { logoutAction } from "@/app/login/actions";
+import { useNavCounts } from "@/components/admin/nav-counts";
 import { SavedToast } from "@/components/admin/saved-toast";
 import {
   collectionsInGroup,
@@ -112,28 +113,17 @@ function collectionEntries(group: CollectionGroup, user: SessionUser): NavEntry[
 
 export function AdminShell({
   user,
-  newSubmissions,
-  newQuotes = 0,
-  newApplications = 0,
-  unreadNotifications = 0,
-  openTickets = 0,
-  openTasks = 0,
   logoUrl,
   flash,
   children,
 }: {
   user: SessionUser;
-  newSubmissions: number;
-  newQuotes?: number;
-  newApplications?: number;
-  unreadNotifications?: number;
-  openTickets?: number;
-  openTasks?: number;
   logoUrl?: string;
   flash?: string | null;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const counts = useNavCounts();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
 
@@ -152,14 +142,14 @@ export function AdminShell({
 
   const workdeskItems: NavEntry[] = [
     { href: "/admin", label: "Dashboard", Icon: LayoutDashboard },
-    { href: "/admin/tickets", label: "Tickets", Icon: Headset, badge: openTickets },
-    { href: "/admin/tasks", label: "Tasks", Icon: ClipboardList, badge: openTasks },
+    { href: "/admin/tickets", label: "Tickets", Icon: Headset, badge: counts?.openTickets },
+    { href: "/admin/tasks", label: "Tasks", Icon: ClipboardList, badge: counts?.openTasks },
     { href: "/admin/products", label: "Products", Icon: Boxes },
     {
       href: "/admin/notifications",
       label: "Notifications",
       Icon: Bell,
-      badge: unreadNotifications,
+      badge: counts?.unreadNotifications,
     },
   ];
   if (rank < STAFF_ROLE_RANK.SUPERADMIN) {
@@ -202,16 +192,16 @@ export function AdminShell({
           href: "/admin/submissions",
           label: "Inbox",
           Icon: Inbox,
-          badge: newSubmissions,
+          badge: counts?.newSubmissions,
           allow: canAccessEnquiries,
         },
         { href: "/admin/subscribers", label: "Subscribers", Icon: Users, allow: canAccessEnquiries },
-        { href: "/admin/quotes", label: "Quotes", Icon: FileText, badge: newQuotes, allow: canAccessEnquiries },
+        { href: "/admin/quotes", label: "Quotes", Icon: FileText, badge: counts?.newQuotes, allow: canAccessEnquiries },
         {
           href: "/admin/applications",
           label: "Applications",
           Icon: ClipboardList,
-          badge: newApplications,
+          badge: counts?.newApplications,
           allow: canAccessApplications,
         },
         { href: "/admin/portal-users", label: "Portal users", Icon: Building2, allow: canAccessPortalUsers },

@@ -19,7 +19,7 @@ export function WorkdeskPageHeader({
 }: {
   kicker?: string;
   title: string;
-  description?: string;
+  description?: ReactNode;
   persona?: DashboardPersona | null;
   accountHref?: string;
   actions?: ReactNode;
@@ -80,7 +80,7 @@ export function DashboardHero({
   hello: string;
   firstName: string;
   todayLabel: string;
-  summary: string;
+  summary: ReactNode;
   persona: DashboardPersona | null;
   actions: ReactNode;
   accountHref?: string;
@@ -178,129 +178,6 @@ export function ColorStatLink({
         </span>
       </div>
     </Link>
-  );
-}
-
-export function TaskDonutCard({
-  done,
-  open,
-  href,
-}: {
-  done: number;
-  open: number;
-  href: string;
-}) {
-  const total = done + open;
-  const percent = total === 0 ? 0 : Math.round((done / total) * 100);
-  const radius = 42;
-  const circumference = 2 * Math.PI * radius;
-  const dash = (percent / 100) * circumference;
-
-  return (
-    <section className="wc-row min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_1px_2px_rgba(15,42,73,0.04)]" style={{ animationDelay: "80ms" }}>
-      <div className="flex items-start justify-between gap-3">
-        <h2 className="text-sm font-bold text-navy-900">Task progress</h2>
-        <Link href={href} className="text-xs font-semibold text-brand-700 hover:underline">
-          Details
-        </Link>
-      </div>
-      <div className="mt-4 flex items-center gap-4">
-        <div className="relative size-24 shrink-0">
-        <svg viewBox="0 0 120 120" className="size-24" aria-hidden="true">
-          <circle cx="60" cy="60" r={radius} fill="none" stroke="#e2e8f0" strokeWidth="12" />
-          <circle
-            cx="60"
-            cy="60"
-            r={radius}
-            fill="none"
-            stroke="url(#taskDonut)"
-            strokeWidth="12"
-            strokeLinecap="round"
-            className="wc-ring"
-            strokeDasharray={circumference}
-            strokeDashoffset={circumference - dash}
-            style={{ ["--wc-ring-from" as string]: circumference, ["--wc-ring-to" as string]: circumference - dash }}
-            transform="rotate(-90 60 60)"
-          />
-          <defs>
-            <linearGradient id="taskDonut" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#22b8d8" />
-              <stop offset="100%" stopColor="#1478d4" />
-            </linearGradient>
-          </defs>
-        </svg>
-        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
-          <span className="text-xl font-extrabold tabular-nums text-navy-900">
-            <CountUp value={percent} />%
-          </span>
-          <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500">finished</span>
-        </div>
-        </div>
-        <ul className="space-y-2 text-sm">
-          <li className="flex items-center gap-2">
-            <span className="size-2.5 rounded-full bg-brand-500" />
-            <span className="text-slate-600">Finished</span>
-            <span className="ml-auto font-bold tabular-nums text-navy-900">{done}</span>
-          </li>
-          <li className="flex items-center gap-2">
-            <span className="size-2.5 rounded-full bg-slate-300" />
-            <span className="text-slate-600">Still open</span>
-            <span className="ml-auto font-bold tabular-nums text-navy-900">{open}</span>
-          </li>
-        </ul>
-      </div>
-    </section>
-  );
-}
-
-export function ActivityChartCard({
-  points,
-}: {
-  points: Array<{ key: string; label: string; count: number }>;
-}) {
-  const width = 320;
-  const height = 120;
-  const max = Math.max(1, ...points.map((point) => point.count));
-  const coords = points.map((point, index) => {
-    const x = points.length === 1 ? width / 2 : (index / (points.length - 1)) * width;
-    const y = height - (point.count / max) * (height - 16) - 8;
-    return { x, y, ...point };
-  });
-  const line = coords.map((point, index) => `${index === 0 ? "M" : "L"}${point.x},${point.y}`).join(" ");
-  const area = `M0,${height} ${coords.map((point) => `L${point.x},${point.y}`).join(" ")} L${width},${height} Z`;
-
-  return (
-    <section className="wc-row min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_1px_2px_rgba(15,42,73,0.04)]" style={{ animationDelay: "40ms" }}>
-      <h2 className="text-sm font-bold text-navy-900">Activity</h2>
-      <p className="mt-0.5 text-xs text-slate-500">Task updates over the last 7 days</p>
-      <svg viewBox={`0 0 ${width} ${height}`} className="mt-3 h-24 w-full" aria-hidden="true">
-        <defs>
-          <linearGradient id="activityFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#22b8d8" stopOpacity="0.45" />
-            <stop offset="100%" stopColor="#1478d4" stopOpacity="0.05" />
-          </linearGradient>
-        </defs>
-        <path d={area} fill="url(#activityFill)" className="wc-draw" />
-        <path
-          d={line}
-          fill="none"
-          stroke="#22b8d8"
-          strokeWidth="3"
-          strokeLinejoin="round"
-          strokeLinecap="round"
-          pathLength={1}
-          className="wc-line"
-        />
-        {coords.map((point) => (
-          <circle key={point.key} cx={point.x} cy={point.y} r="3.5" fill="#1478d4" stroke="#ffffff" strokeWidth="2" />
-        ))}
-      </svg>
-      <div className="mt-1 flex justify-between text-[10px] font-semibold uppercase tracking-wider text-slate-400">
-        {points.map((point) => (
-          <span key={point.key}>{point.label}</span>
-        ))}
-      </div>
-    </section>
   );
 }
 

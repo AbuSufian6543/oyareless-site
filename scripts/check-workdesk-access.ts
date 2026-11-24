@@ -682,7 +682,10 @@ assert(
     adminTaskPage.includes("canDelete={canManage && done}"),
 );
 
-const dashboard = readFileSync(path.join(process.cwd(), "src/app/admin/page.tsx"), "utf8");
+const dashboard = [
+  readFileSync(path.join(process.cwd(), "src/app/admin/page.tsx"), "utf8"),
+  readFileSync(path.join(process.cwd(), "src/components/workdesk/dashboard-sections.tsx"), "utf8"),
+].join("\n");
 const calendarUi = readFileSync(
   path.join(process.cwd(), "src/components/workdesk/workdesk-calendar.tsx"),
   "utf8",

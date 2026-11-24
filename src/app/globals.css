@@ -571,6 +571,9 @@
 }
 
 @keyframes wc-line {
+  from {
+    stroke-dashoffset: 1;
+  }
   to {
     stroke-dashoffset: 0;
   }
@@ -578,8 +581,48 @@
 
 .wc-line {
   stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  animation: wc-line 700ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  stroke-dashoffset: 0;
+  animation: wc-line 650ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes wc-area {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.wc-area {
+  animation: wc-area 650ms ease both;
+}
+
+@keyframes wc-point {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.wc-point {
+  animation: wc-point 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes wc-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.wc-pulse {
+  animation: wc-pulse 2.4s ease-in-out infinite;
 }
 
 @keyframes wc-ring {
@@ -592,7 +635,54 @@
 }
 
 .wc-ring {
-  animation: wc-ring 700ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+  animation: wc-ring 1100ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes wc-complete {
+  from {
+    box-shadow: 0 0 0 0 rgba(20, 120, 212, 0.35);
+  }
+  to {
+    box-shadow: 0 0 0 12px rgba(20, 120, 212, 0);
+  }
+}
+
+.wc-complete {
+  animation: wc-complete 900ms ease-out both;
+}
+
+@keyframes wc-check {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.wc-check {
+  animation: wc-check 320ms cubic-bezier(0.22, 1, 0.36, 1) 700ms both;
+}
+
+@keyframes wc-spark {
+  0% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  35% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+}
+
+.wc-spark {
+  animation: wc-spark 700ms ease-out both;
 }
 
 @keyframes wc-drift {
@@ -662,7 +752,13 @@
   .wc-rise,
   .wc-draw,
   .wc-line,
+  .wc-area,
+  .wc-point,
+  .wc-pulse,
   .wc-ring,
+  .wc-complete,
+  .wc-check,
+  .wc-spark,
   .wc-drift,
   .wc-sun,
   .wc-precip,

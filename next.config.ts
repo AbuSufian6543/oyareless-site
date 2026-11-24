@@ -49,6 +49,13 @@ const nextConfig: NextConfig = {
     ],
   },
   serverExternalPackages: ["sharp", "pg", "nodemailer"],
+  experimental: {
+    // Dynamic admin pages are reusable for 15 seconds after a visit.
+    // A later click loads fresh task and ticket numbers again.
+    staleTimes: {
+      dynamic: 15,
+    },
+  },
   transpilePackages: ["@cloudflare/speedtest"],
   async rewrites() {
     // Edited pages may still point at the old .svg paths after vendors

@@ -1274,6 +1274,9 @@ model InternalTask {
 
   @@unique([enquiryKind, enquiryId])
   @@index([status, priority, dueAt])
+  @@index([status, dueAt])
+  @@index([completedAt])
+  @@index([closedAt])
   @@index([createdById, status])
 }
 
@@ -1337,6 +1340,7 @@ model WorkdeskEvent {
 
   @@index([ticketId, createdAt])
   @@index([taskId, createdAt])
+  @@index([createdAt])
 }
 
 model WorkdeskNotification {

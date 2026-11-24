@@ -2,20 +2,15 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { cookies, headers } from "next/headers";
+import { Suspense } from "react";
 
 import { AdminShell } from "@/components/admin/admin-shell";
+import { NavCountProvider } from "@/components/admin/nav-counts";
+import { NavCountsLoader } from "@/components/admin/nav-counts-loader";
 import { getCurrentUser } from "@/lib/auth";
 import { FLASH_COOKIE } from "@/lib/flash-client";
-import { prisma } from "@/lib/prisma";
 import { destinationAfterLogin, loginUrlFor } from "@/lib/safe-return";
 import { getSettings } from "@/lib/settings";
-import {
-  OPEN_TASK,
-  OPEN_TICKET,
-  taskAssignedTo,
-  ticketAssignedTo,
-} from "@/lib/workdesk/board";
-import { unreadNotificationCount } from "@/lib/workdesk/notify";
 import "../globals.css";
 
 export const dynamic = "force-dynamic";
@@ -43,35 +38,20 @@ export default async function AdminLayout({
     redirect(destinationAfterLogin(user, path));
   }
 
-  const [newSubmissions, newQuotes, newApplications, settings, unreadNotifications, openTickets, openTasks] = await Promise.all([
-    prisma.formSubmission.count({ where: { status: "NEW" } }).catch(() => 0),
-    prisma.quoteRequest.count({ where: { status: "NEW" } }).catch(() => 0),
-    prisma.jobApplication.count({ where: { status: "NEW" } }).catch(() => 0),
+  const [settings, flashCookie] = await Promise.all([
     getSettings(),
-    unreadNotificationCount(user.id).catch(() => 0),
-    prisma.ticket
-      .count({ where: { ...OPEN_TICKET, ...ticketAssignedTo(user.id) } })
-      .catch(() => 0),
-    prisma.internalTask
-      .count({ where: { ...OPEN_TASK, ...taskAssignedTo(user.id) } })
-      .catch(() => 0),
+    cookies(),
   ]);
-
-  const flash = (await cookies()).get(FLASH_COOKIE)?.value ?? null;
+  const flash = flashCookie.get(FLASH_COOKIE)?.value ?? null;
 
   return (
-    <AdminShell
-      user={user}
-      newSubmissions={newSubmissions}
-      newQuotes={newQuotes}
-      newApplications={newApplications}
-      unreadNotifications={unreadNotifications}
-      openTickets={openTickets}
-      openTasks={openTasks}
-      logoUrl={settings.logoInverseUrl}
-      flash={flash}
-    >
-      {children}
-    </AdminShell>
+    <NavCountProvider>
+      <AdminShell user={user} logoUrl={settings.logoInverseUrl} flash={flash}>
+        {children}
+      </AdminShell>
+      <Suspense fallback={null}>
+        <NavCountsLoader user={user} />
+      </Suspense>
+    </NavCountProvider>
   );
 }
