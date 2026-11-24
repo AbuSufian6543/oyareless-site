@@ -294,7 +294,7 @@ export function AdminShell({
                       onClick={() => setMobileOpen(false)}
                       title={compact ? item.label : undefined}
                       className={cn(
-                        "flex items-center gap-2.5 rounded-lg py-2 text-sm font-medium transition-colors",
+                        "flex items-center gap-2.5 rounded-lg py-2 text-sm font-medium transition-colors duration-200",
                         compact ? "justify-center px-2" : "px-3",
                         isActive(item.href)
                           ? "bg-brand-600 text-white"

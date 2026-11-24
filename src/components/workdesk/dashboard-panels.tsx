@@ -15,6 +15,7 @@ export function WorkdeskPageHeader({
   accountHref,
   actions,
   className,
+  meta,
 }: {
   kicker?: string;
   title: string;
@@ -23,6 +24,7 @@ export function WorkdeskPageHeader({
   accountHref?: string;
   actions?: ReactNode;
   className?: string;
+  meta?: ReactNode;
 }) {
   const portrait =
     persona !== undefined ? (
@@ -56,6 +58,7 @@ export function WorkdeskPageHeader({
           {description ? (
             <p className="mt-0.5 max-w-2xl text-sm leading-snug text-slate-500">{description}</p>
           ) : null}
+          {meta ? <div className="mt-1 text-sm font-medium text-navy-800">{meta}</div> : null}
         </div>
       </div>
       {actions ? <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div> : null}
@@ -72,6 +75,7 @@ export function DashboardHero({
   actions,
   accountHref,
   className,
+  meta,
 }: {
   hello: string;
   firstName: string;
@@ -81,6 +85,7 @@ export function DashboardHero({
   actions: ReactNode;
   accountHref?: string;
   className?: string;
+  meta?: ReactNode;
 }) {
   return (
     <WorkdeskPageHeader
@@ -91,6 +96,7 @@ export function DashboardHero({
       accountHref={accountHref}
       actions={actions}
       className={className}
+      meta={meta}
     />
   );
 }
@@ -199,7 +205,8 @@ export function TaskDonutCard({
         </Link>
       </div>
       <div className="mt-4 flex items-center gap-4">
-        <svg viewBox="0 0 120 120" className="size-24 shrink-0" aria-hidden="true">
+        <div className="relative size-24 shrink-0">
+        <svg viewBox="0 0 120 120" className="size-24" aria-hidden="true">
           <circle cx="60" cy="60" r={radius} fill="none" stroke="#e2e8f0" strokeWidth="12" />
           <circle
             cx="60"
@@ -209,8 +216,10 @@ export function TaskDonutCard({
             stroke="url(#taskDonut)"
             strokeWidth="12"
             strokeLinecap="round"
-            className="wc-draw"
-            strokeDasharray={`${dash} ${circumference - dash}`}
+            className="wc-ring"
+            strokeDasharray={circumference}
+            strokeDashoffset={circumference - dash}
+            style={{ ["--wc-ring-from" as string]: circumference, ["--wc-ring-to" as string]: circumference - dash }}
             transform="rotate(-90 60 60)"
           />
           <defs>
@@ -219,25 +228,14 @@ export function TaskDonutCard({
               <stop offset="100%" stopColor="#1478d4" />
             </linearGradient>
           </defs>
-          <text
-            x="60"
-            y="56"
-            textAnchor="middle"
-            className="fill-navy-900"
-            style={{ fontSize: "22px", fontWeight: 800 }}
-          >
-            {percent}%
-          </text>
-          <text
-            x="60"
-            y="74"
-            textAnchor="middle"
-            className="fill-slate-500"
-            style={{ fontSize: "9px", fontWeight: 700 }}
-          >
-            finished
-          </text>
         </svg>
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center">
+          <span className="text-xl font-extrabold tabular-nums text-navy-900">
+            <CountUp value={percent} />%
+          </span>
+          <span className="text-[9px] font-bold uppercase tracking-wider text-slate-500">finished</span>
+        </div>
+        </div>
         <ul className="space-y-2 text-sm">
           <li className="flex items-center gap-2">
             <span className="size-2.5 rounded-full bg-brand-500" />
@@ -268,8 +266,8 @@ export function ActivityChartCard({
     const y = height - (point.count / max) * (height - 16) - 8;
     return { x, y, ...point };
   });
-  const line = coords.map((point) => `${point.x},${point.y}`).join(" ");
-  const area = `0,${height} ${line} ${width},${height}`;
+  const line = coords.map((point, index) => `${index === 0 ? "M" : "L"}${point.x},${point.y}`).join(" ");
+  const area = `M0,${height} ${coords.map((point) => `L${point.x},${point.y}`).join(" ")} L${width},${height} Z`;
 
   return (
     <section className="wc-row min-w-0 rounded-2xl border border-slate-200 bg-white p-4 shadow-[0_1px_2px_rgba(15,42,73,0.04)]" style={{ animationDelay: "40ms" }}>
@@ -282,15 +280,16 @@ export function ActivityChartCard({
             <stop offset="100%" stopColor="#1478d4" stopOpacity="0.05" />
           </linearGradient>
         </defs>
-        <polygon points={area} fill="url(#activityFill)" />
-        <polyline
-          className="wc-draw"
-          points={line}
+        <path d={area} fill="url(#activityFill)" className="wc-draw" />
+        <path
+          d={line}
           fill="none"
           stroke="#22b8d8"
           strokeWidth="3"
           strokeLinejoin="round"
           strokeLinecap="round"
+          pathLength={1}
+          className="wc-line"
         />
         {coords.map((point) => (
           <circle key={point.key} cx={point.x} cy={point.y} r="3.5" fill="#1478d4" stroke="#ffffff" strokeWidth="2" />

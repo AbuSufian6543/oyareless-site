@@ -1,5 +1,8 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import {
+  Bell,
+  Boxes,
   Briefcase,
   CalendarClock,
   CalendarDays,
@@ -11,9 +14,11 @@ import {
   Newspaper,
   Plus,
   Radio,
+  ShieldAlert,
   TriangleAlert,
   UserRound,
   Users,
+  Wrench,
 } from "lucide-react";
 
 import { Alert, Badge, Card, CardTitle, EmptyState } from "@/components/admin/ui";
@@ -26,6 +31,9 @@ import {
   weekdayShort,
 } from "@/components/workdesk/dashboard-panels";
 import { CollapsibleCalendar } from "@/components/workdesk/collapsible-calendar";
+import { OfficeClock } from "@/components/workdesk/office-clock";
+import { WidgetBoard } from "@/components/workdesk/widget-board";
+import { WeatherPanel, WeatherSkeleton } from "@/components/workdesk/weather-widget";
 import { TaskRow, TicketRow } from "@/components/workdesk/task-row";
 import { WorkdeskCalendar } from "@/components/workdesk/workdesk-calendar";
 import { WorkList, WorkSection } from "@/components/workdesk/work-item";
@@ -38,7 +46,9 @@ import {
   canAccessApplications,
   canAccessContent,
   canAccessEnquiries,
+  canAccessOperations,
 } from "@/lib/staff-access";
+import { getStatusSummary } from "@/lib/monitoring";
 import { calendarDateKey, zonedHour } from "@/lib/timezone";
 import { formatDate, formatDateTime } from "@/lib/utils";
 import { workdeskHref } from "@/lib/workdesk/access";
@@ -97,6 +107,12 @@ export default async function AdminDashboard({
   const nextMonth = startOfNextMonth(selectedDay);
   const previousMonth = startOfPreviousMonth(selectedDay);
   const weekStart = addZonedDays(today, -6);
+  const weekday = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Toronto",
+    weekday: "short",
+  }).format(today);
+  const weekIndex = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].indexOf(weekday);
+  const weekStartMonday = addZonedDays(today, weekIndex < 0 ? 0 : -weekIndex);
   const myId = user.id;
   const dueTodayFilter = { ...OPEN_TASK, dueAt: { gte: today, lt: tomorrow } };
   const upcomingFilter = { ...OPEN_TASK, dueAt: { gte: tomorrow } };
@@ -305,6 +321,110 @@ export default async function AdminDashboard({
     };
   });
 
+  const [
+    openTaskCount,
+    completedThisWeek,
+    activityEvents,
+    upcomingTasks,
+    recentTickets,
+    openTaskLinks,
+    doneTaskLinks,
+    openTicketRows,
+    statusSummary,
+  ] = await Promise.all([
+    prisma.internalTask.count({ where: OPEN_TASK }),
+    prisma.internalTask.count({
+      where: {
+        OR: [{ completedAt: { gte: weekStartMonday } }, { closedAt: { gte: weekStartMonday } }],
+      },
+    }),
+    prisma.workdeskEvent.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 10,
+      include: {
+        actorStaff: { select: { name: true } },
+        actorCustomer: { select: { name: true } },
+        task: { select: { id: true, reference: true } },
+        ticket: { select: { id: true, reference: true } },
+      },
+    }),
+    prisma.internalTask.findMany({
+      where: { ...OPEN_TASK, dueAt: { gte: today } },
+      orderBy: { dueAt: "asc" },
+      take: 7,
+      include: taskInclude,
+    }),
+    prisma.ticket.findMany({
+      orderBy: { createdAt: "desc" },
+      take: 5,
+      include: ticketInclude,
+    }),
+    prisma.internalTaskAssignee.findMany({
+      where: { task: OPEN_TASK },
+      select: { userId: true, user: { select: { name: true } }, task: { select: { dueAt: true } } },
+    }),
+    prisma.internalTaskAssignee.findMany({
+      where: {
+        task: { OR: [{ completedAt: { gte: weekStartMonday } }, { closedAt: { gte: weekStartMonday } }] },
+      },
+      select: { userId: true, user: { select: { name: true } } },
+    }),
+    prisma.ticket.findMany({
+      where: OPEN_TICKET,
+      select: {
+        id: true,
+        assignedToId: true,
+        assignedTo: { select: { name: true } },
+        assignees: { select: { userId: true, user: { select: { name: true } } } },
+      },
+    }),
+    getStatusSummary().catch(() => null),
+  ]);
+
+  type Workload = { id: string; name: string; openTasks: number; overdue: number; tickets: number; done: number };
+  const workload = new Map<string, Workload>();
+  const slot = (id: string, name: string) => {
+    const current = workload.get(id);
+    if (current) return current;
+    const created = { id, name, openTasks: 0, overdue: 0, tickets: 0, done: 0 };
+    workload.set(id, created);
+    return created;
+  };
+  for (const row of openTaskLinks) {
+    const person = slot(row.userId, row.user.name);
+    person.openTasks += 1;
+    if (row.task.dueAt && row.task.dueAt < today) person.overdue += 1;
+  }
+  for (const row of doneTaskLinks) slot(row.userId, row.user.name).done += 1;
+  for (const ticket of openTicketRows) {
+    const seen = new Set<string>();
+    if (ticket.assignedToId && ticket.assignedTo) {
+      seen.add(ticket.assignedToId);
+      slot(ticket.assignedToId, ticket.assignedTo.name).tickets += 1;
+    }
+    for (const row of ticket.assignees) {
+      if (seen.has(row.userId)) continue;
+      seen.add(row.userId);
+      slot(row.userId, row.user.name).tickets += 1;
+    }
+  }
+  const technicians = [...workload.values()]
+    .filter((person) => person.openTasks > 0 || person.tickets > 0 || person.overdue > 0)
+    .sort((left, right) => right.overdue - left.overdue || right.openTasks - left.openTasks || left.name.localeCompare(right.name))
+    .slice(0, 8);
+  const busiest = Math.max(1, ...technicians.map((person) => person.openTasks + person.tickets));
+
+  const quickActions = [
+    { href: `/admin/tasks/new?due=${selectedKey}`, label: "Create task", Icon: Plus },
+    { href: "/admin/tickets?create=1", label: "Create ticket", Icon: Headset },
+    { href: "/admin/tasks", label: "All tasks", Icon: ClipboardList },
+    { href: "/admin/tickets", label: "All tickets", Icon: Users },
+    { href: "/admin/products", label: "Add product", Icon: Boxes },
+    ...(canSeeCms ? [{ href: "/admin/collections/services", label: "Services", Icon: Wrench }] : []),
+    { href: "/admin/notifications", label: "Notifications", Icon: Bell },
+    { href: "/admin/audit", label: "Audit log", Icon: ShieldAlert },
+  ];
+
   const ticketStats = [
     {
       label: "Assigned to me",
@@ -403,16 +523,17 @@ export default async function AdminDashboard({
         </div>
       )}
 
-      <div className="grid items-start gap-5 xl:grid-cols-[minmax(0,1fr)_17.5rem] xl:grid-rows-[auto_1fr]">
-        <div className="order-1 min-w-0 xl:col-start-1 xl:row-start-1">
+      <div className="space-y-5">
+        <div className="min-w-0">
           <DashboardHero
             className="mb-0"
             hello={hello}
             firstName={firstName}
             todayLabel={todayLabel}
-            summary={`${dueTodayCount} due today · ${upcomingCount} upcoming · ${overdueTasks} overdue · ${myOpenTickets} ticket${myOpenTickets === 1 ? "" : "s"} assigned to you`}
+            summary={`You have ${overdueTasks} overdue ${overdueTasks === 1 ? "task" : "tasks"}, ${upcomingCount} upcoming ${upcomingCount === 1 ? "task" : "tasks"} and ${myOpenTickets === 0 ? "no tickets" : `${myOpenTickets} ${myOpenTickets === 1 ? "ticket" : "tickets"}`} assigned to you.`}
             persona={user.dashboardPersona}
             accountHref="/admin/account"
+            meta={<OfficeClock />}
             actions={
               <>
                 <WorkSearch
@@ -432,10 +553,22 @@ export default async function AdminDashboard({
                 </Link>
                 <Link
                   href="/admin/tickets?create=1"
-                  className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-semibold text-navy-800 hover:border-brand-300 hover:bg-brand-50"
+                  className="inline-flex h-9 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3.5 text-sm font-semibold text-navy-800 transition duration-150 hover:border-brand-300 hover:bg-brand-50"
                 >
                   New ticket
                 </Link>
+                <details className="relative">
+                  <summary className="inline-flex h-9 cursor-pointer list-none items-center rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-navy-800 transition duration-150 hover:border-brand-300 [&::-webkit-details-marker]:hidden">
+                    Quick actions
+                  </summary>
+                  <div className="absolute right-0 z-20 mt-1 w-48 rounded-lg border border-slate-200 bg-white p-1 shadow-md">
+                    {quickActions.map((action) => (
+                      <Link key={action.href} href={action.href} className="block rounded-md px-2 py-1.5 text-sm font-medium text-navy-800 hover:bg-slate-50">
+                        {action.label}
+                      </Link>
+                    ))}
+                  </div>
+                </details>
               </>
             }
           />
@@ -484,68 +617,207 @@ export default async function AdminDashboard({
           </div>
         </div>
 
-        <div className="order-2 min-w-0 xl:col-start-2 xl:row-span-2 xl:row-start-1">
-          <CollapsibleCalendar>
-          <WorkdeskCalendar
-            monthLabel={formatDate(monthStart, { month: "long", year: "numeric" })}
-            prevMonthKey={calendarDateKey(previousMonth)}
-            nextMonthKey={calendarDateKey(nextMonth)}
-            weeks={calendarWeeks(monthStart)}
-            todayKey={todayKey}
-            selectedKey={selectedKey}
-            selectedLabel={formatDate(selectedDay, { weekday: "long", month: "long", day: "numeric" })}
-            dueCounts={dueCounts}
-            mine={mineDay}
-            others={othersDay}
-            unassigned={unassignedDay}
-            userId={user.id}
-          />
-          </CollapsibleCalendar>
-        </div>
-
-        <div className="order-3 min-w-0 xl:col-start-1 xl:row-start-2">
-      <section>
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          <ColorStatLink
-            index={0}
-            href="/admin/tasks?view=today"
-            label="Today's tasks"
-            value={dueTodayCount}
-            hint={dueTodayCount === 1 ? "1 item due before end of day" : "Due before end of day"}
-            tone="sky"
-            Icon={CalendarDays}
-          />
-          <ColorStatLink
-            index={1}
-            href="/admin/tasks?view=upcoming"
-            label="Upcoming"
-            value={upcomingCount}
-            hint={upcomingCount > 0 ? "Due after today" : "Nothing scheduled ahead"}
-            tone="cyan"
-            Icon={CalendarClock}
-          />
-          <ColorStatLink
-            index={2}
-            href="/admin/tasks?view=overdue"
-            label="Overdue"
-            value={overdueTasks}
-            hint={overdueTasks > 0 ? "Needs attention" : "Nothing overdue"}
-            tone={overdueTasks > 0 ? "rose" : "amber"}
-            Icon={TriangleAlert}
-          />
-          <ColorStatLink
-            index={3}
-            href="/admin/tasks?view=unassigned"
-            label="Unassigned"
-            value={unassignedTasks}
-            hint={unassignedTasks > 0 ? "Waiting for an owner" : "Every open task has an owner"}
-            tone="violet"
-            Icon={ClipboardList}
-          />
-        </div>
-      </section>
-
-      <div className="mt-5 grid min-w-0 items-start gap-4 lg:grid-cols-2">
+        <WidgetBoard
+          userId={user.id}
+          widgets={[
+            {
+              id: "overview",
+              title: "Operations",
+              wide: true,
+              node: (
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                  <ColorStatLink index={0} href="/admin/tasks?view=all" label="Open tasks" value={openTaskCount} hint="Still in progress" tone="sky" Icon={ClipboardList} />
+                  <ColorStatLink index={1} href="/admin/tasks?view=today" label="Today's tasks" value={dueTodayCount} hint={dueTodayCount === 1 ? "1 item due before end of day" : "Due before end of day"} tone="cyan" Icon={CalendarDays} />
+                  <ColorStatLink index={2} href="/admin/tasks?view=upcoming" label="Upcoming" value={upcomingCount} hint={upcomingCount > 0 ? "Due after today" : "Nothing scheduled ahead"} tone="sky" Icon={CalendarClock} />
+                  <ColorStatLink index={3} href="/admin/tasks?view=overdue" label="Overdue tasks" value={overdueTasks} hint={overdueTasks > 0 ? "Needs attention" : "Nothing overdue"} tone={overdueTasks > 0 ? "rose" : "amber"} Icon={TriangleAlert} />
+                  <ColorStatLink index={4} href="/admin/tasks?view=unassigned" label="Unassigned tasks" value={unassignedTasks} hint={unassignedTasks > 0 ? "Waiting for an owner" : "Every open task has an owner"} tone="violet" Icon={UserRound} />
+                  <ColorStatLink index={5} href="/admin/tickets" label="Open tickets" value={openTickets} hint="Customer work still open" tone="emerald" Icon={Headset} />
+                  <ColorStatLink index={6} href="/admin/tasks?view=completed" label="Completed this week" value={completedThisWeek} hint="Finished since Monday" tone="emerald" Icon={CircleCheck} />
+                </div>
+              ),
+            },
+            {
+              id: "quick",
+              title: "Quick actions",
+              wide: true,
+              node: (
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-8">
+                  {quickActions.map((action) => (
+                    <Link key={action.href} href={action.href} className="flex min-w-0 flex-col items-center gap-1 rounded-xl border border-slate-200 bg-white px-2 py-3 text-center text-xs font-semibold text-navy-800 transition duration-150 hover:-translate-y-px hover:border-brand-300 hover:shadow-sm">
+                      <action.Icon className="size-4 text-brand-700" aria-hidden="true" />
+                      <span className="truncate">{action.label}</span>
+                    </Link>
+                  ))}
+                </div>
+              ),
+            },
+            {
+              id: "weather",
+              title: "Weather",
+              node: (
+                <Suspense fallback={<WeatherSkeleton />}>
+                  <WeatherPanel />
+                </Suspense>
+              ),
+            },
+            {
+              id: "activity",
+              title: "Activity",
+              node: (
+                <div className="rounded-xl border border-slate-200 bg-white">
+                  {activityEvents.length === 0 ? (
+                    <p className="px-4 py-6 text-sm text-slate-500">No workdesk activity yet.</p>
+                  ) : (
+                    <ul className="divide-y divide-slate-100">
+                      {activityEvents.map((event) => {
+                        const actor = event.actorStaff?.name || event.actorCustomer?.name || "System";
+                        const href = event.task ? `/admin/tasks/${event.task.id}?from=${encodeURIComponent("/admin")}` : event.ticket ? `/admin/tickets/${event.ticket.id}` : "/admin/audit";
+                        const reference = event.task?.reference || event.ticket?.reference;
+                        const text = actor !== "System" && !event.summary.toLowerCase().includes(actor.toLowerCase()) ? `${actor} · ${event.summary}` : event.summary;
+                        return (
+                          <li key={event.id} className="px-3 py-2.5 transition-colors duration-150 hover:bg-slate-50">
+                            <Link href={href} className="block min-w-0">
+                              <span className="block truncate text-sm text-navy-900">{text}</span>
+                              <span className="mt-0.5 flex items-center gap-2 text-xs text-slate-500">
+                                {reference ? <span className="font-mono font-semibold text-slate-400">{reference}</span> : null}
+                                <span>{formatDateTime(event.createdAt)}</span>
+                              </span>
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  )}
+                  <Link href="/admin/audit" className="block border-t border-slate-100 px-3 py-2 text-sm font-semibold text-brand-700 hover:underline">
+                    View all activity
+                  </Link>
+                </div>
+              ),
+            },
+            {
+              id: "technicians",
+              title: "Technicians",
+              node: (
+                <div className="rounded-xl border border-slate-200 bg-white">
+                  {technicians.length === 0 ? (
+                    <p className="px-4 py-6 text-sm text-slate-500">No open assignments right now.</p>
+                  ) : (
+                    <ul className="divide-y divide-slate-100">
+                      {technicians.map((person) => (
+                        <li key={person.id}>
+                          <Link href={`/admin/tasks?q=${encodeURIComponent(person.name)}`} className="block px-3 py-2.5 transition-colors duration-150 hover:bg-slate-50">
+                            <span className="flex items-center justify-between gap-3">
+                              <span className="truncate text-sm font-semibold text-navy-900">{person.name}</span>
+                              <span className="shrink-0 text-xs text-slate-500">{person.openTasks} tasks · {person.tickets} tickets</span>
+                            </span>
+                            <span className="mt-1 block h-1.5 overflow-hidden rounded-full bg-slate-100">
+                              <span className="block h-full rounded-full bg-brand-500" style={{ width: `${Math.max(8, Math.round(((person.openTasks + person.tickets) / busiest) * 100))}%` }} />
+                            </span>
+                            <span className="mt-1 block text-xs text-slate-500">
+                              {person.overdue > 0 ? `${person.overdue} overdue · ` : ""}
+                              {person.done} finished this week
+                            </span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ),
+            },
+            {
+              id: "schedule",
+              title: "Schedule",
+              wide: true,
+              node: (
+                <div className="grid min-w-0 items-start gap-4 xl:grid-cols-[17.5rem_minmax(0,1fr)]">
+                  <CollapsibleCalendar>
+                    <WorkdeskCalendar
+                      monthLabel={formatDate(monthStart, { month: "long", year: "numeric" })}
+                      prevMonthKey={calendarDateKey(previousMonth)}
+                      nextMonthKey={calendarDateKey(nextMonth)}
+                      weeks={calendarWeeks(monthStart)}
+                      todayKey={todayKey}
+                      selectedKey={selectedKey}
+                      selectedLabel={formatDate(selectedDay, { weekday: "long", month: "long", day: "numeric" })}
+                      dueCounts={dueCounts}
+                      mine={mineDay}
+                      others={othersDay}
+                      unassigned={unassignedDay}
+                      userId={user.id}
+                    />
+                  </CollapsibleCalendar>
+                  <div className="min-w-0 rounded-xl border border-slate-200 bg-white">
+                    <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2">
+                      <p className="text-sm font-bold text-navy-900">Coming up</p>
+                      <Link href="/admin/tasks?view=upcoming" className="text-xs font-semibold text-brand-700 hover:underline">View upcoming</Link>
+                    </div>
+                    {upcomingTasks.length === 0 ? (
+                      <p className="px-3 py-6 text-sm text-slate-500">Nothing is scheduled ahead.</p>
+                    ) : (
+                      <ul className="divide-y divide-slate-100">
+                        {upcomingTasks.map((task) => (
+                          <li key={task.id}>
+                            <Link href={`/admin/tasks/${task.id}?from=${encodeURIComponent("/admin")}`} className="block px-3 py-2.5 transition-colors duration-150 hover:bg-slate-50">
+                              <span className="flex min-w-0 items-center justify-between gap-3">
+                                <span className="truncate text-sm font-semibold text-navy-900">{task.title}</span>
+                                <span className="shrink-0 font-mono text-[11px] text-slate-400">{task.reference}</span>
+                              </span>
+                              <span className="mt-0.5 block truncate text-xs text-slate-500">
+                                {task.dueAt ? formatDateTime(task.dueAt) : "No time"} · {task.assignees.map((row) => row.user.name).join(", ") || "Unassigned"}
+                              </span>
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              ),
+            },
+            {
+              id: "monitoring",
+              title: "Monitoring",
+              node: statusSummary ? (
+                <div className="rounded-xl border border-slate-200 bg-white p-4">
+                  <p className="text-sm text-slate-600">
+                    {statusSummary.services.filter((service) => service.operational === true).length} of {statusSummary.services.length} checks are up
+                    {statusSummary.uptime24h === null ? "" : ` · ${Math.round(statusSummary.uptime24h)}% of checks passed in 24 hours`}
+                    {statusSummary.openIncidents > 0 ? ` · ${statusSummary.openIncidents} open incident${statusSummary.openIncidents === 1 ? "" : "s"}` : ""}
+                  </p>
+                  <ul className="mt-3 space-y-2">
+                    {statusSummary.services.slice(0, 6).map((service) => (
+                      <li key={service.key} className="flex items-center justify-between gap-3 text-sm">
+                        <span className="truncate text-navy-900">{service.name}</span>
+                        <span className={service.operational === true ? "text-emerald-700" : service.operational === false ? "text-rose-700" : "text-slate-500"}>
+                          {service.operational === true ? "Up" : service.operational === false ? "Down" : "No reading yet"}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Link href="/network-status" className="mt-3 inline-block text-sm font-semibold text-brand-700 hover:underline">Public status</Link>
+                </div>
+              ) : (
+                <div className="rounded-xl border border-dashed border-slate-200 bg-white px-4 py-5">
+                  <p className="text-sm font-semibold text-navy-900">Monitoring not configured</p>
+                  <p className="mt-1 text-sm text-slate-600">Website, server, and service checks appear here after an administrator enables them. Nothing on this card is estimated.</p>
+                  <div className="mt-3 flex flex-wrap gap-3">
+                    {canAccessOperations(user) ? (
+                      <Link href="/admin/collections/monitors" className="text-sm font-semibold text-brand-700 hover:underline">Set up checks</Link>
+                    ) : null}
+                    <Link href="/network-status" className="text-sm font-semibold text-brand-700 hover:underline">Public status</Link>
+                  </div>
+                </div>
+              ),
+            },
+            {
+              id: "work",
+              title: "Tasks and tickets",
+              wide: true,
+              node: (
+                <>
+        <div className="min-w-0 space-y-4">
+      <div className="grid min-w-0 items-start gap-4 lg:grid-cols-2">
         <ActivityChartCard points={activityPoints} />
         <TaskDonutCard done={myDoneTasks} open={myOpenTasks} href="/admin/tasks?view=completed" />
       </div>
@@ -863,6 +1135,11 @@ export default async function AdminDashboard({
       </div>
       ) : null}
         </div>
+                </>
+              ),
+            },
+          ]}
+        />
       </div>
     </>
   );

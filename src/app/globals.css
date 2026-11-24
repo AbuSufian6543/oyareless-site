@@ -558,10 +558,80 @@
   }
 }
 
-.wc-enter,
-.wc-row,
+.wc-enter {
+  animation: wc-enter 420ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.wc-row {
+  animation: wc-enter 260ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
 .wc-rise {
-  animation: wc-enter 220ms ease backwards;
+  animation: wc-enter 180ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+@keyframes wc-line {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.wc-line {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: wc-line 700ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+@keyframes wc-ring {
+  from {
+    stroke-dashoffset: var(--wc-ring-from);
+  }
+  to {
+    stroke-dashoffset: var(--wc-ring-to);
+  }
+}
+
+.wc-ring {
+  animation: wc-ring 700ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+@keyframes wc-drift {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(2px);
+  }
+}
+
+.wc-drift {
+  animation: wc-drift 4.5s ease-in-out infinite alternate;
+}
+
+@keyframes wc-spin {
+  to {
+    transform: rotate(20deg);
+  }
+}
+
+.wc-sun {
+  transform-origin: center;
+  animation: wc-spin 8s ease-in-out infinite alternate;
+}
+
+@keyframes wc-precip {
+  from {
+    opacity: 0.35;
+    transform: translateY(-1px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(2px);
+  }
+}
+
+.wc-precip {
+  animation: wc-precip 1.4s ease-in-out infinite alternate;
 }
 
 .wc-draw {
@@ -576,7 +646,12 @@
   .wc-enter,
   .wc-row,
   .wc-rise,
-  .wc-draw {
+  .wc-draw,
+  .wc-line,
+  .wc-ring,
+  .wc-drift,
+  .wc-sun,
+  .wc-precip {
     animation: none !important;
   }
 
