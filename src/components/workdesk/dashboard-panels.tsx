@@ -14,6 +14,7 @@ export function WorkdeskPageHeader({
   persona,
   accountHref,
   actions,
+  center,
   className,
   meta,
 }: {
@@ -23,6 +24,7 @@ export function WorkdeskPageHeader({
   persona?: DashboardPersona | null;
   accountHref?: string;
   actions?: ReactNode;
+  center?: ReactNode;
   className?: string;
   meta?: ReactNode;
 }) {
@@ -36,7 +38,10 @@ export function WorkdeskPageHeader({
   return (
     <header
       className={cn(
-        "wc-enter mb-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between",
+        "wc-enter mb-5",
+        center
+          ? "grid items-center gap-3 lg:grid-cols-[minmax(0,1fr)_auto] xl:grid-cols-[minmax(0,1.1fr)_auto_auto] xl:gap-4"
+          : "flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between",
         className,
       )}
     >
@@ -61,7 +66,21 @@ export function WorkdeskPageHeader({
           {meta ? <div className="mt-1 text-sm font-medium text-navy-800">{meta}</div> : null}
         </div>
       </div>
-      {actions ? <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div> : null}
+      {center ? (
+        <div className="min-w-0 max-w-full lg:col-start-1 lg:col-end-3 lg:row-start-2 xl:col-start-2 xl:col-end-3 xl:row-start-1 xl:justify-self-center">
+          {center}
+        </div>
+      ) : null}
+      {actions ? (
+        <div
+          className={cn(
+            "flex min-w-0 flex-wrap items-center gap-2",
+            center && "lg:col-start-2 lg:row-start-1 lg:justify-self-end xl:col-start-3 xl:row-start-1",
+          )}
+        >
+          {actions}
+        </div>
+      ) : null}
     </header>
   );
 }
@@ -73,6 +92,7 @@ export function DashboardHero({
   summary,
   persona,
   actions,
+  center,
   accountHref,
   className,
   meta,
@@ -83,6 +103,7 @@ export function DashboardHero({
   summary: ReactNode;
   persona: DashboardPersona | null;
   actions: ReactNode;
+  center?: ReactNode;
   accountHref?: string;
   className?: string;
   meta?: ReactNode;
@@ -95,6 +116,7 @@ export function DashboardHero({
       persona={persona}
       accountHref={accountHref}
       actions={actions}
+      center={center}
       className={className}
       meta={meta}
     />

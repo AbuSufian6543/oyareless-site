@@ -116,6 +116,11 @@ export default async function AdminDashboard({
         persona={user.dashboardPersona}
         accountHref="/admin/account"
         meta={<OfficeClock />}
+        center={
+          <Suspense fallback={<WeatherSkeleton />}>
+            <WeatherPanel />
+          </Suspense>
+        }
         actions={
           <>
             <WorkSearch
@@ -165,17 +170,6 @@ export default async function AdminDashboard({
         <WidgetBoard
           userId={user.id}
           widgets={[
-            {
-              id: "weather",
-              title: "Weather",
-              span: 3,
-              chrome: false,
-              node: (
-                <Suspense fallback={<WeatherSkeleton />}>
-                  <WeatherPanel />
-                </Suspense>
-              ),
-            },
             {
               id: "trends",
               title: "Charts",
