@@ -166,6 +166,37 @@ export default async function AdminDashboard({
           userId={user.id}
           widgets={[
             {
+              id: "weather",
+              title: "Weather",
+              span: 3,
+              chrome: false,
+              node: (
+                <Suspense fallback={<WeatherSkeleton />}>
+                  <WeatherPanel />
+                </Suspense>
+              ),
+            },
+            {
+              id: "trends",
+              title: "Charts",
+              span: 2,
+              node: (
+                <Suspense fallback={<ChartsSkeleton />}>
+                  <TrendCharts userId={user.id} bounds={bounds} />
+                </Suspense>
+              ),
+            },
+            {
+              id: "calendar",
+              title: "Calendar",
+              place: "aside",
+              node: (
+                <Suspense fallback={<div className="h-72 animate-pulse rounded-2xl bg-slate-100" />}>
+                  <CalendarPanel userId={user.id} day={params.day ?? ""} />
+                </Suspense>
+              ),
+            },
+            {
               id: "overview",
               title: "Operations",
               span: 3,
@@ -192,35 +223,6 @@ export default async function AdminDashboard({
                     </Link>
                   ))}
                 </div>
-              ),
-            },
-            {
-              id: "weather",
-              title: "Weather",
-              span: 3,
-              node: (
-                <Suspense fallback={<WeatherSkeleton />}>
-                  <WeatherPanel />
-                </Suspense>
-              ),
-            },
-            {
-              id: "trends",
-              title: "Charts",
-              span: 2,
-              node: (
-                <Suspense fallback={<ChartsSkeleton />}>
-                  <TrendCharts userId={user.id} bounds={bounds} />
-                </Suspense>
-              ),
-            },
-            {
-              id: "calendar",
-              title: "Calendar",
-              node: (
-                <Suspense fallback={<div className="h-72 animate-pulse rounded-2xl bg-slate-100" />}>
-                  <CalendarPanel userId={user.id} day={params.day ?? ""} />
-                </Suspense>
               ),
             },
             {

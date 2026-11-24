@@ -8,6 +8,13 @@ export type DashboardWidget = {
   title: string;
   /** How many columns this widget uses on a wide screen. */
   span?: 1 | 2 | 3;
+  /**
+   * `aside` fills the tablet row and sits in the right column on a wide screen.
+   * Used so the calendar lines up beside the charts.
+   */
+  place?: "aside";
+  /** Skip the section title when the widget is already a compact strip. */
+  chrome?: boolean;
   node: ReactNode;
 };
 
@@ -18,12 +25,13 @@ type Prefs = {
 };
 
 function storageKey(userId: string) {
-  return `wc-dashboard-widgets:v2:${userId}`;
+  return `wc-dashboard-widgets:v3:${userId}`;
 }
 
-function spanClass(span: 1 | 2 | 3 = 1) {
+function spanClass(span: 1 | 2 | 3 = 1, place?: "aside") {
+  if (place === "aside") return "lg:col-span-2 xl:col-span-1";
   if (span >= 3) return "lg:col-span-2 xl:col-span-3";
-  if (span === 2) return "xl:col-span-2";
+  if (span === 2) return "lg:col-span-2 xl:col-span-2";
   return "";
 }
 
@@ -143,9 +151,10 @@ export function WidgetBoard({ userId, widgets }: { userId: string; widgets: Dash
       {ordered
         .filter((widget) => !prefs.hidden.includes(widget.id))
         .map((widget, index) => {
-          const collapsed = prefs.collapsed.includes(widget.id);
+          const collapsed = widget.chrome === false ? false : prefs.collapsed.includes(widget.id);
           return (
-            <section key={widget.id} className={`wc-row min-w-0 ${spanClass(widget.span)}`} style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}>
+            <section key={widget.id} className={`wc-row min-w-0 ${spanClass(widget.span, widget.place)}`} style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}>
+              {widget.chrome === false ? null : (
               <div className="mb-1 flex items-center justify-between gap-3">
                 <h2 className="text-[0.68rem] font-bold uppercase tracking-[0.16em] text-slate-400">{widget.title}</h2>
                 <button
@@ -164,6 +173,7 @@ export function WidgetBoard({ userId, widgets }: { userId: string; widgets: Dash
                   {collapsed ? "Expand" : "Collapse"}
                 </button>
               </div>
+              )}
               <div className={`wc-collapse grid transition-[grid-template-rows] duration-300 ease-out ${collapsed ? "grid-rows-[0fr]" : "grid-rows-[1fr]"}`}>
                 <div className={collapsed ? "overflow-hidden" : "min-h-0 overflow-visible"}>
                   {widget.node}

@@ -75,7 +75,7 @@ export function StatsSkeleton() {
 
 export function ChartsSkeleton() {
   return (
-    <div className="grid gap-3 xl:grid-cols-2">
+    <div className="grid gap-3 lg:grid-cols-2">
       <div className="h-72 animate-pulse rounded-2xl bg-slate-100" />
       <div className="h-72 animate-pulse rounded-2xl bg-slate-100" />
     </div>
@@ -162,7 +162,7 @@ export async function TrendCharts({ userId, bounds }: { userId: string; bounds: 
       loadActivitySeries(bounds.activitySinceMs),
     ]);
     return (
-      <div className="grid min-w-0 items-stretch gap-3 xl:grid-cols-2">
+      <div className="grid min-w-0 items-stretch gap-3 lg:grid-cols-2">
         <ActivityChartCard
           points={activity.current}
           completedThisWeek={rollup.completedThisWeek}
