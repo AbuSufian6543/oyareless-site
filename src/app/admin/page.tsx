@@ -31,6 +31,7 @@ import {
   weekdayShort,
 } from "@/components/workdesk/dashboard-panels";
 import { CollapsibleCalendar } from "@/components/workdesk/collapsible-calendar";
+import { CountUp } from "@/components/workdesk/count-up";
 import { OfficeClock } from "@/components/workdesk/office-clock";
 import { WidgetBoard } from "@/components/workdesk/widget-board";
 import { WeatherPanel, WeatherSkeleton } from "@/components/workdesk/weather-widget";
@@ -52,6 +53,7 @@ import { getStatusSummary } from "@/lib/monitoring";
 import { calendarDateKey, zonedHour } from "@/lib/timezone";
 import { formatDate, formatDateTime } from "@/lib/utils";
 import { workdeskHref } from "@/lib/workdesk/access";
+import { TASK_STATUS_LABELS } from "@/lib/workdesk/labels";
 import {
   OPEN_TASK,
   OPEN_TICKET,
@@ -327,9 +329,7 @@ export default async function AdminDashboard({
     activityEvents,
     upcomingTasks,
     recentTickets,
-    openTaskLinks,
-    doneTaskLinks,
-    openTicketRows,
+    taskStatusGroups,
     statusSummary,
   ] = await Promise.all([
     prisma.internalTask.count({ where: OPEN_TASK }),
@@ -359,60 +359,16 @@ export default async function AdminDashboard({
       take: 5,
       include: ticketInclude,
     }),
-    prisma.internalTaskAssignee.findMany({
-      where: { task: OPEN_TASK },
-      select: { userId: true, user: { select: { name: true } }, task: { select: { dueAt: true } } },
-    }),
-    prisma.internalTaskAssignee.findMany({
-      where: {
-        task: { OR: [{ completedAt: { gte: weekStartMonday } }, { closedAt: { gte: weekStartMonday } }] },
-      },
-      select: { userId: true, user: { select: { name: true } } },
-    }),
-    prisma.ticket.findMany({
-      where: OPEN_TICKET,
-      select: {
-        id: true,
-        assignedToId: true,
-        assignedTo: { select: { name: true } },
-        assignees: { select: { userId: true, user: { select: { name: true } } } },
-      },
+    prisma.internalTask.groupBy({
+      by: ["status"],
+      _count: { _all: true },
     }),
     getStatusSummary().catch(() => null),
   ]);
 
-  type Workload = { id: string; name: string; openTasks: number; overdue: number; tickets: number; done: number };
-  const workload = new Map<string, Workload>();
-  const slot = (id: string, name: string) => {
-    const current = workload.get(id);
-    if (current) return current;
-    const created = { id, name, openTasks: 0, overdue: 0, tickets: 0, done: 0 };
-    workload.set(id, created);
-    return created;
-  };
-  for (const row of openTaskLinks) {
-    const person = slot(row.userId, row.user.name);
-    person.openTasks += 1;
-    if (row.task.dueAt && row.task.dueAt < today) person.overdue += 1;
-  }
-  for (const row of doneTaskLinks) slot(row.userId, row.user.name).done += 1;
-  for (const ticket of openTicketRows) {
-    const seen = new Set<string>();
-    if (ticket.assignedToId && ticket.assignedTo) {
-      seen.add(ticket.assignedToId);
-      slot(ticket.assignedToId, ticket.assignedTo.name).tickets += 1;
-    }
-    for (const row of ticket.assignees) {
-      if (seen.has(row.userId)) continue;
-      seen.add(row.userId);
-      slot(row.userId, row.user.name).tickets += 1;
-    }
-  }
-  const technicians = [...workload.values()]
-    .filter((person) => person.openTasks > 0 || person.tickets > 0 || person.overdue > 0)
-    .sort((left, right) => right.overdue - left.overdue || right.openTasks - left.openTasks || left.name.localeCompare(right.name))
-    .slice(0, 8);
-  const busiest = Math.max(1, ...technicians.map((person) => person.openTasks + person.tickets));
+  const statusOrder = ["OPEN", "IN_PROGRESS", "WAITING", "COMPLETED", "CLOSED"] as const;
+  const statusCounts = new Map(taskStatusGroups.map((row) => [row.status, row._count._all]));
+  const statusTotal = statusOrder.reduce((sum, status) => sum + (statusCounts.get(status) ?? 0), 0) || 1;
 
   const quickActions = [
     { href: `/admin/tasks/new?due=${selectedKey}`, label: "Create task", Icon: Plus },
@@ -561,7 +517,7 @@ export default async function AdminDashboard({
                   <summary className="inline-flex h-9 cursor-pointer list-none items-center rounded-lg border border-slate-200 bg-white px-3 text-sm font-semibold text-navy-800 transition duration-150 hover:border-brand-300 [&::-webkit-details-marker]:hidden">
                     Quick actions
                   </summary>
-                  <div className="absolute right-0 z-20 mt-1 w-48 rounded-lg border border-slate-200 bg-white p-1 shadow-md">
+                  <div className="wc-rise absolute right-0 z-20 mt-1 w-48 origin-top rounded-lg border border-slate-200 bg-white p-1 shadow-md">
                     {quickActions.map((action) => (
                       <Link key={action.href} href={action.href} className="block rounded-md px-2 py-1.5 text-sm font-medium text-navy-800 hover:bg-slate-50">
                         {action.label}
@@ -623,9 +579,9 @@ export default async function AdminDashboard({
             {
               id: "overview",
               title: "Operations",
-              wide: true,
+              span: 3,
               node: (
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 2xl:grid-cols-7">
                   <ColorStatLink index={0} href="/admin/tasks?view=all" label="Open tasks" value={openTaskCount} hint="Still in progress" tone="sky" Icon={ClipboardList} />
                   <ColorStatLink index={1} href="/admin/tasks?view=today" label="Today's tasks" value={dueTodayCount} hint={dueTodayCount === 1 ? "1 item due before end of day" : "Due before end of day"} tone="cyan" Icon={CalendarDays} />
                   <ColorStatLink index={2} href="/admin/tasks?view=upcoming" label="Upcoming" value={upcomingCount} hint={upcomingCount > 0 ? "Due after today" : "Nothing scheduled ahead"} tone="sky" Icon={CalendarClock} />
@@ -639,7 +595,7 @@ export default async function AdminDashboard({
             {
               id: "quick",
               title: "Quick actions",
-              wide: true,
+              span: 3,
               node: (
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-8">
                   {quickActions.map((action) => (
@@ -654,6 +610,7 @@ export default async function AdminDashboard({
             {
               id: "weather",
               title: "Weather",
+              span: 3,
               node: (
                 <Suspense fallback={<WeatherSkeleton />}>
                   <WeatherPanel />
@@ -661,23 +618,142 @@ export default async function AdminDashboard({
               ),
             },
             {
+              id: "trends",
+              title: "Charts",
+              span: 2,
+              node: (
+                <div className="grid min-w-0 items-start gap-3 xl:grid-cols-2">
+                  <ActivityChartCard points={activityPoints} />
+                  <TaskDonutCard done={myDoneTasks} open={myOpenTasks} href="/admin/tasks?view=completed" />
+                </div>
+              ),
+            },
+            {
+              id: "calendar",
+              title: "Calendar",
+              node: (
+                <CollapsibleCalendar>
+                  <WorkdeskCalendar
+                    monthLabel={formatDate(monthStart, { month: "long", year: "numeric" })}
+                    prevMonthKey={calendarDateKey(previousMonth)}
+                    nextMonthKey={calendarDateKey(nextMonth)}
+                    weeks={calendarWeeks(monthStart)}
+                    todayKey={todayKey}
+                    selectedKey={selectedKey}
+                    selectedLabel={formatDate(selectedDay, { weekday: "long", month: "long", day: "numeric" })}
+                    dueCounts={dueCounts}
+                    mine={mineDay}
+                    others={othersDay}
+                    unassigned={unassignedDay}
+                    userId={user.id}
+                  />
+                </CollapsibleCalendar>
+              ),
+            },
+            {
+              id: "schedule",
+              title: "Upcoming schedule",
+              span: 2,
+              node: (
+                <div className="min-w-0 rounded-xl border border-slate-200 bg-white">
+                  <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2">
+                    <p className="text-sm font-bold text-navy-900">Coming up</p>
+                    <Link href="/admin/tasks?view=upcoming" className="text-xs font-semibold text-brand-700 hover:underline">View upcoming</Link>
+                  </div>
+                  {upcomingTasks.length === 0 ? (
+                    <p className="px-3 py-3 text-sm text-slate-500">Nothing is scheduled ahead.</p>
+                  ) : (
+                    <ol className="relative divide-y divide-slate-100">
+                      {upcomingTasks.map((task, index) => (
+                        <li key={task.id} className="wc-row" style={{ animationDelay: `${index * 30}ms` }}>
+                          <Link href={`/admin/tasks/${task.id}?from=${encodeURIComponent("/admin")}`} className="flex min-w-0 items-start gap-3 px-3 py-2 transition-colors duration-150 hover:bg-slate-50">
+                            <span className="mt-1.5 size-2 shrink-0 rounded-full bg-brand-500" aria-hidden="true" />
+                            <span className="min-w-0 flex-1">
+                              <span className="flex min-w-0 items-center justify-between gap-3">
+                                <span className="truncate text-sm font-semibold text-navy-900">{task.title}</span>
+                                <span className="shrink-0 font-mono text-[11px] text-slate-400">{task.reference}</span>
+                              </span>
+                              <span className="mt-0.5 block truncate text-xs text-slate-500">
+                                {task.dueAt ? formatDateTime(task.dueAt) : "No time"} · {TASK_STATUS_LABELS[task.status] ?? task.status}
+                                {task.assignees.length === 0 ? " · Unassigned" : ""}
+                              </span>
+                            </span>
+                          </Link>
+                        </li>
+                      ))}
+                    </ol>
+                  )}
+                </div>
+              ),
+            },
+            {
+              id: "insights",
+              title: "Workload & operations insights",
+              node: (
+                <div className="rounded-xl border border-slate-200 bg-white p-4">
+                  <dl className="grid grid-cols-2 gap-3">
+                    <div>
+                      <dt className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Active tasks</dt>
+                      <dd className="text-2xl font-extrabold tabular-nums text-navy-900"><CountUp value={openTaskCount} /></dd>
+                    </div>
+                    <div>
+                      <dt className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Overdue</dt>
+                      <dd className="text-2xl font-extrabold tabular-nums text-rose-700"><CountUp value={overdueTasks} /></dd>
+                    </div>
+                    <div>
+                      <dt className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Done this week</dt>
+                      <dd className="text-2xl font-extrabold tabular-nums text-navy-900"><CountUp value={completedThisWeek} /></dd>
+                    </div>
+                    <div>
+                      <dt className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Open tickets</dt>
+                      <dd className="text-2xl font-extrabold tabular-nums text-navy-900"><CountUp value={openTickets} /></dd>
+                    </div>
+                  </dl>
+                  <div className="mt-4 space-y-2">
+                    {statusOrder.map((status) => {
+                      const count = statusCounts.get(status) ?? 0;
+                      return (
+                        <div key={status}>
+                          <div className="mb-1 flex items-center justify-between text-xs">
+                            <span className="font-semibold text-navy-800">{TASK_STATUS_LABELS[status]}</span>
+                            <span className="tabular-nums text-slate-500">{count}</span>
+                          </div>
+                          <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
+                            <div className="wc-meter h-full rounded-full bg-brand-500" style={{ width: `${Math.round((count / statusTotal) * 100)}%` }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                    <div>
+                      <div className="mb-1 flex items-center justify-between text-xs">
+                        <span className="font-semibold text-navy-800">Unassigned open tasks</span>
+                        <span className="tabular-nums text-slate-500">{unassignedTasks}</span>
+                      </div>
+                      <div className="h-1.5 overflow-hidden rounded-full bg-slate-100">
+                        <div className="wc-meter h-full rounded-full bg-violet-500" style={{ width: `${openTaskCount === 0 ? 0 : Math.round((unassignedTasks / openTaskCount) * 100)}%` }} />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ),
+            },
+            {
               id: "activity",
-              title: "Activity",
+              title: "Recent activity",
+              span: 2,
               node: (
                 <div className="rounded-xl border border-slate-200 bg-white">
                   {activityEvents.length === 0 ? (
-                    <p className="px-4 py-6 text-sm text-slate-500">No workdesk activity yet.</p>
+                    <p className="px-3 py-3 text-sm text-slate-500">No workdesk activity yet.</p>
                   ) : (
                     <ul className="divide-y divide-slate-100">
-                      {activityEvents.map((event) => {
-                        const actor = event.actorStaff?.name || event.actorCustomer?.name || "System";
+                      {activityEvents.map((event, index) => {
                         const href = event.task ? `/admin/tasks/${event.task.id}?from=${encodeURIComponent("/admin")}` : event.ticket ? `/admin/tickets/${event.ticket.id}` : "/admin/audit";
                         const reference = event.task?.reference || event.ticket?.reference;
-                        const text = actor !== "System" && !event.summary.toLowerCase().includes(actor.toLowerCase()) ? `${actor} · ${event.summary}` : event.summary;
                         return (
-                          <li key={event.id} className="px-3 py-2.5 transition-colors duration-150 hover:bg-slate-50">
-                            <Link href={href} className="block min-w-0">
-                              <span className="block truncate text-sm text-navy-900">{text}</span>
+                          <li key={event.id} className="wc-row" style={{ animationDelay: `${index * 30}ms` }}>
+                            <Link href={href} className="block min-w-0 px-3 py-2 transition-colors duration-150 hover:bg-slate-50">
+                              <span className="block truncate text-sm text-navy-900">{event.summary}</span>
                               <span className="mt-0.5 flex items-center gap-2 text-xs text-slate-500">
                                 {reference ? <span className="font-mono font-semibold text-slate-400">{reference}</span> : null}
                                 <span>{formatDateTime(event.createdAt)}</span>
@@ -691,87 +767,6 @@ export default async function AdminDashboard({
                   <Link href="/admin/audit" className="block border-t border-slate-100 px-3 py-2 text-sm font-semibold text-brand-700 hover:underline">
                     View all activity
                   </Link>
-                </div>
-              ),
-            },
-            {
-              id: "technicians",
-              title: "Technicians",
-              node: (
-                <div className="rounded-xl border border-slate-200 bg-white">
-                  {technicians.length === 0 ? (
-                    <p className="px-4 py-6 text-sm text-slate-500">No open assignments right now.</p>
-                  ) : (
-                    <ul className="divide-y divide-slate-100">
-                      {technicians.map((person) => (
-                        <li key={person.id}>
-                          <Link href={`/admin/tasks?q=${encodeURIComponent(person.name)}`} className="block px-3 py-2.5 transition-colors duration-150 hover:bg-slate-50">
-                            <span className="flex items-center justify-between gap-3">
-                              <span className="truncate text-sm font-semibold text-navy-900">{person.name}</span>
-                              <span className="shrink-0 text-xs text-slate-500">{person.openTasks} tasks · {person.tickets} tickets</span>
-                            </span>
-                            <span className="mt-1 block h-1.5 overflow-hidden rounded-full bg-slate-100">
-                              <span className="block h-full rounded-full bg-brand-500" style={{ width: `${Math.max(8, Math.round(((person.openTasks + person.tickets) / busiest) * 100))}%` }} />
-                            </span>
-                            <span className="mt-1 block text-xs text-slate-500">
-                              {person.overdue > 0 ? `${person.overdue} overdue · ` : ""}
-                              {person.done} finished this week
-                            </span>
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ),
-            },
-            {
-              id: "schedule",
-              title: "Schedule",
-              wide: true,
-              node: (
-                <div className="grid min-w-0 items-start gap-4 xl:grid-cols-[17.5rem_minmax(0,1fr)]">
-                  <CollapsibleCalendar>
-                    <WorkdeskCalendar
-                      monthLabel={formatDate(monthStart, { month: "long", year: "numeric" })}
-                      prevMonthKey={calendarDateKey(previousMonth)}
-                      nextMonthKey={calendarDateKey(nextMonth)}
-                      weeks={calendarWeeks(monthStart)}
-                      todayKey={todayKey}
-                      selectedKey={selectedKey}
-                      selectedLabel={formatDate(selectedDay, { weekday: "long", month: "long", day: "numeric" })}
-                      dueCounts={dueCounts}
-                      mine={mineDay}
-                      others={othersDay}
-                      unassigned={unassignedDay}
-                      userId={user.id}
-                    />
-                  </CollapsibleCalendar>
-                  <div className="min-w-0 rounded-xl border border-slate-200 bg-white">
-                    <div className="flex items-center justify-between border-b border-slate-100 px-3 py-2">
-                      <p className="text-sm font-bold text-navy-900">Coming up</p>
-                      <Link href="/admin/tasks?view=upcoming" className="text-xs font-semibold text-brand-700 hover:underline">View upcoming</Link>
-                    </div>
-                    {upcomingTasks.length === 0 ? (
-                      <p className="px-3 py-6 text-sm text-slate-500">Nothing is scheduled ahead.</p>
-                    ) : (
-                      <ul className="divide-y divide-slate-100">
-                        {upcomingTasks.map((task) => (
-                          <li key={task.id}>
-                            <Link href={`/admin/tasks/${task.id}?from=${encodeURIComponent("/admin")}`} className="block px-3 py-2.5 transition-colors duration-150 hover:bg-slate-50">
-                              <span className="flex min-w-0 items-center justify-between gap-3">
-                                <span className="truncate text-sm font-semibold text-navy-900">{task.title}</span>
-                                <span className="shrink-0 font-mono text-[11px] text-slate-400">{task.reference}</span>
-                              </span>
-                              <span className="mt-0.5 block truncate text-xs text-slate-500">
-                                {task.dueAt ? formatDateTime(task.dueAt) : "No time"} · {task.assignees.map((row) => row.user.name).join(", ") || "Unassigned"}
-                              </span>
-                            </Link>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
                 </div>
               ),
             },
@@ -813,16 +808,11 @@ export default async function AdminDashboard({
             {
               id: "work",
               title: "Tasks and tickets",
-              wide: true,
+              span: 3,
               node: (
                 <>
         <div className="min-w-0 space-y-4">
-      <div className="grid min-w-0 items-start gap-4 lg:grid-cols-2">
-        <ActivityChartCard points={activityPoints} />
-        <TaskDonutCard done={myDoneTasks} open={myOpenTasks} href="/admin/tasks?view=completed" />
-      </div>
-
-      <section className="mb-6 mt-6">
+      <section>
         <h2 className="mb-3 text-sm font-bold uppercase tracking-[0.16em] text-slate-400">Tickets</h2>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {ticketStats.map((stat, index) => (

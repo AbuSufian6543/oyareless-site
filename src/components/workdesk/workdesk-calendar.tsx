@@ -43,7 +43,7 @@ export function WorkdeskCalendar({
   const total = mine.length + others.length + unassigned.length;
 
   return (
-    <aside className="mx-auto w-full max-w-sm max-h-[calc(100vh-2.75rem)] overflow-y-auto rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_1px_2px_rgba(15,42,73,0.05)] xl:sticky xl:top-5 xl:mx-0 xl:max-w-none">
+    <aside className="w-full rounded-2xl border border-slate-200 bg-white p-3 shadow-[0_1px_2px_rgba(15,42,73,0.05)]">
       <div className="mb-2 flex items-center justify-between gap-1">
         <Link
           href={`/admin?day=${prevMonthKey}`}
@@ -67,7 +67,7 @@ export function WorkdeskCalendar({
           <span key={day}>{day}</span>
         ))}
       </div>
-      <div className="mt-0.5 grid grid-cols-7 gap-0.5">
+      <div key={monthLabel} className="wc-enter mt-0.5 grid grid-cols-7 gap-0.5">
         {weeks.flat().map((key, index) => {
           if (!key) return <span key={`empty-${index}`} className="h-8" />;
           const day = Number(key.slice(-2));
@@ -81,7 +81,7 @@ export function WorkdeskCalendar({
               aria-current={isSelected ? "date" : undefined}
               aria-label={`${key}${count ? `, ${count} task${count === 1 ? "" : "s"}` : ""}`}
               className={cn(
-                "relative flex h-8 items-center justify-center rounded-md text-xs font-semibold transition-colors duration-150",
+                "relative flex h-8 items-center justify-center rounded-md text-xs font-semibold transition duration-200",
                 isSelected
                   ? "bg-brand-600 text-white"
                   : isToday
@@ -190,11 +190,6 @@ function DayGroup({
             <li key={task.id}>
               <Link href={`/admin/tasks/${task.id}`} className={cn("block rounded-lg px-2 py-1.5", chip)}>
                 <span className="block truncate text-xs font-semibold text-navy-900">{task.title}</span>
-                {task.assignees.length > 0 ? (
-                  <span className="block truncate text-[10px] text-slate-500">
-                    {task.assignees.join(", ")}
-                  </span>
-                ) : null}
                 {task.priority === "HIGH" || task.priority === "EMERGENCY" ? (
                   <span className="mt-0.5 inline-block text-[10px] font-bold uppercase tracking-wider text-rose-600">
                     {task.priority === "EMERGENCY" ? "Emergency" : "High"}

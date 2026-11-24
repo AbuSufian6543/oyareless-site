@@ -6,7 +6,8 @@ import { ChevronDown, ChevronUp, Settings2 } from "lucide-react";
 export type DashboardWidget = {
   id: string;
   title: string;
-  wide?: boolean;
+  /** How many columns this widget uses on a wide screen. */
+  span?: 1 | 2 | 3;
   node: ReactNode;
 };
 
@@ -17,7 +18,13 @@ type Prefs = {
 };
 
 function storageKey(userId: string) {
-  return `wc-dashboard-widgets:${userId}`;
+  return `wc-dashboard-widgets:v2:${userId}`;
+}
+
+function spanClass(span: 1 | 2 | 3 = 1) {
+  if (span >= 3) return "lg:col-span-2 xl:col-span-3";
+  if (span === 2) return "xl:col-span-2";
+  return "";
 }
 
 function readPrefs(userId: string, ids: string[]): Prefs {
@@ -132,14 +139,14 @@ export function WidgetBoard({ userId, widgets }: { userId: string; widgets: Dash
           </ul>
         </div>
       ) : null}
-      <div className="grid min-w-0 items-start gap-4 xl:grid-cols-2">
+      <div className="grid min-w-0 items-start gap-3 lg:grid-cols-2 xl:grid-cols-3">
       {ordered
         .filter((widget) => !prefs.hidden.includes(widget.id))
         .map((widget, index) => {
           const collapsed = prefs.collapsed.includes(widget.id);
           return (
-            <section key={widget.id} className={`wc-row min-w-0 ${widget.wide ? "xl:col-span-2" : ""}`} style={{ animationDelay: `${Math.min(index, 8) * 45}ms` }}>
-              <div className="mb-2 flex items-center justify-between gap-3">
+            <section key={widget.id} className={`wc-row min-w-0 ${spanClass(widget.span)}`} style={{ animationDelay: `${Math.min(index, 8) * 40}ms` }}>
+              <div className="mb-1 flex items-center justify-between gap-3">
                 <h2 className="text-[0.68rem] font-bold uppercase tracking-[0.16em] text-slate-400">{widget.title}</h2>
                 <button
                   type="button"

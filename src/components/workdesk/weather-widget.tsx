@@ -120,7 +120,7 @@ function WeatherBody({ weather }: { weather: SaultWeather }) {
             : "Official alerts could not be loaded. The forecast above is still current."}
         </p>
       )}
-      <ol className="grid grid-cols-2 gap-2 border-t border-sky-100 p-3 sm:grid-cols-4 lg:grid-cols-7">
+      <ol className="grid grid-cols-2 gap-2 border-t border-sky-100 p-3 sm:grid-cols-4 xl:grid-cols-7">
         {weather.days.map((day) => (
           <li key={day.date} className="rounded-lg px-2 py-2 text-center transition-colors duration-150 hover:bg-white">
             <p className="text-xs font-bold text-slate-500">{day.label}</p>
