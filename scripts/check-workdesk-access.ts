@@ -835,10 +835,10 @@ const adminTicketDetail = readFileSync(
   path.join(process.cwd(), "src/app/admin/tickets/[id]/page.tsx"),
   "utf8",
 );
-const adminTaskDetail = readFileSync(
-  path.join(process.cwd(), "src/app/admin/tasks/[id]/page.tsx"),
-  "utf8",
-);
+const adminTaskDetail = [
+  readFileSync(path.join(process.cwd(), "src/app/admin/tasks/[id]/page.tsx"), "utf8"),
+  readFileSync(path.join(process.cwd(), "src/components/workdesk/task-detail-view.tsx"), "utf8"),
+].join("\n");
 const techTicketDetail = readFileSync(
   path.join(process.cwd(), "src/app/tech/tickets/[id]/page.tsx"),
   "utf8",

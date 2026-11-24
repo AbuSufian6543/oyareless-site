@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import {
   Activity,
   Archive,
@@ -29,6 +29,8 @@ import {
   Menu,
   MessageSquare,
   Newspaper,
+  PanelLeftClose,
+  PanelLeftOpen,
   Palette,
   Quote,
   Radio,
@@ -133,6 +135,19 @@ export function AdminShell({
 }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    setCollapsed(window.localStorage.getItem("wc-admin-nav") === "1");
+  }, []);
+
+  function toggleCollapsed() {
+    setCollapsed((current) => {
+      const next = !current;
+      window.localStorage.setItem("wc-admin-nav", next ? "1" : "0");
+      return next;
+    });
+  }
   const rank = STAFF_ROLE_RANK[user.role] ?? 1;
 
   const workdeskItems: NavEntry[] = [
@@ -231,17 +246,21 @@ export function AdminShell({
     return pathname === href || pathname.startsWith(`${href}/`);
   };
 
-  const sidebar = (
+  const sidebar = (compact: boolean) => (
     <div className="flex h-full flex-col bg-navy-900">
       <div className="flex h-16 shrink-0 items-center justify-between border-b border-navy-800 px-4">
-        <Link href="/admin" className="flex items-center">
-          <Image
-            src={logoUrl || "/brand/logo-inverse.png"}
-            alt="WirelessCom.Ca Inc."
-            width={190}
-            height={36}
-            className="h-7 w-auto"
-          />
+        <Link href="/admin" className="flex min-w-0 items-center" title="WirelessCom.Ca Inc.">
+          {compact ? (
+            <span className="text-sm font-bold tracking-wide text-white">WC</span>
+          ) : (
+            <Image
+              src={logoUrl || "/brand/logo-inverse.png"}
+              alt="WirelessCom.Ca Inc."
+              width={190}
+              height={36}
+              className="h-7 w-auto"
+            />
+          )}
         </Link>
         <button
           type="button"
@@ -262,24 +281,28 @@ export function AdminShell({
 
           return (
             <div key={group.title} className="mb-5">
-              <p className="mb-1.5 px-3 text-[0.6875rem] font-bold uppercase tracking-wider text-navy-500">
-                {group.title}
-              </p>
+              {compact ? null : (
+                <p className="mb-1.5 px-3 text-[0.6875rem] font-bold uppercase tracking-wider text-navy-500">
+                  {group.title}
+                </p>
+              )}
               <ul className="space-y-0.5">
                 {visible.map((item) => (
                   <li key={item.href}>
                     <Link
                       href={item.href}
                       onClick={() => setMobileOpen(false)}
+                      title={compact ? item.label : undefined}
                       className={cn(
-                        "flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                        "flex items-center gap-2.5 rounded-lg py-2 text-sm font-medium transition-colors",
+                        compact ? "justify-center px-2" : "px-3",
                         isActive(item.href)
                           ? "bg-brand-600 text-white"
                           : "text-navy-200 hover:bg-navy-800 hover:text-white",
                       )}
                     >
                       <item.Icon className="size-4 shrink-0" aria-hidden="true" />
-                      <span className="flex-1 truncate">{item.label}</span>
+                      <span className={compact ? "sr-only" : "flex-1 truncate"}>{item.label}</span>
                       {item.badge ? (
                         <span className="rounded-full bg-accent-500 px-1.5 py-0.5 text-[0.6875rem] font-bold text-navy-950">
                           {item.badge > 99 ? "99+" : item.badge}
@@ -303,7 +326,7 @@ export function AdminShell({
           <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-600 text-xs font-bold text-white">
             {user.name.slice(0, 2).toUpperCase()}
           </span>
-          <span className="min-w-0 flex-1">
+          <span className={compact ? "sr-only" : "min-w-0 flex-1"}>
             <span className="block truncate text-sm font-semibold text-white">
               {user.name}
             </span>
@@ -311,7 +334,7 @@ export function AdminShell({
               {staffRoleLabel(user.role)}
             </span>
           </span>
-          <UserCircle className="size-4 text-navy-500" aria-hidden="true" />
+          {compact ? null : <UserCircle className="size-4 text-navy-500" aria-hidden="true" />}
         </Link>
 
         <div className="mt-1 flex gap-1">
@@ -321,7 +344,7 @@ export function AdminShell({
             className="flex flex-1 items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-semibold text-navy-300 transition-colors hover:bg-navy-800 hover:text-white"
           >
             <Gauge className="size-3.5" aria-hidden="true" />
-            View site
+            <span className={compact ? "sr-only" : undefined}>View site</span>
           </Link>
           <form action={logoutAction} className="flex-1">
             <button
@@ -329,18 +352,31 @@ export function AdminShell({
               className="flex w-full items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-semibold text-navy-300 transition-colors hover:bg-red-600/20 hover:text-red-300"
             >
               <LogOut className="size-3.5" aria-hidden="true" />
-              Sign out
+              <span className={compact ? "sr-only" : undefined}>Sign out</span>
             </button>
           </form>
         </div>
+        <button
+          type="button"
+          onClick={toggleCollapsed}
+          className="mt-2 hidden w-full items-center justify-center gap-1.5 rounded-lg px-2 py-2 text-xs font-semibold text-navy-300 hover:bg-navy-800 hover:text-white lg:flex"
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {collapsed ? (
+            <PanelLeftOpen className="size-4" aria-hidden="true" />
+          ) : (
+            <PanelLeftClose className="size-4" aria-hidden="true" />
+          )}
+          <span className={compact ? "sr-only" : undefined}>{collapsed ? "Expand" : "Collapse"}</span>
+        </button>
       </div>
     </div>
   );
 
   return (
     <div className="flex min-h-dvh bg-slate-100">
-      <aside className="fixed inset-y-0 left-0 hidden w-60 lg:block">
-        {sidebar}
+      <aside className={cn("fixed inset-y-0 left-0 hidden lg:block", collapsed ? "w-[4.5rem]" : "w-60")}>
+        {sidebar(collapsed)}
       </aside>
 
       {mobileOpen && (
@@ -351,11 +387,11 @@ export function AdminShell({
             className="absolute inset-0 bg-navy-950/60"
             onClick={() => setMobileOpen(false)}
           />
-          <div className="absolute inset-y-0 left-0 w-64">{sidebar}</div>
+          <div className="absolute inset-y-0 left-0 w-64">{sidebar(false)}</div>
         </div>
       )}
 
-      <div className="flex min-w-0 flex-1 flex-col lg:pl-60">
+      <div className={cn("flex min-w-0 flex-1 flex-col", collapsed ? "lg:pl-[4.5rem]" : "lg:pl-60")}>
         <div className="sticky top-0 z-40 flex h-14 items-center gap-3 border-b border-slate-200 bg-white px-4 lg:hidden">
           <button
             type="button"

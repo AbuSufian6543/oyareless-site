@@ -6,12 +6,14 @@ export function WorkSearch({
   kind,
   hidden,
   className,
+  compact = false,
 }: {
   action: string;
   query: string;
   kind: "task" | "ticket" | "both";
   hidden?: Record<string, string>;
   className?: string;
+  compact?: boolean;
 }) {
   const placeholder =
     kind === "task"
@@ -27,7 +29,7 @@ export function WorkSearch({
             value ? <input key={name} type="hidden" name={name} value={value} /> : null,
           )
         : null}
-      <label className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-3 shadow-sm focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-500/15">
+      <label className={`flex items-center gap-2 border border-slate-200 bg-white px-3 focus-within:border-brand-400 focus-within:ring-2 focus-within:ring-brand-500/15 ${compact ? "rounded-lg" : "rounded-xl shadow-sm"}`}>
         <Search className="size-4 shrink-0 text-slate-400" aria-hidden="true" />
         <span className="sr-only">{placeholder}</span>
         <input
@@ -35,7 +37,7 @@ export function WorkSearch({
           defaultValue={query}
           placeholder={placeholder}
           autoComplete="off"
-          className="h-10 min-w-0 flex-1 bg-transparent text-sm text-navy-900 outline-none placeholder:text-slate-400"
+          className={`${compact ? "h-9" : "h-10"} min-w-0 flex-1 bg-transparent text-sm text-navy-900 outline-none placeholder:text-slate-400`}
         />
         <button
           type="submit"

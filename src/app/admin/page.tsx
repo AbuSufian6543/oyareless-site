@@ -25,6 +25,8 @@ import {
   TaskDonutCard,
   weekdayShort,
 } from "@/components/workdesk/dashboard-panels";
+import { CollapsibleCalendar } from "@/components/workdesk/collapsible-calendar";
+import { TaskRow } from "@/components/workdesk/task-row";
 import { WorkdeskCalendar } from "@/components/workdesk/workdesk-calendar";
 import { WorkItem, WorkList, WorkSection } from "@/components/workdesk/work-item";
 import { WorkSearch } from "@/components/workdesk/work-search";
@@ -413,6 +415,14 @@ export default async function AdminDashboard({
             accountHref="/admin/account"
             actions={
               <>
+                <WorkSearch
+                  action="/admin"
+                  query={query}
+                  kind="both"
+                  compact
+                  className="mb-0 w-full sm:w-72"
+                  hidden={params.day ? { day: params.day } : undefined}
+                />
                 <Link
                   href={`/admin/tasks/new?due=${selectedKey}`}
                   className="inline-flex h-9 items-center gap-2 rounded-lg bg-brand-600 px-3.5 text-sm font-semibold text-white hover:bg-brand-700"
@@ -429,21 +439,14 @@ export default async function AdminDashboard({
               </>
             }
           />
-          <div className="mt-4">
-            <WorkSearch
-              action="/admin"
-              query={query}
-              kind="both"
-              hidden={params.day ? { day: params.day } : undefined}
-            />
+          <div className="mt-3">
             {query ? (
               <div className="mb-4 grid gap-4 lg:grid-cols-2">
                 <WorkSection title="Tasks" href={`/admin/tasks?q=${encodeURIComponent(query)}`} countLabel="All task matches">
-                  <WorkList count={foundTasks.length} empty={`No tasks match “${query}”.`}>
+                  <WorkList variant="rows" count={foundTasks.length} empty={`No tasks match “${query}”.`}>
                     {foundTasks.map((task) => (
-                      <WorkItem
+                      <TaskRow
                         key={task.id}
-                        kind="task"
                         href={`/admin/tasks/${task.id}`}
                         reference={task.reference}
                         title={task.title}
@@ -481,6 +484,7 @@ export default async function AdminDashboard({
         </div>
 
         <div className="order-2 xl:col-start-2 xl:row-span-2 xl:row-start-1">
+          <CollapsibleCalendar>
           <WorkdeskCalendar
             monthLabel={formatDate(monthStart, { month: "long", year: "numeric" })}
             prevMonthKey={calendarDateKey(previousMonth)}
@@ -495,6 +499,7 @@ export default async function AdminDashboard({
             unassigned={unassignedDay}
             userId={user.id}
           />
+          </CollapsibleCalendar>
         </div>
 
         <div className="order-3 min-w-0 xl:col-start-1 xl:row-start-2">
@@ -560,11 +565,10 @@ export default async function AdminDashboard({
           href="/admin/tasks?view=overdue"
           countLabel={`View all ${overdueTasks}`}
         >
-          <WorkList count={overdueTaskItems.length} empty="">
+          <WorkList variant="rows" count={overdueTaskItems.length} empty="">
             {overdueTaskItems.map((task) => (
-              <WorkItem
+              <TaskRow
                 key={task.id}
-                kind="task"
                 href={`/admin/tasks/${task.id}`}
                 reference={task.reference}
                 title={task.title}
@@ -582,11 +586,10 @@ export default async function AdminDashboard({
 
       <div className="mb-6 grid gap-6 lg:grid-cols-2">
         <WorkSection title="Assigned to me" href="/admin/tasks" countLabel={`View all ${myOpenTasks}`}>
-          <WorkList count={myTasks.length} empty="Nothing assigned to you. Create a task or pick one up from the team list.">
+          <WorkList variant="rows" count={myTasks.length} empty="Nothing assigned to you. Create a task or pick one up from the team list.">
             {myTasks.map((task) => (
-              <WorkItem
+              <TaskRow
                 key={task.id}
-                kind="task"
                 href={`/admin/tasks/${task.id}`}
                 reference={task.reference}
                 title={task.title}
@@ -606,11 +609,10 @@ export default async function AdminDashboard({
           href="/admin/tasks?view=team"
           countLabel={`View all ${teamOpenTasks}`}
         >
-          <WorkList count={othersTasks.length} empty="No open tasks are assigned to other staff.">
+          <WorkList variant="rows" count={othersTasks.length} empty="No open tasks are assigned to other staff.">
             {othersTasks.map((task) => (
-              <WorkItem
+              <TaskRow
                 key={task.id}
-                kind="task"
                 href={`/admin/tasks/${task.id}`}
                 reference={task.reference}
                 title={task.title}
@@ -632,11 +634,10 @@ export default async function AdminDashboard({
           href="/admin/tasks?view=unassigned"
           countLabel="Assign these"
         >
-          <WorkList count={waitingTasks.length} empty="">
+          <WorkList variant="rows" count={waitingTasks.length} empty="">
             {waitingTasks.map((task) => (
-              <WorkItem
+              <TaskRow
                 key={task.id}
-                kind="task"
                 href={`/admin/tasks/${task.id}`}
                 reference={task.reference}
                 title={task.title}

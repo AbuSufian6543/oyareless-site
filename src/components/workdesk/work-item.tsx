@@ -37,9 +37,11 @@ function cardSurface(
 export function AssigneeAvatars({
   names,
   you,
+  compact = false,
 }: {
   names: string[];
   you?: string;
+  compact?: boolean;
 }) {
   if (names.length === 0) {
     return <span className="text-xs font-medium text-slate-400">Unassigned</span>;
@@ -63,7 +65,7 @@ export function AssigneeAvatars({
           </span>
         ))}
       </span>
-      <span className="truncate text-xs text-slate-600">
+      <span className={cn("truncate text-xs text-slate-600", compact && "hidden xl:inline")}>
         {names.join(", ")}
         {you && names.includes(you) ? " · you" : ""}
       </span>
@@ -193,10 +195,12 @@ export function WorkList({
   children,
   empty,
   count,
+  variant = "cards",
 }: {
   children: ReactNode;
   empty: string;
   count: number;
+  variant?: "cards" | "rows";
 }) {
   if (count === 0) {
     return (
@@ -206,7 +210,11 @@ export function WorkList({
     );
   }
 
-  return <ul className="space-y-2.5">{children}</ul>;
+  return (
+    <ul className={cn(variant === "rows" ? "divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white" : "space-y-2.5")}>
+      {children}
+    </ul>
+  );
 }
 
 export function WorkSection({

@@ -149,7 +149,7 @@ export function ColorStatLink({
     <Link
       href={href}
       className={cn(
-        "group rounded-2xl border p-3.5 shadow-[0_1px_2px_rgba(15,42,73,0.04)] transition duration-200 hover:-translate-y-px hover:shadow-sm",
+        "group rounded-xl border p-3 shadow-[0_1px_2px_rgba(15,42,73,0.04)] transition duration-200 hover:shadow-sm",
         colors.card,
       )}
     >

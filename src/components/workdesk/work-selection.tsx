@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 type SelectionValue = {
   selected: ReadonlySet<string>;
   toggle: (id: string) => void;
+  setMany: (ids: string[]) => void;
 };
 
 const SelectionContext = createContext<SelectionValue | null>(null);
@@ -26,6 +27,25 @@ const STATUS_CLASS: Record<string, string> = {
   RESOLVED: "border-emerald-200 bg-emerald-50 text-emerald-900 hover:bg-emerald-100",
   CLOSED: "border-navy-800 bg-navy-900 text-white hover:bg-navy-800",
 };
+
+export function WorkSelectAll({ ids, label = "Select all" }: { ids: string[]; label?: string }) {
+  const selection = useContext(SelectionContext);
+  if (!selection) return null;
+  const count = ids.filter((id) => selection.selected.has(id)).length;
+  const all = ids.length > 0 && count === ids.length;
+  return (
+    <input
+      type="checkbox"
+      checked={all}
+      ref={(node) => {
+        if (node) node.indeterminate = count > 0 && !all;
+      }}
+      onChange={() => selection.setMany(all ? [] : ids)}
+      className="size-4 rounded border-slate-300 accent-brand-600"
+      aria-label={all ? "Clear selection" : label}
+    />
+  );
+}
 
 export function WorkSelectBox({ id, label }: { id: string; label: string }) {
   const selection = useContext(SelectionContext);
@@ -93,6 +113,8 @@ export function WorkSelection({
   noun,
   summary,
   empty,
+  reveal = "always",
+  list = true,
   children,
 }: {
   ids: string[];
@@ -102,6 +124,8 @@ export function WorkSelection({
   noun: "task" | "ticket";
   summary: string;
   empty: string;
+  reveal?: "always" | "selected";
+  list?: boolean;
   children: ReactNode;
 }) {
   const [selected, setSelected] = useState<Set<string>>(() => new Set());
@@ -122,6 +146,7 @@ export function WorkSelection({
           return next;
         });
       },
+      setMany: (nextIds: string[]) => setSelected(new Set(nextIds)),
     }),
     [selected],
   );
@@ -137,43 +162,47 @@ export function WorkSelection({
   const visible = ids.filter((id) => selected.has(id));
   const all = visible.length === ids.length;
 
+  const showBar = reveal === "always" || visible.length > 0;
+
   return (
     <SelectionContext.Provider value={value}>
-      <form action={action} className="sticky top-14 z-20 mb-3 rounded-2xl border border-slate-200 bg-white/95 p-3 shadow-sm backdrop-blur lg:top-0">
-        <input type="hidden" name="returnTo" value={returnTo} />
-        {visible.map((id) => (
-          <input key={id} type="hidden" name="ids" value={id} />
-        ))}
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex min-w-0 items-center gap-3">
-            <label className="flex shrink-0 items-center gap-2 text-sm font-semibold text-navy-900">
-              <input
-                type="checkbox"
-                checked={all}
-                ref={(node) => {
-                  if (node) node.indeterminate = visible.length > 0 && !all;
-                }}
-                onChange={() => setSelected(all ? new Set() : new Set(ids))}
-                className="size-4 rounded border-slate-300 accent-brand-600"
-                aria-label={all ? "Clear selection" : "Select all"}
-              />
-              Select all
-            </label>
-            <p className="min-w-0 text-sm text-slate-500" aria-live="polite">
-              {visible.length > 0 ? (
-                <span className="font-semibold text-navy-800">
-                  {visible.length} selected
-                </span>
-              ) : (
-                "Select one or all, then set a status."
-              )}
-              <span className="text-slate-400"> · {summary}</span>
-            </p>
+      {showBar ? (
+        <form action={action} className="sticky top-14 z-20 mb-3 rounded-xl border border-slate-200 bg-white/95 p-2.5 shadow-sm backdrop-blur lg:top-0">
+          <input type="hidden" name="returnTo" value={returnTo} />
+          {visible.map((id) => (
+            <input key={id} type="hidden" name="ids" value={id} />
+          ))}
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 items-center gap-3">
+              <label className="flex shrink-0 items-center gap-2 text-sm font-semibold text-navy-900">
+                <input
+                  type="checkbox"
+                  checked={all}
+                  ref={(node) => {
+                    if (node) node.indeterminate = visible.length > 0 && !all;
+                  }}
+                  onChange={() => setSelected(all ? new Set() : new Set(ids))}
+                  className="size-4 rounded border-slate-300 accent-brand-600"
+                  aria-label={all ? "Clear selection" : "Select all"}
+                />
+                Select all
+              </label>
+              <p className="min-w-0 text-sm text-slate-500" aria-live="polite">
+                {visible.length > 0 ? (
+                  <span className="font-semibold text-navy-800">
+                    {visible.length} selected
+                  </span>
+                ) : (
+                  "Select one or all, then set a status."
+                )}
+                <span className="text-slate-400"> · {summary}</span>
+              </p>
+            </div>
+            <StatusButtons statuses={statuses} count={visible.length} noun={noun} />
           </div>
-          <StatusButtons statuses={statuses} count={visible.length} noun={noun} />
-        </div>
-      </form>
-      <ul className="space-y-2.5">{children}</ul>
+        </form>
+      ) : null}
+      {list ? <ul className="space-y-2.5">{children}</ul> : children}
     </SelectionContext.Provider>
   );
 }
